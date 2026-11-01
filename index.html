@@ -1235,13 +1235,15 @@ footer {
 
 @media (max-width: 600px), (orientation: portrait) {
   .intro-sound-button {
-    min-width: 180px;
-    min-height: 52px;
-    padding: 12px 22px;
-    font-size: 0.88rem;
-    box-shadow: 0 0 0 12px rgba(7, 23, 15, 0.96),
-                0 0 35px 25px rgba(7, 23, 15, 0.95),
-                0 10px 30px rgba(0, 0, 0, 0.85);
+    bottom: 85px;
+    right: 14px;
+    min-width: 184px;
+    min-height: 56px;
+    padding: 14px 24px;
+    font-size: 0.9rem;
+    box-shadow: 0 0 0 20px rgba(7, 23, 15, 0.98),
+                0 0 55px 35px rgba(7, 23, 15, 0.98),
+                0 12px 35px rgba(0, 0, 0, 0.95);
   }
 }
 
@@ -1927,11 +1929,11 @@ footer {
     const isMobile = isPortraitMode();
 
     // 16:9 Desktop (1920x1080): Gemini watermark center is ~ (1740, 888)
-    // 9:16 Mobile  (1080x1920): Gemini watermark center is ~ (900, 1728)
+    // 9:16 Mobile  (1080x1920): Gemini watermark center is ~ (899, 1705)
     const videoW = isMobile ? 1080 : 1920;
     const videoH = isMobile ? 1920 : 1080;
-    const wmNormX = isMobile ? (900 / 1080) : (1740 / 1920);
-    const wmNormY = isMobile ? (1728 / 1920) : (888 / 1080);
+    const wmNormX = isMobile ? (899 / 1080) : (1740 / 1920);
+    const wmNormY = isMobile ? (1705 / 1920) : (888 / 1080);
 
     const videoRatio = videoW / videoH;
     const screenRatio = vw / vh;
@@ -1955,11 +1957,14 @@ footer {
     const distFromRight = vw - watermarkX;
     const distFromBottom = vh - watermarkY;
 
-    const btnW = soundButton.offsetWidth || (isMobile ? 180 : 230);
-    const btnH = soundButton.offsetHeight || (isMobile ? 52 : 66);
+    const btnW = soundButton.offsetWidth || (isMobile ? 184 : 230);
+    const btnH = soundButton.offsetHeight || (isMobile ? 56 : 66);
 
-    const targetRight = Math.max(12, Math.min(vw - btnW - 12, Math.round(distFromRight - (btnW / 2))));
-    const targetBottom = Math.max(12, Math.min(vh - btnH - 12, Math.round(distFromBottom - (btnH / 2))));
+    const minMargin = isMobile ? 12 : 16;
+    const targetRight = Math.max(minMargin, Math.min(vw - btnW - minMargin, Math.round(distFromRight - (btnW / 2))));
+    const targetBottom = isMobile 
+      ? Math.max(50, Math.min(vh - btnH - 20, Math.round(distFromBottom - (btnH / 2))))
+      : Math.max(16, Math.min(vh - btnH - 16, Math.round(distFromBottom - (btnH / 2))));
 
     soundButton.style.right = targetRight + 'px';
     soundButton.style.bottom = targetBottom + 'px';
