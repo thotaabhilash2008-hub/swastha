@@ -1469,13 +1469,127 @@ footer {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ==================== 3D CANVAS & ENCHANTED SACRED GROVE ==================== */
+.cinematic-forest-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at 50% -12%, rgba(229, 199, 131, 0.18) 0%, transparent 65%),
+    radial-gradient(ellipse at 85% 18%, rgba(52, 211, 153, 0.18) 0%, transparent 55%),
+    radial-gradient(ellipse at 15% 45%, rgba(16, 59, 40, 0.45) 0%, transparent 65%),
+    radial-gradient(circle at 75% 75%, rgba(20, 72, 49, 0.35) 0%, transparent 60%),
+    linear-gradient(180deg, #07170F 0%, #0A2419 32%, #081D13 68%, #07170F 100%);
+}
+
+.cinematic-forest-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 30%, transparent 45%, rgba(7, 23, 15, 0.6) 100%);
+}
+
+.cinematic-forest-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  opacity: 0.75;
+}
+
+#hero-3d-bg-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 1;
+  display: block;
+}
+
+.cinematic-vignette-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  background: radial-gradient(circle at 50% 50%, transparent 50%, rgba(7, 23, 15, 0.5) 85%, rgba(5, 17, 11, 0.85) 100%);
+}
+
+/* ==================== 3D SCROLL REVEAL & PERSPECTIVE ELEVATION ==================== */
+.reveal-3d {
+  opacity: 0;
+  transform: perspective(1200px) translateZ(-45px) rotateX(8deg) translateY(38px);
+  transition: opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1), transform 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.reveal-3d.in-view {
+  opacity: 1;
+  transform: perspective(1200px) translateZ(0) rotateX(0deg) translateY(0);
+}
+
+/* Staggered cascades for 5 healing paths */
+.modules-grid .module-card:nth-child(1) { transition-delay: 0.08s; }
+.modules-grid .module-card:nth-child(2) { transition-delay: 0.16s; }
+.modules-grid .module-card:nth-child(3) { transition-delay: 0.24s; }
+.modules-grid .module-card:nth-child(4) { transition-delay: 0.32s; }
+.modules-grid .module-card:nth-child(5) { transition-delay: 0.40s; }
+
+/* Staggered cascades for Lab Thumbnails */
+.lab-visual-grid .lab-thumb-card:nth-child(1) { transition-delay: 0.1s; }
+.lab-visual-grid .lab-thumb-card:nth-child(2) { transition-delay: 0.2s; }
+.lab-visual-grid .lab-thumb-card:nth-child(3) { transition-delay: 0.3s; }
+.lab-visual-grid .lab-thumb-card:nth-child(4) { transition-delay: 0.4s; }
+
+/* Staggered cascades for Disciplines */
+.disciplines-grid .discipline-card:nth-child(1) { transition-delay: 0.1s; }
+.disciplines-grid .discipline-card:nth-child(2) { transition-delay: 0.2s; }
+.disciplines-grid .discipline-card:nth-child(3) { transition-delay: 0.3s; }
+.disciplines-grid .discipline-card:nth-child(4) { transition-delay: 0.4s; }
+
+/* Interactive 3D Card Tilt & Glare */
+.interactive-tilt {
+  transform-style: preserve-3d;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease, border-color 0.35s ease;
+  position: relative;
+}
+
+.interactive-tilt .card-glare {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(circle at var(--glare-x, 50%) var(--glare-y, 50%), rgba(229, 199, 131, 0.24) 0%, transparent 65%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 5;
+}
+
+.interactive-tilt:hover .card-glare {
+  opacity: 1;
+}
+
+/* Enhanced 3D Breathing Tilt on Hero Centerpiece Frame */
+.hero-frame {
+  transform-style: preserve-3d;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+
 </style>
-  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
 </head>
 <body>
 
 <!-- CINEMATIC FOREST BACKGROUND LAYERS -->
-<div class="cinematic-bg" aria-hidden="true"></div>
+<!-- CINEMATIC FOREST BACKGROUND & 3D WEBGL ENGINE -->
+<div class="cinematic-forest-bg" aria-hidden="true"></div>
+<canvas id="hero-3d-bg-canvas" aria-hidden="true"></canvas>
+<div class="cinematic-vignette-overlay" aria-hidden="true"></div>
 
 <!-- ATMOSPHERIC PARTICLES -->
 <div class="dust-mote dust-1" aria-hidden="true"></div>
@@ -2281,6 +2395,505 @@ footer {
       }
     }
   });
+
+  
+  // =========================================================================
+  // SWASTHA HERO PAGE - 3D THREE.JS SACRED GROVE & 3D SCROLL INTERACTION ENGINE
+  // =========================================================================
+
+  function initHero3DBackground() {
+    const canvas = document.getElementById('hero-3d-bg-canvas');
+    if (!canvas || typeof THREE === 'undefined') return;
+
+    // Check WebGL availability
+    try {
+      const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+      if (!gl) { canvas.style.display = 'none'; return; }
+    } catch(e) {
+      canvas.style.display = 'none';
+      return;
+    }
+
+    const isReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const isMobile = window.innerWidth < 768 || ('ontouchstart' in window);
+
+    // Scene, Camera, Fog & Renderer
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.FogExp2(0x07170F, 0.015);
+
+    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 140);
+    camera.position.set(0, 0, 32);
+
+    const renderer = new THREE.WebGLRenderer({
+      canvas: canvas,
+      alpha: true,
+      antialias: !isMobile,
+      powerPreference: 'high-performance'
+    });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, isMobile ? 1.25 : 1.75));
+
+    // Atmospheric Lighting
+    const ambientLight = new THREE.AmbientLight(0x103B28, 1.3);
+    scene.add(ambientLight);
+
+    const sunLight = new THREE.DirectionalLight(0xFFEBB5, 2.2);
+    sunLight.position.set(14, 30, 20);
+    scene.add(sunLight);
+
+    const emeraldLight = new THREE.PointLight(0x4ADE80, 1.4, 50);
+    emeraldLight.position.set(-18, 12, 14);
+    scene.add(emeraldLight);
+
+    const goldLight = new THREE.PointLight(0xE5C783, 1.8, 55);
+    goldLight.position.set(18, -10, 12);
+    scene.add(goldLight);
+
+    // Procedural Particle Texture (Warm Gold Glow)
+    function createGlowParticleTexture() {
+      const c = document.createElement('canvas');
+      c.width = 64; c.height = 64;
+      const ctx = c.getContext('2d');
+      const grad = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+      grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
+      grad.addColorStop(0.2, 'rgba(255, 235, 163, 0.9)');
+      grad.addColorStop(0.5, 'rgba(229, 199, 131, 0.45)');
+      grad.addColorStop(0.8, 'rgba(200, 164, 93, 0.12)');
+      grad.addColorStop(1, 'rgba(200, 164, 93, 0)');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 64, 64);
+      const tex = new THREE.CanvasTexture(c);
+      tex.needsUpdate = true;
+      return tex;
+    }
+
+    // Procedural Botanical Leaf Texture (Emerald & Golden Spine)
+    function createBotanicalLeafTexture() {
+      const c = document.createElement('canvas');
+      c.width = 256; c.height = 512;
+      const ctx = c.getContext('2d');
+
+      const bgGrad = ctx.createLinearGradient(0, 0, 256, 512);
+      bgGrad.addColorStop(0, '#103B28');
+      bgGrad.addColorStop(0.35, '#1b5e3a');
+      bgGrad.addColorStop(0.8, '#267347');
+      bgGrad.addColorStop(1, '#0e3321');
+      ctx.fillStyle = bgGrad;
+      ctx.fillRect(0, 0, 256, 512);
+
+      // Vein ribs
+      ctx.strokeStyle = 'rgba(229, 199, 131, 0.35)';
+      ctx.lineWidth = 2.2;
+      ctx.lineCap = 'round';
+      for (let y = 80; y < 450; y += 38) {
+        ctx.beginPath();
+        ctx.moveTo(128, y);
+        ctx.quadraticCurveTo(80, y - 20, 28, y - 10);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(128, y);
+        ctx.quadraticCurveTo(176, y - 20, 228, y - 10);
+        ctx.stroke();
+      }
+
+      // Golden Midrib Spine
+      const spineGrad = ctx.createLinearGradient(128, 480, 128, 30);
+      spineGrad.addColorStop(0, 'rgba(200, 164, 93, 0.9)');
+      spineGrad.addColorStop(0.5, 'rgba(255, 245, 200, 0.95)');
+      spineGrad.addColorStop(1, 'rgba(229, 199, 131, 0.7)');
+      ctx.strokeStyle = spineGrad;
+      ctx.lineWidth = 4.5;
+      ctx.beginPath();
+      ctx.moveTo(128, 490);
+      ctx.quadraticCurveTo(126, 260, 128, 25);
+      ctx.stroke();
+
+      // Golden margin edge
+      ctx.strokeStyle = 'rgba(200, 164, 93, 0.4)';
+      ctx.lineWidth = 3;
+      ctx.strokeRect(4, 4, 248, 504);
+
+      const tex = new THREE.CanvasTexture(c);
+      tex.needsUpdate = true;
+      return tex;
+    }
+
+    // Volumetric Light Ray Texture
+    function createSunRayTexture() {
+      const c = document.createElement('canvas');
+      c.width = 128; c.height = 512;
+      const ctx = c.getContext('2d');
+      const grad = ctx.createLinearGradient(0, 0, 0, 512);
+      grad.addColorStop(0, 'rgba(255, 243, 200, 0.45)');
+      grad.addColorStop(0.35, 'rgba(229, 199, 131, 0.24)');
+      grad.addColorStop(0.75, 'rgba(74, 222, 128, 0.08)');
+      grad.addColorStop(1, 'rgba(7, 23, 15, 0)');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 128, 512);
+      const tex = new THREE.CanvasTexture(c);
+      tex.needsUpdate = true;
+      return tex;
+    }
+
+    const particleTex = createGlowParticleTexture();
+    const leafTex = createBotanicalLeafTexture();
+    const rayTex = createSunRayTexture();
+
+    // Procedural Double-Curved Leaf Geometry
+    function createCurvedLeafGeometry(width, length, segX, segY) {
+      const geom = new THREE.BufferGeometry();
+      const positions = [];
+      const uvs = [];
+      const indices = [];
+
+      for (let i = 0; i <= segY; i++) {
+        const v = i / segY;
+        const y = (v - 0.5) * length;
+        const envelope = Math.sin(Math.pow(v, 0.65) * Math.PI) * width;
+
+        for (let j = 0; j <= segX; j++) {
+          const u = j / segX;
+          const xNorm = (u - 0.5) * 2;
+          const x = (xNorm * envelope) * 0.5;
+          const longitudinalBend = Math.sin(v * Math.PI) * 0.38;
+          const wingFold = Math.pow(Math.abs(xNorm), 1.25) * 0.28;
+          const z = longitudinalBend + wingFold;
+
+          positions.push(x, y, z);
+          uvs.push(u, v);
+        }
+      }
+
+      const stride = segX + 1;
+      for (let i = 0; i < segY; i++) {
+        for (let j = 0; j < segX; j++) {
+          const a = i * stride + j;
+          const b = (i + 1) * stride + j;
+          const c = (i + 1) * stride + (j + 1);
+          const d = i * stride + (j + 1);
+          indices.push(a, b, d);
+          indices.push(b, c, d);
+        }
+      }
+
+      geom.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+      geom.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+      geom.setIndex(indices);
+      geom.computeVertexNormals();
+      return geom;
+    }
+
+    // 1. Floating 3D Botanical Leaves (Framing the Hero Stage)
+    const leafGroup = new THREE.Group();
+    scene.add(leafGroup);
+
+    const leafGeom = createCurvedLeafGeometry(1.65, 3.8, 10, 18);
+    const leafMaterial = new THREE.MeshStandardMaterial({
+      map: leafTex,
+      roughness: 0.35,
+      metalness: 0.18,
+      side: THREE.DoubleSide,
+      transparent: true,
+      opacity: 0.88
+    });
+
+    const leafCount = isMobile ? 5 : 14;
+    const leaves = [];
+
+    // Left and Right Corridors + Background Depth Planes
+    const spawnBounds = [
+      { minX: -26, maxX: -13, minY: -18, maxY: 22, minZ: -14, maxZ: 6 },
+      { minX: 13, maxX: 26, minY: -18, maxY: 22, minZ: -14, maxZ: 6 },
+      { minX: -20, maxX: 20, minY: 12, maxY: 24, minZ: -20, maxZ: -10 }
+    ];
+
+    for (let i = 0; i < leafCount; i++) {
+      const mesh = new THREE.Mesh(leafGeom, leafMaterial);
+      const bound = spawnBounds[i % spawnBounds.length];
+
+      const posX = bound.minX + Math.random() * (bound.maxX - bound.minX);
+      const posY = bound.minY + Math.random() * (bound.maxY - bound.minY);
+      const posZ = bound.minZ + Math.random() * (bound.maxZ - bound.minZ);
+      mesh.position.set(posX, posY, posZ);
+
+      const scale = 0.65 + Math.random() * 0.75;
+      mesh.scale.set(scale, scale, scale);
+
+      mesh.rotation.set(
+        Math.random() * Math.PI * 2,
+        Math.random() * Math.PI * 2,
+        Math.random() * Math.PI * 2
+      );
+
+      leafGroup.add(mesh);
+
+      leaves.push({
+        mesh: mesh,
+        baseX: posX,
+        baseY: posY,
+        baseZ: posZ,
+        speedX: 0.003 + Math.random() * 0.006,
+        speedY: 0.004 + Math.random() * 0.007,
+        speedZ: 0.002 + Math.random() * 0.004,
+        floatAmp: 0.8 + Math.random() * 1.5,
+        floatFreq: 0.5 + Math.random() * 0.7,
+        timeOffset: Math.random() * Math.PI * 2,
+        parallaxDepth: 0.08 + (posZ + 20) * 0.025
+      });
+    }
+
+    // 2. Volumetric Sunlight Rays (God Rays)
+    const rayGroup = new THREE.Group();
+    scene.add(rayGroup);
+
+    const rayCount = isMobile ? 2 : 5;
+    const rays = [];
+    const rayGeom = new THREE.PlaneGeometry(6.5, 46);
+
+    for (let i = 0; i < rayCount; i++) {
+      const rayMat = new THREE.MeshBasicMaterial({
+        map: rayTex,
+        transparent: true,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+        opacity: 0.16 + (i * 0.03),
+        side: THREE.DoubleSide
+      });
+      const rayMesh = new THREE.Mesh(rayGeom, rayMat);
+      rayMesh.position.set(-19 + i * 9.5, 14, -8 - i * 2);
+      rayMesh.rotation.z = -0.32 + (i * 0.04);
+      rayGroup.add(rayMesh);
+
+      rays.push({
+        mesh: rayMesh,
+        baseOpacity: rayMat.opacity,
+        speed: 0.4 + i * 0.25,
+        phase: i * 1.3
+      });
+    }
+
+    // 3. Golden Ayurvedic Energy Particles
+    const particleCount = isMobile ? 45 : 140;
+    const particleGeom = new THREE.BufferGeometry();
+    const particlePositions = new Float32Array(particleCount * 3);
+    const particleData = [];
+
+    for (let i = 0; i < particleCount; i++) {
+      const x = (Math.random() - 0.5) * 56;
+      const y = (Math.random() - 0.5) * 56;
+      const z = (Math.random() - 0.5) * 35;
+
+      particlePositions[i * 3] = x;
+      particlePositions[i * 3 + 1] = y;
+      particlePositions[i * 3 + 2] = z;
+
+      particleData.push({
+        baseX: x,
+        baseY: y,
+        baseZ: z,
+        driftX: 0.2 + Math.random() * 0.6,
+        floatSpeed: 0.018 + Math.random() * 0.032,
+        phase: Math.random() * Math.PI * 2
+      });
+    }
+
+    particleGeom.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
+
+    const particleMaterial = new THREE.PointsMaterial({
+      size: isMobile ? 1.4 : 1.9,
+      map: particleTex,
+      transparent: true,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+      opacity: 0.85
+    });
+
+    const particleSystem = new THREE.Points(particleGeom, particleMaterial);
+    scene.add(particleSystem);
+
+    // 4. Cursor & Scroll Parallax
+    let targetMouseX = 0, targetMouseY = 0;
+    let currentMouseX = 0, currentMouseY = 0;
+    let targetScrollY = 0, currentScrollY = 0;
+
+    function onMouseMove(e) {
+      targetMouseX = (e.clientX / window.innerWidth - 0.5) * 2;
+      targetMouseY = (e.clientY / window.innerHeight - 0.5) * 2;
+    }
+
+    function onScroll() {
+      targetScrollY = window.scrollY;
+    }
+
+    window.addEventListener('mousemove', onMouseMove, { passive: true });
+    window.addEventListener('scroll', onScroll, { passive: true });
+
+    function onWindowResize() {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(onWindowResize, 100);
+    });
+
+    // Tab visibility handling
+    let isTabVisible = true;
+    document.addEventListener('visibilitychange', () => {
+      isTabVisible = !document.hidden;
+    });
+
+    const clock = new THREE.Clock();
+
+    function animate() {
+      requestAnimationFrame(animate);
+      if (!isTabVisible) return;
+
+      const elapsedTime = clock.getElapsedTime();
+
+      if (!isReducedMotion) {
+        currentMouseX += (targetMouseX - currentMouseX) * 0.045;
+        currentMouseY += (targetMouseY - currentMouseY) * 0.045;
+        currentScrollY += (targetScrollY - currentScrollY) * 0.055;
+
+        // Camera Depth Journey through the Sacred Grove
+        const scrollOffset = currentScrollY * 0.014;
+        camera.position.x = currentMouseX * 2.4;
+        camera.position.y = -currentMouseY * 1.6 - scrollOffset;
+        camera.lookAt(0, -scrollOffset, 0);
+
+        // Animate Leaves (Organic Sway & 3D Tumbling)
+        for (let i = 0; i < leaves.length; i++) {
+          const item = leaves[i];
+          item.mesh.rotation.x += item.speedX;
+          item.mesh.rotation.y += item.speedY;
+          item.mesh.rotation.z += item.speedZ;
+
+          const floatWave = Math.sin(elapsedTime * item.floatFreq + item.timeOffset) * item.floatAmp;
+          item.mesh.position.y = item.baseY + floatWave - (scrollOffset * item.parallaxDepth * 0.5);
+          item.mesh.position.x = item.baseX + (currentMouseX * item.parallaxDepth);
+        }
+
+        // Animate Sunlight God Rays
+        for (let i = 0; i < rays.length; i++) {
+          const r = rays[i];
+          const shimmer = Math.sin(elapsedTime * r.speed + r.phase) * 0.04;
+          r.mesh.material.opacity = Math.max(0.04, r.baseOpacity + shimmer);
+        }
+
+        // Animate Golden Particles
+        const posAttr = particleGeom.attributes.position;
+        const positions = posAttr.array;
+
+        for (let i = 0; i < particleCount; i++) {
+          const p = particleData[i];
+          let py = positions[i * 3 + 1] + p.floatSpeed;
+          if (py > 28) py = -28;
+          positions[i * 3 + 1] = py;
+
+          const lateralWave = Math.sin(elapsedTime * 0.8 + p.phase) * p.driftX;
+          positions[i * 3] = p.baseX + lateralWave + (currentMouseX * 1.5);
+        }
+        posAttr.needsUpdate = true;
+      }
+
+      renderer.render(scene, camera);
+    }
+
+    animate();
+  }
+
+  // =========================================================================
+  // 3D SCROLL REVEAL & INTERACTIVE CARD TILT CONTROLLER
+  // =========================================================================
+  function initHero3DScrollInteractions() {
+    // 1. Assign .reveal-3d to key page sections and cards
+    const targets = [
+      '.hero-content',
+      '.hero-visual',
+      '.modules-header',
+      '.module-card',
+      '.lab-info',
+      '.lab-thumb-card',
+      '.disciplines-header',
+      '.discipline-card',
+      '.about-banner'
+    ];
+
+    targets.forEach(selector => {
+      document.querySelectorAll(selector).forEach(el => {
+        el.classList.add('reveal-3d');
+      });
+    });
+
+    // IntersectionObserver for cinematic 3D perspective reveal
+    if ('IntersectionObserver' in window) {
+      const observer = new IntersectionObserver((entries, obs) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('in-view');
+            obs.unobserve(entry.target);
+          }
+        });
+      }, {
+        threshold: 0.12,
+        rootMargin: '0px 0px -40px 0px'
+      });
+
+      document.querySelectorAll('.reveal-3d').forEach(el => {
+        observer.observe(el);
+      });
+    } else {
+      // Fallback
+      document.querySelectorAll('.reveal-3d').forEach(el => el.classList.add('in-view'));
+    }
+
+    // 2. Interactive 3D Card Tilt with Specular Glare
+    const tiltCards = document.querySelectorAll('.module-card, .lab-thumb-card, .discipline-card, .hero-frame');
+    tiltCards.forEach(card => {
+      card.classList.add('interactive-tilt');
+
+      // Inject glare element if missing
+      if (!card.querySelector('.card-glare')) {
+        const glare = document.createElement('div');
+        glare.className = 'card-glare';
+        card.appendChild(glare);
+      }
+
+      card.addEventListener('mousemove', (e) => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+
+        const rotateX = ((y - centerY) / centerY) * -9; // up to +/- 9 deg
+        const rotateY = ((x - centerX) / centerX) * 9;
+
+        card.style.transform = `perspective(900px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) translateY(-8px) scale3d(1.02, 1.02, 1.02)`;
+        card.style.setProperty('--glare-x', `${((x / rect.width) * 100).toFixed(1)}%`);
+        card.style.setProperty('--glare-y', `${((y / rect.height) * 100).toFixed(1)}%`);
+      });
+
+      card.addEventListener('mouseleave', () => {
+        card.style.transform = 'perspective(900px) rotateX(0deg) rotateY(0deg) translateY(0) scale3d(1, 1, 1)';
+      });
+    });
+  }
+
+  // Auto-start 3D background & scroll animations
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      initHero3DBackground();
+      initHero3DScrollInteractions();
+    });
+  } else {
+    initHero3DBackground();
+    initHero3DScrollInteractions();
+  }
+
 
   // Launch initial startup
   lockScroll();
