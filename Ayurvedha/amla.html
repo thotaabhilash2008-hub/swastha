@@ -81,46 +81,41 @@
     #viewerModal {
       position: fixed;
       inset: 0;
-      z-index: 9000;
+      z-index: 2000;
       display: none;
       flex-direction: column;
-      background: rgba(7, 23, 15, 0.96);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-    }
-
-    #viewerModal.is-open {
-      display: flex !important;
     }
 
     #modal-topbar {
       flex-shrink: 0;
-      height: 60px;
-      background: #07170F;
+      height: 58px;
+      background: #111111;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 32px;
-      border-bottom: 1px solid rgba(200, 164, 93, 0.2);
+      padding: 0 28px 0 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
       z-index: 99999;
     }
 
     #modal-topbar span {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 16px;
-      font-weight: 500;
-      letter-spacing: 3px;
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 4.5px;
       text-transform: uppercase;
-      color: #E5C783;
+      color: rgba(255, 255, 255, 0.72);
       user-select: none;
     }
 
     #close3D {
       width: 38px;
       height: 38px;
-      background: rgba(255, 255, 255, 0.06);
-      color: #F5F0E4;
-      border: 1px solid rgba(200, 164, 93, 0.35);
+      font-size: 15px;
+      font-weight: 300;
+      background: transparent;
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.7);
       border-radius: 50%;
       cursor: pointer;
       z-index: 99999;
@@ -128,114 +123,23 @@
       align-items: center;
       justify-content: center;
       line-height: 1;
-      font-size: 16px;
-      font-weight: 300;
-      transition: all 0.25s ease;
+      transition: background .2s, color .2s, transform .22s;
       outline: none;
       flex-shrink: 0;
     }
 
     #close3D:hover {
-      background: #C8A45D;
-      color: #07170F;
-      border-color: #E5C783;
-      transform: rotate(90deg);
-    }
-
-    .modal-viewer-wrap {
-      flex: 1;
-      width: 100%;
-      height: calc(100% - 60px);
-      position: relative;
-      background: #07170F;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
+      background: #ffffff;
+      color: #111111;
+      border-color: #ffffff;
+      transform: rotate(90deg)
     }
 
     #viewerModal model-viewer {
+      flex: 1;
       width: 100%;
-      height: 100%;
       display: block;
-      background: #07170F;
-      --poster-color: transparent;
-    }
-
-    .model-loading-overlay {
-      position: absolute;
-      inset: 0;
-      background: rgba(7, 23, 15, 0.88);
-      backdrop-filter: blur(6px);
-      -webkit-backdrop-filter: blur(6px);
-      z-index: 40;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: opacity 0.4s ease, visibility 0.4s ease;
-      pointer-events: none;
-    }
-
-    .model-loading-overlay.is-hidden {
-      opacity: 0;
-      visibility: hidden;
-    }
-
-    .model-loading-card {
-      text-align: center;
-      padding: 30px 36px;
-      background: rgba(16, 59, 40, 0.7);
-      border: 1px solid rgba(200, 164, 93, 0.3);
-      border-radius: 16px;
-      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.6);
-      max-width: 360px;
-      width: 88%;
-    }
-
-    .model-loading-spinner {
-      font-size: 26px;
-      color: #E5C783;
-      display: inline-block;
-      animation: pulseRotate 2s infinite linear;
-      margin-bottom: 12px;
-    }
-
-    @keyframes pulseRotate {
-      0% { transform: rotate(0deg) scale(0.9); opacity: 0.7; }
-      50% { transform: rotate(180deg) scale(1.15); opacity: 1; }
-      100% { transform: rotate(360deg) scale(0.9); opacity: 0.7; }
-    }
-
-    .model-loading-title {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 21px;
-      font-weight: 500;
-      color: #E5C783;
-      letter-spacing: 1px;
-      margin-bottom: 6px;
-    }
-
-    .model-loading-sub {
-      font-size: 11px;
-      color: #C7C9B9;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      margin-bottom: 16px;
-    }
-
-    .model-progress-bar-wrap {
-      width: 100%;
-      height: 5px;
-      background: rgba(255, 255, 255, 0.08);
-      border-radius: 999px;
-      overflow: hidden;
-      border: 1px solid rgba(200, 164, 93, 0.2);
-    }
-
-    .model-progress-bar {
-      width: 15%;
-      height: 100%;
-      background: linear-gradient(90deg, #C8A45D, #E5C783);
+      background: #ffffff;
     }
 
     .bg-circle {
@@ -876,6 +780,37 @@
         letter-spacing: 3px
       }
     }
+  
+    .modal-audio-btn {
+      background: rgba(200, 164, 93, 0.18);
+      border: 1px solid rgba(200, 164, 93, 0.45);
+      color: #C8A45D;
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.25s ease;
+      outline: none;
+    }
+    .modal-audio-btn:hover {
+      background: rgba(200, 164, 93, 0.35);
+      border-color: #C8A45D;
+      color: #F5F0E4;
+      transform: translateY(-1px);
+    }
+    .modal-audio-btn.muted {
+      opacity: 0.65;
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.2);
+      color: #b0b0b0;
+    }
+    
   </style>
 </head>
 
@@ -884,11 +819,16 @@
   <button id="open3D">View in 3D</button>
 
   <div id="viewerModal">
-    <div id="modal-topbar">
-      <span>3D Botanical Specimen — Amla</span>
+      <div id="modal-topbar">
+    <span>3D Botanical Specimen • Amla</span>
+    <div style="display:flex; align-items:center; gap:12px;">
+      <button type="button" id="toggleAudioBtn" class="modal-audio-btn" aria-label="Toggle Narration Audio">
+        <span id="audioIcon">🔊</span>
+        <span id="audioLabel">Narration Playing</span>
+      </button>
       <button type="button" id="close3D" title="Close 3D View">✕</button>
     </div>
-    <div class="modal-viewer-wrap">
+  </div><div class="modal-viewer-wrap">
       <div id="modelLoadingBadge" class="model-loading-overlay">
         <div class="model-loading-card">
           <div class="model-loading-spinner">✦</div>
@@ -899,17 +839,7 @@
           </div>
         </div>
       </div>
-      <model-viewer
-        id="plantModelViewer"
-        src="amla3d.glb"
-        poster="https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8b/Phyllanthus_emblica_362202953.jpg/1280px-Phyllanthus_emblica_362202953.jpg"
-        loading="eager"
-        reveal="auto"
-        auto-rotate
-        camera-controls
-        shadow-intensity="1"
-        exposure="1">
-      </model-viewer>
+      <model-viewer id="plantModelViewer" src="amla3d.glb" loading="eager" reveal="auto" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
     </div>
   </div>
 
@@ -1343,86 +1273,139 @@
 
 
   <script>
-    (function() {
-      var open3D = document.getElementById('open3D');
-      var close3D = document.getElementById('close3D');
-      var modal = document.getElementById('viewerModal');
-      var viewer = document.getElementById('plantModelViewer');
-      var badge = document.getElementById('modelLoadingBadge');
-      var pBar = document.getElementById('modelProgressBar');
-      if (!open3D || !close3D || !modal) return;
+  (function() {
+    var open3D    = document.getElementById('open3D');
+    var close3D   = document.getElementById('close3D');
+    var modal     = document.getElementById('viewerModal');
+    var viewer    = document.getElementById('plantModelViewer');
+    var badge     = document.getElementById('modelLoadingBadge');
+    var pBar      = document.getElementById('modelProgressBar');
+    var audioBtn  = document.getElementById('toggleAudioBtn');
+    var audioIcon = document.getElementById('audioIcon');
+    var audioLbl  = document.getElementById('audioLabel');
+    var _aud      = document.getElementById('amlaAudio');
 
-      var _aud = document.getElementById('amlaAudio');
-      var isModelLoaded = false;
+    if (!open3D || !close3D || !modal) return;
 
-      function playAudioIfOpen() {
-        if (_aud && (modal.classList.contains('is-open') || modal.style.display === 'flex')) {
-          _aud.currentTime = 0;
-          var p = _aud.play();
-          if (p !== undefined) { p.catch(function(e) { console.log('Audio autoplay prevented:', e); }); }
-        }
+    var isModelLoaded = false;
+    var userRequestedMute = false;
+
+    function updateAudioUI(playing) {
+      if (!audioBtn) return;
+      if (playing) {
+        audioBtn.classList.remove('muted');
+        if (audioIcon) audioIcon.textContent = '🔊';
+        if (audioLbl) audioLbl.textContent = 'Narration Playing';
+      } else {
+        audioBtn.classList.add('muted');
+        if (audioIcon) audioIcon.textContent = '🔇';
+        if (audioLbl) audioLbl.textContent = 'Narration Paused';
       }
+    }
 
-      function onModelLoaded() {
-        isModelLoaded = true;
+    function playAudioNow() {
+      if (!_aud || userRequestedMute) return;
+      _aud.currentTime = _aud.currentTime || 0;
+      var p = _aud.play();
+      if (p !== undefined) {
+        p.then(function() {
+          updateAudioUI(true);
+        }).catch(function(err) {
+          console.warn('Audio playback deferred:', err);
+          updateAudioUI(false);
+        });
+      }
+    }
+
+    function toggleAudio(e) {
+      if (e) { e.preventDefault(); e.stopPropagation(); }
+      if (!_aud) return;
+      if (_aud.paused) {
+        userRequestedMute = false;
+        playAudioNow();
+      } else {
+        userRequestedMute = true;
+        _aud.pause();
+        updateAudioUI(false);
+      }
+    }
+
+    function onModelLoaded() {
+      isModelLoaded = true;
+      if (badge) badge.classList.add('is-hidden');
+      if (pBar) pBar.style.width = '100%';
+      if (!userRequestedMute && _aud && _aud.paused && modal.classList.contains('is-open')) {
+        playAudioNow();
+      }
+    }
+
+    if (viewer) {
+      if (viewer.loaded) {
+        onModelLoaded();
+      } else {
+        viewer.addEventListener('load', onModelLoaded);
+        viewer.addEventListener('progress', function(evt) {
+          if (evt.detail && evt.detail.totalProgress !== undefined) {
+            var pct = Math.round(evt.detail.totalProgress * 100);
+            if (pBar) pBar.style.width = Math.max(15, pct) + '%';
+          }
+        });
+      }
+    }
+
+    function openModal() {
+      modal.classList.add('is-open');
+      modal.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+
+      // Crucial: Start audio immediately during the user's click gesture so browser allows playback
+      userRequestedMute = false;
+      playAudioNow();
+
+      if (isModelLoaded || (viewer && viewer.loaded)) {
         if (badge) badge.classList.add('is-hidden');
-        if (pBar) pBar.style.width = '100%';
-        playAudioIfOpen();
+      } else {
+        if (badge) badge.classList.remove('is-hidden');
       }
+    }
 
-      if (viewer) {
-        if (viewer.loaded) {
-          isModelLoaded = true;
-          if (badge) badge.classList.add('is-hidden');
-        } else {
-          viewer.addEventListener('load', onModelLoaded);
-          viewer.addEventListener('progress', function(evt) {
-            if (evt.detail && evt.detail.totalProgress !== undefined) {
-              var pct = Math.round(evt.detail.totalProgress * 100);
-              if (pBar) pBar.style.width = Math.max(15, pct) + '%';
-            }
-          });
-        }
+    function closeModal() {
+      modal.classList.remove('is-open');
+      modal.style.display = 'none';
+      document.body.style.overflow = '';
+      if (_aud) {
+        _aud.pause();
+        _aud.currentTime = 0;
       }
+      updateAudioUI(false);
+    }
 
-      function openModal() {
-        modal.classList.add('is-open');
-        modal.style.display = 'flex';
-        document.body.style.overflow = 'hidden';
+    open3D.addEventListener('click', function(e) {
+      e.preventDefault(); e.stopPropagation(); openModal();
+    });
+    close3D.addEventListener('click', function(e) {
+      e.preventDefault(); e.stopPropagation(); closeModal();
+    });
+    if (audioBtn) {
+      audioBtn.addEventListener('click', toggleAudio);
+    }
 
-        if (isModelLoaded || (viewer && viewer.loaded)) {
-          if (badge) badge.classList.add('is-hidden');
-          playAudioIfOpen();
-        } else {
-          if (_aud) { _aud.pause(); _aud.currentTime = 0; }
-          if (badge) badge.classList.remove('is-hidden');
-        }
+    modal.addEventListener('click', function(e) {
+      if (e.target === modal) {
+        closeModal();
+      } else if (!userRequestedMute && _aud && _aud.paused) {
+        // If initial autoplay was blocked by browser, clicking anywhere inside resumes audio
+        playAudioNow();
       }
+    });
 
-      function closeModal() {
-        modal.classList.remove('is-open');
-        modal.style.display = 'none';
-        document.body.style.overflow = '';
-        if (_aud) {
-          _aud.pause();
-          _aud.currentTime = 0;
-        }
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && (modal.classList.contains('is-open') || modal.style.display === 'flex')) {
+        closeModal();
       }
-
-      open3D.addEventListener('click', function (e) {
-        e.preventDefault(); e.stopPropagation(); openModal();
-      });
-      close3D.addEventListener('click', function (e) {
-        e.preventDefault(); e.stopPropagation(); closeModal();
-      });
-      modal.addEventListener('click', function(e) {
-        if (e.target === modal) closeModal();
-      });
-      document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape' && (modal.classList.contains('is-open') || modal.style.display === 'flex')) closeModal();
-      });
-    })();
-  </script>
+    });
+  })();
+</script>
 
   <audio id="amlaAudio" src="amla_benefits.mp3" loop preload="auto"></audio>
 </body>

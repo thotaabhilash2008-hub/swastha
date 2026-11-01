@@ -422,7 +422,38 @@ footer p { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; colo
   .nutrition-bar { grid-template-columns: 1fr 1fr; }
   .content { padding: 0 18px 60px; }
 }
-</style>
+
+    .modal-audio-btn {
+      background: rgba(200, 164, 93, 0.18);
+      border: 1px solid rgba(200, 164, 93, 0.45);
+      color: #C8A45D;
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.25s ease;
+      outline: none;
+    }
+    .modal-audio-btn:hover {
+      background: rgba(200, 164, 93, 0.35);
+      border-color: #C8A45D;
+      color: #F5F0E4;
+      transform: translateY(-1px);
+    }
+    .modal-audio-btn.muted {
+      opacity: 0.65;
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.2);
+      color: #b0b0b0;
+    }
+    
+  </style>
 </head>
 <body>
 
@@ -763,11 +794,16 @@ footer p { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; colo
 
 <!-- MODAL -->
 <div id="viewerModal">
-  <div id="modal-topbar">
-    <span>3D Botanical Specimen — Bhringraj</span>
-    <button type="button" id="close3D" title="Close 3D View">✕</button>
-  </div>
-  <div class="modal-viewer-wrap">
+        <div id="modal-topbar">
+    <span>3D Botanical Specimen • Bhringraj</span>
+    <div style="display:flex; align-items:center; gap:12px;">
+      <button type="button" id="toggleAudioBtn" class="modal-audio-btn" aria-label="Toggle Narration Audio">
+        <span id="audioIcon">🔊</span>
+        <span id="audioLabel">Narration Playing</span>
+      </button>
+      <button type="button" id="close3D" title="Close 3D View">✕</button>
+    </div>
+  </div><div class="modal-viewer-wrap">
     <div id="modelLoadingBadge" class="model-loading-overlay">
       <div class="model-loading-card">
         <div class="model-loading-spinner">✦</div>
@@ -784,22 +820,59 @@ footer p { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; colo
 
 <script>
   (function() {
-    var open3D  = document.getElementById('open3D');
-    var close3D = document.getElementById('close3D');
-    var modal   = document.getElementById('viewerModal');
-    var viewer  = document.getElementById('plantModelViewer');
-    var badge   = document.getElementById('modelLoadingBadge');
-    var pBar    = document.getElementById('modelProgressBar');
+    var open3D    = document.getElementById('open3D');
+    var close3D   = document.getElementById('close3D');
+    var modal     = document.getElementById('viewerModal');
+    var viewer    = document.getElementById('plantModelViewer');
+    var badge     = document.getElementById('modelLoadingBadge');
+    var pBar      = document.getElementById('modelProgressBar');
+    var audioBtn  = document.getElementById('toggleAudioBtn');
+    var audioIcon = document.getElementById('audioIcon');
+    var audioLbl  = document.getElementById('audioLabel');
+    var _aud      = document.getElementById('bhringrajAudio');
+
     if (!open3D || !close3D || !modal) return;
 
-    var _aud = document.getElementById('bhringrajAudio');
     var isModelLoaded = false;
+    var userRequestedMute = false;
 
-    function playAudioIfOpen() {
-      if (_aud && (modal.classList.contains('is-open') || modal.style.display === 'flex')) {
-        _aud.currentTime = 0;
-        var p = _aud.play();
-        if (p !== undefined) { p.catch(function(e) { console.log('Audio autoplay prevented:', e); }); }
+    function updateAudioUI(playing) {
+      if (!audioBtn) return;
+      if (playing) {
+        audioBtn.classList.remove('muted');
+        if (audioIcon) audioIcon.textContent = '🔊';
+        if (audioLbl) audioLbl.textContent = 'Narration Playing';
+      } else {
+        audioBtn.classList.add('muted');
+        if (audioIcon) audioIcon.textContent = '🔇';
+        if (audioLbl) audioLbl.textContent = 'Narration Paused';
+      }
+    }
+
+    function playAudioNow() {
+      if (!_aud || userRequestedMute) return;
+      _aud.currentTime = _aud.currentTime || 0;
+      var p = _aud.play();
+      if (p !== undefined) {
+        p.then(function() {
+          updateAudioUI(true);
+        }).catch(function(err) {
+          console.warn('Audio playback deferred:', err);
+          updateAudioUI(false);
+        });
+      }
+    }
+
+    function toggleAudio(e) {
+      if (e) { e.preventDefault(); e.stopPropagation(); }
+      if (!_aud) return;
+      if (_aud.paused) {
+        userRequestedMute = false;
+        playAudioNow();
+      } else {
+        userRequestedMute = true;
+        _aud.pause();
+        updateAudioUI(false);
       }
     }
 
@@ -807,13 +880,14 @@ footer p { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; colo
       isModelLoaded = true;
       if (badge) badge.classList.add('is-hidden');
       if (pBar) pBar.style.width = '100%';
-      playAudioIfOpen();
+      if (!userRequestedMute && _aud && _aud.paused && modal.classList.contains('is-open')) {
+        playAudioNow();
+      }
     }
 
     if (viewer) {
       if (viewer.loaded) {
-        isModelLoaded = true;
-        if (badge) badge.classList.add('is-hidden');
+        onModelLoaded();
       } else {
         viewer.addEventListener('load', onModelLoaded);
         viewer.addEventListener('progress', function(evt) {
@@ -830,11 +904,13 @@ footer p { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; colo
       modal.style.display = 'flex';
       document.body.style.overflow = 'hidden';
 
+      // Crucial: Start audio immediately during the user's click gesture so browser allows playback
+      userRequestedMute = false;
+      playAudioNow();
+
       if (isModelLoaded || (viewer && viewer.loaded)) {
         if (badge) badge.classList.add('is-hidden');
-        playAudioIfOpen();
       } else {
-        if (_aud) { _aud.pause(); _aud.currentTime = 0; }
         if (badge) badge.classList.remove('is-hidden');
       }
     }
@@ -847,6 +923,7 @@ footer p { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; colo
         _aud.pause();
         _aud.currentTime = 0;
       }
+      updateAudioUI(false);
     }
 
     open3D.addEventListener('click', function(e) {
@@ -855,11 +932,23 @@ footer p { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; colo
     close3D.addEventListener('click', function(e) {
       e.preventDefault(); e.stopPropagation(); closeModal();
     });
+    if (audioBtn) {
+      audioBtn.addEventListener('click', toggleAudio);
+    }
+
     modal.addEventListener('click', function(e) {
-      if (e.target === modal) closeModal();
+      if (e.target === modal) {
+        closeModal();
+      } else if (!userRequestedMute && _aud && _aud.paused) {
+        // If initial autoplay was blocked by browser, clicking anywhere inside resumes audio
+        playAudioNow();
+      }
     });
+
     document.addEventListener('keydown', function(e) {
-      if (e.key === 'Escape' && (modal.classList.contains('is-open') || modal.style.display === 'flex')) closeModal();
+      if (e.key === 'Escape' && (modal.classList.contains('is-open') || modal.style.display === 'flex')) {
+        closeModal();
+      }
     });
   })();
 </script>
