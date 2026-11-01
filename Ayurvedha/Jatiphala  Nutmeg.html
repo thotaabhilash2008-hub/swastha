@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jatiphala | Swastha</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+  <style>
+    #open3D {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      padding: 10px 18px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: var(--forest);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      z-index: 1000;
+      transition: .3s;
+    }
+    #open3D:hover {
+      background: var(--gold);
+      color: var(--deep);
+    }
+    #viewerModal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+    }
+    #modal-topbar {
+      flex-shrink: 0;
+      height: 58px;
+      background: #111111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px 0 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      z-index: 99999;
+    }
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 4.5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.72);
+      user-select: none;
+    }
+    #close3D {
+      width: 38px;
+      height: 38px;
+      font-size: 15px;
+      font-weight: 300;
+      background: transparent;
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background .2s, color .2s, transform .22s;
+      outline: none;
+      flex-shrink: 0;
+    }
+    #close3D:hover {
+      background: #ffffff;
+      color: #111111;
+      border-color: #ffffff;
+      transform: rotate(90deg);
+    }
+    #viewerModal model-viewer {
+      flex: 1;
+      width: 100%;
+      display: block;
+      background: #ffffff;
+    }
+
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+    * { margin:0; padding:0; box-sizing:border-box }
+    html { scroll-behavior:smooth }
+    body {
+      font-family:'Jost',sans-serif;
+      background:var(--cream);
+      color:var(--ink);
+      min-height:100vh;
+      overflow-x:hidden;
+      position:relative;
+    }
+    body::before {
+      content:'';
+      position:fixed;
+      inset:0;
+      background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity:.03;
+      pointer-events:none;
+      z-index:100;
+    }
+
+    /* Background orbs */
+    .bg-circle { position:fixed; border-radius:50%; pointer-events:none; z-index:0 }
+    .bg-circle-1 { width:700px; height:700px; background:radial-gradient(circle,rgba(169,88,30,.08) 0%,transparent 70%); top:-200px; right:-150px }
+    .bg-circle-2 { width:500px; height:500px; background:radial-gradient(circle,rgba(201,124,42,.07) 0%,transparent 70%); bottom:-100px; left:-100px }
+
+    /* Botanical SVG corners */
+    .botanical-svg { position:fixed; pointer-events:none; z-index:1; opacity:.09 }
+    .botanical-tl { top:-10px; left:-10px; width:240px }
+    .botanical-br { bottom:-10px; right:-10px; width:200px; transform:rotate(180deg) }
+
+    /* Hero */
+    .hero {
+      position:relative; z-index:10;
+      padding:54px 40px 0;
+      text-align:center;
+      opacity:0;
+      animation:fadeUp .9s ease .1s forwards;
+    }
+    .back-link {
+      display:inline-flex; align-items:center; gap:8px;
+      font-size:11px; letter-spacing:3px; text-transform:uppercase;
+      color:var(--sage); text-decoration:none; margin-bottom:36px;
+      transition:color .3s;
+    }
+    .back-link:hover { color:var(--gold) }
+    .logo-rule { display:flex; align-items:center; justify-content:center; gap:20px; margin-bottom:14px }
+    .logo-rule span { display:block; height:1px; width:70px; background:linear-gradient(to right,transparent,var(--gold)) }
+    .logo-rule span:last-child { background:linear-gradient(to left,transparent,var(--gold)) }
+    .logo-ornament { font-size:13px; color:var(--gold) }
+    .hero-title {
+      font-family:'Cormorant Garamond',serif;
+      font-size:clamp(60px,11vw,108px);
+      font-weight:300; letter-spacing:8px; line-height:1;
+      color:var(--deep);
+    }
+    .hero-subtitle {
+      font-family:'Cormorant Garamond',serif;
+      font-size:18px; font-style:italic; font-weight:300;
+      color:var(--earth); letter-spacing:2px; margin-top:8px;
+    }
+    .hero-sci {
+      font-size:11px; font-weight:200; letter-spacing:5px;
+      color:var(--sage); margin-top:6px;
+    }
+
+    /* Hero photos */
+    .hero-photos {
+      position:relative; z-index:10;
+      display:grid; grid-template-columns:1fr 1fr;
+      gap:2px; max-width:900px;
+      margin:40px auto 0;
+      opacity:0; animation:fadeUp .9s ease .35s forwards;
+    }
+    .hero-photos img {
+      width:100%; height:380px;
+      object-fit:cover; object-position:center; display:block;
+      background:var(--parchment);
+    }
+    .photo-caption {
+      text-align:center;
+      font-family:'Cormorant Garamond',serif;
+      font-size:12px; font-style:italic;
+      color:var(--sage); letter-spacing:1px;
+      padding:10px 0 0; max-width:900px;
+      margin:0 auto;
+      position:relative; z-index:10;
+      opacity:0; animation:fadeUp .9s ease .5s forwards;
+    }
+
+    /* Divider */
+    .divider {
+      display:flex; align-items:center; justify-content:center;
+      gap:16px; margin:50px auto;
+      max-width:600px;
+      opacity:0; animation:fadeUp .9s ease .55s forwards;
+      position:relative; z-index:10;
+    }
+    .divider-line { height:1px; width:120px; background:linear-gradient(to right,transparent,var(--sage)) }
+    .divider-line:last-child { background:linear-gradient(to left,transparent,var(--sage)) }
+    .divider-leaf { color:var(--spice); font-size:18px }
+
+    /* Content */
+    .content {
+      position:relative; z-index:10;
+      max-width:860px; margin:0 auto;
+      padding:0 30px 80px;
+    }
+    .intro-text {
+      font-family:'Cormorant Garamond',serif;
+      font-size:20px; font-weight:300; line-height:1.75;
+      color:var(--ink); text-align:center;
+      max-width:700px; margin:0 auto 60px;
+      opacity:0; animation:fadeUp .9s ease .6s forwards;
+    }
+    .intro-text em { color:var(--spice); font-style:italic }
+
+    /* Sections */
+    .section { margin-bottom:60px; opacity:0; animation:fadeUp .9s ease forwards }
+    .section:nth-child(1){animation-delay:.65s}
+    .section:nth-child(2){animation-delay:.75s}
+    .section:nth-child(3){animation-delay:.85s}
+    .section:nth-child(4){animation-delay:.95s}
+    .section:nth-child(5){animation-delay:1.05s}
+    .section:nth-child(6){animation-delay:1.15s}
+    .section:nth-child(7){animation-delay:1.25s}
+
+    .section-header { display:flex; align-items:center; gap:14px; margin-bottom:20px }
+    .section-num { font-family:'Cormorant Garamond',serif; font-size:11px; letter-spacing:4px; color:var(--gold) }
+    .section-title { font-family:'Cormorant Garamond',serif; font-size:28px; font-weight:400; color:var(--deep); letter-spacing:1px }
+    .section-rule { height:1px; flex:1; background:linear-gradient(to right,var(--gold),transparent) }
+    .section-body { font-size:13px; font-weight:300; line-height:1.9; color:var(--ink); margin-bottom:24px }
+
+    /* Tables */
+    .data-table { width:100%; border-collapse:collapse; margin:16px 0 8px; font-size:12px }
+    .data-table thead tr { background:var(--deep); color:var(--warm); font-size:10px; letter-spacing:3px; text-transform:uppercase }
+    .data-table thead th { padding:12px 14px; text-align:left; font-weight:400 }
+    .data-table tbody tr:nth-child(even){ background:var(--parchment) }
+    .data-table tbody tr:nth-child(odd){ background:var(--cream) }
+    .data-table tbody tr:hover { background:#e8d5b5 }
+    .data-table tbody td { padding:10px 14px; color:var(--ink); border-bottom:1px solid rgba(122,74,30,.08) }
+    .data-table tbody td:first-child { font-weight:400; color:var(--deep); width:28% }
+
+    .dosha-table { width:100%; border-collapse:collapse; margin:16px 0; font-size:12px }
+    .dosha-table thead tr { background:var(--spice); color:var(--cream) }
+    .dosha-table thead th { padding:12px 14px; text-align:left; font-weight:400; letter-spacing:2px; font-size:10px; text-transform:uppercase }
+    .dosha-table tbody tr:nth-child(even){ background:var(--parchment) }
+    .dosha-table tbody tr:nth-child(odd){ background:var(--cream) }
+    .dosha-table tbody td { padding:11px 14px; color:var(--ink); border-bottom:1px solid rgba(122,74,30,.08) }
+    .dosha-table tbody td:first-child { font-weight:400; color:var(--spice); width:18% }
+    .dosha-table tbody td:nth-child(2){ color:var(--earth); width:20% }
+
+    .consume-table { width:100%; border-collapse:collapse; margin:16px 0; font-size:12px }
+    .consume-table thead tr { background:var(--earth); color:var(--cream) }
+    .consume-table thead th { padding:12px 14px; text-align:left; font-weight:400; letter-spacing:2px; font-size:10px; text-transform:uppercase }
+    .consume-table tbody tr:nth-child(even){ background:var(--parchment) }
+    .consume-table tbody tr:nth-child(odd){ background:var(--cream) }
+    .consume-table tbody td { padding:11px 14px; color:var(--ink); border-bottom:1px solid rgba(122,74,30,.08) }
+    .consume-table tbody td:first-child { font-weight:400; color:var(--earth); width:22% }
+
+    /* Benefits grid */
+    .benefits-grid {
+      display:grid; grid-template-columns:1fr 1fr;
+      gap:1px; background:rgba(122,74,30,.12);
+      border:1px solid rgba(122,74,30,.12); margin:8px 0;
+    }
+    .benefit-card {
+      background:var(--cream); padding:24px 22px;
+      transition:background .3s; position:relative; overflow:hidden;
+    }
+    .benefit-card:hover { background:#eddfc4 }
+    .benefit-card::before {
+      content:''; position:absolute; bottom:0; left:0;
+      width:0; height:2px; background:var(--gold); transition:width .4s;
+    }
+    .benefit-card:hover::before { width:100% }
+    .benefit-title { font-family:'Cormorant Garamond',serif; font-size:16px; font-weight:600; color:var(--spice); margin-bottom:8px }
+    .benefit-desc { font-size:11.5px; font-weight:300; line-height:1.75; color:var(--ink); opacity:.85 }
+
+    /* Precaution list */
+    .precaution-list { list-style:none; margin:8px 0 }
+    .precaution-list li {
+      display:flex; gap:12px; align-items:flex-start;
+      padding:10px 14px; font-size:12px; font-weight:300;
+      line-height:1.7; color:var(--ink);
+      border-bottom:1px solid rgba(122,74,30,.08);
+    }
+    .precaution-list li:last-child { border-bottom:none }
+    .precaution-list li::before { content:'▸'; color:var(--gold); flex-shrink:0; margin-top:1px }
+
+    /* Nutrition bar */
+    .nutrition-bar {
+      display:grid; grid-template-columns:repeat(4,1fr);
+      gap:1px; background:rgba(122,74,30,.12);
+      border:1px solid rgba(122,74,30,.12); margin:20px 0;
+    }
+    .nutrition-cell {
+      background:var(--cream); padding:22px 16px;
+      text-align:center; transition:background .3s;
+    }
+    .nutrition-cell:hover { background:var(--parchment) }
+    .nutrition-num { font-family:'Cormorant Garamond',serif; font-size:36px; font-weight:300; color:var(--spice); line-height:1; margin-bottom:4px }
+    .nutrition-unit { font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--gold); font-weight:300 }
+    .nutrition-label { font-size:11px; font-weight:300; color:var(--ink); margin-top:5px }
+
+    /* Sources */
+    .sources { border-top:1px solid rgba(122,74,30,.15); padding-top:24px; margin-top:20px }
+    .sources-title { font-size:10px; letter-spacing:4px; text-transform:uppercase; color:var(--sage); margin-bottom:12px; font-weight:300 }
+    .sources ul { list-style:none }
+    .sources ul li { font-family:'Cormorant Garamond',serif; font-size:13px; font-style:italic; color:var(--earth); padding:5px 0; border-bottom:1px solid rgba(122,74,30,.06) }
+    .sources ul li::before { content:'· '; color:var(--sage) }
+
+    footer {
+      position:relative; z-index:10; text-align:center;
+      padding:24px 20px 44px;
+      border-top:1px solid rgba(122,74,30,.12);
+      max-width:860px; margin:0 auto;
+    }
+    footer p { font-size:11px; letter-spacing:4px; text-transform:uppercase; color:var(--sage); font-weight:300 }
+
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(28px) }
+      to   { opacity:1; transform:translateY(0) }
+    }
+    @media(max-width:700px){
+      .hero-photos { grid-template-columns:1fr }
+      .hero-photos img { height:260px }
+      .benefits-grid { grid-template-columns:1fr }
+      .nutrition-bar { grid-template-columns:1fr 1fr }
+      .content { padding:0 18px 60px }
+    }
+  </style>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+</head>
+<body>
+  <button type="button" id="open3D">View in 3D</button>
+
+
+  <div class="bg-circle bg-circle-1"></div>
+  <div class="bg-circle bg-circle-2"></div>
+
+  <!-- Botanical corner SVGs (spice-branch motif) -->
+  <svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 290 Q 70 220 120 170 Q 170 120 240 40" stroke="#a0522d" stroke-width="1.5" fill="none"/>
+    <ellipse cx="90" cy="215" rx="22" ry="12" fill="#a0522d" opacity="0.6" transform="rotate(-35 90 215)"/>
+    <ellipse cx="130" cy="175" rx="20" ry="11" fill="#c97c2a" opacity="0.5" transform="rotate(-50 130 175)"/>
+    <ellipse cx="170" cy="135" rx="18" ry="10" fill="#a0522d" opacity="0.7" transform="rotate(-65 170 135)"/>
+    <circle cx="200" cy="105" r="9" fill="#c97c2a" opacity="0.5"/>
+    <circle cx="155" cy="150" r="6" fill="#7a4a1e" opacity="0.6"/>
+  </svg>
+  <svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 290 Q 70 220 120 170 Q 170 120 240 40" stroke="#a0522d" stroke-width="1.5" fill="none"/>
+    <ellipse cx="90" cy="215" rx="22" ry="12" fill="#a0522d" opacity="0.6" transform="rotate(-35 90 215)"/>
+    <ellipse cx="130" cy="175" rx="20" ry="11" fill="#c97c2a" opacity="0.5" transform="rotate(-50 130 175)"/>
+    <circle cx="155" cy="150" r="6" fill="#7a4a1e" opacity="0.6"/>
+  </svg>
+
+  <div class="hero">
+    <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+    <div class="logo-rule"><span></span><div class="logo-ornament">✦</div><span></span></div>
+    <div class="hero-title">Jatiphala</div>
+    <div class="hero-subtitle">Nutmeg — The Seed of Paradise</div>
+    <div class="hero-sci">Myristica fragrans Houtt. &nbsp;·&nbsp; Family: Myristicaceae</div>
+  </div>
+
+  <div class="hero-photos">
+    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/6/68/A_coffee_tree_%28Coffea_species%29%2C_nutmeg_plant_%28Myristica_frag_Wellcome_V0044736.jpg/1280px-A_coffee_tree_%28Coffea_species%29%2C_nutmeg_plant_%28Myristica_frag_Wellcome_V0044736.jpg" alt="Nutmeg fruit split open revealing mace and seed"
+      onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/6/68/A_coffee_tree_%28Coffea_species%29%2C_nutmeg_plant_%28Myristica_frag_Wellcome_V0044736.jpg/1280px-A_coffee_tree_%28Coffea_species%29%2C_nutmeg_plant_%28Myristica_frag_Wellcome_V0044736.jpg" alt="Dried nutmeg seeds and mace on dark background"
+      onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+  </div>
+  <p class="photo-caption">Fig. 1 — Fresh Myristica fragrans fruit split to reveal the crimson mace (Javitri) encasing the seed &nbsp;·&nbsp; Fig. 2 — Dried Jatiphala seeds alongside separated mace blades</p>
+
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-leaf">❧</div>
+    <div class="divider-line"></div>
+  </div>
+
+  <div class="content">
+    <p class="intro-text">Recorded in Sanskrit texts as <em>Jatiphala</em> — "the fruit of Jati" — and lauded in the <em>Ashtanga Hridayam</em> as a potent digestive, nervine, and aphrodisiac, Nutmeg traversed the ancient spice routes from the Banda Islands to reach Ayurvedic compounders, Arabian physicians, and European apothecaries alike. Both the seed (<em>Jatiphala</em>) and its crimson aril (<em>Javitri</em> / mace) are used medicinally, each carrying subtly distinct therapeutic properties.</p>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">01</span><h2 class="section-title">Botanical Profile</h2><div class="section-rule"></div></div>
+      <p class="section-body">Myristica fragrans is a tropical evergreen tree of the Myristicaceae family, native to the Banda Islands of the Maluku archipelago in Indonesia — the original "Spice Islands." It grows to 10–20 m, bearing dark green, aromatic leaves and small, pale-yellow dioecious flowers. The mature fruit — a yellow, fleshy drupe resembling a peach — splits open at ripeness to reveal a brilliant crimson, net-like aril (mace/Javitri) embracing a dark brown inner seed: the nutmeg (Jatiphala).</p>
+      <p class="section-body">Introduced to South India, Sri Lanka, and Kerala early through Arab and later Portuguese trade, <em>M. fragrans</em> is now cultivated across the humid tropics including Malabar, Kerala, Tamil Nadu, and Assam. The tree is long-lived (up to 60 years of productive fruiting), and a single tree can yield 1,500–2,000 fruits annually. The seed kernel, once dried and separated from its shell, is the primary spice and medicinal article.</p>
+      <table class="data-table">
+        <thead><tr><th>PROPERTY</th><th>Detail</th></tr></thead>
+        <tbody>
+          <tr><td>Family</td><td>Myristicaceae</td></tr>
+          <tr><td>Botanical Name</td><td>Myristica fragrans Houtt.</td></tr>
+          <tr><td>Sanskrit Names</td><td>Jatiphala, Jatishasya, Malaputraka, Jatishreshtha, Phalanama</td></tr>
+          <tr><td>Common Names</td><td>Nutmeg (seed), Mace (aril / Javitri), Jaiphal (Hindi/Urdu)</td></tr>
+          <tr><td>Regional Names</td><td>Jathikkai (Tamil), Jajikaya (Telugu), Jatikka (Malayalam), Jaiphal (Marathi/Bengali)</td></tr>
+          <tr><td>Origin</td><td>Banda Islands, Maluku, Indonesia; cultivated in Kerala, Tamil Nadu</td></tr>
+          <tr><td>Plant Type</td><td>Tropical evergreen tree (10–20 m), dioecious</td></tr>
+          <tr><td>Medicinal Parts</td><td>Seed kernel (Jatiphala), Aril / mace (Javitri), Essential oil, Seed butter</td></tr>
+          <tr><td>Taste Profile</td><td>Katu (pungent), Tikta (bitter), Kashaya (astringent)</td></tr>
+          <tr><td>Major Constituents</td><td>Essential oil 5–15%, fixed oil (Myristica butter) 25–40%, starch, proteins</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">02</span><h2 class="section-title">Phytochemistry</h2><div class="section-rule"></div></div>
+      <p class="section-body">The essential oil of nutmeg (5–15% of seed weight) is dominated by monoterpene hydrocarbons (sabinene, α-pinene, β-pinene, limonene) alongside arylpropanoids — myristicin, elemicin, safrole, and eugenol — which account for most pharmacological activity. The fixed oil (Myristica butter, 25–40%), rich in trimyristin, constitutes the basis of the seed's emollient and digestive properties. Lignan neolignans and phenylpropanoids provide antioxidant and neuroprotective effects.</p>
+      <p class="section-body">Myristicin — the most studied compound — is a potent monoamine oxidase inhibitor (MAOI) and central nervous system active agent responsible for both the therapeutic nervine properties and the hallucinogenic toxicity at high doses. At culinary doses it is safe; at 5+ g doses, myristicin-induced intoxication is well documented. This dual nature makes precise dosing critically important in therapeutic use.</p>
+      <div class="nutrition-bar">
+        <div class="nutrition-cell">
+          <div class="nutrition-num">5–15%</div>
+          <div class="nutrition-unit">essential oil</div>
+          <div class="nutrition-label">Volatile oil yield</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">25–40%</div>
+          <div class="nutrition-unit">fixed oil</div>
+          <div class="nutrition-label">Myristica butter</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">~4%</div>
+          <div class="nutrition-unit">myristicin</div>
+          <div class="nutrition-label">Key arylpropanoid</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">60+</div>
+          <div class="nutrition-unit">compounds</div>
+          <div class="nutrition-label">Identified in seed oil</div>
+        </div>
+      </div>
+      <table class="data-table">
+        <thead><tr><th>Compound</th><th>Category</th><th>Primary Action</th></tr></thead>
+        <tbody>
+          <tr><td>Myristicin</td><td>Arylpropanoid (phenylpropene)</td><td>MAOI, CNS-active, neuroprotective, insecticidal; hallucinogenic at high doses</td></tr>
+          <tr><td>Elemicin</td><td>Arylpropanoid</td><td>Psychoactive, antimicrobial, anti-inflammatory</td></tr>
+          <tr><td>Eugenol</td><td>Phenylpropanoid</td><td>Analgesic, anti-inflammatory, antifungal, dental applications</td></tr>
+          <tr><td>Safrole</td><td>Arylpropanoid</td><td>Insecticidal, flavoring; known carcinogen at high doses</td></tr>
+          <tr><td>Sabinene &amp; α/β-Pinene</td><td>Monoterpene hydrocarbons</td><td>Antimicrobial, antioxidant, respiratory relaxant</td></tr>
+          <tr><td>Limonene</td><td>Monoterpene</td><td>Antioxidant, anxiolytic, anti-tumour support</td></tr>
+          <tr><td>Trimyristin</td><td>Triglyceride (fixed oil)</td><td>Emollient, digestive, source of myristic acid</td></tr>
+          <tr><td>Malabaricone C</td><td>Diarylnonanoid lignan</td><td>Strong antioxidant, anti-inflammatory, antimicrobial</td></tr>
+          <tr><td>Erythro-Austrobailignan-5</td><td>Neolignan</td><td>Hepatoprotective, antioxidant</td></tr>
+          <tr><td>Macelignan</td><td>Lignan</td><td>Neuroprotective (Alzheimer's models), antibacterial</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">03</span><h2 class="section-title">Ayurvedic Significance</h2><div class="section-rule"></div></div>
+      <p class="section-body">Jatiphala is cited in the <em>Ashtanga Hridayam</em>, <em>Charaka Samhita</em>, and <em>Sushruta Samhita</em>, classified as a <em>Deepaniya</em> (digestive stimulant), <em>Grahi</em> (absorbent, anti-diarrheal), and <em>Vrishya</em> (aphrodisiac). Bhavaprakasha Nighantu places it in <em>Pushpadi Varga</em> and describes it as "guru, snigdha, tikshna" — heavy, unctuous, and sharp — with heating potency and a pungent post-digestive effect.</p>
+      <p class="section-body">Classical shloka from Bhavaprakasha: <em>"Jatiphalam guru snigdham tikshnam vatakapha nashana, grahi vrishyam mukhaprasadakam shoolaharam tatha"</em> — Jatiphala is heavy, unctuous, sharp; destroys Vata and Kapha; absorptive; aphrodisiac; beautifying for the face; and relieves colic pain. It is also a key ingredient in classical formulations including <em>Jatiphaladi Churna</em>, <em>Sitopaladi Churna</em> (in some traditions), and <em>Mahanarayan Taila</em>.</p>
+      <table class="dosha-table">
+        <thead><tr><th>Dosha</th><th>Effect</th><th>Mechanism &amp; Notes</th></tr></thead>
+        <tbody>
+          <tr><td>Vata ↓</td><td>Pacifying</td><td>Ushna virya (hot potency), snigdha (unctuous), and guru (heavy) qualities ground and warm Vata; indicated in IBS with predominant Vata, flatulence, abdominal colic, and neurological Vata disorders such as insomnia</td></tr>
+          <tr><td>Kapha ↓</td><td>Pacifying</td><td>Tikshna (sharp/penetrating) and ushna guna reduce Kapha accumulation; indicated in respiratory congestion, nausea, and Kapha-type obesity and lethargy</td></tr>
+          <tr><td>Pitta ↑</td><td>Slightly aggravating</td><td>Hot potency and pungent post-digestive effect can mildly increase Pitta; use cautiously in excess Pitta, inflammatory conditions, hyperacidity, and ulcers</td></tr>
+        </tbody>
+      </table>
+      <p class="section-body"><strong>Rasa:</strong> Katu, Tikta, Kashaya &nbsp;·&nbsp; <strong>Guna:</strong> Guru (heavy), Snigdha (unctuous), Tikshna (sharp) &nbsp;·&nbsp; <strong>Virya:</strong> Ushna (hot) &nbsp;·&nbsp; <strong>Vipaka:</strong> Katu (pungent) &nbsp;·&nbsp; <strong>Karma:</strong> Deepaniya, Grahi, Vrishya, Shoolahara</p>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">04</span><h2 class="section-title">Key Health Benefits</h2><div class="section-rule"></div></div>
+      <p class="section-body">Modern pharmacology has validated many of Jatiphala's classical applications — confirming its digestive, antimicrobial, analgesic, neuroprotective, and aphrodisiac properties through <em>in vitro</em>, animal, and limited clinical studies. Its complex essential oil matrix underpins most activity.</p>
+      <div class="benefits-grid">
+        <div class="benefit-card">
+          <div class="benefit-title">Digestive Stimulant &amp; Carminative</div>
+          <div class="benefit-desc">Nutmeg's essential oil stimulates gastric and intestinal secretion, enhances peristalsis, and relieves flatulence and bloating. As a classical Deepaniya drug it rekindles Agni (digestive fire) in conditions of sluggish digestion, indigestion, and loss of appetite.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Anti-diarrheal (Grahi)</div>
+          <div class="benefit-desc">One of its most prized classical properties: nutmeg's astringent tannins and fixed oil exert an absorbent, binding effect on intestinal contents. Widely used in Ayurveda for non-infective diarrhea, IBS with loose stools, and chronic dysentery. Traditional formulation includes a pinch of Jatiphala powder with buttermilk.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Nervine Sedative &amp; Sleep Aid</div>
+          <div class="benefit-desc">Myristicin's MAOI activity and CNS-modulating effect support its classical use as a sedative and sleep-promoter. A traditional remedy of warm milk with a pinch (~0.25 g) of nutmeg powder at bedtime is well-documented for insomnia, anxiety, and nervous restlessness in Ayurveda and Unani medicine alike.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Analgesic &amp; Anti-inflammatory</div>
+          <div class="benefit-desc">Eugenol and myristicin inhibit COX-2 and prostaglandin synthesis. Topically, nutmeg oil or Myristica butter is applied for joint pain, rheumatism, toothache, and headache. Studies confirm significant analgesic activity of methanol extracts in writhing and hot-plate tests in animal models.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Aphrodisiac &amp; Reproductive Tonic</div>
+          <div class="benefit-desc">Classified as <em>Vrishya</em> (aphrodisiac) in Ayurveda, Jatiphala is an ingredient in <em>Vrishya Yoga</em> formulations for low libido and sexual debility. Animal studies confirm significant improvement in sexual behaviour indices at sub-toxic doses, attributed to dopaminergic stimulation by myristicin and elemicin.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Neuroprotective Potential</div>
+          <div class="benefit-desc">Macelignan, a major lignan, showed significant inhibition of acetylcholinesterase and reduction of amyloid-beta accumulation in Alzheimer's models. Myristicin itself demonstrated protection against hydrogen peroxide-induced neuronal damage and enhanced nerve growth factor (NGF) activity in laboratory studies.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Antimicrobial &amp; Antifungal</div>
+          <div class="benefit-desc">Essential oil components — eugenol, sabinene, α-pinene, and myristicin — demonstrate significant activity against common oral pathogens (Streptococcus mutans), Candida species, H. pylori, E. coli, and Staphylococcus. Dental applications (clove-nutmeg combinations) exploit this synergy.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Skin &amp; Complexion (Mukhaprasadaka)</div>
+          <div class="benefit-desc">Classical texts describe Jatiphala as <em>mukhaprasadakam</em> — face-brightening. Topical paste of nutmeg powder with honey or rose water is a traditional face treatment for acne, blemishes, dark spots, and dull complexion, supported by its antimicrobial, anti-inflammatory, and mild exfoliating properties.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">05</span><h2 class="section-title">How to Consume Jatiphala</h2><div class="section-rule"></div></div>
+      <p class="section-body">Therapeutic use of Jatiphala requires careful attention to dose — this is one Ayurvedic herb where the margin between therapeutic and toxic dose is meaningful. Culinary doses (a pinch, ~0.1–0.25 g) are entirely safe and beneficial. Medicinal doses (0.5–1 g) should be taken under practitioner guidance. Doses above 5 g can cause acute toxicity. The mantra in classical texts is always: <em>alpadoshe sadagunah</em> — in small doses, always beneficial.</p>
+      <table class="consume-table">
+        <thead><tr><th>Form</th><th>Preparation</th><th>Dosage</th><th>Best Use</th></tr></thead>
+        <tbody>
+          <tr><td>Powder (Churna)</td><td>Freshly grated or finely ground dried kernel; with warm water or honey</td><td>0.25–0.5 g, 1–2× daily</td><td>Indigestion, flatulence, diarrhea</td></tr>
+          <tr><td>Warm Milk Formula</td><td>Pinch (~0.1–0.25 g) in warm full-fat milk; optionally with cardamom and saffron</td><td>Once nightly before bed</td><td>Insomnia, anxiety, nervous weakness</td></tr>
+          <tr><td>Honey Paste (Internal)</td><td>Powder mixed with raw honey to a paste</td><td>0.25–0.5 g powder equivalent</td><td>Nausea, vomiting in children (very small dose), colic</td></tr>
+          <tr><td>Jatiphaladi Churna</td><td>Classical compound formulation; as directed by Vaidya</td><td>Per practitioner direction</td><td>IBS, malabsorption, chronic diarrhea</td></tr>
+          <tr><td>Nutmeg Oil (Topical)</td><td>Diluted in carrier oil (1–2%); or Myristica butter directly</td><td>Apply to affected area 2× daily</td><td>Joint pain, muscle stiffness, toothache</td></tr>
+          <tr><td>Face Paste (Topical)</td><td>Powder + raw honey or rose water; apply 15–20 min, rinse</td><td>2–3× weekly</td><td>Acne, blemishes, dull complexion</td></tr>
+          <tr><td>Decoction (Kwatha)</td><td>Boil small pieces in milk or water; strain and cool</td><td>30–50 ml, physician-directed</td><td>Digestive debility, Vata disorders</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">06</span><h2 class="section-title">Safety &amp; Precautions</h2><div class="section-rule"></div></div>
+      <p class="section-body">At culinary doses nutmeg is universally safe and beneficial. However, Jatiphala contains myristicin and elemicin — psychoactive compounds that cause acute toxicity at doses of 5 g or above. Classical Ayurveda has always treated it as a potent herb requiring precise dosing; the modern understanding of its pharmacotoxicology fully validates this caution.</p>
+      <ul class="precaution-list">
+        <li><strong>Dose threshold:</strong> Never exceed 1 g in a single medicinal dose without practitioner supervision. 5+ g can cause acute nutmeg intoxication — hallucinations, tachycardia, nausea, agitation, and dry mouth, lasting up to 24 hours.</li>
+        <li><strong>Pregnancy:</strong> Strictly contraindicated. Nutmeg is a classical <em>garbhasrava kara</em> (abortifacient) at medicinal doses — avoid all internal use during pregnancy.</li>
+        <li><strong>Breastfeeding:</strong> Avoid medicinal doses while breastfeeding; culinary spice use in food is generally considered safe.</li>
+        <li><strong>Children:</strong> Fatal outcomes from accidental ingestion have been reported in small children. Keep nutmeg secure; medicinal use in children requires specialist supervision and very small doses.</li>
+        <li><strong>MAO inhibitor interactions:</strong> Myristicin has documented MAOI activity. Avoid combining medicinal doses with pharmaceutical MAO inhibitors, SSRIs, or sympathomimetics — risk of serotonin syndrome.</li>
+        <li><strong>Liver &amp; kidney disease:</strong> Safrole, present in small amounts, is potentially hepatotoxic and nephrotoxic with prolonged high-dose use; avoid therapeutic doses in established hepatic or renal impairment.</li>
+        <li><strong>Pitta conditions:</strong> Hot potency can aggravate Pitta — avoid in active peptic ulcers, inflammatory bowel disease flares, acute gastritis, and bleeding disorders.</li>
+        <li><strong>Prolonged internal use:</strong> Continuous daily therapeutic doses beyond 4–6 weeks are not recommended without monitoring. Rotational use with breaks is the classical approach.</li>
+      </ul>
+    </div>
+
+    <div class="sources">
+      <div class="sources-title">References &amp; Sources</div>
+      <ul>
+        <li>Bhavaprakasha Nighantu — Pushpadi Varga; classical description of Jatiphala properties and indications</li>
+        <li>Ashtanga Hridayam, Sutrasthana — Dravyaguna classification; Deepaniya, Grahi, Vrishya karma</li>
+        <li>Tajuddin et al. — "An experimental study of sexual function improving effect of Myristica fragrans Houtt." — BMC Complementary Medicine and Therapies, 2005</li>
+        <li>Abourashed E, El-Alfy A — "Chemical diversity and pharmacological significance of the secondary metabolites of nutmeg (Myristica fragrans Houtt.)" — Phytochemistry Reviews, 2016</li>
+        <li>Muchtaridi et al. — "Biological activities of essential oils from the genus Myristica" — Pharmacognosy Reviews, 2010</li>
+        <li>Lee B et al. — "Neuroprotective effects of Macelignan isolated from Myristica fragrans against amyloid-beta peptide-induced apoptosis" — Journal of Pharmacy and Pharmacology, 2005</li>
+        <li>Janssen AM et al. — "Antimicrobial activity of essential oils: a 1976–1986 literature review" — Planta Medica, 1987</li>
+        <li>Hallström H, Thuvander A — "Toxicological evaluation of myristicin" — Natural Toxins, 1997</li>
+        <li>Sherry CJ et al. — "Evidence for the involvement of monoamine oxidase inhibition in the psychotropic effect of myristicin" — Biochemical Pharmacology, 1982</li>
+        <li>Sharma PV — Dravyaguna Vigyana, Vol. II — classical properties and formulations of Jatiphala</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer>
+    <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a qualified practitioner before therapeutic use</p>
+  </footer>
+
+
+  <div id="viewerModal">
+    <div id="modal-topbar">
+      <span>3D Model — Jatiphala</span>
+      <button type="button" id="close3D">✕</button>
+    </div>
+    <model-viewer src="jatiphala3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+  </div>
+  <script>
+    (function() {
+      var open3D = document.getElementById('open3D');
+      var close3D = document.getElementById('close3D');
+      var modal = document.getElementById('viewerModal');
+      if (!open3D || !close3D || !modal) return;
+      function openModal() {
+        
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+      function closeModal() {
+        
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+      open3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); openModal();
+      });
+      close3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); closeModal();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+      });
+    })();
+  </script>
+
+</body>
+</html>

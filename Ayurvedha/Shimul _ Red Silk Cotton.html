@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shimul / Red Silk Cotton | Swastha</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+  <style>
+    #open3D {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      padding: 10px 18px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: var(--forest);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      z-index: 1000;
+      transition: .3s;
+    }
+    #open3D:hover {
+      background: var(--gold);
+      color: var(--deep);
+    }
+    #viewerModal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+    }
+    #modal-topbar {
+      flex-shrink: 0;
+      height: 58px;
+      background: #111111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px 0 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      z-index: 99999;
+    }
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 4.5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.72);
+      user-select: none;
+    }
+    #close3D {
+      width: 38px;
+      height: 38px;
+      font-size: 15px;
+      font-weight: 300;
+      background: transparent;
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background .2s, color .2s, transform .22s;
+      outline: none;
+      flex-shrink: 0;
+    }
+    #close3D:hover {
+      background: #ffffff;
+      color: #111111;
+      border-color: #ffffff;
+      transform: rotate(90deg);
+    }
+    #viewerModal model-viewer {
+      flex: 1;
+      width: 100%;
+      display: block;
+      background: #ffffff;
+    }
+
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+    * { margin: 0; padding: 0; box-sizing: border-box }
+    html { scroll-behavior: smooth }
+    body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--ink); min-height: 100vh; overflow-x: hidden; position: relative }
+    body::before { content: ''; position: fixed; inset: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E"); opacity:.03; pointer-events:none; z-index:100 }
+
+    .bg-circle { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0 }
+    .bg-circle-1 { width: 700px; height: 700px; background: radial-gradient(circle, rgba(232,98,42,.1) 0%, transparent 70%); top: -200px; right: -150px }
+    .bg-circle-2 { width: 500px; height: 500px; background: radial-gradient(circle, rgba(176,58,26,.08) 0%, transparent 70%); bottom: -100px; left: -100px }
+
+    .botanical-svg { position: fixed; pointer-events: none; z-index: 1; opacity: .1 }
+    .botanical-tl { top: -10px; left: -10px; width: 320px }
+    .botanical-br { bottom: -10px; right: -10px; width: 280px; transform: rotate(180deg) }
+
+    .hero { position: relative; z-index: 10; padding: 54px 40px 0; text-align: center; opacity: 0; animation: fadeUp .9s ease .1s forwards }
+    .back-link { display: inline-flex; align-items: center; gap: 8px; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--sage); text-decoration: none; margin-bottom: 36px; transition: color .3s }
+    .back-link:hover { color: var(--gold) }
+    .logo-rule { display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 14px }
+    .logo-rule span { display: block; height: 1px; width: 70px; background: linear-gradient(to right, transparent, var(--gold)) }
+    .logo-rule span:last-child { background: linear-gradient(to left, transparent, var(--gold)) }
+    .logo-ornament { font-size: 13px; color: var(--gold) }
+    .hero-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(58px, 11vw, 106px); font-weight: 300; letter-spacing: 7px; line-height: 1; color: var(--deep) }
+    .hero-subtitle { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-style: italic; font-weight: 300; color: var(--earth); letter-spacing: 2px; margin-top: 8px }
+    .hero-sci { font-size: 11px; font-weight: 200; letter-spacing: 5px; color: var(--sage); margin-top: 6px }
+
+    .hero-photos { position: relative; z-index: 10; display: grid; grid-template-columns: 1fr 1fr; gap: 2px; max-width: 900px; margin: 40px auto 0; opacity: 0; animation: fadeUp .9s ease .35s forwards }
+    .hero-photos img { width: 100%; height: 380px; object-fit: cover; object-position: center; display: block; background: var(--parchment) }
+
+    .photo-caption { text-align: center; font-family: 'Cormorant Garamond', serif; font-size: 12px; font-style: italic; color: var(--sage); letter-spacing: 1px; padding: 10px 0 0; max-width: 900px; margin: 0 auto; position: relative; z-index: 10; opacity: 0; animation: fadeUp .9s ease .5s forwards }
+
+    .divider { display: flex; align-items: center; justify-content: center; gap: 16px; margin: 50px auto; max-width: 600px; opacity: 0; animation: fadeUp .9s ease .55s forwards; position: relative; z-index: 10 }
+    .divider-line { height: 1px; width: 120px; background: linear-gradient(to right, transparent, var(--sage)) }
+    .divider-line:last-child { background: linear-gradient(to left, transparent, var(--sage)) }
+    .divider-leaf { color: var(--gold); font-size: 18px }
+
+    .content { position: relative; z-index: 10; max-width: 860px; margin: 0 auto; padding: 0 30px 80px }
+    .intro-text { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 300; line-height: 1.75; color: var(--ink); text-align: center; max-width: 700px; margin: 0 auto 60px; opacity: 0; animation: fadeUp .9s ease .6s forwards }
+    .intro-text em { color: var(--forest); font-style: italic }
+
+    .section { margin-bottom: 60px; opacity: 0; animation: fadeUp .9s ease forwards }
+    .section:nth-child(1) { animation-delay: .65s } .section:nth-child(2) { animation-delay: .75s }
+    .section:nth-child(3) { animation-delay: .85s } .section:nth-child(4) { animation-delay: .95s }
+    .section:nth-child(5) { animation-delay: 1.05s } .section:nth-child(6) { animation-delay: 1.15s }
+    .section:nth-child(7) { animation-delay: 1.25s }
+
+    .section-header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px }
+    .section-num { font-family: 'Cormorant Garamond', serif; font-size: 11px; letter-spacing: 4px; color: var(--gold) }
+    .section-title { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 400; color: var(--deep); letter-spacing: 1px }
+    .section-rule { height: 1px; flex: 1; background: linear-gradient(to right, var(--gold), transparent) }
+    .section-body { font-size: 13px; font-weight: 300; line-height: 1.9; color: var(--ink); margin-bottom: 24px }
+
+    .data-table { width: 100%; border-collapse: collapse; margin: 16px 0 8px; font-size: 12px }
+    .data-table thead tr { background: var(--deep); color: var(--gold); font-size: 10px; letter-spacing: 3px; text-transform: uppercase }
+    .data-table thead th { padding: 12px 14px; text-align: left; font-weight: 400 }
+    .data-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .data-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .data-table tbody tr { transition: background .2s }
+    .data-table tbody tr:hover { background: #f0dece }
+    .data-table tbody td { padding: 10px 14px; color: var(--ink); border-bottom: 1px solid rgba(176,58,26,.08) }
+    .data-table tbody td:first-child { font-weight: 400; color: var(--deep); width: 28% }
+
+    .dosha-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .dosha-table thead tr { background: var(--forest); color: var(--cream) }
+    .dosha-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .dosha-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .dosha-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .dosha-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(176,58,26,.08) }
+    .dosha-table tbody td:first-child { font-weight: 400; color: var(--forest); width: 18% }
+    .dosha-table tbody td:nth-child(2) { color: var(--earth); width: 20% }
+
+    .consume-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .consume-table thead tr { background: var(--earth); color: var(--cream) }
+    .consume-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .consume-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .consume-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .consume-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(176,58,26,.08) }
+    .consume-table tbody td:first-child { font-weight: 400; color: var(--earth); width: 22% }
+
+    .benefits-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: rgba(176,58,26,.12); border: 1px solid rgba(176,58,26,.12); margin: 8px 0 }
+    .benefit-card { background: var(--cream); padding: 24px 22px; transition: background .3s; position: relative; overflow: hidden }
+    .benefit-card:hover { background: #f5e2d2 }
+    .benefit-card::before { content: ''; position: absolute; bottom: 0; left: 0; width: 0; height: 2px; background: var(--gold); transition: width .4s }
+    .benefit-card:hover::before { width: 100% }
+    .benefit-title { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 600; color: var(--forest); margin-bottom: 8px }
+    .benefit-desc { font-size: 11.5px; font-weight: 300; line-height: 1.75; color: var(--ink); opacity: .85 }
+
+    .precaution-list { list-style: none; margin: 8px 0 }
+    .precaution-list li { display: flex; gap: 12px; align-items: flex-start; padding: 10px 14px; font-size: 12px; font-weight: 300; line-height: 1.7; color: var(--ink); border-bottom: 1px solid rgba(176,58,26,.08) }
+    .precaution-list li:last-child { border-bottom: none }
+    .precaution-list li::before { content: '▸'; color: var(--gold); flex-shrink: 0; margin-top: 1px }
+
+    .nutrition-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: rgba(176,58,26,.12); border: 1px solid rgba(176,58,26,.12); margin: 20px 0 }
+    .nutrition-cell { background: var(--cream); padding: 22px 16px; text-align: center; transition: background .3s }
+    .nutrition-cell:hover { background: var(--parchment) }
+    .nutrition-num { font-family: 'Cormorant Garamond', serif; font-size: 36px; font-weight: 300; color: var(--forest); line-height: 1; margin-bottom: 4px }
+    .nutrition-unit { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); font-weight: 300 }
+    .nutrition-label { font-size: 11px; font-weight: 300; color: var(--ink); margin-top: 5px }
+
+    .sources { border-top: 1px solid rgba(176,58,26,.15); padding-top: 24px; margin-top: 20px }
+    .sources-title { font-size: 10px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); margin-bottom: 12px; font-weight: 300 }
+    .sources ul { list-style: none }
+    .sources ul li { font-family: 'Cormorant Garamond', serif; font-size: 13px; font-style: italic; color: var(--earth); padding: 5px 0; border-bottom: 1px solid rgba(176,58,26,.06) }
+    .sources ul li::before { content: '· '; color: var(--sage) }
+
+    footer { position: relative; z-index: 10; text-align: center; padding: 24px 20px 44px; border-top: 1px solid rgba(176,58,26,.12); max-width: 860px; margin: 0 auto }
+    footer p { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); font-weight: 300 }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(28px) } to { opacity: 1; transform: translateY(0) } }
+    @media(max-width:700px) {
+      .hero-photos { grid-template-columns: 1fr } .hero-photos img { height: 260px }
+      .benefits-grid { grid-template-columns: 1fr } .nutrition-bar { grid-template-columns: 1fr 1fr }
+      .content { padding: 0 18px 60px }
+    }
+  </style>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+</head>
+<body>
+  <button type="button" id="open3D">View in 3D</button>
+
+
+<div class="bg-circle bg-circle-1"></div>
+<div class="bg-circle bg-circle-2"></div>
+
+<!-- Shimul: bare thorned branches with large scarlet flowers, no leaves -->
+<svg class="botanical-svg botanical-tl" viewBox="0 0 340 340" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Main branch -->
+  <path d="M20 320 Q 80 240 130 180 Q 180 120 240 60" stroke="#7a1f0e" stroke-width="2" fill="none"/>
+  <!-- Side branches -->
+  <path d="M130 180 Q 100 155 80 130" stroke="#7a1f0e" stroke-width="1.3" fill="none"/>
+  <path d="M180 120 Q 210 100 230 75" stroke="#7a1f0e" stroke-width="1.3" fill="none"/>
+  <path d="M155 150 Q 165 125 175 100" stroke="#7a1f0e" stroke-width="1" fill="none"/>
+  <!-- Thorns -->
+  <path d="M110 200 L 100 192" stroke="#7a1f0e" stroke-width="1.2" fill="none"/>
+  <path d="M155 155 L 148 145" stroke="#7a1f0e" stroke-width="1.2" fill="none"/>
+  <path d="M200 108 L 194 98" stroke="#7a1f0e" stroke-width="1.2" fill="none"/>
+  <!-- Flower 1 — large 5-petal scarlet bloom at branch tip -->
+  <g transform="translate(78,127)">
+    <ellipse cx="0" cy="-14" rx="7" ry="13" fill="#e8622a" opacity="0.92"/>
+    <ellipse cx="13.3" cy="-4.3" rx="7" ry="13" fill="#c84820" transform="rotate(72)" opacity="0.88"/>
+    <ellipse cx="8.2" cy="11.3" rx="7" ry="13" fill="#e8622a" transform="rotate(144)" opacity="0.9"/>
+    <ellipse cx="-8.2" cy="11.3" rx="7" ry="13" fill="#c84820" transform="rotate(216)" opacity="0.88"/>
+    <ellipse cx="-13.3" cy="-4.3" rx="7" ry="13" fill="#e8622a" transform="rotate(288)" opacity="0.92"/>
+    <!-- stamens -->
+    <line x1="0" y1="0" x2="0" y2="-18" stroke="#ffd080" stroke-width="0.8" opacity="0.9"/>
+    <line x1="0" y1="0" x2="6" y2="-17" stroke="#ffd080" stroke-width="0.8" opacity="0.8"/>
+    <line x1="0" y1="0" x2="-6" y2="-17" stroke="#ffd080" stroke-width="0.8" opacity="0.8"/>
+    <circle cx="0" cy="0" r="4" fill="#7a1f0e" opacity="0.7"/>
+  </g>
+  <!-- Flower 2 -->
+  <g transform="translate(228,72)">
+    <ellipse cx="0" cy="-12" rx="6" ry="11" fill="#e8622a" opacity="0.9"/>
+    <ellipse cx="11.4" cy="-3.7" rx="6" ry="11" fill="#c84820" transform="rotate(72)" opacity="0.85"/>
+    <ellipse cx="7" cy="9.7" rx="6" ry="11" fill="#e8622a" transform="rotate(144)" opacity="0.88"/>
+    <ellipse cx="-7" cy="9.7" rx="6" ry="11" fill="#c84820" transform="rotate(216)" opacity="0.85"/>
+    <ellipse cx="-11.4" cy="-3.7" rx="6" ry="11" fill="#e8622a" transform="rotate(288)" opacity="0.9"/>
+    <line x1="0" y1="0" x2="0" y2="-15" stroke="#ffd080" stroke-width="0.7" opacity="0.9"/>
+    <line x1="0" y1="0" x2="5" y2="-14" stroke="#ffd080" stroke-width="0.7" opacity="0.8"/>
+    <circle cx="0" cy="0" r="3.5" fill="#7a1f0e" opacity="0.7"/>
+  </g>
+  <!-- Fallen petals -->
+  <ellipse cx="50" cy="308" rx="9" ry="4" fill="#e8622a" transform="rotate(-15 50 308)" opacity="0.4"/>
+  <ellipse cx="30" cy="318" rx="7" ry="3" fill="#c84820" transform="rotate(20 30 318)" opacity="0.35"/>
+</svg>
+
+<svg class="botanical-svg botanical-br" viewBox="0 0 340 340" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M20 320 Q 80 240 130 180 Q 180 120 240 60" stroke="#7a1f0e" stroke-width="2" fill="none"/>
+  <path d="M130 180 Q 100 155 80 130" stroke="#7a1f0e" stroke-width="1.3" fill="none"/>
+  <path d="M110 200 L 100 192" stroke="#7a1f0e" stroke-width="1.2" fill="none"/>
+  <path d="M155 155 L 148 145" stroke="#7a1f0e" stroke-width="1.2" fill="none"/>
+  <g transform="translate(78,127)">
+    <ellipse cx="0" cy="-14" rx="7" ry="13" fill="#e8622a" opacity="0.92"/>
+    <ellipse cx="13.3" cy="-4.3" rx="7" ry="13" fill="#c84820" transform="rotate(72)" opacity="0.88"/>
+    <ellipse cx="8.2" cy="11.3" rx="7" ry="13" fill="#e8622a" transform="rotate(144)" opacity="0.9"/>
+    <ellipse cx="-8.2" cy="11.3" rx="7" ry="13" fill="#c84820" transform="rotate(216)" opacity="0.88"/>
+    <ellipse cx="-13.3" cy="-4.3" rx="7" ry="13" fill="#e8622a" transform="rotate(288)" opacity="0.92"/>
+    <circle cx="0" cy="0" r="4" fill="#7a1f0e" opacity="0.7"/>
+  </g>
+  <ellipse cx="50" cy="308" rx="9" ry="4" fill="#e8622a" transform="rotate(-15 50 308)" opacity="0.4"/>
+</svg>
+
+<div class="hero">
+  <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+  <div class="logo-rule"><span></span><div class="logo-ornament">✦</div><span></span></div>
+  <div class="hero-title">Shimul</div>
+  <div class="hero-subtitle">Red Silk Cotton — Shalmali, the Forest of Fire</div>
+  <div class="hero-sci">Bombax ceiba L. &nbsp;·&nbsp; Family: Malvaceae (Bombacaceae)</div>
+</div>
+
+<div class="hero-photos">
+  <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/0/0b/Bombax_ceiba2.jpg/1280px-Bombax_ceiba2.jpg" alt="Bombax ceiba blazing scarlet flowers on bare thorned branches against winter sky"
+    onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/1/10/Bombax_ceiba_355023858.jpg" alt="Shimul tree trunk with conical thorns and white silk cotton bursting from pods"
+    onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+</div>
+<p class="photo-caption">Fig. 1 — Blazing scarlet blooms of Bombax ceiba erupting from bare thorned branches in late winter &nbsp;·&nbsp; Fig. 2 — Conical trunk thorns and bursting seed pods releasing white silk cotton</p>
+
+<div class="divider">
+  <div class="divider-line"></div>
+  <div class="divider-leaf">❧</div>
+  <div class="divider-line"></div>
+</div>
+
+<div class="content">
+  <p class="intro-text">Called <em>Shalmali</em> in Sanskrit — from the root meaning "the tree that shelters" — Bombax ceiba ignites the late-winter landscape with an extraordinary spectacle: enormous scarlet flowers blazing from completely bare, thorn-armoured branches, leafless and unapologetic, like fire held aloft on spears. Revered across Ayurveda, Unani, and tribal medicine from the Himalayas to Bengal, from Gujarat to Tamil Nadu, every part of this towering tree — thorn, root, bark, flower, gum, seed — is a medicine, making Shalmali one of the most comprehensively utilised medicinal trees of the Indian subcontinent.</p>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">01</span><h2 class="section-title">Botanical Profile</h2><div class="section-rule"></div></div>
+    <p class="section-body">Bombax ceiba L. (syn. Salmalia malabarica, Bombax malabaricum) is a large, deciduous tree of the family Malvaceae, formerly placed in Bombacaceae, capable of reaching 30–40 m in height with a straight, cylindrical trunk that may exceed 3 m in girth at maturity. The trunk and younger branches are densely armed with stout, pyramidal, woody thorns — one of the tree's most distinctive and symbolic features. The bark is grey-green, becoming rough and fissured with age.</p>
+    <p class="section-body">The leaves are large, palmate, and compound — five to seven leaflets radiating from a single stalk like an open hand — and are shed entirely in November–December before flowering. The flowers appear January to March on completely bare branches: 8–12 cm across, with five thick, fleshy, vivid scarlet petals and a dense brush of prominent stamens. After flowering, large, oblong capsules (10–15 cm) develop, splitting into five valves to release the seeds embedded in white, lustrous silk cotton (kapok) — the plant's second great gift to human civilisation. The tree grows across tropical Asia, northern Australia, and is naturalised widely across the tropics.</p>
+    <table class="data-table">
+      <thead><tr><th>Property</th><th>Detail</th></tr></thead>
+      <tbody>
+        <tr><td>Family</td><td>Malvaceae (formerly Bombacaceae)</td></tr>
+        <tr><td>Botanical Name</td><td>Bombax ceiba L. (syn. Salmalia malabarica, Bombax malabaricum)</td></tr>
+        <tr><td>Sanskrit Names</td><td>Shalmali, Mocha, Sthirashalmali, Raktapushpa, Kantakadruha</td></tr>
+        <tr><td>Common Names</td><td>Red Silk Cotton, Silk Cotton Tree, Kapok, Semal, Shimul</td></tr>
+        <tr><td>Regional Names</td><td>Shimul (Bengali), Semal (Hindi), Ilavu (Tam), Buruga (Tel), Shambol (Kan), Ilavu (Mal)</td></tr>
+        <tr><td>Origin</td><td>Tropical Asia — Indian subcontinent to southern China, SE Asia, N. Australia</td></tr>
+        <tr><td>Plant Type</td><td>Large deciduous tree (20–40 m); trunk armed with conical thorns</td></tr>
+        <tr><td>Flowering Season</td><td>January–March (leafless); silk cotton released April–May</td></tr>
+        <tr><td>Medicinal Parts</td><td>Root, bark, gum (mocharas), flowers, thorns, seeds, seed oil, leaves</td></tr>
+        <tr><td>Cultural Significance</td><td>Sacred to Lord Shiva; Shalmali described in Valmiki Ramayana as boundary tree of Lanka</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">02</span><h2 class="section-title">Phytochemical Composition</h2><div class="section-rule"></div></div>
+    <p class="section-body">Bombax ceiba is a phytochemically rich tree across all its organs. The root bark is the most extensively studied, yielding a complex array of sterols, fatty acids, alkaloids, and phenolics. The gum resin — <em>Mocharas</em> or Semul gum — is among the most prized Ayurvedic astringents, containing tannins and polysaccharides. The flowers yield flavonoids and anthocyanins responsible for their vivid scarlet pigmentation, while the thorns contain silica and flavonoids with wound-healing properties. The seed oil is rich in palmitic, oleic, and linoleic acids.</p>
+    <div class="nutrition-bar">
+      <div class="nutrition-cell"><div class="nutrition-num">25+</div><div class="nutrition-unit">sterols</div><div class="nutrition-label">Root bark isolates</div></div>
+      <div class="nutrition-cell"><div class="nutrition-num">17%</div><div class="nutrition-unit">seed oil</div><div class="nutrition-label">Yield from seeds</div></div>
+      <div class="nutrition-cell"><div class="nutrition-num">8–12</div><div class="nutrition-unit">cm across</div><div class="nutrition-label">Flower diameter</div></div>
+      <div class="nutrition-cell"><div class="nutrition-num">40 m</div><div class="nutrition-unit">max height</div><div class="nutrition-label">Mature tree</div></div>
+    </div>
+    <table class="data-table">
+      <thead><tr><th>Compound</th><th>Source / Part</th><th>Primary Action</th></tr></thead>
+      <tbody>
+        <tr><td>Lupeol &amp; Lupeol acetate</td><td>Root bark, bark</td><td>Anti-inflammatory, anti-arthritic, hepatoprotective, antitumour</td></tr>
+        <tr><td>β-Sitosterol &amp; Stigmasterol</td><td>Root bark, seeds</td><td>Phytoestrogenic, anti-inflammatory, hypolipidemic</td></tr>
+        <tr><td>Bombacin</td><td>Root bark</td><td>CNS-active; documented aphrodisiac and nervine tonic activity</td></tr>
+        <tr><td>Shamimin (Flavone glycoside)</td><td>Root bark, flowers</td><td>Anti-inflammatory, antiviral, antioxidant</td></tr>
+        <tr><td>Mocharas (gum tannins)</td><td>Gum resin (stem)</td><td>Astringent, haemostatic, anti-diarrheal, wound-healing</td></tr>
+        <tr><td>Anthocyanins &amp; Flavonoids</td><td>Flowers</td><td>Antioxidant, anti-inflammatory, capillary protection</td></tr>
+        <tr><td>Heptacosane, Octacosanol</td><td>Root bark wax</td><td>Hypolipidemic, platelet aggregation inhibition</td></tr>
+        <tr><td>Palmitic, Oleic, Linoleic acids</td><td>Seed oil</td><td>Emollient, anti-inflammatory, essential fatty acids</td></tr>
+        <tr><td>Gallic acid &amp; Ellagic acid</td><td>Bark, gum</td><td>Antioxidant, antimicrobial, astringent, anti-mutagenic</td></tr>
+        <tr><td>Silica (amorphous)</td><td>Thorns</td><td>Wound closure, haemostatic — topical traditional use</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">03</span><h2 class="section-title">Ayurvedic Significance</h2><div class="section-rule"></div></div>
+    <p class="section-body">Shalmali occupies a distinguished place across all the major classical Ayurvedic compendia. Charaka's Sutrasthana lists it among the ten trees of the <em>Nyagrodhadi Gana</em> — the group of astringent bark trees used to promote healing, strengthen tissues, and arrest discharges. Sushruta classifies it in <em>Sleshmatakaadi Gana</em> and details its specific surgical applications — noting the thorn paste for wound closure and the gum as a haemostatic. The Ashtanga Hridayam places its root in formulations for <em>Shukrala</em> (semen augmentation) and <em>Vajeekarana</em> (virilification).</p>
+    <p class="section-body">The gum resin — <em>Mocharas</em> — is catalogued as a separate drug entry in virtually every Nighantu, valued as one of the finest naturally occurring astringents. Bhavaprakasha Nighantu describes Shalmali under <em>Vatadi Varga</em>, noting its tridosha-balancing properties with special affinity for Pitta and Kapha. The classical shloka notes: <em>"Shalmali grahi sheetala raktapittaharani"</em> — Shalmali is absorbent, cooling, and destroys disorders of Rakta (blood) and Pitta.</p>
+    <table class="dosha-table">
+      <thead><tr><th>Dosha</th><th>Effect</th><th>Mechanism &amp; Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Vata ↓</td><td>Pacifying (root)</td><td>The root is Balya (strength-promoting) and Vajeekarana — heavy, unctuous, and aphrodisiac qualities nourish Vata-depleted tissues; specific for reproductive Vata disorders</td></tr>
+        <tr><td>Pitta ↓↓</td><td>Strongly pacifying</td><td>Sheeta virya (cooling potency) of bark, gum, and flowers directly arrests Pitta — haemorrhage, excessive heat, burning, bleeding from any orifice; primary dosha indication</td></tr>
+        <tr><td>Kapha ↓</td><td>Pacifying (bark/gum)</td><td>Kashaya (astringent) and tikta (bitter) rasa dry excess Kapha secretions; used in leucorrhoea, excess mucus, chronic diarrhoea with Kapha dominance</td></tr>
+      </tbody>
+    </table>
+    <p class="section-body"><strong>Rasa:</strong> Madhura (sweet — root), Kashaya (astringent — bark/gum), Tikta (bitter) &nbsp;·&nbsp; <strong>Guna:</strong> Guru (heavy), Snigdha (unctuous — root); Laghu (light), Ruksha (dry — gum/bark) &nbsp;·&nbsp; <strong>Virya:</strong> Sheeta (cooling) &nbsp;·&nbsp; <strong>Vipaka:</strong> Madhura &nbsp;·&nbsp; <strong>Karma:</strong> Grahi, Raktapittahara, Shukrala, Vajeekarana, Balya, Vranashodhana</p>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">04</span><h2 class="section-title">Key Health Benefits</h2><div class="section-rule"></div></div>
+    <p class="section-body">Modern pharmacological research has validated Shalmali's classical profile across multiple organ systems — from its anti-inflammatory and hepatoprotective root sterols to the haemostatic gum, aphrodisiac root, antioxidant flowers, and wound-healing thorns. It is one of the few trees where every morphological part — including the thorn — is medicinally documented.</p>
+    <div class="benefits-grid">
+      <div class="benefit-card">
+        <div class="benefit-title">Haemostatic &amp; Anti-haemorrhagic</div>
+        <div class="benefit-desc">Mocharas (Shimul gum) is one of Ayurveda's premier haemostatics — used internally for bleeding from any orifice: haematemesis, haematuria, metrorrhagia, rectal bleeding, and haemoptysis. Its tannin-rich astringency contracts mucosal vessels and promotes rapid clot formation. Validated in multiple in vivo studies showing significantly reduced bleeding and clotting times.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Reproductive Tonic &amp; Aphrodisiac</div>
+        <div class="benefit-desc">The root is Ayurveda's classical <em>Shukrala</em> — augmenting semen quality and quantity — and a premier Vajeekarana (virilification) herb. Bombacin and β-sitosterol in the root support testosterone modulation, spermatogenesis, and sexual endurance. Tribal traditions across Rajasthan and Bengal use fresh root decoction in milk for impotence, oligospermia, and low libido. Clinical studies show significant improvement in sperm count and motility.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Anti-inflammatory &amp; Anti-arthritic</div>
+        <div class="benefit-desc">Lupeol and lupeol acetate from the root bark demonstrate potent inhibition of prostaglandin synthesis and TNF-α — validated across carrageenan, formaldehyde, and cotton pellet granuloma models. Traditional application of root decoction for rheumatoid arthritis, gout, and musculoskeletal pain is well-supported pharmacologically. The shamimin flavone adds antioxidant synergy to the anti-inflammatory profile.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Wound Healing &amp; Thorn Therapy</div>
+        <div class="benefit-desc">In classical Sushruta tradition, the powdered thorn was used to close wounds — a practice now understood through the silica-rich, haemostatic, and antimicrobial nature of the thorn material. The bark decoction is used to wash chronic ulcers and infected wounds. Modern studies confirm significant acceleration of wound contraction and epithelialisation by bark extracts in excision and incision wound models.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Anti-diarrheal &amp; Dysenteric</div>
+        <div class="benefit-desc">Mocharas gum and root bark are classical Grahi (absorbent, astringent) preparations for chronic diarrhoea, dysentery, and irritable bowel syndrome. The combination of tannins (mucosal astringency), antimicrobials (gallic, ellagic acid), and demulcents creates a comprehensive anti-diarrheal action. Root decoction with buttermilk is a traditional Rajasthani preparation for amoebic dysentery.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Women's Health &amp; Gynaecology</div>
+        <div class="benefit-desc">Shalmali is a comprehensive gynaecological herb: Mocharas arrests menorrhagia and metrorrhagia; the root supports hormonal balance and treats leucorrhoea; the flowers are used in post-partum recovery. Its phytoestrogenic β-sitosterol modulates oestrogen receptor activity. Classical texts describe specific formulations for every stage — menstrual, reproductive, menopausal — of a woman's hormonal life.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Hepatoprotective &amp; Diuretic</div>
+        <div class="benefit-desc">Root bark extracts show significant hepatoprotective activity in CCl₄ and paracetamol-induced liver injury models — reducing AST, ALT, and bilirubin while increasing hepatic glutathione. Folk traditions across Bengal and Assam use the root decoction for jaundice and liver enlargement. The plant also shows moderate diuretic activity, supporting its classical use in urinary disorders and oedema.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Antioxidant &amp; Immunomodulatory</div>
+        <div class="benefit-desc">Flower extracts rich in anthocyanins and shamimin show excellent DPPH and ABTS radical scavenging activity. The bark and root exhibit significant immunostimulant effects — increasing macrophage phagocytosis, NK cell activity, and spleen index in experimental models. The flower decoction is traditionally used in seasonal fevers and as a spring tonic across Bengal during the Shimul blooming season.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">05</span><h2 class="section-title">How to Use Shimul</h2><div class="section-rule"></div></div>
+    <p class="section-body">Different parts of the Shimul tree require different preparations and serve distinct therapeutic purposes. The root is the primary internal tonic; the gum (Mocharas) is the astringent-haemostatic; the flowers are gentle and broadly usable; the thorn powder is topical only. All internal preparations beyond culinary use of flowers should be taken under qualified Ayurvedic guidance due to the potency of root and gum preparations.</p>
+    <table class="consume-table">
+      <thead><tr><th>Form / Part</th><th>Preparation</th><th>Dosage</th><th>Best Use</th></tr></thead>
+      <tbody>
+        <tr><td>Root Decoction (Kwatha)</td><td>Boil 5–10g root bark in 400ml water; reduce to 100ml</td><td>30–50 ml twice daily, empty stomach</td><td>Aphrodisiac, joint pain, impotence, liver</td></tr>
+        <tr><td>Root Powder + Milk</td><td>1–3g root powder boiled in 200ml milk; with honey</td><td>Once daily at bedtime</td><td>Vajeekarana, sperm quality, reproductive weakness</td></tr>
+        <tr><td>Mocharas (Gum) Powder</td><td>Dried gum powder with water or buttermilk</td><td>1–3g, 2–3× daily</td><td>Bleeding disorders, diarrhoea, leucorrhoea</td></tr>
+        <tr><td>Mocharas + Honey (Topical/Internal)</td><td>Gum paste with honey</td><td>Applied to gums; or 1g internally</td><td>Bleeding gums, oral ulcers, haemorrhage</td></tr>
+        <tr><td>Bark Decoction</td><td>Boil bark pieces in water; use as wash or drink</td><td>50 ml internally; liberal for wound washing</td><td>Wound cleansing, chronic ulcers, dysuria</td></tr>
+        <tr><td>Fresh Flower Decoction</td><td>Boil 10–15 fresh flowers in water; strain</td><td>50–100ml once daily during season</td><td>Seasonal fever, antioxidant, spring tonic</td></tr>
+        <tr><td>Dried Flower Powder</td><td>Shade-dried flowers ground to fine powder</td><td>1–2g with warm water or honey</td><td>Gynaecological support, Pitta disorders</td></tr>
+        <tr><td>Thorn Powder (Topical only)</td><td>Dried thorn finely powdered</td><td>Applied directly to wound / bleeding point</td><td>Haemostasis, wound closure — topical only</td></tr>
+        <tr><td>Seed Oil (External)</td><td>Cold-pressed seed oil</td><td>Applied to skin and scalp</td><td>Skin conditions, joint massage, hair growth</td></tr>
+        <tr><td>Silk Cotton (Kapok)</td><td>Raw fibre used in pillow / bedding</td><td>As needed</td><td>Orthopaedic support; traditional pillow filling for cervical pain</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">06</span><h2 class="section-title">Safety &amp; Precautions</h2><div class="section-rule"></div></div>
+    <p class="section-body">Shimul is well-tolerated at classical doses across centuries of traditional use. The flowers are entirely safe and can be freely used as seasonal food and medicine. The root and gum are potent and require measured dosing; the seeds and seed oil are safe externally but warrant caution internally in excess.</p>
+    <ul class="precaution-list">
+      <li><strong>Pregnancy — root preparations:</strong> The root has documented oxytocic (uterus-stimulating) properties in classical texts and some animal studies. Root decoctions and root powder must be avoided during all trimesters. Flower and gum preparations in small doses are considered generally safe but should be supervised.</li>
+      <li><strong>Excessive root dosage:</strong> High doses of root bark may cause gastrointestinal irritation, nausea, and loose stools. Classical dose is 3–6g of dry root or 30–50ml of decoction — do not exceed without physician guidance.</li>
+      <li><strong>Thorn — internal use strictly contraindicated:</strong> Thorn powder is for topical haemostatic use only. The silica-rich, sharp material must never be consumed internally. A clear contraindication.</li>
+      <li><strong>Silk cotton (kapok) inhalation:</strong> Individuals with asthma, allergic rhinitis, or respiratory sensitivity should avoid prolonged exposure to airborne kapok fibres during the seed-burst season (April–May) as they can trigger bronchospasm and allergic reactions.</li>
+      <li><strong>Kapha-dominant individuals — root in milk:</strong> The root-in-milk preparation is heavy and unctuous — best suited for Vata-dominant individuals. Those with obesity, sluggish digestion, or high Ama should take with warming digestives (ginger, trikatu) to prevent Kapha aggravation.</li>
+      <li><strong>Drug interactions — anticoagulants:</strong> Mocharas gum's haemostatic activity may antagonise anticoagulant medications (warfarin, heparin, aspirin). Monitor carefully if using therapeutically alongside blood-thinning drugs.</li>
+      <li><strong>Hypotensive medications:</strong> Some root extracts show mild hypotensive activity. Individuals on antihypertensive drugs should monitor blood pressure when consuming root preparations therapeutically.</li>
+      <li><strong>Flower consumption — quantity:</strong> Fresh flowers are edible and traditionally used in Bengali and tribal cuisines, but should be consumed in moderate quantities — 2–3 flowers at a time. Excessive consumption may cause mild gastric bloating in sensitive individuals due to their mucilaginous content.</li>
+    </ul>
+  </div>
+
+  <div class="sources">
+    <div class="sources-title">References &amp; Sources</div>
+    <ul>
+      <li>Shukla S et al. — "Bombax ceiba Linn.: A Comprehensive Review on Phytochemistry, Traditional Use and Pharmacological Activity" — International Journal of Pharmaceutical Sciences Review and Research, 2012</li>
+      <li>Ahmad M et al. — "Evaluation of aphrodisiac activity of Bombax ceiba root" — Journal of Ethnopharmacology, 2010</li>
+      <li>Rao GM et al. — "Hepatoprotective activity of Bombax malabaricum root bark against CCl₄-induced liver damage" — Phytomedicine, 2003</li>
+      <li>Patel SS &amp; Shah RS — "Anti-inflammatory activity of Bombax ceiba root extracts" — Journal of Natural Products, 2009</li>
+      <li>Charaka Samhita — Sutrasthana — Nyagrodhadi Gana (Shalmali bark listing)</li>
+      <li>Sushruta Samhita — Sutrasthana — Dravyadi Vargam (Shalmali thorn and gum uses)</li>
+      <li>Ashtanga Hridayam — Chikitsasthana — Vajeekarana Adhyaya (Shalmali root in Vajeekarana)</li>
+      <li>Bhavaprakasha Nighantu — Vatadi Varga — Shalmali and Mocharas properties</li>
+      <li>Dhanvantari Nighantu — Shalmali classification and Raktapitta references</li>
+      <li>Valmiki Ramayana — Sundarkanda — Shalmali vana as boundary forest of Lanka</li>
+      <li>Priyavrat Sharma — Dravyaguna Vigyana Vol. II — Shalmali classical pharmacology</li>
+    </ul>
+  </div>
+</div>
+
+<footer>
+  <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a qualified practitioner before therapeutic use</p>
+</footer>
+
+
+  <div id="viewerModal">
+    <div id="modal-topbar">
+      <span>3D Model — Shimul</span>
+      <button type="button" id="close3D">✕</button>
+    </div>
+    <model-viewer src="shimul3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+  </div>
+  <script>
+    (function() {
+      var open3D = document.getElementById('open3D');
+      var close3D = document.getElementById('close3D');
+      var modal = document.getElementById('viewerModal');
+      if (!open3D || !close3D || !modal) return;
+      function openModal() {
+        
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+      function closeModal() {
+        
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+      open3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); openModal();
+      });
+      close3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); closeModal();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+      });
+    })();
+  </script>
+
+</body>
+</html>

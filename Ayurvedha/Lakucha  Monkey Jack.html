@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lakucha | Swastha</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+  <style>
+    #open3D {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      padding: 10px 18px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: var(--forest);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      z-index: 1000;
+      transition: .3s;
+    }
+    #open3D:hover {
+      background: var(--gold);
+      color: var(--deep);
+    }
+    #viewerModal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+    }
+    #modal-topbar {
+      flex-shrink: 0;
+      height: 58px;
+      background: #111111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px 0 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      z-index: 99999;
+    }
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 4.5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.72);
+      user-select: none;
+    }
+    #close3D {
+      width: 38px;
+      height: 38px;
+      font-size: 15px;
+      font-weight: 300;
+      background: transparent;
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background .2s, color .2s, transform .22s;
+      outline: none;
+      flex-shrink: 0;
+    }
+    #close3D:hover {
+      background: #ffffff;
+      color: #111111;
+      border-color: #ffffff;
+      transform: rotate(90deg);
+    }
+    #viewerModal model-viewer {
+      flex: 1;
+      width: 100%;
+      display: block;
+      background: #ffffff;
+    }
+
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+    * { margin: 0; padding: 0; box-sizing: border-box }
+    html { scroll-behavior: smooth }
+    body {
+      font-family: 'Jost', sans-serif;
+      background: var(--cream);
+      color: var(--ink);
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity: .035; pointer-events: none; z-index: 100;
+    }
+    .bg-circle { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0 }
+    .bg-circle-1 { width: 700px; height: 700px; background: radial-gradient(circle, rgba(61,107,44,.1) 0%, transparent 70%); top: -200px; right: -150px }
+    .bg-circle-2 { width: 500px; height: 500px; background: radial-gradient(circle, rgba(196,152,58,.08) 0%, transparent 70%); bottom: -100px; left: -100px }
+
+    /* Botanical SVG corners */
+    .botanical-svg { position: fixed; pointer-events: none; z-index: 1; opacity: .09 }
+    .botanical-tl { top: -20px; left: -20px; width: 280px }
+    .botanical-br { bottom: -20px; right: -20px; width: 240px; transform: rotate(180deg) }
+
+    .hero {
+      position: relative; z-index: 10;
+      padding: 54px 40px 0;
+      text-align: center;
+      opacity: 0; animation: fadeUp .9s ease .1s forwards;
+    }
+    .back-link {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+      color: var(--sage); text-decoration: none; margin-bottom: 36px; transition: color .3s;
+    }
+    .back-link:hover { color: var(--gold) }
+    .logo-rule { display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 14px }
+    .logo-rule span { display: block; height: 1px; width: 70px; background: linear-gradient(to right, transparent, var(--gold)) }
+    .logo-rule span:last-child { background: linear-gradient(to left, transparent, var(--gold)) }
+    .logo-ornament { font-size: 13px; color: var(--gold) }
+    .hero-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(64px, 12vw, 110px);
+      font-weight: 300; letter-spacing: 8px; line-height: 1; color: var(--deep);
+    }
+    .hero-subtitle {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 18px; font-style: italic; font-weight: 300;
+      color: var(--earth); letter-spacing: 2px; margin-top: 8px;
+    }
+    .hero-sci { font-size: 11px; font-weight: 200; letter-spacing: 5px; color: var(--sage); margin-top: 6px }
+
+    .hero-photos {
+      position: relative; z-index: 10;
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 2px; max-width: 900px; margin: 40px auto 0;
+      opacity: 0; animation: fadeUp .9s ease .35s forwards;
+    }
+    .hero-photos img {
+      width: 100%; height: 380px; object-fit: cover; object-position: center;
+      display: block; background: var(--parchment);
+    }
+    .photo-caption {
+      text-align: center; font-family: 'Cormorant Garamond', serif;
+      font-size: 12px; font-style: italic; color: var(--sage);
+      letter-spacing: 1px; padding: 10px 0 0; max-width: 900px;
+      margin: 0 auto; position: relative; z-index: 10;
+      opacity: 0; animation: fadeUp .9s ease .5s forwards;
+    }
+    .divider {
+      display: flex; align-items: center; justify-content: center;
+      gap: 16px; margin: 50px auto; max-width: 600px;
+      opacity: 0; animation: fadeUp .9s ease .55s forwards;
+      position: relative; z-index: 10;
+    }
+    .divider-line { height: 1px; width: 120px; background: linear-gradient(to right, transparent, var(--sage)) }
+    .divider-line:last-child { background: linear-gradient(to left, transparent, var(--sage)) }
+    .divider-leaf { color: var(--forest); font-size: 18px }
+
+    .content { position: relative; z-index: 10; max-width: 860px; margin: 0 auto; padding: 0 30px 80px }
+    .intro-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 20px; font-weight: 300; line-height: 1.75;
+      color: var(--ink); text-align: center;
+      max-width: 700px; margin: 0 auto 60px;
+      opacity: 0; animation: fadeUp .9s ease .6s forwards;
+    }
+    .intro-text em { color: var(--forest); font-style: italic }
+
+    .section { margin-bottom: 60px; opacity: 0; animation: fadeUp .9s ease forwards }
+    .section:nth-child(1) { animation-delay: .65s }
+    .section:nth-child(2) { animation-delay: .75s }
+    .section:nth-child(3) { animation-delay: .85s }
+    .section:nth-child(4) { animation-delay: .95s }
+    .section:nth-child(5) { animation-delay: 1.05s }
+    .section:nth-child(6) { animation-delay: 1.15s }
+    .section:nth-child(7) { animation-delay: 1.25s }
+
+    .section-header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px }
+    .section-num { font-family: 'Cormorant Garamond', serif; font-size: 11px; letter-spacing: 4px; color: var(--gold) }
+    .section-title { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 400; color: var(--deep); letter-spacing: 1px }
+    .section-rule { height: 1px; flex: 1; background: linear-gradient(to right, var(--gold), transparent) }
+    .section-body { font-size: 13px; font-weight: 300; line-height: 1.9; color: var(--ink); margin-bottom: 24px }
+
+    .data-table { width: 100%; border-collapse: collapse; margin: 16px 0 8px; font-size: 12px }
+    .data-table thead tr { background: var(--deep); color: var(--gold); font-size: 10px; letter-spacing: 3px; text-transform: uppercase }
+    .data-table thead th { padding: 12px 14px; text-align: left; font-weight: 400 }
+    .data-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .data-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .data-table tbody tr { transition: background .2s }
+    .data-table tbody tr:hover { background: #e6dcbe }
+    .data-table tbody td { padding: 10px 14px; color: var(--ink); border-bottom: 1px solid rgba(122,75,30,.08) }
+    .data-table tbody td:first-child { font-weight: 400; color: var(--deep); width: 28% }
+
+    .dosha-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .dosha-table thead tr { background: var(--forest); color: var(--cream) }
+    .dosha-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .dosha-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .dosha-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .dosha-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(122,75,30,.08) }
+    .dosha-table tbody td:first-child { font-weight: 400; color: var(--forest); width: 18% }
+    .dosha-table tbody td:nth-child(2) { color: var(--earth); width: 20% }
+
+    .consume-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .consume-table thead tr { background: var(--earth); color: var(--cream) }
+    .consume-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .consume-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .consume-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .consume-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(122,75,30,.08) }
+    .consume-table tbody td:first-child { font-weight: 400; color: var(--earth); width: 22% }
+
+    .benefits-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: rgba(122,75,30,.12); border: 1px solid rgba(122,75,30,.12); margin: 8px 0 }
+    .benefit-card { background: var(--cream); padding: 24px 22px; transition: background .3s; position: relative; overflow: hidden }
+    .benefit-card:hover { background: #ece3c6 }
+    .benefit-card::before { content: ''; position: absolute; bottom: 0; left: 0; width: 0; height: 2px; background: var(--gold); transition: width .4s }
+    .benefit-card:hover::before { width: 100% }
+    .benefit-title { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 600; color: var(--forest); margin-bottom: 8px }
+    .benefit-desc { font-size: 11.5px; font-weight: 300; line-height: 1.75; color: var(--ink); opacity: .85 }
+
+    .precaution-list { list-style: none; margin: 8px 0 }
+    .precaution-list li { display: flex; gap: 12px; align-items: flex-start; padding: 10px 14px; font-size: 12px; font-weight: 300; line-height: 1.7; color: var(--ink); border-bottom: 1px solid rgba(122,75,30,.08) }
+    .precaution-list li:last-child { border-bottom: none }
+    .precaution-list li::before { content: '▸'; color: var(--gold); flex-shrink: 0; margin-top: 1px }
+
+    .nutrition-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: rgba(122,75,30,.12); border: 1px solid rgba(122,75,30,.12); margin: 20px 0 }
+    .nutrition-cell { background: var(--cream); padding: 22px 16px; text-align: center; transition: background .3s }
+    .nutrition-cell:hover { background: var(--parchment) }
+    .nutrition-num { font-family: 'Cormorant Garamond', serif; font-size: 36px; font-weight: 300; color: var(--forest); line-height: 1; margin-bottom: 4px }
+    .nutrition-unit { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); font-weight: 300 }
+    .nutrition-label { font-size: 11px; font-weight: 300; color: var(--ink); margin-top: 5px }
+
+    .sources { border-top: 1px solid rgba(122,75,30,.15); padding-top: 24px; margin-top: 20px }
+    .sources-title { font-size: 10px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); margin-bottom: 12px; font-weight: 300 }
+    .sources ul { list-style: none }
+    .sources ul li { font-family: 'Cormorant Garamond', serif; font-size: 13px; font-style: italic; color: var(--earth); padding: 5px 0; border-bottom: 1px solid rgba(122,75,30,.06) }
+    .sources ul li::before { content: '· '; color: var(--sage) }
+
+    footer { position: relative; z-index: 10; text-align: center; padding: 24px 20px 44px; border-top: 1px solid rgba(122,75,30,.12); max-width: 860px; margin: 0 auto }
+    footer p { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); font-weight: 300 }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(28px) }
+      to { opacity: 1; transform: translateY(0) }
+    }
+    @media(max-width:700px) {
+      .hero-photos { grid-template-columns: 1fr }
+      .hero-photos img { height: 260px }
+      .benefits-grid { grid-template-columns: 1fr }
+      .nutrition-bar { grid-template-columns: 1fr 1fr }
+      .content { padding: 0 18px 60px }
+    }
+  </style>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+</head>
+<body>
+  <button type="button" id="open3D">View in 3D</button>
+
+
+<div class="bg-circle bg-circle-1"></div>
+<div class="bg-circle bg-circle-2"></div>
+
+<!-- Botanical corner decoration -->
+<svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M15 285 Q 70 200 120 145 Q 175 90 255 25" stroke="#3d6b2c" stroke-width="1.5" fill="none"/>
+  <ellipse cx="80" cy="210" rx="28" ry="13" fill="#3d6b2c" transform="rotate(-25 80 210)" opacity=".8"/>
+  <ellipse cx="120" cy="168" rx="32" ry="14" fill="#82a46e" transform="rotate(-40 120 168)" opacity=".7"/>
+  <ellipse cx="160" cy="128" rx="26" ry="12" fill="#3d6b2c" transform="rotate(-55 160 128)" opacity=".75"/>
+  <ellipse cx="200" cy="88" rx="22" ry="11" fill="#82a46e" transform="rotate(-65 200 88)" opacity=".6"/>
+  <circle cx="86" cy="202" r="5" fill="#c4983a" opacity=".6"/>
+  <circle cx="128" cy="160" r="4" fill="#c4983a" opacity=".5"/>
+</svg>
+<svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M15 285 Q 70 200 120 145 Q 175 90 255 25" stroke="#3d6b2c" stroke-width="1.5" fill="none"/>
+  <ellipse cx="80" cy="210" rx="28" ry="13" fill="#3d6b2c" transform="rotate(-25 80 210)" opacity=".8"/>
+  <ellipse cx="120" cy="168" rx="32" ry="14" fill="#82a46e" transform="rotate(-40 120 168)" opacity=".7"/>
+  <ellipse cx="160" cy="128" rx="26" ry="12" fill="#3d6b2c" transform="rotate(-55 160 128)" opacity=".75"/>
+</svg>
+
+<div class="hero">
+  <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+  <div class="logo-rule"><span></span><div class="logo-ornament">✦</div><span></span></div>
+  <div class="hero-title">Lakucha</div>
+  <div class="hero-subtitle">Monkey Jack — The Sour Wild Breadfruit</div>
+  <div class="hero-sci">Artocarpus lakoocha Roxb. &nbsp;·&nbsp; Artocarpus lacucha Buch.-Ham.</div>
+</div>
+
+<div class="hero-photos">
+  <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4c/Artocarpus_lakoocha%2C_9th_April_2017%2C_Ramnagar_FD%2C_AJT_Johnsingh._Help_7_P1100588_-_Copy.jpg/1280px-Artocarpus_lakoocha%2C_9th_April_2017%2C_Ramnagar_FD%2C_AJT_Johnsingh._Help_7_P1100588_-_Copy.jpg" alt="Lakucha fruits — large, globose, rough-surfaced yellow-green on branch"
+    onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+  <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d7/Monkey_jack_%28Artocarpus_lacucha%29_fruits.jpg/1280px-Monkey_jack_%28Artocarpus_lacucha%29_fruits.jpg" alt="Lakucha tree with large leaves and ripening fruits"
+    onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+</div>
+<p class="photo-caption">Fig. 1 — Globose syncarpous fruits of Lakucha with rough, tuberculate yellow-green surface &nbsp;·&nbsp; Fig. 2 — Broad-canopied Lakucha tree bearing heavy fruits amid its large, leathery leaves</p>
+
+<div class="divider">
+  <div class="divider-line"></div>
+  <div class="divider-leaf">❧</div>
+  <div class="divider-line"></div>
+</div>
+
+<div class="content">
+
+  <p class="intro-text">Known in Sanskrit as <em>Lakucha</em> — and playfully called Monkey Jack in English — this wild relative of the jackfruit has held an intimate place in Ayurvedic practice for over two millennia. Its intensely sour flesh, antipathy to Kapha, and generous yield of bioactive oxyresveratrol make it one of the most pharmacologically documented fruits of the Moraceae family, revered equally in classical texts and modern phytochemistry.</p>
+
+  <!-- SECTION 1 -->
+  <div class="section">
+    <div class="section-header"><span class="section-num">01</span><h2 class="section-title">Botanical Profile</h2><div class="section-rule"></div></div>
+    <p class="section-body">Lakucha (<em>Artocarpus lakoocha</em>) is a large, evergreen or semi-deciduous tree of the Moraceae (mulberry) family, closely allied to jackfruit (<em>A. heterophyllus</em>) and breadfruit (<em>A. altilis</em>). Native to the Indian subcontinent and Southeast Asia, it grows naturally in the moist deciduous and semi-evergreen forests of the Himalayan foothills, Bangladesh, Thailand, and the Malay Peninsula, at altitudes up to 1,000 m.</p>
+    <p class="section-body">The tree can reach 15–20 m in height with a spreading canopy, dense with large, alternate, broadly elliptic leaves (20–45 cm long) that are rough-textured above and softly hairy beneath. Both male and female flowers are borne in separate catkin-like heads on the same tree. The fruit — botanically a syncarpium (composite fruit) — is globose to slightly flattened, 7–13 cm across, with a rough, tuberculate, greenish-yellow surface when ripe. Its flesh is cream-coloured, coarse-fibred, pleasantly sour to acidic in flavour, and encloses 1–8 seeds enclosed in a papery testa. The heartwood of the trunk is a prized bright yellow, used historically as a natural dye.</p>
+    <table class="data-table">
+      <thead><tr><th>PROPERTY</th><th>Detail</th></tr></thead>
+      <tbody>
+        <tr><td>Family</td><td>Moraceae (Mulberry family)</td></tr>
+        <tr><td>Botanical Name</td><td>Artocarpus lakoocha Roxb. / A. lacucha Buch.-Ham.</td></tr>
+        <tr><td>Sanskrit Names</td><td>Lakucha, Granthiphala, Tindukabheda, Kshudrapanavriksha, Dhanurvriksha</td></tr>
+        <tr><td>Common Names</td><td>Monkey Jack, Wild Jack, Lakoocha, Dahu (Nepal)</td></tr>
+        <tr><td>Regional Names</td><td>Lahura / Barhal (Hindi), Dheu (Bengali), Ponsa (Konkani), Ottipilu (Tel), Kathal (regional)</td></tr>
+        <tr><td>Origin</td><td>Indian Subcontinent, Indo-Malayan region, Southeast Asia</td></tr>
+        <tr><td>Plant Type</td><td>Large evergreen/semi-deciduous tree (15–20 m)</td></tr>
+        <tr><td>Fruiting Season</td><td>March–June (primary); varies by region</td></tr>
+        <tr><td>Medicinal Parts</td><td>Heartwood (primary), bark, fruit (pulp & rind), leaves, latex, seeds</td></tr>
+        <tr><td>Taste Profile</td><td>Amla (sour), Kashaya (astringent); Tikta (bitter) in bark</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- SECTION 2 -->
+  <div class="section">
+    <div class="section-header"><span class="section-num">02</span><h2 class="section-title">Phytochemistry</h2><div class="section-rule"></div></div>
+    <p class="section-body">Lakucha is among the richest plant sources of <em>oxyresveratrol</em> — a hydroxylated analogue of resveratrol — found at extraordinarily high concentrations in the heartwood and bark. This single compound has attracted substantial research interest for its antioxidant, anti-inflammatory, anti-melanogenic, neuroprotective, and anti-diabetic properties. Beyond oxyresveratrol, the plant yields a constellation of stilbenoids, flavonoids, prenylated compounds, and triterpenoids that together underpin its wide pharmacological profile.</p>
+    <div class="nutrition-bar">
+      <div class="nutrition-cell">
+        <div class="nutrition-num">~7%</div>
+        <div class="nutrition-unit">oxyresveratrol</div>
+        <div class="nutrition-label">In dried heartwood</div>
+      </div>
+      <div class="nutrition-cell">
+        <div class="nutrition-num">40+</div>
+        <div class="nutrition-unit">compounds</div>
+        <div class="nutrition-label">Isolated from plant</div>
+      </div>
+      <div class="nutrition-cell">
+        <div class="nutrition-num">60–70%</div>
+        <div class="nutrition-unit">moisture</div>
+        <div class="nutrition-label">Fresh fruit pulp</div>
+      </div>
+      <div class="nutrition-cell">
+        <div class="nutrition-num">8</div>
+        <div class="nutrition-unit">seeds max</div>
+        <div class="nutrition-label">Per syncarpium</div>
+      </div>
+    </div>
+    <table class="data-table">
+      <thead><tr><th>Compound</th><th>Category</th><th>Primary Action</th></tr></thead>
+      <tbody>
+        <tr><td>Oxyresveratrol</td><td>Hydroxystilbene</td><td>Antioxidant, anti-melanogenic, anti-inflammatory, neuroprotective, antifungal</td></tr>
+        <tr><td>Resveratrol</td><td>Stilbene</td><td>Cardioprotective, anti-ageing, anti-tumour, phytoestrogenic</td></tr>
+        <tr><td>Lakoochin A &amp; B</td><td>Prenylated stilbenes</td><td>Antimicrobial, cytotoxic, lipase-inhibiting activity</td></tr>
+        <tr><td>Artocarpin</td><td>Prenylated flavone</td><td>Anti-inflammatory, antimicrobial, antitumour</td></tr>
+        <tr><td>Norartocarpin</td><td>Flavanone</td><td>Antioxidant, antimicrobial, anti-platelet aggregation</td></tr>
+        <tr><td>Cycloartocarpin</td><td>Flavone</td><td>Anti-melanogenic, antifungal</td></tr>
+        <tr><td>Artocarpanone</td><td>Flavanone</td><td>Cytotoxic, antimicrobial</td></tr>
+        <tr><td>Lupeol &amp; Betulin</td><td>Pentacyclic triterpenes</td><td>Anti-inflammatory, hepatoprotective, antitumour</td></tr>
+        <tr><td>Vitamin C &amp; Citric Acid</td><td>Organic acid/vitamin</td><td>Antioxidant, digestive stimulant (fruit pulp)</td></tr>
+        <tr><td>Tannins &amp; Saponins</td><td>Polyphenols</td><td>Astringent, antimicrobial, anti-diarrhoeal</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- SECTION 3 -->
+  <div class="section">
+    <div class="section-header"><span class="section-num">03</span><h2 class="section-title">Ayurvedic Significance</h2><div class="section-rule"></div></div>
+    <p class="section-body">Lakucha is mentioned prominently in Charaka Samhita, Sushruta Samhita, Ashtanga Hridaya, and Bhavaprakasha Nighantu — most frequently in the context of digestive disorders, skin diseases, and Kapha–Pitta conditions. Bhavaprakasha classifies it under <em>Amradi Phala Varga</em> (sour fruit group). Charaka commends its heartwood decoction in <em>Krimighna</em> (anti-parasitic) formulations. Sushruta employs it in the cleansing of wounds and skin ulcers. It is an ingredient in <em>Lakuchadyarishta</em>, a classical fermented preparation for splenic disorders and abdominal tumours.</p>
+    <p class="section-body">The classical shloka in Bhavaprakasha notes: <em>"Lakucho grahi kashayamlo vatapittakaphapradam, rucyah kaphanilahara kriminam cha vinashanam"</em> — describing it as astringent-sour in taste, grahi (absorbing/drying), appetite-enhancing, and destroying Kapha, Vata and worms.</p>
+    <table class="dosha-table">
+      <thead><tr><th>Dosha</th><th>Effect</th><th>Mechanism &amp; Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Vata ↑/↓</td><td>Complex</td><td>Amla rasa (sour taste) pacifies Vata in small doses; excessive use of the sour-astringent fruit may aggravate Vata. Heartwood preparations are generally Vata-balancing.</td></tr>
+        <tr><td>Pitta ↑</td><td>Mildly aggravating</td><td>Amla-kashaya rasa with ushna virya can increase Pitta; the fruit's sourness may trigger hyperacidity or inflammatory Pitta in excess. Use cautiously in Pitta constitutions.</td></tr>
+        <tr><td>Kapha ↓</td><td>Strongly pacifying</td><td>Laghu (light), grahi (drying/absorbing), and kashaya (astringent) properties powerfully reduce Kapha accumulation. Indicated in Kapha-type obesity, oedema, and respiratory congestion.</td></tr>
+      </tbody>
+    </table>
+    <p class="section-body"><strong>Rasa:</strong> Amla (sour), Kashaya (astringent) &nbsp;·&nbsp; <strong>Guna:</strong> Laghu (light), Grahi (absorptive) &nbsp;·&nbsp; <strong>Virya:</strong> Ushna (hot) &nbsp;·&nbsp; <strong>Vipaka:</strong> Amla (sour) &nbsp;·&nbsp; <strong>Karma:</strong> Kaphahara, Krimighna, Deepaniya, Shothahara</p>
+  </div>
+
+  <!-- SECTION 4 -->
+  <div class="section">
+    <div class="section-header"><span class="section-num">04</span><h2 class="section-title">Key Health Benefits</h2><div class="section-rule"></div></div>
+    <p class="section-body">Lakucha has attracted growing scientific attention, particularly for its heartwood-derived oxyresveratrol — one of the most potent natural tyrosinase inhibitors known, rivalling synthetic skin-lightening agents. Multiple in vitro and animal studies have validated classical Ayurvedic applications, from anti-parasitic and anti-obesity effects to wound healing and hepatoprotection.</p>
+    <div class="benefits-grid">
+      <div class="benefit-card">
+        <div class="benefit-title">Anti-melanogenic &amp; Skin Brightening</div>
+        <div class="benefit-desc">Oxyresveratrol from Lakucha heartwood is among the most potent natural tyrosinase inhibitors discovered — significantly surpassing kojic acid and arbutin in enzyme inhibition assays. Widely used in Thai and Southeast Asian cosmeceuticals for hyperpigmentation, melasma, and skin brightening without the cytotoxicity of synthetic agents.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Anti-obesity &amp; Lipase Inhibition</div>
+        <div class="benefit-desc">Classical Ayurveda prescribes Lakucha for Sthoulya (obesity) — a claim validated by studies showing significant pancreatic lipase inhibition by lakoochin A and B, analogous to orlistat. The heartwood extract reduces dietary fat absorption by preventing triglyceride breakdown in the gut, making it a candidate for anti-obesity formulations.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Antioxidant &amp; Anti-inflammatory</div>
+        <div class="benefit-desc">Heartwood and bark extracts consistently demonstrate strong DPPH and ABTS radical scavenging — substantially exceeding synthetic standards at comparable concentrations. Anti-inflammatory activity is documented via COX-2 inhibition, IL-6 suppression, and NF-κB pathway modulation, supporting use in chronic inflammatory conditions.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Anti-parasitic &amp; Antimicrobial</div>
+        <div class="benefit-desc">Charaka's designation of Lakucha as Krimighna (anti-worm) is supported by demonstrated activity against intestinal helminths and protozoa. Bark and heartwood extracts inhibit E. coli, Salmonella, Staphylococcus aureus, Candida albicans, and several dermatophytes — explaining its classical use in skin infections and gastrointestinal parasites.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Digestive &amp; Splenic Support</div>
+        <div class="benefit-desc">Lakucha fruit is deepaniya (appetite-stimulating) and grahi (gut-absorbing), used classically in loss of appetite, dyspepsia, and sluggish digestion. Lakuchadyarishta — the classical fermented preparation — is specifically indicated for Pleeha roga (splenic disorders), abdominal distension, and Gulma (abdominal tumour-like masses).</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Neuroprotective Potential</div>
+        <div class="benefit-desc">Oxyresveratrol has demonstrated significant neuroprotective effects in models of ischaemia-reperfusion injury, Parkinson's, and Alzheimer's pathology — crossing the blood-brain barrier more readily than resveratrol. It inhibits MAO-B, reduces amyloid-beta aggregation, and attenuates oxidative neuronal damage in cell and animal models.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Anti-diabetic Effects</div>
+        <div class="benefit-desc">Bark and fruit extracts show significant alpha-glucosidase and alpha-amylase inhibition — slowing post-prandial glucose absorption — alongside insulin-sensitising effects in streptozotocin-induced diabetic models. Oxyresveratrol activates AMPK pathways, promoting glucose uptake in skeletal muscle analogous to metformin's mechanism.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Wound Healing &amp; Hepatoprotection</div>
+        <div class="benefit-desc">Sushruta recommends Lakucha bark decoction for wound irrigation and ulcer cleansing. Modern studies confirm accelerated wound contraction and epithelialisation with topical bark extract in excision wound models. Lupeol and triterpenoids from the heartwood provide significant hepatoprotective activity, reducing CCl₄-induced liver damage markers in animal studies.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 5 -->
+  <div class="section">
+    <div class="section-header"><span class="section-num">05</span><h2 class="section-title">Traditional &amp; Culinary Uses</h2><div class="section-rule"></div></div>
+    <p class="section-body">Beyond medicine, Lakucha occupies a meaningful culinary place across Eastern India, Nepal, Bangladesh, and Southeast Asia. The sour, fibrous flesh of ripe fruits is consumed fresh, pickled, made into chutneys, or sun-dried for year-round use. In Bengal, raw Lakucha is a treasured ingredient in fish curries — its acidity functioning like tamarind or raw mango. Young leaves are cooked as a pot herb. Seeds are boiled or roasted and eaten in times of scarcity or as a minor food source.</p>
+    <p class="section-body">The heartwood's brilliant yellow-orange pigment — primarily oxyresveratrol — has historically been used as a natural dye for silk and cotton, imparting warm golden tones prized in Buddhist robes across Thailand and Myanmar. The wood itself is hard, durable, and moderately heavy, used in furniture, agricultural implements, and construction in forest communities.</p>
+  </div>
+
+  <!-- SECTION 6 -->
+  <div class="section">
+    <div class="section-header"><span class="section-num">06</span><h2 class="section-title">How to Use Lakucha</h2><div class="section-rule"></div></div>
+    <p class="section-body">Different parts of the Lakucha tree are used for different therapeutic purposes — heartwood preparations predominate in modern phytotherapy due to their exceptional oxyresveratrol content, while the fruit and bark are the primary classical medicinal parts used in Ayurvedic practice. All internal therapeutic preparations should be taken under a qualified practitioner's supervision.</p>
+    <table class="consume-table">
+      <thead><tr><th>Form</th><th>Preparation</th><th>Dosage</th><th>Best Use</th></tr></thead>
+      <tbody>
+        <tr><td>Heartwood Decoction (Kwatha)</td><td>Boil rasped heartwood chips in water; reduce to ¼</td><td>30–50 ml twice daily</td><td>Anti-parasitic, skin disorders, anti-obesity</td></tr>
+        <tr><td>Bark Decoction</td><td>Simmer dried bark in water</td><td>25–40 ml once or twice daily</td><td>Splenic disorders, dyspepsia, fever</td></tr>
+        <tr><td>Heartwood Powder</td><td>Finely ground dried heartwood</td><td>1–3 g with warm water or honey</td><td>Diabetes support, digestive support</td></tr>
+        <tr><td>Fruit (Fresh)</td><td>Ripe fruit pulp consumed directly</td><td>50–100 g with meals</td><td>Digestive stimulant, appetite enhancement</td></tr>
+        <tr><td>Fruit Pickle / Chutney</td><td>Traditional culinary preparation</td><td>As condiment</td><td>Digestive, culinary sour agent</td></tr>
+        <tr><td>Lakuchadyarishta</td><td>Classical fermented preparation (per practitioner)</td><td>15–25 ml after meals</td><td>Spleen disorders, Gulma, abdominal distension</td></tr>
+        <tr><td>Bark Paste (Topical)</td><td>Ground fresh bark applied externally</td><td>Apply to affected area 1–2× daily</td><td>Wound healing, skin ulcers, fungal infections</td></tr>
+        <tr><td>Heartwood Extract (Cosmetic)</td><td>Standardised oxyresveratrol extract</td><td>Per product formulation</td><td>Skin brightening, hyperpigmentation, melasma</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- SECTION 7 -->
+  <div class="section">
+    <div class="section-header"><span class="section-num">07</span><h2 class="section-title">Safety &amp; Precautions</h2><div class="section-rule"></div></div>
+    <p class="section-body">Lakucha has a long history of safe culinary and medicinal use at moderate doses. Its heartwood preparations are generally well-tolerated in short-term therapeutic applications; however, the high concentration of bioactive stilbenoids warrants caution in specific populations and with prolonged use. The fruit's high acidity is the primary concern in dietary use.</p>
+    <ul class="precaution-list">
+      <li><strong>Pitta constitution &amp; hyperacidity:</strong> The fruit's intensely sour-hot nature can aggravate Pitta. Those with hyperacidity, GERD, peptic ulcers, or gastritis should avoid or strictly limit fruit consumption.</li>
+      <li><strong>Pregnancy:</strong> Heartwood and bark preparations in therapeutic doses are not recommended during pregnancy due to insufficient safety data and potential uterine effects.</li>
+      <li><strong>Bleeding disorders:</strong> Stilbenoids including resveratrol have anti-platelet activity. Those on anticoagulants (warfarin, aspirin) or with bleeding disorders should exercise caution and consult a physician.</li>
+      <li><strong>Hypoglycaemia risk:</strong> The documented alpha-glucosidase inhibition and blood sugar-lowering effects mean individuals on anti-diabetic medications must monitor glucose levels carefully to avoid hypoglycaemic episodes.</li>
+      <li><strong>Latex sensitivity:</strong> The milky latex of the bark and stem may cause contact dermatitis in latex-sensitive individuals — wear gloves when handling cut bark or unripe fruit.</li>
+      <li><strong>Oxyresveratrol at high doses:</strong> Extremely high doses of isolated oxyresveratrol (not typical dietary exposure) have shown cytotoxic effects in vitro. Standardised extracts should be used only at recommended concentrations.</li>
+      <li><strong>Drug interactions:</strong> As a CYP enzyme modulator, oxyresveratrol may interact with medications metabolised by CYP2C9 and CYP3A4. Consult a physician if on multiple medications.</li>
+      <li><strong>Children:</strong> Therapeutic (non-culinary) use of heartwood or bark preparations in young children should only be undertaken under specialist supervision.</li>
+    </ul>
+  </div>
+
+  <div class="sources">
+    <div class="sources-title">References &amp; Sources</div>
+    <ul>
+      <li>Sithisarn P et al. — "Oxyresveratrol from Artocarpus lakoocha: biological activities" — Journal of Natural Products, 2013</li>
+      <li>Laosripaiboon W et al. — "Lipase inhibitory activity of Artocarpus lakoocha stilbenoids" — Natural Product Communications, 2017</li>
+      <li>Zhong YJ et al. — "Oxyresveratrol as tyrosinase inhibitor and skin-whitening agent" — Phytochemistry Reviews, 2019</li>
+      <li>Tiraravesit N et al. — "Antimicrobial and antifungal activity of Artocarpus lakoocha extracts" — Asian Pacific Journal of Tropical Biomedicine, 2015</li>
+      <li>Teeranachaideekul V et al. — "Nanoencapsulation of oxyresveratrol from Artocarpus lakoocha for topical delivery" — AAPS PharmSciTech, 2008</li>
+      <li>Bhavaprakasha Nighantu — Amradi Phala Varga — Lakucha entry</li>
+      <li>Charaka Samhita, Kalpasthana — Krimighna yoga references</li>
+      <li>Sushruta Samhita, Chikitsasthana — wound-cleansing preparations</li>
+      <li>Ashtanga Hridaya — Dravyagunavigyan references to Lakucha</li>
+      <li>Dey YN &amp; Ghosh AK — "Pharmacognostical and phytochemical evaluation of Artocarpus lakoocha" — International Journal of Pharmacy and Pharmaceutical Sciences, 2010</li>
+    </ul>
+  </div>
+
+</div>
+
+<footer>
+  <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a qualified practitioner before therapeutic use</p>
+</footer>
+
+
+  <div id="viewerModal">
+    <div id="modal-topbar">
+      <span>3D Model — Lakucha</span>
+      <button type="button" id="close3D">✕</button>
+    </div>
+    <model-viewer src="lakucha3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+  </div>
+  <script>
+    (function() {
+      var open3D = document.getElementById('open3D');
+      var close3D = document.getElementById('close3D');
+      var modal = document.getElementById('viewerModal');
+      if (!open3D || !close3D || !modal) return;
+      function openModal() {
+        
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+      function closeModal() {
+        
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+      open3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); openModal();
+      });
+      close3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); closeModal();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+      });
+    })();
+  </script>
+
+</body>
+</html>

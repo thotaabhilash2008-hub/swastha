@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kirmira | Swastha</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+  <style>
+    #open3D {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      padding: 10px 18px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: var(--forest);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      z-index: 1000;
+      transition: .3s;
+    }
+    #open3D:hover {
+      background: var(--gold);
+      color: var(--deep);
+    }
+    #viewerModal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+    }
+    #modal-topbar {
+      flex-shrink: 0;
+      height: 58px;
+      background: #111111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px 0 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      z-index: 99999;
+    }
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 4.5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.72);
+      user-select: none;
+    }
+    #close3D {
+      width: 38px;
+      height: 38px;
+      font-size: 15px;
+      font-weight: 300;
+      background: transparent;
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background .2s, color .2s, transform .22s;
+      outline: none;
+      flex-shrink: 0;
+    }
+    #close3D:hover {
+      background: #ffffff;
+      color: #111111;
+      border-color: #ffffff;
+      transform: rotate(90deg);
+    }
+    #viewerModal model-viewer {
+      flex: 1;
+      width: 100%;
+      display: block;
+      background: #ffffff;
+    }
+
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+    * { margin:0; padding:0; box-sizing:border-box }
+    html { scroll-behavior:smooth }
+    body { font-family:'Jost',sans-serif; background:var(--cream); color:var(--ink); min-height:100vh; overflow-x:hidden; position:relative }
+    body::before { content:''; position:fixed; inset:0; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E"); opacity:.035; pointer-events:none; z-index:100 }
+
+    .bg-circle { position:fixed; border-radius:50%; pointer-events:none; z-index:0 }
+    .bg-circle-1 { width:700px; height:700px; background:radial-gradient(circle,rgba(74,103,65,.1) 0%,transparent 70%); top:-200px; right:-150px }
+    .bg-circle-2 { width:500px; height:500px; background:radial-gradient(circle,rgba(196,154,60,.08) 0%,transparent 70%); bottom:-100px; left:-100px }
+
+    .botanical-svg { position:fixed; pointer-events:none; z-index:1; opacity:.09 }
+    .botanical-tl { top:-20px; left:-20px; width:260px }
+    .botanical-br { bottom:-20px; right:-20px; width:220px; transform:rotate(180deg) }
+
+    .hero { position:relative; z-index:10; padding:54px 40px 0; text-align:center; opacity:0; animation:fadeUp .9s ease .1s forwards }
+    .back-link { display:inline-flex; align-items:center; gap:8px; font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--sage); text-decoration:none; margin-bottom:36px; transition:color .3s }
+    .back-link:hover { color:var(--gold) }
+    .logo-rule { display:flex; align-items:center; justify-content:center; gap:20px; margin-bottom:14px }
+    .logo-rule span { display:block; height:1px; width:70px; background:linear-gradient(to right,transparent,var(--gold)) }
+    .logo-rule span:last-child { background:linear-gradient(to left,transparent,var(--gold)) }
+    .logo-ornament { font-size:13px; color:var(--gold) }
+    .hero-title { font-family:'Cormorant Garamond',serif; font-size:clamp(64px,12vw,110px); font-weight:300; letter-spacing:8px; line-height:1; color:var(--deep) }
+    .hero-subtitle { font-family:'Cormorant Garamond',serif; font-size:18px; font-style:italic; font-weight:300; color:var(--earth); letter-spacing:2px; margin-top:8px }
+    .hero-sci { font-size:11px; font-weight:200; letter-spacing:5px; color:var(--sage); margin-top:6px }
+
+    .hero-photos { position:relative; z-index:10; display:grid; grid-template-columns:1fr 1fr; gap:2px; max-width:900px; margin:40px auto 0; opacity:0; animation:fadeUp .9s ease .35s forwards }
+    .hero-photos img { width:100%; height:380px; object-fit:cover; object-position:center; display:block; background:var(--parchment) }
+    .photo-caption { text-align:center; font-family:'Cormorant Garamond',serif; font-size:12px; font-style:italic; color:var(--sage); letter-spacing:1px; padding:10px 0 0; max-width:900px; margin:0 auto; position:relative; z-index:10; opacity:0; animation:fadeUp .9s ease .5s forwards }
+
+    .divider { display:flex; align-items:center; justify-content:center; gap:16px; margin:50px auto; max-width:600px; opacity:0; animation:fadeUp .9s ease .55s forwards; position:relative; z-index:10 }
+    .divider-line { height:1px; width:120px; background:linear-gradient(to right,transparent,var(--sage)) }
+    .divider-line:last-child { background:linear-gradient(to left,transparent,var(--sage)) }
+    .divider-leaf { color:var(--forest); font-size:18px }
+
+    .content { position:relative; z-index:10; max-width:860px; margin:0 auto; padding:0 30px 80px }
+    .intro-text { font-family:'Cormorant Garamond',serif; font-size:20px; font-weight:300; line-height:1.75; color:var(--ink); text-align:center; max-width:700px; margin:0 auto 60px; opacity:0; animation:fadeUp .9s ease .6s forwards }
+    .intro-text em { color:var(--forest); font-style:italic }
+
+    .section { margin-bottom:60px; opacity:0; animation:fadeUp .9s ease forwards }
+    .section:nth-child(1){animation-delay:.65s}.section:nth-child(2){animation-delay:.75s}.section:nth-child(3){animation-delay:.85s}.section:nth-child(4){animation-delay:.95s}.section:nth-child(5){animation-delay:1.05s}.section:nth-child(6){animation-delay:1.15s}.section:nth-child(7){animation-delay:1.25s}
+
+    .section-header { display:flex; align-items:center; gap:14px; margin-bottom:20px }
+    .section-num { font-family:'Cormorant Garamond',serif; font-size:11px; letter-spacing:4px; color:var(--gold) }
+    .section-title { font-family:'Cormorant Garamond',serif; font-size:28px; font-weight:400; color:var(--deep); letter-spacing:1px }
+    .section-rule { height:1px; flex:1; background:linear-gradient(to right,var(--gold),transparent) }
+    .section-body { font-size:13px; font-weight:300; line-height:1.9; color:var(--ink); margin-bottom:24px }
+
+    .data-table { width:100%; border-collapse:collapse; margin:16px 0 8px; font-size:12px }
+    .data-table thead tr { background:var(--deep); color:var(--gold); font-size:10px; letter-spacing:3px; text-transform:uppercase }
+    .data-table thead th { padding:12px 14px; text-align:left; font-weight:400 }
+    .data-table tbody tr:nth-child(even) { background:var(--parchment) }
+    .data-table tbody tr:nth-child(odd) { background:var(--cream) }
+    .data-table tbody tr { transition:background .2s }
+    .data-table tbody tr:hover { background:#e5d8c4 }
+    .data-table tbody td { padding:10px 14px; color:var(--ink); border-bottom:1px solid rgba(107,79,45,.08) }
+    .data-table tbody td:first-child { font-weight:400; color:var(--deep); width:28% }
+
+    .dosha-table { width:100%; border-collapse:collapse; margin:16px 0; font-size:12px }
+    .dosha-table thead tr { background:var(--forest); color:var(--cream) }
+    .dosha-table thead th { padding:12px 14px; text-align:left; font-weight:400; letter-spacing:2px; font-size:10px; text-transform:uppercase }
+    .dosha-table tbody tr:nth-child(even) { background:var(--parchment) }
+    .dosha-table tbody tr:nth-child(odd) { background:var(--cream) }
+    .dosha-table tbody td { padding:11px 14px; color:var(--ink); border-bottom:1px solid rgba(107,79,45,.08) }
+    .dosha-table tbody td:first-child { font-weight:400; color:var(--forest); width:18% }
+    .dosha-table tbody td:nth-child(2) { color:var(--earth); width:20% }
+
+    .consume-table { width:100%; border-collapse:collapse; margin:16px 0; font-size:12px }
+    .consume-table thead tr { background:var(--earth); color:var(--cream) }
+    .consume-table thead th { padding:12px 14px; text-align:left; font-weight:400; letter-spacing:2px; font-size:10px; text-transform:uppercase }
+    .consume-table tbody tr:nth-child(even) { background:var(--parchment) }
+    .consume-table tbody tr:nth-child(odd) { background:var(--cream) }
+    .consume-table tbody td { padding:11px 14px; color:var(--ink); border-bottom:1px solid rgba(107,79,45,.08) }
+    .consume-table tbody td:first-child { font-weight:400; color:var(--earth); width:22% }
+
+    .benefits-grid { display:grid; grid-template-columns:1fr 1fr; gap:1px; background:rgba(107,79,45,.12); border:1px solid rgba(107,79,45,.12); margin:8px 0 }
+    .benefit-card { background:var(--cream); padding:24px 22px; transition:background .3s; position:relative; overflow:hidden }
+    .benefit-card:hover { background:#e8dbc8 }
+    .benefit-card::before { content:''; position:absolute; bottom:0; left:0; width:0; height:2px; background:var(--gold); transition:width .4s }
+    .benefit-card:hover::before { width:100% }
+    .benefit-title { font-family:'Cormorant Garamond',serif; font-size:16px; font-weight:600; color:var(--forest); margin-bottom:8px }
+    .benefit-desc { font-size:11.5px; font-weight:300; line-height:1.75; color:var(--ink); opacity:.85 }
+
+    .precaution-list { list-style:none; margin:8px 0 }
+    .precaution-list li { display:flex; gap:12px; align-items:flex-start; padding:10px 14px; font-size:12px; font-weight:300; line-height:1.7; color:var(--ink); border-bottom:1px solid rgba(107,79,45,.08) }
+    .precaution-list li:last-child { border-bottom:none }
+    .precaution-list li::before { content:'▸'; color:var(--gold); flex-shrink:0; margin-top:1px }
+
+    .nutrition-bar { display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:rgba(107,79,45,.12); border:1px solid rgba(107,79,45,.12); margin:20px 0 }
+    .nutrition-cell { background:var(--cream); padding:22px 16px; text-align:center; transition:background .3s }
+    .nutrition-cell:hover { background:var(--parchment) }
+    .nutrition-num { font-family:'Cormorant Garamond',serif; font-size:36px; font-weight:300; color:var(--forest); line-height:1; margin-bottom:4px }
+    .nutrition-unit { font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--gold); font-weight:300 }
+    .nutrition-label { font-size:11px; font-weight:300; color:var(--ink); margin-top:5px }
+
+    .sources { border-top:1px solid rgba(107,79,45,.15); padding-top:24px; margin-top:20px }
+    .sources-title { font-size:10px; letter-spacing:4px; text-transform:uppercase; color:var(--sage); margin-bottom:12px; font-weight:300 }
+    .sources ul { list-style:none }
+    .sources ul li { font-family:'Cormorant Garamond',serif; font-size:13px; font-style:italic; color:var(--earth); padding:5px 0; border-bottom:1px solid rgba(107,79,45,.06) }
+    .sources ul li::before { content:'· '; color:var(--sage) }
+
+    footer { position:relative; z-index:10; text-align:center; padding:24px 20px 44px; border-top:1px solid rgba(107,79,45,.12); max-width:860px; margin:0 auto }
+    footer p { font-size:11px; letter-spacing:4px; text-transform:uppercase; color:var(--sage); font-weight:300 }
+
+    @keyframes fadeUp { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:translateY(0)} }
+    @media(max-width:700px){
+      .hero-photos{grid-template-columns:1fr}.hero-photos img{height:260px}
+      .benefits-grid{grid-template-columns:1fr}
+      .nutrition-bar{grid-template-columns:1fr 1fr}
+      .content{padding:0 18px 60px}
+    }
+  </style>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+</head>
+<body>
+  <button type="button" id="open3D">View in 3D</button>
+
+
+<div class="bg-circle bg-circle-1"></div>
+<div class="bg-circle bg-circle-2"></div>
+
+<svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#4a6741" stroke-width="1.5" fill="none"/>
+  <circle cx="90" cy="210" r="8" fill="#4a6741" opacity="0.7"/>
+  <circle cx="130" cy="175" r="10" fill="#8aab7e" opacity="0.6"/>
+  <circle cx="170" cy="135" r="7" fill="#4a6741" opacity="0.8"/>
+  <circle cx="210" cy="95" r="9" fill="#c49a3c" opacity="0.5"/>
+  <ellipse cx="115" cy="195" rx="20" ry="10" fill="#8aab7e" transform="rotate(-30 115 195)"/>
+  <ellipse cx="155" cy="155" rx="18" ry="9" fill="#4a6741" transform="rotate(-45 155 155)"/>
+  <ellipse cx="195" cy="115" rx="16" ry="8" fill="#8aab7e" transform="rotate(-60 195 115)"/>
+</svg>
+<svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#4a6741" stroke-width="1.5" fill="none"/>
+  <circle cx="90" cy="210" r="8" fill="#4a6741" opacity="0.7"/>
+  <circle cx="130" cy="175" r="10" fill="#8aab7e" opacity="0.6"/>
+  <ellipse cx="115" cy="195" rx="20" ry="10" fill="#8aab7e" transform="rotate(-30 115 195)"/>
+</svg>
+
+<div class="hero">
+  <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+  <div class="logo-rule"><span></span><div class="logo-ornament">✦</div><span></span></div>
+  <div class="hero-title">Kirmira</div>
+  <div class="hero-subtitle">The Worm-Repelling Herb — Bitter Cleansing Plant</div>
+  <div class="hero-sci">Chenopodium ambrosioides &nbsp;·&nbsp; Dysphania ambrosioides</div>
+</div>
+
+<div class="hero-photos">
+  <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e4/Chenopodium_ambrosioides_2.jpg/1280px-Chenopodium_ambrosioides_2.jpg" alt="Kirmira plant with aromatic serrated leaves" onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+  <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/2/2f/Starr_030628-0154_Chenopodium_ambrosioides.jpg/1280px-Starr_030628-0154_Chenopodium_ambrosioides.jpg" alt="Kirmira flowering spikes with small greenish flowers" onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+</div>
+<p class="photo-caption">Fig. 1 — Aromatic, serrated leaves of Kirmira bearing characteristic pungent volatile oils &nbsp;·&nbsp; Fig. 2 — Slender flowering spikes of Chenopodium ambrosioides in its natural wasteland habitat</p>
+
+<div class="divider">
+  <div class="divider-line"></div>
+  <div class="divider-leaf">❧</div>
+  <div class="divider-line"></div>
+</div>
+
+<div class="content">
+  <p class="intro-text">Named in Ayurveda as <em>Kirmira</em> or <em>Krimighna</em> — "destroyer of worms" — this intensely aromatic annual herb has served as one of the Indian subcontinent's most valued anthelmintic and digestive remedies. Mentioned across classical Nighantus and folk traditions from the Himalayas to Sri Lanka, its volatile oil yields ascaridole, among the most potent natural antiparasitic compounds known.</p>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">01</span><h2 class="section-title">Botanical Profile</h2><div class="section-rule"></div></div>
+    <p class="section-body">Kirmira (<em>Chenopodium ambrosioides</em>, syn. <em>Dysphania ambrosioides</em>) is a strongly aromatic, erect annual or short-lived perennial herb of the Amaranthaceae (formerly Chenopodiaceae) family. Native to Central and South America, it has been naturalised across the tropics and subtropics for centuries, and is today considered cosmopolitan — growing freely in wastelands, roadsides, cultivated fields, and disturbed soils throughout India, Southeast Asia, Africa, and the Americas.</p>
+    <p class="section-body">The plant grows to 60–120 cm, with alternate, oblong-lanceolate leaves that are distinctly toothed and covered on the undersurface with yellow glandular dots — the source of its powerful scent. Tiny greenish flowers are borne in dense, slender axillary spikes; the fruit is a small utricle enclosed by persistent calyx. The entire above-ground plant is fragrant, but the seeds and their oil are the most medicinally concentrated part of the plant.</p>
+    <table class="data-table">
+      <thead><tr><th>PROPERTY</th><th>Detail</th></tr></thead>
+      <tbody>
+        <tr><td>Family</td><td>Amaranthaceae (formerly Chenopodiaceae)</td></tr>
+        <tr><td>Botanical Name</td><td>Chenopodium ambrosioides L. / Dysphania ambrosioides (L.) Mosyakin &amp; Clemants</td></tr>
+        <tr><td>Sanskrit Names</td><td>Kirmira, Krimighna, Vastuka, Chakramarda (some traditions), Sugandha Vastuka</td></tr>
+        <tr><td>Common Names</td><td>Wormseed, Epazote, Mexican Tea, Jesuit's Tea, American Wormseed</td></tr>
+        <tr><td>Regional Names</td><td>Sugandha Vastuka (Hindi), Killickenai (Tam), Kadu Sugandhi (Kan), Bethua (Bengal)</td></tr>
+        <tr><td>Origin</td><td>Central &amp; South America; naturalised pantropically</td></tr>
+        <tr><td>Plant Type</td><td>Strongly aromatic annual/perennial herb (60–120 cm)</td></tr>
+        <tr><td>Flowering Season</td><td>August–November (variable with region)</td></tr>
+        <tr><td>Medicinal Parts</td><td>Seeds &amp; seed oil (primary); leaves, aerial parts, roots</td></tr>
+        <tr><td>Taste Profile</td><td>Katu (pungent), Tikta (bitter), Kashaya (astringent)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">02</span><h2 class="section-title">Phytochemistry Composition</h2><div class="section-rule"></div></div>
+    <p class="section-body">The defining phytochemical of Kirmira is <em>ascaridole</em> — a bicyclic monoterpene endoperoxide comprising 60–80% of the essential oil distilled from seeds and aerial parts. Ascaridole is one of the few natural compounds containing a peroxide bridge, making it highly reactive and responsible for the plant's potent anthelmintic, antimicrobial, and cytotoxic activities. Beyond ascaridole, the plant is rich in flavonoids, phenolic acids, saponins, and mineral nutrients.</p>
+    <div class="nutrition-bar">
+      <div class="nutrition-cell"><div class="nutrition-num">70%</div><div class="nutrition-unit">ascaridole</div><div class="nutrition-label">In seed oil (avg)</div></div>
+      <div class="nutrition-cell"><div class="nutrition-num">0.6–1%</div><div class="nutrition-unit">essential oil</div><div class="nutrition-label">Yield from aerial parts</div></div>
+      <div class="nutrition-cell"><div class="nutrition-num">18%</div><div class="nutrition-unit">protein</div><div class="nutrition-label">In dried seeds</div></div>
+      <div class="nutrition-cell"><div class="nutrition-num">40+</div><div class="nutrition-unit">compounds</div><div class="nutrition-label">Identified in volatile oil</div></div>
+    </div>
+    <table class="data-table">
+      <thead><tr><th>Compound</th><th>Category</th><th>Primary Action</th></tr></thead>
+      <tbody>
+        <tr><td>Ascaridole</td><td>Bicyclic monoterpene endoperoxide</td><td>Anthelmintic (roundworm, hookworm, tapeworm); antimicrobial, cytotoxic</td></tr>
+        <tr><td>p-Cymene &amp; α-Terpinene</td><td>Monoterpene hydrocarbons</td><td>Antimicrobial, anti-inflammatory; co-oxidants with ascaridole</td></tr>
+        <tr><td>Isoascaridole &amp; Ascaridole Glycol</td><td>Monoterpene derivatives</td><td>Secondary anthelmintic activity</td></tr>
+        <tr><td>Kaempferol &amp; Quercetin Glycosides</td><td>Flavonoids</td><td>Antioxidant, anti-inflammatory, capillary-protective</td></tr>
+        <tr><td>Caffeic &amp; Chlorogenic Acids</td><td>Phenolic acids</td><td>Antioxidant, hepatoprotective, antimicrobial</td></tr>
+        <tr><td>Saponins</td><td>Triterpenoid glycosides</td><td>Antifungal, molluscicidal, haemolytic at high dose</td></tr>
+        <tr><td>Oxalic Acid</td><td>Organic acid</td><td>Astringent; kidney stone risk at very high intake</td></tr>
+        <tr><td>Calcium, Iron, Zinc</td><td>Minerals</td><td>Nutritive; leaves used as vegetable in folk cooking</td></tr>
+        <tr><td>Rutin &amp; Apigenin</td><td>Flavones</td><td>Venous tonic, anti-spasmodic, anti-inflammatory</td></tr>
+        <tr><td>Limonene &amp; Camphor</td><td>Monoterpenes</td><td>Carminative, antispasmodic, digestive stimulant</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">03</span><h2 class="section-title">Ayurvedic Significance</h2><div class="section-rule"></div></div>
+    <p class="section-body">Kirmira belongs to the <em>Krimighna</em> (worm-destroying) category of Ayurvedic dravyas and is referenced in multiple Nighantus as a principal herb for <em>Krimiroga</em> — the classical category encompassing intestinal parasites, skin infestations, and other microorganism-driven diseases. Dhanvantari Nighantu, Shodala Nighantu, and Raj Nighantu each catalogue its uses, noting its affinity for Kapha and Vata disorders of the gut and skin.</p>
+    <p class="section-body">Classical verse — <em>"Kirmiras tikta-katu kashaya, laghu ushna, krimighno vishama jwaraghna — shotha shvasa kasa nashana, pliha gudakrimihara param"</em> — attributes to it bitter-pungent-astringent taste, light and hot qualities, worm-killing, spleen-pacifying, anti-asthmatic, anti-cough, and haemorrhoidal benefits. Its use as a leafy vegetable (<em>Vastuka shaka</em>) during seasonal transitions is also documented in dietary treatises.</p>
+    <table class="dosha-table">
+      <thead><tr><th>Dosha</th><th>Effect</th><th>Mechanism &amp; Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Vata ↓</td><td>Mildly pacifying</td><td>Ushna virya (hot) and carminative volatile oils relieve intestinal spasm, bloating, and gas — classic Vata-in-gut symptoms; relieves colic when seeds are decocted</td></tr>
+        <tr><td>Pitta ↑</td><td>Aggravating</td><td>Intensely hot and pungent nature increases Pitta significantly; contraindicated in inflammatory bowel conditions, hyperacidity, bleeding disorders, and febrile states</td></tr>
+        <tr><td>Kapha ↓</td><td>Strongly pacifying</td><td>Tikshna (sharp), laghu (light), ushna (hot) properties strongly reduce Kapha — primary indication in worm infestations, mucus accumulation, and respiratory congestion</td></tr>
+      </tbody>
+    </table>
+    <p class="section-body"><strong>Rasa:</strong> Katu, Tikta, Kashaya &nbsp;·&nbsp; <strong>Guna:</strong> Laghu, Tikshna &nbsp;·&nbsp; <strong>Virya:</strong> Ushna &nbsp;·&nbsp; <strong>Vipaka:</strong> Katu &nbsp;·&nbsp; <strong>Karma:</strong> Krimighna, Deepana, Pachana, Shvashara, Shothaghna</p>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">04</span><h2 class="section-title">Key Health Benefits</h2><div class="section-rule"></div></div>
+    <p class="section-body">Kirmira's pharmacological profile has been extensively validated in modern research, with its anthelmintic, antimicrobial, antifungal, and digestive actions among the best-documented of any traditional anthelmintic plant. The essential oil and its constituent ascaridole have been studied across dozens of in vitro and in vivo investigations globally.</p>
+    <div class="benefits-grid">
+      <div class="benefit-card">
+        <div class="benefit-title">Anthelmintic — Worm Expulsion</div>
+        <div class="benefit-desc">The signature use across all traditional systems. Ascaridole paralyses the musculature of intestinal roundworms (Ascaris), hookworms (Ancylostoma, Necator), and tapeworms (Taenia), enabling their expulsion. Documented efficacy rivals earlier synthetic anthelmintics in folk use, especially in combination with a purgative.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Digestive Stimulant &amp; Carminative</div>
+        <div class="benefit-desc">Leaves used as a cooking herb in Central American and South Asian cuisines precisely for their carminative effect. Volatile oils stimulate bile secretion, enhance gastric motility, and relieve flatulence and intestinal cramping — making it the classical <em>deepana-pachana</em> herb for sluggish digestion.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Antimicrobial &amp; Antifungal</div>
+        <div class="benefit-desc">Essential oil shows significant inhibition of Candida albicans, Aspergillus, and multiple drug-resistant bacterial strains including Staphylococcus aureus (MRSA), E. coli, and Salmonella. Topical preparations are used in folk medicine for tinea infections, skin ulcers, and infected wounds.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Respiratory &amp; Anti-asthmatic</div>
+        <div class="benefit-desc">Classical Ayurveda uses Kirmira in Kapha-driven cough, bronchitis, and breathlessness. The bronchospasmolytic and expectorant properties of the volatile oil have been confirmed in animal studies — relaxing bronchial smooth muscle and facilitating mucociliary clearance.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Anti-inflammatory &amp; Analgesic</div>
+        <div class="benefit-desc">Aqueous and methanolic leaf extracts reduce carrageenan-induced paw oedema in rodents and elevate pain threshold in hot-plate and writhing tests. Flavonoids and caffeic acid derivatives contribute to cyclooxygenase inhibition and prostaglandin suppression.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Haemorrhoidal &amp; Rectal Support</div>
+        <div class="benefit-desc">Mentioned in classical texts as <em>gudakrimihara</em> — destroyer of rectal/anal parasites and reliever of haemorrhoid-associated inflammation. Leaf paste or warm decoction sitz baths are used for haemorrhoids, rectal prolapse, and perianal worm infestation in folk tradition.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Spleen &amp; Liver Support</div>
+        <div class="benefit-desc">The classical designation <em>pliha hara</em> (spleen-reducing) reflects its use in splenomegaly secondary to parasitic infection and malarial states. Phenolic acid content provides hepatoprotective support against parasite-induced hepatic stress and toxic burden during anthelmintic treatment.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Nutritive Leafy Vegetable</div>
+        <div class="benefit-desc">Young leaves are consumed as <em>Vastuka shaka</em> — a seasonal potherb — across India, eaten boiled or sautéed during autumn-winter as a nutritive food rich in iron, calcium, folate, and antioxidant flavonoids, supporting blood building and immunity during seasonal transitions.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">05</span><h2 class="section-title">How to Consume Kirmira</h2><div class="section-rule"></div></div>
+    <p class="section-body">The potency and toxicity of Kirmira's essential oil — particularly ascaridole — demands strict adherence to classical dosing. The seed oil (Chenopodium oil) was once a WHO-approved anthelmintic but was replaced by safer synthetics due to its narrow therapeutic window. Traditional Ayurvedic use employs the whole plant at lower doses, generally with a purgative to complete the anthelmintic action. Leaves as food are safe; concentrated seed preparations require physician oversight.</p>
+    <table class="consume-table">
+      <thead><tr><th>Form</th><th>Preparation</th><th>Dosage</th><th>Best Use</th></tr></thead>
+      <tbody>
+        <tr><td>Leaf Vegetable (Shaka)</td><td>Young leaves boiled or sautéed with ghee and spices</td><td>Normal food quantity</td><td>General nutrition, seasonal tonic, mild carminative</td></tr>
+        <tr><td>Leaf Decoction (Kwatha)</td><td>Boil fresh leaves; reduce by half; strain</td><td>20–30 ml, twice daily</td><td>Intestinal worms, gas, digestive sluggishness</td></tr>
+        <tr><td>Seed Powder</td><td>Dried seeds powdered; taken with warm water</td><td>1–2 g under supervision</td><td>Anthelmintic; must be followed by purgative</td></tr>
+        <tr><td>Seed Decoction</td><td>Decoct seeds in water; strain carefully</td><td>10–15 ml, physician-directed</td><td>Roundworm, hookworm expulsion</td></tr>
+        <tr><td>Leaf Juice (Swarasa)</td><td>Pound fresh leaves; strain juice</td><td>10–15 ml once daily</td><td>Cough, breathlessness, mild fever</td></tr>
+        <tr><td>Leaf Paste (Topical)</td><td>Fresh leaves pounded into paste</td><td>Apply to affected area</td><td>Skin infections, tinea, haemorrhoids</td></tr>
+        <tr><td>Decoction Sitz Bath</td><td>Boil whole plant in water; use as warm sitz</td><td>As needed, 10–15 min</td><td>Haemorrhoids, perianal worm infestation, rectal inflammation</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">06</span><h2 class="section-title">Safety &amp; Precautions</h2><div class="section-rule"></div></div>
+    <p class="section-body">Kirmira's essential oil — particularly ascaridole — has a narrow therapeutic window. The traditional anthelmintic seed oil (Chenopodium oil) caused numerous fatalities before being withdrawn from pharmacopoeias in the 1950s. Leaves as food are safe; seed and oil preparations demand careful, physician-supervised dosing. The plant should never be self-administered in concentrated form.</p>
+    <ul class="precaution-list">
+      <li><strong>Pregnancy:</strong> Strictly contraindicated. The plant is a documented emmenagogue and abortifacient — even leaf consumption in large quantities may stimulate uterine contractions. Seed oil is absolutely prohibited.</li>
+      <li><strong>Breastfeeding:</strong> Avoid internal use. Ascaridole is lipophilic and may transfer to breast milk, with potential neurotoxic effects on infants.</li>
+      <li><strong>Seed oil &amp; concentrated extracts:</strong> The pure essential oil should never be taken internally without clinical supervision. The therapeutic dose and toxic dose of ascaridole are dangerously close — historical overdoses caused neurological symptoms, liver failure, and death.</li>
+      <li><strong>Renal disease &amp; kidney stones:</strong> High oxalic acid content in leaves contraindicates large-quantity consumption in individuals with urolithiasis, hyperoxaluria, or compromised renal function.</li>
+      <li><strong>Liver conditions:</strong> Ascaridole is metabolised hepatically and potentially hepatotoxic at excessive doses — avoid in pre-existing liver disease without medical oversight.</li>
+      <li><strong>Children under 12:</strong> Internal seed or oil preparations are absolutely contraindicated. Neurotoxic sensitivity is significantly higher in children; even therapeutic doses of seed oil have caused fatal outcomes in historical paediatric use.</li>
+      <li><strong>Pitta-dominant constitutions:</strong> Intensely ushna virya aggravates Pitta — avoid in hyperacidity, peptic ulcer, inflammatory bowel disease, bleeding tendencies, and fever with inflammatory signs.</li>
+      <li><strong>Drug interactions:</strong> May potentiate hepatotoxic drugs (acetaminophen, methotrexate, antifungals). Consult a physician if on regular medication before using seed preparations.</li>
+      <li><strong>Duration of anthelmintic use:</strong> Therapeutic use for worm expulsion should not exceed 3–5 days in classical protocols. Always combine with a gentle purgative (castor oil) to complete the treatment cycle and prevent dead parasite absorption.</li>
+    </ul>
+  </div>
+
+  <div class="sources">
+    <div class="sources-title">References &amp; Sources</div>
+    <ul>
+      <li>Monzote L et al. — "Essential Oil from Chenopodium ambrosioides and Main Components: Activity against Leishmania, Their Mitochondria and Polygalacturonases" — Phytomedicine, 2014</li>
+      <li>Oibiokpa FI et al. — "Anthelmintic efficacy of Chenopodium ambrosioides" — Annual Research & Review in Biology, 2018</li>
+      <li>Yadav RK &amp; Bhardwaj SD — "Phytochemical screening and anthelmintic activity of Chenopodium ambrosioides" — Journal of Pharmacognosy and Phytochemistry, 2015</li>
+      <li>WHO — "Medicinal Plants in the South Pacific: Chenopodium ambrosioides" — WHO Regional Office for the Western Pacific, 1998</li>
+      <li>Priyavrat Sharma — Dravyaguna Vigyana Vol. II — Classical properties of Krimighna dravyas</li>
+      <li>Dhanvantari Nighantu — Kapha-Vata hara dravya classification</li>
+      <li>Raj Nighantu — Krimighna Varga entry for Kirmira / Vastuka</li>
+      <li>Bhavaprakasha Nighantu — Shakavargas including Vastuka shaka</li>
+      <li>Krishnamurthy KH — "Indian Medicinal Plants" Vol. 2 — Kirmira entry</li>
+      <li>Gakuubi MM et al. — "Antibacterial Activity of Essential Oil of Chenopodium ambrosioides" — Evidence-Based Complementary and Alternative Medicine, 2020</li>
+    </ul>
+  </div>
+</div>
+
+<footer>
+  <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a qualified practitioner before therapeutic use</p>
+</footer>
+
+
+  <div id="viewerModal">
+    <div id="modal-topbar">
+      <span>3D Model — Kirmira</span>
+      <button type="button" id="close3D">✕</button>
+    </div>
+    <model-viewer src="kirmira3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+  </div>
+  <script>
+    (function() {
+      var open3D = document.getElementById('open3D');
+      var close3D = document.getElementById('close3D');
+      var modal = document.getElementById('viewerModal');
+      if (!open3D || !close3D || !modal) return;
+      function openModal() {
+        
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+      function closeModal() {
+        
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+      open3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); openModal();
+      });
+      close3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); closeModal();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+      });
+    })();
+  </script>
+
+</body>
+</html>

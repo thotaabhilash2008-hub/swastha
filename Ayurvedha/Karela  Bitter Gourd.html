@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Karela | Swastha</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap"
+    rel="stylesheet">
+  <style>
+    #open3D {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      padding: 10px 18px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: var(--forest);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      z-index: 1000;
+      transition: .3s;
+    }
+    #open3D:hover {
+      background: var(--gold);
+      color: var(--deep);
+    }
+    #viewerModal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+    }
+    #modal-topbar {
+      flex-shrink: 0;
+      height: 58px;
+      background: #111111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px 0 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      z-index: 99999;
+    }
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 4.5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.72);
+      user-select: none;
+    }
+    #close3D {
+      width: 38px;
+      height: 38px;
+      font-size: 15px;
+      font-weight: 300;
+      background: transparent;
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background .2s, color .2s, transform .22s;
+      outline: none;
+      flex-shrink: 0;
+    }
+    #close3D:hover {
+      background: #ffffff;
+      color: #111111;
+      border-color: #ffffff;
+      transform: rotate(90deg);
+    }
+    #viewerModal model-viewer {
+      flex: 1;
+      width: 100%;
+      display: block;
+      background: #ffffff;
+    }
+
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+
+    * { margin: 0; padding: 0; box-sizing: border-box }
+    html { scroll-behavior: smooth }
+    body {
+      font-family: 'Jost', sans-serif;
+      background: var(--cream);
+      color: var(--ink);
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity: .03;
+      pointer-events: none;
+      z-index: 100
+    }
+
+    .bg-circle { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0 }
+    .bg-circle-1 { width: 700px; height: 700px; background: radial-gradient(circle, rgba(45,90,39,.12) 0%, transparent 70%); top: -200px; right: -150px }
+    .bg-circle-2 { width: 500px; height: 500px; background: radial-gradient(circle, rgba(143,186,60,.08) 0%, transparent 70%); bottom: -100px; left: -100px }
+
+    .botanical-svg { position: fixed; pointer-events: none; z-index: 1; opacity: .09 }
+    .botanical-tl { top: -20px; left: -20px; width: 280px }
+    .botanical-br { bottom: -20px; right: -20px; width: 240px; transform: rotate(180deg) }
+
+    .hero {
+      position: relative; z-index: 10;
+      padding: 54px 40px 0;
+      text-align: center;
+      opacity: 0;
+      animation: fadeUp .9s ease .1s forwards
+    }
+    .back-link {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+      color: var(--sage); text-decoration: none; margin-bottom: 36px; transition: color .3s
+    }
+    .back-link:hover { color: var(--gold) }
+    .logo-rule { display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 14px }
+    .logo-rule span { display: block; height: 1px; width: 70px; background: linear-gradient(to right, transparent, var(--gold)) }
+    .logo-rule span:last-child { background: linear-gradient(to left, transparent, var(--gold)) }
+    .logo-ornament { font-size: 13px; color: var(--gold) }
+    .hero-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(64px, 12vw, 110px);
+      font-weight: 300; letter-spacing: 8px; line-height: 1; color: var(--deep)
+    }
+    .hero-subtitle {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 18px; font-style: italic; font-weight: 300;
+      color: var(--earth); letter-spacing: 2px; margin-top: 8px
+    }
+    .hero-sci {
+      font-size: 11px; font-weight: 200; letter-spacing: 5px;
+      color: var(--sage); margin-top: 6px
+    }
+
+    .hero-photos {
+      position: relative; z-index: 10;
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 2px; max-width: 900px; margin: 40px auto 0;
+      opacity: 0; animation: fadeUp .9s ease .35s forwards
+    }
+    .hero-photos img {
+      width: 100%; height: 380px; object-fit: cover; object-position: center;
+      display: block; background: var(--parchment)
+    }
+    .photo-caption {
+      text-align: center; font-family: 'Cormorant Garamond', serif;
+      font-size: 12px; font-style: italic; color: var(--sage);
+      letter-spacing: 1px; padding: 10px 0 0; max-width: 900px;
+      margin: 0 auto; position: relative; z-index: 10;
+      opacity: 0; animation: fadeUp .9s ease .5s forwards
+    }
+
+    .divider {
+      display: flex; align-items: center; justify-content: center;
+      gap: 16px; margin: 50px auto; max-width: 600px;
+      opacity: 0; animation: fadeUp .9s ease .55s forwards;
+      position: relative; z-index: 10
+    }
+    .divider-line { height: 1px; width: 120px; background: linear-gradient(to right, transparent, var(--sage)) }
+    .divider-line:last-child { background: linear-gradient(to left, transparent, var(--sage)) }
+    .divider-leaf { color: var(--forest); font-size: 20px }
+
+    .content {
+      position: relative; z-index: 10;
+      max-width: 860px; margin: 0 auto; padding: 0 30px 80px
+    }
+
+    .intro-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 20px; font-weight: 300; line-height: 1.75;
+      color: var(--ink); text-align: center; max-width: 700px;
+      margin: 0 auto 60px;
+      opacity: 0; animation: fadeUp .9s ease .6s forwards
+    }
+    .intro-text em { color: var(--forest); font-style: italic }
+
+    .section { margin-bottom: 60px; opacity: 0; animation: fadeUp .9s ease forwards }
+    .section:nth-child(1) { animation-delay: .65s }
+    .section:nth-child(2) { animation-delay: .75s }
+    .section:nth-child(3) { animation-delay: .85s }
+    .section:nth-child(4) { animation-delay: .95s }
+    .section:nth-child(5) { animation-delay: 1.05s }
+    .section:nth-child(6) { animation-delay: 1.15s }
+    .section:nth-child(7) { animation-delay: 1.25s }
+
+    .section-header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px }
+    .section-num { font-family: 'Cormorant Garamond', serif; font-size: 11px; letter-spacing: 4px; color: var(--gold) }
+    .section-title { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 400; color: var(--deep); letter-spacing: 1px }
+    .section-rule { height: 1px; flex: 1; background: linear-gradient(to right, var(--gold), transparent) }
+    .section-body { font-size: 13px; font-weight: 300; line-height: 1.9; color: var(--ink); margin-bottom: 24px }
+
+    .data-table { width: 100%; border-collapse: collapse; margin: 16px 0 8px; font-size: 12px }
+    .data-table thead tr { background: var(--deep); color: var(--gold); font-size: 10px; letter-spacing: 3px; text-transform: uppercase }
+    .data-table thead th { padding: 12px 14px; text-align: left; font-weight: 400 }
+    .data-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .data-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .data-table tbody tr { transition: background .2s }
+    .data-table tbody tr:hover { background: #dde8cc }
+    .data-table tbody td { padding: 10px 14px; color: var(--ink); border-bottom: 1px solid rgba(45,90,39,.08) }
+    .data-table tbody td:first-child { font-weight: 400; color: var(--deep); width: 28% }
+
+    .dosha-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .dosha-table thead tr { background: var(--forest); color: var(--cream) }
+    .dosha-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .dosha-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .dosha-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .dosha-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(45,90,39,.08) }
+    .dosha-table tbody td:first-child { font-weight: 400; color: var(--forest); width: 18% }
+    .dosha-table tbody td:nth-child(2) { color: var(--earth); width: 20% }
+
+    .consume-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .consume-table thead tr { background: var(--earth); color: var(--cream) }
+    .consume-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .consume-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .consume-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .consume-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(45,90,39,.08) }
+    .consume-table tbody td:first-child { font-weight: 400; color: var(--earth); width: 22% }
+
+    .benefits-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 1px; background: rgba(45,90,39,.12);
+      border: 1px solid rgba(45,90,39,.12); margin: 8px 0
+    }
+    .benefit-card {
+      background: var(--cream); padding: 24px 22px;
+      transition: background .3s; position: relative; overflow: hidden
+    }
+    .benefit-card:hover { background: #dfeacc }
+    .benefit-card::before {
+      content: ''; position: absolute; bottom: 0; left: 0;
+      width: 0; height: 2px; background: var(--gold); transition: width .4s
+    }
+    .benefit-card:hover::before { width: 100% }
+    .benefit-title { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 600; color: var(--forest); margin-bottom: 8px }
+    .benefit-desc { font-size: 11.5px; font-weight: 300; line-height: 1.75; color: var(--ink); opacity: .85 }
+
+    .precaution-list { list-style: none; margin: 8px 0 }
+    .precaution-list li {
+      display: flex; gap: 12px; align-items: flex-start;
+      padding: 10px 14px; font-size: 12px; font-weight: 300; line-height: 1.7;
+      color: var(--ink); border-bottom: 1px solid rgba(45,90,39,.08)
+    }
+    .precaution-list li:last-child { border-bottom: none }
+    .precaution-list li::before { content: '▸'; color: var(--gold); flex-shrink: 0; margin-top: 1px }
+
+    .nutrition-bar {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 1px; background: rgba(45,90,39,.12);
+      border: 1px solid rgba(45,90,39,.12); margin: 20px 0
+    }
+    .nutrition-cell { background: var(--cream); padding: 22px 16px; text-align: center; transition: background .3s }
+    .nutrition-cell:hover { background: var(--parchment) }
+    .nutrition-num { font-family: 'Cormorant Garamond', serif; font-size: 36px; font-weight: 300; color: var(--forest); line-height: 1; margin-bottom: 4px }
+    .nutrition-unit { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); font-weight: 300 }
+    .nutrition-label { font-size: 11px; font-weight: 300; color: var(--ink); margin-top: 5px }
+
+    .sources { border-top: 1px solid rgba(45,90,39,.15); padding-top: 24px; margin-top: 20px }
+    .sources-title { font-size: 10px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); margin-bottom: 12px; font-weight: 300 }
+    .sources ul { list-style: none }
+    .sources ul li { font-family: 'Cormorant Garamond', serif; font-size: 13px; font-style: italic; color: var(--earth); padding: 5px 0; border-bottom: 1px solid rgba(45,90,39,.06) }
+    .sources ul li::before { content: '· '; color: var(--sage) }
+
+    footer {
+      position: relative; z-index: 10; text-align: center;
+      padding: 24px 20px 44px; border-top: 1px solid rgba(45,90,39,.12);
+      max-width: 860px; margin: 0 auto
+    }
+    footer p { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); font-weight: 300 }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(28px) }
+      to { opacity: 1; transform: translateY(0) }
+    }
+
+    @media(max-width:700px) {
+      .hero-photos { grid-template-columns: 1fr }
+      .hero-photos img { height: 260px }
+      .benefits-grid { grid-template-columns: 1fr }
+      .nutrition-bar { grid-template-columns: 1fr 1fr }
+      .content { padding: 0 18px 60px }
+    }
+  </style>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+</head>
+
+<body>
+  <button type="button" id="open3D">View in 3D</button>
+
+
+  <div class="bg-circle bg-circle-1"></div>
+  <div class="bg-circle bg-circle-2"></div>
+
+  <!-- Karela vine botanical SVG -->
+  <svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M20 280 C 60 220, 80 180, 120 140 C 160 100, 200 70, 260 20" stroke="#2d5a27" stroke-width="1.5" fill="none"/>
+    <path d="M120 140 C 100 120, 80 130, 70 115" stroke="#2d5a27" stroke-width="1" fill="none"/>
+    <path d="M160 105 C 175 85, 165 70, 180 60" stroke="#2d5a27" stroke-width="1" fill="none"/>
+    <ellipse cx="80" cy="200" rx="22" ry="13" fill="#6b8f5e" transform="rotate(-40 80 200)" opacity="0.8"/>
+    <ellipse cx="115" cy="165" rx="20" ry="12" fill="#2d5a27" transform="rotate(-50 115 165)" opacity="0.7"/>
+    <ellipse cx="150" cy="130" rx="19" ry="11" fill="#6b8f5e" transform="rotate(-55 150 130)" opacity="0.8"/>
+    <ellipse cx="190" cy="95" rx="18" ry="10" fill="#2d5a27" transform="rotate(-60 190 95)" opacity="0.7"/>
+    <!-- tiny karela fruit shapes -->
+    <ellipse cx="72" cy="118" rx="5" ry="9" fill="#8fba3c" transform="rotate(-30 72 118)" opacity="0.6"/>
+    <ellipse cx="178" cy="63" rx="4" ry="8" fill="#8fba3c" transform="rotate(-20 178 63)" opacity="0.5"/>
+  </svg>
+  <svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M20 280 C 60 220, 80 180, 120 140 C 160 100, 200 70, 260 20" stroke="#2d5a27" stroke-width="1.5" fill="none"/>
+    <ellipse cx="80" cy="200" rx="22" ry="13" fill="#6b8f5e" transform="rotate(-40 80 200)" opacity="0.8"/>
+    <ellipse cx="115" cy="165" rx="20" ry="12" fill="#2d5a27" transform="rotate(-50 115 165)" opacity="0.7"/>
+    <ellipse cx="150" cy="130" rx="19" ry="11" fill="#6b8f5e" transform="rotate(-55 150 130)" opacity="0.8"/>
+  </svg>
+
+  <div class="hero">
+    <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+    <div class="logo-rule"><span></span>
+      <div class="logo-ornament">✦</div><span></span>
+    </div>
+    <div class="hero-title">Karela</div>
+    <div class="hero-subtitle">Bitter Gourd — The Bitter Healer</div>
+    <div class="hero-sci">Momordica charantia &nbsp;·&nbsp; Cucurbitaceae</div>
+  </div>
+
+  <div class="hero-photos">
+    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/2/2f/Momordica_charantia_Blanco2.357.png/1280px-Momordica_charantia_Blanco2.357.png" alt="Fresh karela bitter gourds hanging on vine, warty green skin"
+      onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/b/bc/MomordicaCharantia12.jpg/1280px-MomordicaCharantia12.jpg" alt="Karela cross-section showing white seeds and green flesh"
+      onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+  </div>
+  <p class="photo-caption">Fig. 1 — Karela fruits hanging on vine with characteristic warty, ridged skin &nbsp;·&nbsp; Fig. 2 — Cross-section revealing white seeds and bitter pale-green flesh</p>
+
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-leaf">🌿</div>
+    <div class="divider-line"></div>
+  </div>
+
+  <div class="content">
+    <p class="intro-text">Revered across millennia as <em>Karavella</em> in Sanskrit — "the one that removes disease by its bitterness" — Karela stands as one of Ayurveda's most celebrated medicinal vegetables. Its <em>tikta rasa</em> (bitter taste) is its greatest medicine: pacifying all three doshas, cleansing the blood, purging toxins, and offering a pharmacopeia of compounds that modern science is only beginning to fully appreciate.</p>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">01</span>
+        <h2 class="section-title">Botanical Profile</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Karela (<em>Momordica charantia</em>) is a fast-growing, tropical and subtropical climbing vine of the Cucurbitaceae family — related to cucumber, pumpkin, and bottle gourd. Native to South Asia and widely cultivated across India, China, Africa, and the Caribbean, it is one of the most intensively studied medicinal plants in the world, with over 1,000 published pharmacological papers.</p>
+      <p class="section-body">The plant climbs by slender axillary tendrils, producing thin, deeply lobed leaves and small yellow five-petalled flowers. The fruit — the primary medicinal and culinary part — is oblong to cylindrical, 5–30 cm long depending on variety, with a distinctively warty or ridged exterior of deep to pale green (turning orange-red at full ripeness). The flesh is crisp, extremely bitter, and surrounds a pithy core of flat seeds enveloped in bright red arils when mature. Two main cultivar types are recognised: the South Asian type (narrow, pointy, very bitter) and the Chinese type (lighter green, less bitter, wider).</p>
+      <table class="data-table">
+        <thead><tr><th>PROPERTY</th><th>Detail</th></tr></thead>
+        <tbody>
+          <tr><td>Family</td><td>Cucurbitaceae</td></tr>
+          <tr><td>Botanical Name</td><td>Momordica charantia L.</td></tr>
+          <tr><td>Sanskrit Names</td><td>Karavella, Karvellaka, Sushavi, Pittahantri, Kathillaka</td></tr>
+          <tr><td>Common Names</td><td>Bitter Gourd, Bitter Melon, Balsam Pear, Wild Cucumber</td></tr>
+          <tr><td>Regional Names</td><td>Karela (Hindi/Urdu), Pavakkai (Tamil), Kakarakaya (Telugu), Pavakka (Malayalam), Karle (Marathi)</td></tr>
+          <tr><td>Origin</td><td>South Asia (India, Sri Lanka); now pan-tropical</td></tr>
+          <tr><td>Plant Type</td><td>Annual climbing vine (2–5 m)</td></tr>
+          <tr><td>Flowering Season</td><td>June–September (monsoon); year-round in tropics</td></tr>
+          <tr><td>Medicinal Parts</td><td>Fruit (primary), leaves, seeds, roots, vine juice</td></tr>
+          <tr><td>Taste Profile</td><td>Tikta (bitter) — intensely so; mildly astringent</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">02</span>
+        <h2 class="section-title">Phytochemistry &amp; Nutrients</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Karela is one of the most phytochemically rich vegetables known. Its bitterness is attributed primarily to <em>momordicin</em> and <em>charantin</em> — bioactive compounds with profound metabolic activity. The fruit contains cucurbitane-type triterpenoids, steroidal saponins, alkaloids, phenolic acids, and a unique plant insulin-like polypeptide — <em>polypeptide-P</em> or plant-insulin — that acts similarly to human insulin in lowering blood glucose.</p>
+      <p class="section-body">From a nutritional standpoint, karela is surprisingly rich — exceptionally high in Vitamin C, folate, and several B-vitamins per calorie, while being one of the lowest-calorie vegetables available. The seeds are rich in conjugated linolenic acid (CLnA), a rare fatty acid with anti-obesity and antitumour properties.</p>
+      <div class="nutrition-bar">
+        <div class="nutrition-cell">
+          <div class="nutrition-num">84</div>
+          <div class="nutrition-unit">mg / 100g</div>
+          <div class="nutrition-label">Vitamin C (140% RDA)</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">17</div>
+          <div class="nutrition-unit">kcal / 100g</div>
+          <div class="nutrition-label">One of lowest-cal vegetables</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">3</div>
+          <div class="nutrition-unit">key compounds</div>
+          <div class="nutrition-label">Charantin · Momordicin · Polypeptide-P</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">1,000+</div>
+          <div class="nutrition-unit">studies</div>
+          <div class="nutrition-label">Published pharmacological papers</div>
+        </div>
+      </div>
+      <table class="data-table">
+        <thead><tr><th>Compound</th><th>Category</th><th>Primary Action</th></tr></thead>
+        <tbody>
+          <tr><td>Charantin</td><td>Steroidal glycoside</td><td>Hypoglycemic — activates AMPK pathway, mimics insulin action</td></tr>
+          <tr><td>Polypeptide-P (Plant-Insulin)</td><td>Peptide</td><td>Insulin-mimetic — lowers blood glucose via peripheral receptors</td></tr>
+          <tr><td>Momordicin I &amp; II</td><td>Cucurbitane triterpenoids</td><td>Bitter taste, antimalarial, cytotoxic, anti-inflammatory</td></tr>
+          <tr><td>Vicine &amp; Lectin</td><td>Alkaloid &amp; protein</td><td>Hypoglycemic; stimulates insulin secretion</td></tr>
+          <tr><td>Momordicosides (F1, F2, G, I–K)</td><td>Saponins</td><td>Antitumour, antiviral, glucose-lowering</td></tr>
+          <tr><td>Conjugated Linolenic Acid (CLnA)</td><td>Seed fatty acid</td><td>Anti-obesity, antitumour, anti-atherogenic</td></tr>
+          <tr><td>MAP30 &amp; α-Momorcharin</td><td>Ribosome-inactivating proteins</td><td>Antiviral (HIV, HPV), antitumour</td></tr>
+          <tr><td>Quercetin, Catechin, Gallic Acid</td><td>Flavonoids &amp; phenolics</td><td>Antioxidant, anti-inflammatory, antimicrobial</td></tr>
+          <tr><td>Vitamin C, Folate, Zinc</td><td>Micronutrients</td><td>Immune support, cell repair, antioxidant</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">03</span>
+        <h2 class="section-title">Ayurvedic Significance</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Karela occupies a distinguished place across all major classical Ayurvedic texts. Charaka includes it in the <em>Tikta Skanda</em> (group of bitter drugs) and recommends it prominently in <em>Prameha Chikitsa</em> (management of urinary and metabolic disorders including diabetes). Sushruta includes <em>Karavella</em> in his <em>Patoladi Gana</em> and uses it as a key ingredient in <em>Raktapitta</em> (blood-related disorder) formulations. Bhavaprakasha places it in the <em>Shaka Varga</em> (vegetable group) with the highest medical commendation.</p>
+      <p class="section-body">The classical verse — <em>"Karavellam tikta kashayam ushnam pittarakta nashakam, tridoshaghnam vishaharam krimighnam lekhanaṃ smritam"</em> — summarises its essence: bitter and astringent in taste, hot in potency, destroyer of Pitta and blood diseases, tridoshic balancer, destroyer of toxins and parasites, and a scraping (<em>lekhana</em>) drug par excellence.</p>
+      <table class="dosha-table">
+        <thead><tr><th>Dosha</th><th>Effect</th><th>Mechanism &amp; Notes</th></tr></thead>
+        <tbody>
+          <tr><td>Vata ↓</td><td>Mildly pacifying</td><td>Despite tikta rasa typically aggravating Vata, its ushna virya and lekhana action balance it at moderate doses; excessive intake can aggravate Vata</td></tr>
+          <tr><td>Pitta ↓</td><td>Pacifying</td><td>Tikta (bitter) taste is the supreme Pitta-pacifier; cools blood, reduces inflammation, clears excess heat from the liver; excellent in Raktapitta</td></tr>
+          <tr><td>Kapha ↓</td><td>Strongly pacifying</td><td>Lekhana (scraping), deepana (digestive fire-enhancing), and krimighna (antiparasitic) qualities powerfully reduce Kapha; ideal for obesity, diabetes, skin disorders</td></tr>
+        </tbody>
+      </table>
+      <p class="section-body"><strong>Rasa:</strong> Tikta (bitter), Kashaya (astringent) &nbsp;·&nbsp; <strong>Guna:</strong> Laghu (light), Ruksha (dry), Tikshna (sharp) &nbsp;·&nbsp; <strong>Virya:</strong> Ushna (hot) &nbsp;·&nbsp; <strong>Vipaka:</strong> Katu (pungent) &nbsp;·&nbsp; <strong>Karma:</strong> Tridoshahara, Deepana, Pachana, Lekhana, Krimighna, Raktashodhaka</p>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">04</span>
+        <h2 class="section-title">Key Health Benefits</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Karela is one of the most extensively researched medicinal plants in the world. Its pharmacological profile is exceptionally broad — validated across hundreds of peer-reviewed studies encompassing metabolic, hepatic, dermatological, immunological, and oncological domains.</p>
+      <div class="benefits-grid">
+        <div class="benefit-card">
+          <div class="benefit-title">Anti-diabetic &amp; Blood Sugar Regulation</div>
+          <div class="benefit-desc">Karela's most celebrated property. Charantin, polypeptide-P, and vicine collectively enhance insulin sensitivity, suppress hepatic glucose output, and activate the AMPK metabolic pathway. Multiple clinical trials confirm significant reductions in fasting blood glucose and HbA1c in Type 2 diabetics. Juice, powder, and extract forms are all effective.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Liver Protection &amp; Detoxification</div>
+          <div class="benefit-desc">A prime <em>Raktashodhaka</em> (blood purifier) in Ayurveda. Karela stimulates liver enzymes, enhances bile secretion, and protects hepatocytes from oxidative damage. Animal studies show reversal of paracetamol-induced liver damage; folk medicine has long used it in jaundice and chronic liver conditions.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Skin Disorders &amp; Blood Purification</div>
+          <div class="benefit-desc">Tikta rasa penetrates deep tissues (<em>dhatus</em>) to clear <em>ama</em> (toxins) from the blood — the root cause of most chronic skin diseases per Ayurveda. Fresh juice and decoctions are extensively used for psoriasis, eczema, acne, fungal infections, and chronic urticaria. Topical application of leaf paste treats boils and wounds.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Antimicrobial &amp; Antiparasitic</div>
+          <div class="benefit-desc">Karela is classically a <em>Krimighna</em> (parasite-destroyer) herb. Extracts show broad-spectrum activity against E. coli, Salmonella, Staphylococcus, Helicobacter pylori, Giardia, and Plasmodium falciparum (malaria). MAP30 protein has demonstrated HIV-1 reverse transcriptase inhibition in laboratory studies.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Weight Management &amp; Metabolism</div>
+          <div class="benefit-desc">Lekhana (scraping) action reduces excess medas (fat tissue). CLnA from seeds has anti-obesity effects in animal models. Karela suppresses fat cell differentiation, reduces lipid accumulation, and enhances fatty acid oxidation. Its extremely low calorie density with high fibre and water content naturally supports healthy weight.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Immune Modulation &amp; Antiviral</div>
+          <div class="benefit-desc">Rich in Vitamin C, zinc, and quercetin — all critical for innate immunity. The ribosome-inactivating proteins MAP30 and α-momorcharin have shown antiviral activity against HIV, HSV, and HPV in cell studies. Regular intake supports adaptive immunity and may reduce recurrent infections.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Digestive Fire (Agni) Enhancement</div>
+          <div class="benefit-desc">A classical <em>Deepana-Pachana</em> herb — the bitter taste directly stimulates bile production, digestive enzyme secretion, and gut motility. Relieves flatulence, sluggish digestion, constipation, and intestinal worms. Recommended as a pre-meal bitter tonic to awaken <em>jatharagni</em> (digestive fire).</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Antitumour &amp; Chemopreventive Potential</div>
+          <div class="benefit-desc">Emerging research area: momordicosides, MAP30, and CLnA have shown antiproliferative and proapoptotic activity against breast, colon, cervical, and prostate cancer cell lines. Mechanisms include cell cycle arrest, caspase activation, and angiogenesis inhibition. Human clinical trials are ongoing.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">05</span>
+        <h2 class="section-title">How to Consume Karela</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Karela is consumed both as a food and as a medicine across India. As food it is stir-fried, stuffed, pickled, and added to curries — the bitter taste mellows with cooking. As medicine, fresh juice and powder are the most potent forms. Salting and soaking the cut fruit before cooking significantly reduces bitterness without eliminating therapeutic value.</p>
+      <table class="consume-table">
+        <thead><tr><th>Form</th><th>Preparation</th><th>Dosage</th><th>Best Use</th></tr></thead>
+        <tbody>
+          <tr><td>Fresh Juice (Swarasa)</td><td>Blend raw fruit; strain; drink on empty stomach</td><td>20–30 ml, once daily (morning)</td><td>Diabetes, blood purification, liver support</td></tr>
+          <tr><td>Fruit Powder (Churna)</td><td>Sun-dried karela ground to fine powder</td><td>3–6 g with warm water, twice daily</td><td>Diabetes, obesity, skin disorders</td></tr>
+          <tr><td>Decoction (Kwatha)</td><td>Boil 10 g dried fruit in 200 ml water; reduce to 50 ml</td><td>50 ml, twice daily before meals</td><td>Fevers, antimicrobial, liver disorders</td></tr>
+          <tr><td>Cooked Vegetable</td><td>Stir-fry, curry, stuffed — with oil and spices</td><td>1–2 servings per week (dietary)</td><td>General wellness, digestion, weight management</td></tr>
+          <tr><td>Leaf Juice</td><td>Blend fresh leaves; strain</td><td>10–15 ml once daily</td><td>Respiratory conditions, fever, parasites</td></tr>
+          <tr><td>Seed Powder</td><td>Dry seeds; grind to powder</td><td>1–2 g with honey</td><td>Digestive disorders, worm infestation</td></tr>
+          <tr><td>Leaf Paste (Topical)</td><td>Grind fresh leaves into paste</td><td>Apply to affected skin 1–2× daily</td><td>Wounds, boils, skin infections, burns</td></tr>
+          <tr><td>Capsule / Extract</td><td>Standardised commercial preparations</td><td>Per manufacturer (typically 500 mg–1 g)</td><td>Convenience for diabetes management</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">06</span>
+        <h2 class="section-title">Safety &amp; Precautions</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Karela as a dietary vegetable is entirely safe for most healthy adults. As a medicinal agent — particularly juice or high-dose extracts — it carries specific contraindications that must be respected, especially in diabetic patients on medication where its additive glucose-lowering effect can cause dangerous hypoglycemia.</p>
+      <ul class="precaution-list">
+        <li><strong>Diabetes medication interaction:</strong> Karela significantly lowers blood glucose. If taken alongside metformin, glipizide, insulin, or other antidiabetics, blood sugar may drop dangerously low. Close monitoring and physician guidance are essential.</li>
+        <li><strong>Pregnancy:</strong> Contraindicated. Karela has demonstrated uterotonic (uterus-contracting) properties in animal studies and has been traditionally used as an abortifacient. Avoid all medicinal doses during pregnancy.</li>
+        <li><strong>Favism (G6PD deficiency):</strong> Vicine present in karela seeds can trigger haemolytic anaemia in individuals with glucose-6-phosphate dehydrogenase (G6PD) deficiency. Avoid seed preparations in such individuals.</li>
+        <li><strong>Children under 5:</strong> Fresh karela juice has caused acute hypoglycemia and even seizures in young children. Medicinal doses should not be given to young children without specialist advice.</li>
+        <li><strong>Vata-dominant constitutions:</strong> Excessive or prolonged intake (especially raw juice) may aggravate Vata — causing dryness, gas, bloating, or irregular digestion. Moderate use with ghee or sesame oil mitigates this.</li>
+        <li><strong>Liver conditions:</strong> While generally hepatoprotective, very high doses of concentrated extract over long periods may stress the liver. Keep doses within classical recommendations.</li>
+        <li><strong>Surgery:</strong> Discontinue medicinal karela supplementation at least 2 weeks before surgery due to its blood sugar-lowering and mild anticoagulant effects.</li>
+        <li><strong>Red/ripe fruit:</strong> The fully ripe red fruit and its red seed arils are reported to be toxic, especially to children. Only unripe green fruit is used medicinally and culinarily.</li>
+      </ul>
+    </div>
+
+    <div class="sources">
+      <div class="sources-title">References &amp; Sources</div>
+      <ul>
+        <li>Grover JK &amp; Yadav SP — "Pharmacological actions and potential uses of Momordica charantia" — Journal of Ethnopharmacology, 2004</li>
+        <li>Leung L et al. — "Diabetic and its complications and their management by bitter melon" — Clinical and Experimental Pharmacology and Physiology, 2009</li>
+        <li>Joseph B &amp; Jini D — "Antidiabetic effects of Momordica charantia: a mini review" — International Journal of Diabetes and Metabolism, 2013</li>
+        <li>Raman A &amp; Lau C — "Anti-diabetic properties and phytochemistry of Momordica charantia" — Phytomedicine, 1996</li>
+        <li>Nerurkar PV et al. — "Momordica charantia (bitter melon) attenuates hepatic response in insulin-resistant rats" — Evidence-Based Complementary and Alternative Medicine, 2008</li>
+        <li>Kwatra M et al. — "A review on potential pharmacological activities of Momordica charantia" — Int. J. of Pharmaceutical Sciences and Research, 2020</li>
+        <li>Charaka Samhita, Sutrasthana — Tikta Skanda; Chikitsasthana — Prameha Chikitsa</li>
+        <li>Sushruta Samhita — Patoladi Gana; Raktapitta Chikitsa</li>
+        <li>Bhavaprakasha Nighantu — Shaka Varga, Karavella entry</li>
+        <li>Priyavrat Sharma — Dravyaguna Vigyana Vol. II — Classical properties of Karavella</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer>
+    <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a qualified practitioner before therapeutic use</p>
+  </footer>
+
+
+  <div id="viewerModal">
+    <div id="modal-topbar">
+      <span>3D Model — Karela</span>
+      <button type="button" id="close3D">✕</button>
+    </div>
+    <model-viewer src="karela3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+  </div>
+  <script>
+    (function() {
+      var open3D = document.getElementById('open3D');
+      var close3D = document.getElementById('close3D');
+      var modal = document.getElementById('viewerModal');
+      if (!open3D || !close3D || !modal) return;
+      function openModal() {
+        
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+      function closeModal() {
+        
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+      open3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); openModal();
+      });
+      close3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); closeModal();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+      });
+    })();
+  </script>
+
+</body>
+</html>

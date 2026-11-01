@@ -1,0 +1,987 @@
+[
+  {
+    "id": "aak-madar",
+    "name": "Aak \u2014 Madar",
+    "url": "Ayurvedha/aak-madar.html"
+  },
+  {
+    "id": "adhapushpi",
+    "name": "Adhapushpi",
+    "url": "Ayurvedha/adhapushpi.html"
+  },
+  {
+    "id": "Krisara",
+    "name": "Adhapushpi",
+    "url": "Ayurvedha/Krisara.html"
+  },
+  {
+    "id": "Likucha",
+    "name": "Adhapushpi",
+    "url": "Ayurvedha/Likucha.html"
+  },
+  {
+    "id": "Malay Kino  Vijaysar",
+    "name": "Adhapushpi",
+    "url": "Ayurvedha/Malay Kino  Vijaysar.html"
+  },
+  {
+    "id": "agaru",
+    "name": "Agaru",
+    "url": "Ayurvedha/agaru.html"
+  },
+  {
+    "id": "Agastya",
+    "name": "Agastya \u2014 Vegetable Hummingbird",
+    "url": "Ayurvedha/Agastya.html"
+  },
+  {
+    "id": "Agiya Ghas",
+    "name": "Agiya Ghas",
+    "url": "Ayurvedha/Agiya Ghas.html"
+  },
+  {
+    "id": "Agnimantha",
+    "name": "Agnimantha \u2014 The Fire-Kindler",
+    "url": "Ayurvedha/Agnimantha.html"
+  },
+  {
+    "id": "Ajmoda",
+    "name": "Ajmoda",
+    "url": "Ayurvedha/Ajmoda.html"
+  },
+  {
+    "id": "Celery",
+    "name": "Ajmoda \u2014 Celery Seed",
+    "url": "Ayurvedha/Celery.html"
+  },
+  {
+    "id": "Ajwain",
+    "name": "Ajwain \u2014 Carom Seeds",
+    "url": "Ayurvedha/Ajwain.html"
+  },
+  {
+    "id": "Akarkara",
+    "name": "Akarkara",
+    "url": "Ayurvedha/Akarkara.html"
+  },
+  {
+    "id": "Akashbail",
+    "name": "Akash Bail \u2014 Love Vine",
+    "url": "Ayurvedha/Akashbail.html"
+  },
+  {
+    "id": "Akhrot",
+    "name": "Akhrot",
+    "url": "Ayurvedha/Akhrot.html"
+  },
+  {
+    "id": "Alfalfa",
+    "name": "Alfalfa",
+    "url": "Ayurvedha/Alfalfa.html"
+  },
+  {
+    "id": "Aloe Vera",
+    "name": "Aloe Vera",
+    "url": "Ayurvedha/Aloe Vera.html"
+  },
+  {
+    "id": "Alsi",
+    "name": "Alsi \u2014 Flaxseed",
+    "url": "Ayurvedha/Alsi.html"
+  },
+  {
+    "id": "Amaltas-cassia",
+    "name": "Amaltas",
+    "url": "Ayurvedha/Amaltas-cassia.html"
+  },
+  {
+    "id": "Amba-haldi",
+    "name": "Amba Haldi",
+    "url": "Ayurvedha/Amba-haldi.html"
+  },
+  {
+    "id": "amla",
+    "name": "Amla \u2014 Indian Gooseberry",
+    "url": "Ayurvedha/amla.html"
+  },
+  {
+    "id": "Anantmool",
+    "name": "Anantmool \u2014 Indian Sarsaparilla",
+    "url": "Ayurvedha/Anantmool.html"
+  },
+  {
+    "id": "Anjeer",
+    "name": "Anjeer",
+    "url": "Ayurvedha/Anjeer.html"
+  },
+  {
+    "id": "Apamarg",
+    "name": "Apamarg",
+    "url": "Ayurvedha/Apamarg.html"
+  },
+  {
+    "id": "Aparajita",
+    "name": "Aparajita \u2014 Butterfly Pea",
+    "url": "Ayurvedha/Aparajita.html"
+  },
+  {
+    "id": "Aralu",
+    "name": "Aralu",
+    "url": "Ayurvedha/Aralu.html"
+  },
+  {
+    "id": "arjuna",
+    "name": "Arjuna (Terminalia arjuna)",
+    "url": "Ayurvedha/arjuna.html"
+  },
+  {
+    "id": "Arni",
+    "name": "Arni \u2014 Tarkari",
+    "url": "Ayurvedha/Arni.html"
+  },
+  {
+    "id": "Ashoka",
+    "name": "Ashoka",
+    "url": "Ayurvedha/Ashoka.html"
+  },
+  {
+    "id": "ashwagandha",
+    "name": "Ashwagandha \u2014 Indian Ginseng",
+    "url": "Ayurvedha/ashwagandha.html"
+  },
+  {
+    "id": "Atibala",
+    "name": "Atibala \u2014 Country Mallow",
+    "url": "Ayurvedha/Atibala.html"
+  },
+  {
+    "id": "Ativisha",
+    "name": "Ativisha",
+    "url": "Ayurvedha/Ativisha.html"
+  },
+  {
+    "id": "Ayapan",
+    "name": "Ayapan \u2014 Vishalyakarni",
+    "url": "Ayurvedha/Ayapan.html"
+  },
+  {
+    "id": "Babbul",
+    "name": "Babbul",
+    "url": "Ayurvedha/Babbul.html"
+  },
+  {
+    "id": "Bael",
+    "name": "Bael \u2014 Bilva",
+    "url": "Ayurvedha/Bael.html"
+  },
+  {
+    "id": "Bakuchi",
+    "name": "Bakuchi",
+    "url": "Ayurvedha/Bakuchi.html"
+  },
+  {
+    "id": "Bakula",
+    "name": "Bakula \u2014 Spanish Cherry",
+    "url": "Ayurvedha/Bakula.html"
+  },
+  {
+    "id": "bala",
+    "name": "Bala (Sida cordifolia)",
+    "url": "Ayurvedha/bala.html"
+  },
+  {
+    "id": "Bambusa",
+    "name": "Bambusa",
+    "url": "Ayurvedha/Bambusa.html"
+  },
+  {
+    "id": "Bayberry",
+    "name": "Bayberry",
+    "url": "Ayurvedha/Bayberry.html"
+  },
+  {
+    "id": "Bhallataka",
+    "name": "Bhallataka",
+    "url": "Ayurvedha/Bhallataka.html"
+  },
+  {
+    "id": "Bhanga",
+    "name": "Bhanga",
+    "url": "Ayurvedha/Bhanga.html"
+  },
+  {
+    "id": "Bharangi",
+    "name": "Bharangi \u2014 Blue Glory",
+    "url": "Ayurvedha/Bharangi.html"
+  },
+  {
+    "id": "Bhojpatra",
+    "name": "Bhojpatra",
+    "url": "Ayurvedha/Bhojpatra.html"
+  },
+  {
+    "id": "bhringraj",
+    "name": "Bhringraj \u2014 False Daisy",
+    "url": "Ayurvedha/bhringraj.html"
+  },
+  {
+    "id": "Bhumi Amla",
+    "name": "Bhumi Amla",
+    "url": "Ayurvedha/Bhumi Amla.html"
+  },
+  {
+    "id": "bibhitaki",
+    "name": "Bibhitaki (Terminalia bellirica)",
+    "url": "Ayurvedha/bibhitaki.html"
+  },
+  {
+    "id": "Borage",
+    "name": "Borage \u2014 Starflower",
+    "url": "Ayurvedha/Borage.html"
+  },
+  {
+    "id": "Boswellia",
+    "name": "Boswellia / Shallaki",
+    "url": "Ayurvedha/Boswellia.html"
+  },
+  {
+    "id": "brahmi",
+    "name": "Brahmi \u2014 Water Hyssop",
+    "url": "Ayurvedha/brahmi.html"
+  },
+  {
+    "id": "Brihati",
+    "name": "Brihati \u2014 Poison Berry",
+    "url": "Ayurvedha/Brihati.html"
+  },
+  {
+    "id": "Cardamom",
+    "name": "Cardamom / Ela",
+    "url": "Ayurvedha/Cardamom.html"
+  },
+  {
+    "id": "Castor",
+    "name": "Castor / Eranda",
+    "url": "Ayurvedha/Castor.html"
+  },
+  {
+    "id": "Chakramarda",
+    "name": "Chakramarda / Sickle Senna",
+    "url": "Ayurvedha/Chakramarda.html"
+  },
+  {
+    "id": "Babuna",
+    "name": "Chamomile / Babuna",
+    "url": "Ayurvedha/Babuna.html"
+  },
+  {
+    "id": "Changeri",
+    "name": "Changeri",
+    "url": "Ayurvedha/Changeri.html"
+  },
+  {
+    "id": "chirayata",
+    "name": "Chirayata (Swertia chirata)",
+    "url": "Ayurvedha/chirayata.html"
+  },
+  {
+    "id": "Dadimapushpa  Pomegranate Flower",
+    "name": "Dadimapushpa",
+    "url": "Ayurvedha/Dadimapushpa  Pomegranate Flower.html"
+  },
+  {
+    "id": "Krimi Ghna  Embelia",
+    "name": "Embelia ribes",
+    "url": "Ayurvedha/Krimi Ghna  Embelia.html"
+  },
+  {
+    "id": "Tinospora _ Giloy",
+    "name": "Giloy",
+    "url": "Ayurvedha/Tinospora _ Giloy.html"
+  },
+  {
+    "id": "gotu-kola",
+    "name": "Gotu Kola (Centella asiatica)",
+    "url": "Ayurvedha/gotu-kola.html"
+  },
+  {
+    "id": "Tinospora _ Guduchi",
+    "name": "Guduchi",
+    "url": "Ayurvedha/Tinospora _ Guduchi.html"
+  },
+  {
+    "id": "guduchi",
+    "name": "Guduchi (Tinospora cordifolia)",
+    "url": "Ayurvedha/guduchi.html"
+  },
+  {
+    "id": "haridra",
+    "name": "Haridra (Curcuma longa)",
+    "url": "Ayurvedha/haridra.html"
+  },
+  {
+    "id": "haritaki",
+    "name": "Haritaki (Terminalia chebula)",
+    "url": "Ayurvedha/haritaki.html"
+  },
+  {
+    "id": "Sugarcane _ Ikshu",
+    "name": "Ikshu",
+    "url": "Ayurvedha/Sugarcane _ Ikshu.html"
+  },
+  {
+    "id": "Jatiphala  Nutmeg",
+    "name": "Jatiphala",
+    "url": "Ayurvedha/Jatiphala  Nutmeg.html"
+  },
+  {
+    "id": "Javanika  Ajowan",
+    "name": "Javanika",
+    "url": "Ayurvedha/Javanika  Ajowan.html"
+  },
+  {
+    "id": "Jayanti",
+    "name": "Jayanti",
+    "url": "Ayurvedha/Jayanti.html"
+  },
+  {
+    "id": "Caraway",
+    "name": "Kala Jeera \u2014 Caraway",
+    "url": "Ayurvedha/Caraway.html"
+  },
+  {
+    "id": "kalmegh",
+    "name": "Kalmegh (Andrographis paniculata)",
+    "url": "Ayurvedha/kalmegh.html"
+  },
+  {
+    "id": "kapikacchu",
+    "name": "Kapikacchu (Mucuna pruriens)",
+    "url": "Ayurvedha/kapikacchu.html"
+  },
+  {
+    "id": "Karela  Bitter Gourd",
+    "name": "Karela",
+    "url": "Ayurvedha/Karela  Bitter Gourd.html"
+  },
+  {
+    "id": "Katphala  Kayphal",
+    "name": "Katphala",
+    "url": "Ayurvedha/Katphala  Kayphal.html"
+  },
+  {
+    "id": "Kauncha  Kapikachu",
+    "name": "Kauncha",
+    "url": "Ayurvedha/Kauncha  Kapikachu.html"
+  },
+  {
+    "id": "Kavitha  Wood Apple",
+    "name": "Kavitha",
+    "url": "Ayurvedha/Kavitha  Wood Apple.html"
+  },
+  {
+    "id": "Khadira  Catechu",
+    "name": "Khadira",
+    "url": "Ayurvedha/Khadira  Catechu.html"
+  },
+  {
+    "id": "Kharjura  Date Palm",
+    "name": "Kharjura",
+    "url": "Ayurvedha/Kharjura  Date Palm.html"
+  },
+  {
+    "id": "Khatmi  Marsh Mallow",
+    "name": "Khatmi",
+    "url": "Ayurvedha/Khatmi  Marsh Mallow.html"
+  },
+  {
+    "id": "Kigelia",
+    "name": "Kigelia",
+    "url": "Ayurvedha/Kigelia.html"
+  },
+  {
+    "id": "Kijella  Kigelia",
+    "name": "Kigelia",
+    "url": "Ayurvedha/Kijella  Kigelia.html"
+  },
+  {
+    "id": "Kinva  Saccharomyces",
+    "name": "Kinva",
+    "url": "Ayurvedha/Kinva  Saccharomyces.html"
+  },
+  {
+    "id": "Kirmira",
+    "name": "Kirmira",
+    "url": "Ayurvedha/Kirmira.html"
+  },
+  {
+    "id": "Kokilaksha",
+    "name": "Kokilaksha",
+    "url": "Ayurvedha/Kokilaksha.html"
+  },
+  {
+    "id": "Kolinjal",
+    "name": "Kolinjal",
+    "url": "Ayurvedha/Kolinjal.html"
+  },
+  {
+    "id": "Krishnatulasi",
+    "name": "Krishna Tulasi",
+    "url": "Ayurvedha/Krishnatulasi.html"
+  },
+  {
+    "id": "Krishnamruta",
+    "name": "Krishnamruta",
+    "url": "Ayurvedha/Krishnamruta.html"
+  },
+  {
+    "id": "Krishnasara",
+    "name": "Krishnasara",
+    "url": "Ayurvedha/Krishnasara.html"
+  },
+  {
+    "id": "Kuchala  Nux Vomica",
+    "name": "Kuchala",
+    "url": "Ayurvedha/Kuchala  Nux Vomica.html"
+  },
+  {
+    "id": "Kumuda  White Lotus",
+    "name": "Kumuda",
+    "url": "Ayurvedha/Kumuda  White Lotus.html"
+  },
+  {
+    "id": "Kumudvati",
+    "name": "Kumudvati",
+    "url": "Ayurvedha/Kumudvati.html"
+  },
+  {
+    "id": "Kunkuma  Saffron",
+    "name": "Kunkuma",
+    "url": "Ayurvedha/Kunkuma  Saffron.html"
+  },
+  {
+    "id": "Kuranta",
+    "name": "Kuranta",
+    "url": "Ayurvedha/Kuranta.html"
+  },
+  {
+    "id": "Kurchi",
+    "name": "Kurchi",
+    "url": "Ayurvedha/Kurchi.html"
+  },
+  {
+    "id": "Kusa  Darbha",
+    "name": "Kusha / Darbha",
+    "url": "Ayurvedha/Kusa  Darbha.html"
+  },
+  {
+    "id": "Kushtha  Costus",
+    "name": "Kushtha",
+    "url": "Ayurvedha/Kushtha  Costus.html"
+  },
+  {
+    "id": "Kutannata",
+    "name": "Kutannata",
+    "url": "Ayurvedha/Kutannata.html"
+  },
+  {
+    "id": "kutki",
+    "name": "Kutki (Picrorhiza kurroa)",
+    "url": "Ayurvedha/kutki.html"
+  },
+  {
+    "id": "Lakucha  Monkey Jack",
+    "name": "Lakucha",
+    "url": "Ayurvedha/Lakucha  Monkey Jack.html"
+  },
+  {
+    "id": "Lal Chandan  Red Sandalwood",
+    "name": "Lal Chandan",
+    "url": "Ayurvedha/Lal Chandan  Red Sandalwood.html"
+  },
+  {
+    "id": "Latakasturi",
+    "name": "Latakasturi",
+    "url": "Ayurvedha/Latakasturi.html"
+  },
+  {
+    "id": "Lavali",
+    "name": "Lavali",
+    "url": "Ayurvedha/Lavali.html"
+  },
+  {
+    "id": "Lawsonia  Henna",
+    "name": "Lawsonia / Henna",
+    "url": "Ayurvedha/Lawsonia  Henna.html"
+  },
+  {
+    "id": "Litsea  Maida Lakdi",
+    "name": "Litsea",
+    "url": "Ayurvedha/Litsea  Maida Lakdi.html"
+  },
+  {
+    "id": "Mahanimba  Meli",
+    "name": "Mahanimba",
+    "url": "Ayurvedha/Mahanimba  Meli.html"
+  },
+  {
+    "id": "Mahaphala  Wild Jack",
+    "name": "Mahaphala",
+    "url": "Ayurvedha/Mahaphala  Wild Jack.html"
+  },
+  {
+    "id": "Mahasudarshana",
+    "name": "Mahasudarshana",
+    "url": "Ayurvedha/Mahasudarshana.html"
+  },
+  {
+    "id": "Mahishabhusha",
+    "name": "Mahishabhusha",
+    "url": "Ayurvedha/Mahishabhusha.html"
+  },
+  {
+    "id": "Makoy  Black Nightshade",
+    "name": "Makoy",
+    "url": "Ayurvedha/Makoy  Black Nightshade.html"
+  },
+  {
+    "id": "Malati  Jasmine",
+    "name": "Malati",
+    "url": "Ayurvedha/Malati  Jasmine.html"
+  },
+  {
+    "id": "Mamajjaka",
+    "name": "Mamajjaka",
+    "url": "Ayurvedha/Mamajjaka.html"
+  },
+  {
+    "id": "Mandara  Coral Tree",
+    "name": "Mandara",
+    "url": "Ayurvedha/Mandara  Coral Tree.html"
+  },
+  {
+    "id": "Mandukaparni  Gotu Kola",
+    "name": "Mandukaparni",
+    "url": "Ayurvedha/Mandukaparni  Gotu Kola.html"
+  },
+  {
+    "id": "Majittha  Madder",
+    "name": "Manjistha",
+    "url": "Ayurvedha/Majittha  Madder.html"
+  },
+  {
+    "id": "Mangistha",
+    "name": "Manjistha",
+    "url": "Ayurvedha/Mangistha.html"
+  },
+  {
+    "id": "manjistha",
+    "name": "Manjistha (Rubia cordifolia)",
+    "url": "Ayurvedha/manjistha.html"
+  },
+  {
+    "id": "Marigold  Genda",
+    "name": "Marigold / Genda",
+    "url": "Ayurvedha/Marigold  Genda.html"
+  },
+  {
+    "id": "Mashaparni",
+    "name": "Mashaparni",
+    "url": "Ayurvedha/Mashaparni.html"
+  },
+  {
+    "id": "Masura  Red Lentil",
+    "name": "Masura",
+    "url": "Ayurvedha/Masura  Red Lentil.html"
+  },
+  {
+    "id": "Meha  Momordica",
+    "name": "Meha",
+    "url": "Ayurvedha/Meha  Momordica.html"
+  },
+  {
+    "id": "Mehendi",
+    "name": "Mehendi",
+    "url": "Ayurvedha/Mehendi.html"
+  },
+  {
+    "id": "Methika",
+    "name": "Methika",
+    "url": "Ayurvedha/Methika.html"
+  },
+  {
+    "id": "Mochasa  Silkcotton Gum",
+    "name": "Mochasa",
+    "url": "Ayurvedha/Mochasa  Silkcotton Gum.html"
+  },
+  {
+    "id": "moringa",
+    "name": "Moringa (Moringa oleifera)",
+    "url": "Ayurvedha/moringa.html"
+  },
+  {
+    "id": "Mudgaparni  Green Gram Wild",
+    "name": "Mudgaparni",
+    "url": "Ayurvedha/Mudgaparni  Green Gram Wild.html"
+  },
+  {
+    "id": "Mundi  Globe Thistle",
+    "name": "Mundi",
+    "url": "Ayurvedha/Mundi  Globe Thistle.html"
+  },
+  {
+    "id": "Munjakesari",
+    "name": "Munjakesari",
+    "url": "Ayurvedha/Munjakesari.html"
+  },
+  {
+    "id": "Mura",
+    "name": "Mura",
+    "url": "Ayurvedha/Mura.html"
+  },
+  {
+    "id": "Murchhana",
+    "name": "Murchhana",
+    "url": "Ayurvedha/Murchhana.html"
+  },
+  {
+    "id": "Murraya  Curry Leaf",
+    "name": "Murraya koenigii",
+    "url": "Ayurvedha/Murraya  Curry Leaf.html"
+  },
+  {
+    "id": "Nagaranga  Orange",
+    "name": "Nagaranga",
+    "url": "Ayurvedha/Nagaranga  Orange.html"
+  },
+  {
+    "id": "Narikela  Coconut",
+    "name": "Narikela",
+    "url": "Ayurvedha/Narikela  Coconut.html"
+  },
+  {
+    "id": "Nashapati  Pear",
+    "name": "Nashapati",
+    "url": "Ayurvedha/Nashapati  Pear.html"
+  },
+  {
+    "id": "Nimba  Neem",
+    "name": "Nimba",
+    "url": "Ayurvedha/Nimba  Neem.html"
+  },
+  {
+    "id": "Nimbuka  Lemon",
+    "name": "Nimbuka",
+    "url": "Ayurvedha/Nimbuka  Lemon.html"
+  },
+  {
+    "id": "Nirgu\u1e47\u1e0d\u012b  Five-Leaved Chaste",
+    "name": "Nirgu\u1e47\u1e0d\u012b",
+    "url": "Ayurvedha/Nirgu\u1e47\u1e0d\u012b  Five-Leaved Chaste.html"
+  },
+  {
+    "id": "Nisha  Turmeric Night",
+    "name": "Nishapushpa",
+    "url": "Ayurvedha/Nisha  Turmeric Night.html"
+  },
+  {
+    "id": "Nishapushpa",
+    "name": "Nishapushpa",
+    "url": "Ayurvedha/Nishapushpa.html"
+  },
+  {
+    "id": "Nip  Kadamba",
+    "name": "N\u012bpa",
+    "url": "Ayurvedha/Nip  Kadamba.html"
+  },
+  {
+    "id": "Trumpet Flower _ Patala",
+    "name": "Patala",
+    "url": "Ayurvedha/Trumpet Flower _ Patala.html"
+  },
+  {
+    "id": "Pinda _ Tamarind",
+    "name": "Pinda",
+    "url": "Ayurvedha/Pinda _ Tamarind.html"
+  },
+  {
+    "id": "pippali",
+    "name": "Pippali (Piper longum)",
+    "url": "Ayurvedha/pippali.html"
+  },
+  {
+    "id": "Pita Papda _ Fumitory",
+    "name": "Pita Papda",
+    "url": "Ayurvedha/Pita Papda _ Fumitory.html"
+  },
+  {
+    "id": "plaksha",
+    "name": "Plaksha",
+    "url": "Ayurvedha/plaksha.html"
+  },
+  {
+    "id": "Pomegranate",
+    "name": "Pomegranate",
+    "url": "Ayurvedha/Pomegranate.html"
+  },
+  {
+    "id": "Prasarini",
+    "name": "Prasarini",
+    "url": "Ayurvedha/Prasarini.html"
+  },
+  {
+    "id": "Priyangu _ Callicarpa",
+    "name": "Priyangu",
+    "url": "Ayurvedha/Priyangu _ Callicarpa.html"
+  },
+  {
+    "id": "Mentha  Pudina",
+    "name": "Pudina",
+    "url": "Ayurvedha/Mentha  Pudina.html"
+  },
+  {
+    "id": "Pudina _ Peppermint",
+    "name": "Pudina",
+    "url": "Ayurvedha/Pudina _ Peppermint.html"
+  },
+  {
+    "id": "punarnava",
+    "name": "Punarnava (Boerhavia diffusa)",
+    "url": "Ayurvedha/punarnava.html"
+  },
+  {
+    "id": "Rakta Chandana _ Red Sandalwood",
+    "name": "Rakta Chandana",
+    "url": "Ayurvedha/Rakta Chandana _ Red Sandalwood.html"
+  },
+  {
+    "id": "Rasna _ Vanda",
+    "name": "Rasna",
+    "url": "Ayurvedha/Rasna _ Vanda.html"
+  },
+  {
+    "id": "Reetha _ Soapnut",
+    "name": "Reetha",
+    "url": "Ayurvedha/Reetha _ Soapnut.html"
+  },
+  {
+    "id": "Rohini",
+    "name": "Rohini",
+    "url": "Ayurvedha/Rohini.html"
+  },
+  {
+    "id": "Rose _ Gulab",
+    "name": "Rose",
+    "url": "Ayurvedha/Rose _ Gulab.html"
+  },
+  {
+    "id": "Safed Musali",
+    "name": "Safed Musali",
+    "url": "Ayurvedha/Safed Musali.html"
+  },
+  {
+    "id": "Sahachara",
+    "name": "Sahachara",
+    "url": "Ayurvedha/Sahachara.html"
+  },
+  {
+    "id": "sahadevi",
+    "name": "Sahadevi",
+    "url": "Ayurvedha/sahadevi.html"
+  },
+  {
+    "id": "Sala _ Sal Tree",
+    "name": "Sala \u2014 Sal Tree",
+    "url": "Ayurvedha/Sala _ Sal Tree.html"
+  },
+  {
+    "id": "Salam Panja",
+    "name": "Salam Panja",
+    "url": "Ayurvedha/Salam Panja.html"
+  },
+  {
+    "id": "Sariva _ Anantmool",
+    "name": "Sariva / Anantmool",
+    "url": "Ayurvedha/Sariva _ Anantmool.html"
+  },
+  {
+    "id": "Sesame _ Till",
+    "name": "Sesame / Till",
+    "url": "Ayurvedha/Sesame _ Till.html"
+  },
+  {
+    "id": "shankhapushpi",
+    "name": "Shankhapushpi (Convolvulus pluricaulis)",
+    "url": "Ayurvedha/shankhapushpi.html"
+  },
+  {
+    "id": "shatavari",
+    "name": "Shatavari (Asparagus racemosus)",
+    "url": "Ayurvedha/shatavari.html"
+  },
+  {
+    "id": "Shephalika _ Night Jasmine",
+    "name": "Shephalika / Night Jasmine",
+    "url": "Ayurvedha/Shephalika _ Night Jasmine.html"
+  },
+  {
+    "id": "Shigru _ Horseradish Tree",
+    "name": "Shigru / Horseradish Tree",
+    "url": "Ayurvedha/Shigru _ Horseradish Tree.html"
+  },
+  {
+    "id": "Shimul _ Red Silk Cotton",
+    "name": "Shimul / Red Silk Cotton",
+    "url": "Ayurvedha/Shimul _ Red Silk Cotton.html"
+  },
+  {
+    "id": "Shunthi",
+    "name": "Shunthi",
+    "url": "Ayurvedha/Shunthi.html"
+  },
+  {
+    "id": "Sigru _ Drumstick",
+    "name": "Sigru",
+    "url": "Ayurvedha/Sigru _ Drumstick.html"
+  },
+  {
+    "id": "Snuhi _ Indian Spurge",
+    "name": "Snuhi",
+    "url": "Ayurvedha/Snuhi _ Indian Spurge.html"
+  },
+  {
+    "id": "Somaraja _ Somaraji",
+    "name": "Somaraja",
+    "url": "Ayurvedha/Somaraja _ Somaraji.html"
+  },
+  {
+    "id": "Sonth _ Dry Ginger",
+    "name": "Sonth",
+    "url": "Ayurvedha/Sonth _ Dry Ginger.html"
+  },
+  {
+    "id": "Sudarshana",
+    "name": "Sudarshana",
+    "url": "Ayurvedha/Sudarshana.html"
+  },
+  {
+    "id": "Suntha _ Nagarmota",
+    "name": "Suntha",
+    "url": "Ayurvedha/Suntha _ Nagarmota.html"
+  },
+  {
+    "id": "Surya Mukhi _ Sunflower",
+    "name": "Surya Mukhi",
+    "url": "Ayurvedha/Surya Mukhi _ Sunflower.html"
+  },
+  {
+    "id": "Svarnakshiri _ Yellow-Flowered Spurge",
+    "name": "Svarnakshiri",
+    "url": "Ayurvedha/Svarnakshiri _ Yellow-Flowered Spurge.html"
+  },
+  {
+    "id": "Tabasheer _ Bamboo Silica",
+    "name": "Tabasheer",
+    "url": "Ayurvedha/Tabasheer _ Bamboo Silica.html"
+  },
+  {
+    "id": "Tamalapatra _ Bay Leaf",
+    "name": "Tamalapatra",
+    "url": "Ayurvedha/Tamalapatra _ Bay Leaf.html"
+  },
+  {
+    "id": "Tamarind",
+    "name": "Tamarind",
+    "url": "Ayurvedha/Tamarind.html"
+  },
+  {
+    "id": "Tanduliyaka _ Amaranth",
+    "name": "Tanduliyaka",
+    "url": "Ayurvedha/Tanduliyaka _ Amaranth.html"
+  },
+  {
+    "id": "Tankana _ Borax",
+    "name": "Tankana",
+    "url": "Ayurvedha/Tankana _ Borax.html"
+  },
+  {
+    "id": "Teja _ Star Anise",
+    "name": "Teja",
+    "url": "Ayurvedha/Teja _ Star Anise.html"
+  },
+  {
+    "id": "Tejovati",
+    "name": "Tejovati",
+    "url": "Ayurvedha/Tejovati.html"
+  },
+  {
+    "id": "Bea Leaves",
+    "name": "Tejpatta \u2014 Indian Bay Leaf",
+    "url": "Ayurvedha/Bea Leaves.html"
+  },
+  {
+    "id": "Trikatu",
+    "name": "Trikatu",
+    "url": "Ayurvedha/Trikatu.html"
+  },
+  {
+    "id": "Tulasi _ Holy Basil",
+    "name": "Tulasi",
+    "url": "Ayurvedha/Tulasi _ Holy Basil.html"
+  },
+  {
+    "id": "neem",
+    "name": "Tulsi \u2014 Holy Basil",
+    "url": "Ayurvedha/neem.html"
+  },
+  {
+    "id": "Tulsi",
+    "name": "Tulsi \u2014 Holy Basil",
+    "url": "Ayurvedha/Tulsi.html"
+  },
+  {
+    "id": "Turmeric _ Haldi",
+    "name": "Turmeric",
+    "url": "Ayurvedha/Turmeric _ Haldi.html"
+  },
+  {
+    "id": "Tvak _ Cinnamon",
+    "name": "Tvak",
+    "url": "Ayurvedha/Tvak _ Cinnamon.html"
+  },
+  {
+    "id": "Udumbara _ Cluster Fig",
+    "name": "Udumbara",
+    "url": "Ayurvedha/Udumbara _ Cluster Fig.html"
+  },
+  {
+    "id": "Ujwala _ Mexican Poppy",
+    "name": "Ujwala",
+    "url": "Ayurvedha/Ujwala _ Mexican Poppy.html"
+  },
+  {
+    "id": "Urad _ Black Gram",
+    "name": "Urad",
+    "url": "Ayurvedha/Urad _ Black Gram.html"
+  },
+  {
+    "id": "vacha",
+    "name": "Vacha (Acorus calamus)",
+    "url": "Ayurvedha/vacha.html"
+  },
+  {
+    "id": "vidari-kanda",
+    "name": "Vidari Kanda (Pueraria tuberosa)",
+    "url": "Ayurvedha/vidari-kanda.html"
+  },
+  {
+    "id": "Garden_backup",
+    "name": "Virtual Herbal Garden \u2014 Swastha",
+    "url": "Ayurvedha/Garden_backup.html"
+  },
+  {
+    "id": "yashtimadhu",
+    "name": "Yashtimadhu (Glycyrrhiza glabra)",
+    "url": "Ayurvedha/yashtimadhu.html"
+  }
+]

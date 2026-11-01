@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kavitha | Wood Apple | Swastha</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+  <style>
+    #open3D {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      padding: 10px 18px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: var(--forest);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      z-index: 1000;
+      transition: .3s;
+    }
+    #open3D:hover {
+      background: var(--gold);
+      color: var(--deep);
+    }
+    #viewerModal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+    }
+    #modal-topbar {
+      flex-shrink: 0;
+      height: 58px;
+      background: #111111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px 0 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      z-index: 99999;
+    }
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 4.5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.72);
+      user-select: none;
+    }
+    #close3D {
+      width: 38px;
+      height: 38px;
+      font-size: 15px;
+      font-weight: 300;
+      background: transparent;
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background .2s, color .2s, transform .22s;
+      outline: none;
+      flex-shrink: 0;
+    }
+    #close3D:hover {
+      background: #ffffff;
+      color: #111111;
+      border-color: #ffffff;
+      transform: rotate(90deg);
+    }
+    #viewerModal model-viewer {
+      flex: 1;
+      width: 100%;
+      display: block;
+      background: #ffffff;
+    }
+
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+    * { margin:0; padding:0; box-sizing:border-box }
+    html { scroll-behavior:smooth }
+    body {
+      font-family:'Jost',sans-serif;
+      background:var(--cream);
+      color:var(--ink);
+      min-height:100vh;
+      overflow-x:hidden;
+      position:relative;
+    }
+    body::before {
+      content:'';
+      position:fixed;
+      inset:0;
+      background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity:.035;
+      pointer-events:none;
+      z-index:100;
+    }
+    .bg-circle { position:fixed; border-radius:50%; pointer-events:none; z-index:0 }
+    .bg-circle-1 { width:700px; height:700px; background:radial-gradient(circle,rgba(74,124,47,.1) 0%,transparent 70%); top:-200px; right:-150px }
+    .bg-circle-2 { width:500px; height:500px; background:radial-gradient(circle,rgba(184,92,26,.08) 0%,transparent 70%); bottom:-100px; left:-100px }
+
+    /* Botanical SVG corners */
+    .botanical-svg { position:fixed; pointer-events:none; z-index:1; opacity:.09 }
+    .botanical-tl { top:-10px; left:-10px; width:280px }
+    .botanical-br { bottom:-10px; right:-10px; width:240px; transform:rotate(180deg) }
+
+    /* Hero */
+    .hero {
+      position:relative; z-index:10;
+      padding:54px 40px 0;
+      text-align:center;
+      opacity:0;
+      animation:fadeUp .9s ease .1s forwards;
+    }
+    .back-link {
+      display:inline-flex; align-items:center; gap:8px;
+      font-size:11px; letter-spacing:3px; text-transform:uppercase;
+      color:var(--sage); text-decoration:none; margin-bottom:36px;
+      transition:color .3s;
+    }
+    .back-link:hover { color:var(--gold) }
+    .logo-rule { display:flex; align-items:center; justify-content:center; gap:20px; margin-bottom:14px }
+    .logo-rule span { display:block; height:1px; width:70px; background:linear-gradient(to right,transparent,var(--gold)) }
+    .logo-rule span:last-child { background:linear-gradient(to left,transparent,var(--gold)) }
+    .logo-ornament { font-size:13px; color:var(--gold) }
+    .hero-title {
+      font-family:'Cormorant Garamond',serif;
+      font-size:clamp(60px,11vw,104px);
+      font-weight:300; letter-spacing:8px; line-height:1;
+      color:var(--deep);
+    }
+    .hero-subtitle {
+      font-family:'Cormorant Garamond',serif;
+      font-size:18px; font-style:italic; font-weight:300;
+      color:var(--earth); letter-spacing:2px; margin-top:8px;
+    }
+    .hero-sci {
+      font-size:11px; font-weight:200; letter-spacing:5px;
+      color:var(--sage); margin-top:6px;
+    }
+
+    /* Hero photos */
+    .hero-photos {
+      position:relative; z-index:10;
+      display:grid; grid-template-columns:1fr 1fr;
+      gap:2px; max-width:900px; margin:40px auto 0;
+      opacity:0; animation:fadeUp .9s ease .35s forwards;
+    }
+    .hero-photos img {
+      width:100%; height:380px;
+      object-fit:cover; object-position:center;
+      display:block; background:var(--parchment);
+    }
+    .photo-caption {
+      text-align:center;
+      font-family:'Cormorant Garamond',serif;
+      font-size:12px; font-style:italic;
+      color:var(--sage); letter-spacing:1px;
+      padding:10px 0 0; max-width:900px; margin:0 auto;
+      position:relative; z-index:10;
+      opacity:0; animation:fadeUp .9s ease .5s forwards;
+    }
+
+    /* Divider */
+    .divider {
+      display:flex; align-items:center; justify-content:center;
+      gap:16px; margin:50px auto; max-width:600px;
+      opacity:0; animation:fadeUp .9s ease .55s forwards;
+      position:relative; z-index:10;
+    }
+    .divider-line { height:1px; width:120px; background:linear-gradient(to right,transparent,var(--sage)) }
+    .divider-line:last-child { background:linear-gradient(to left,transparent,var(--sage)) }
+    .divider-leaf { color:var(--forest); font-size:18px }
+
+    /* Content */
+    .content {
+      position:relative; z-index:10;
+      max-width:860px; margin:0 auto;
+      padding:0 30px 80px;
+    }
+    .intro-text {
+      font-family:'Cormorant Garamond',serif;
+      font-size:20px; font-weight:300; line-height:1.75;
+      color:var(--ink); text-align:center;
+      max-width:700px; margin:0 auto 60px;
+      opacity:0; animation:fadeUp .9s ease .6s forwards;
+    }
+    .intro-text em { color:var(--forest); font-style:italic }
+
+    /* Sections */
+    .section { margin-bottom:60px; opacity:0; animation:fadeUp .9s ease forwards }
+    .section:nth-child(1) { animation-delay:.65s }
+    .section:nth-child(2) { animation-delay:.75s }
+    .section:nth-child(3) { animation-delay:.85s }
+    .section:nth-child(4) { animation-delay:.95s }
+    .section:nth-child(5) { animation-delay:1.05s }
+    .section:nth-child(6) { animation-delay:1.15s }
+    .section:nth-child(7) { animation-delay:1.25s }
+
+    .section-header { display:flex; align-items:center; gap:14px; margin-bottom:20px }
+    .section-num { font-family:'Cormorant Garamond',serif; font-size:11px; letter-spacing:4px; color:var(--gold) }
+    .section-title { font-family:'Cormorant Garamond',serif; font-size:28px; font-weight:400; color:var(--deep); letter-spacing:1px }
+    .section-rule { height:1px; flex:1; background:linear-gradient(to right,var(--gold),transparent) }
+    .section-body { font-size:13px; font-weight:300; line-height:1.9; color:var(--ink); margin-bottom:24px }
+
+    /* Tables */
+    .data-table { width:100%; border-collapse:collapse; margin:16px 0 8px; font-size:12px }
+    .data-table thead tr { background:var(--deep); color:var(--gold); font-size:10px; letter-spacing:3px; text-transform:uppercase }
+    .data-table thead th { padding:12px 14px; text-align:left; font-weight:400 }
+    .data-table tbody tr:nth-child(even) { background:var(--parchment) }
+    .data-table tbody tr:nth-child(odd) { background:var(--cream) }
+    .data-table tbody tr { transition:background .2s }
+    .data-table tbody tr:hover { background:rgba(200, 164, 93, 0.15) }
+    .data-table tbody td { padding:10px 14px; color:var(--ink); border-bottom:1px solid rgba(107,79,45,.08) }
+    .data-table tbody td:first-child { font-weight:400; color:var(--deep); width:28% }
+
+    .dosha-table { width:100%; border-collapse:collapse; margin:16px 0; font-size:12px }
+    .dosha-table thead tr { background:var(--forest); color:var(--cream) }
+    .dosha-table thead th { padding:12px 14px; text-align:left; font-weight:400; letter-spacing:2px; font-size:10px; text-transform:uppercase }
+    .dosha-table tbody tr:nth-child(even) { background:var(--parchment) }
+    .dosha-table tbody tr:nth-child(odd) { background:var(--cream) }
+    .dosha-table tbody td { padding:11px 14px; color:var(--ink); border-bottom:1px solid rgba(107,79,45,.08) }
+    .dosha-table tbody td:first-child { font-weight:400; color:var(--forest); width:18% }
+    .dosha-table tbody td:nth-child(2) { color:var(--earth); width:20% }
+
+    .consume-table { width:100%; border-collapse:collapse; margin:16px 0; font-size:12px }
+    .consume-table thead tr { background:var(--earth); color:var(--cream) }
+    .consume-table thead th { padding:12px 14px; text-align:left; font-weight:400; letter-spacing:2px; font-size:10px; text-transform:uppercase }
+    .consume-table tbody tr:nth-child(even) { background:var(--parchment) }
+    .consume-table tbody tr:nth-child(odd) { background:var(--cream) }
+    .consume-table tbody td { padding:11px 14px; color:var(--ink); border-bottom:1px solid rgba(107,79,45,.08) }
+    .consume-table tbody td:first-child { font-weight:400; color:var(--earth); width:22% }
+
+    /* Benefits grid */
+    .benefits-grid {
+      display:grid; grid-template-columns:1fr 1fr; gap:1px;
+      background:rgba(107,79,45,.12); border:1px solid rgba(107,79,45,.12);
+      margin:8px 0;
+    }
+    .benefit-card {
+      background:var(--cream); padding:24px 22px;
+      transition:background .3s; position:relative; overflow:hidden;
+    }
+    .benefit-card:hover { background:#ede4ce }
+    .benefit-card::before {
+      content:''; position:absolute; bottom:0; left:0;
+      width:0; height:2px; background:var(--gold); transition:width .4s;
+    }
+    .benefit-card:hover::before { width:100% }
+    .benefit-title { font-family:'Cormorant Garamond',serif; font-size:16px; font-weight:600; color:var(--forest); margin-bottom:8px }
+    .benefit-desc { font-size:11.5px; font-weight:300; line-height:1.75; color:var(--ink); opacity:.85 }
+
+    /* Nutrition bar */
+    .nutrition-bar {
+      display:grid; grid-template-columns:repeat(4,1fr); gap:1px;
+      background:rgba(107,79,45,.12); border:1px solid rgba(107,79,45,.12);
+      margin:20px 0;
+    }
+    .nutrition-cell { background:var(--cream); padding:22px 16px; text-align:center; transition:background .3s }
+    .nutrition-cell:hover { background:var(--parchment) }
+    .nutrition-num { font-family:'Cormorant Garamond',serif; font-size:36px; font-weight:300; color:var(--forest); line-height:1; margin-bottom:4px }
+    .nutrition-unit { font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--gold); font-weight:300 }
+    .nutrition-label { font-size:11px; font-weight:300; color:var(--ink); margin-top:5px }
+
+    /* Precaution list */
+    .precaution-list { list-style:none; margin:8px 0 }
+    .precaution-list li {
+      display:flex; gap:12px; align-items:flex-start;
+      padding:10px 14px; font-size:12px; font-weight:300;
+      line-height:1.7; color:var(--ink);
+      border-bottom:1px solid rgba(107,79,45,.08);
+    }
+    .precaution-list li:last-child { border-bottom:none }
+    .precaution-list li::before { content:'▸'; color:var(--gold); flex-shrink:0; margin-top:1px }
+
+    /* Sources */
+    .sources { border-top:1px solid rgba(107,79,45,.15); padding-top:24px; margin-top:20px }
+    .sources-title { font-size:10px; letter-spacing:4px; text-transform:uppercase; color:var(--sage); margin-bottom:12px; font-weight:300 }
+    .sources ul { list-style:none }
+    .sources ul li { font-family:'Cormorant Garamond',serif; font-size:13px; font-style:italic; color:var(--earth); padding:5px 0; border-bottom:1px solid rgba(107,79,45,.06) }
+    .sources ul li::before { content:'· '; color:var(--sage) }
+
+    footer {
+      position:relative; z-index:10; text-align:center;
+      padding:24px 20px 44px;
+      border-top:1px solid rgba(107,79,45,.12);
+      max-width:860px; margin:0 auto;
+    }
+    footer p { font-size:11px; letter-spacing:4px; text-transform:uppercase; color:var(--sage); font-weight:300 }
+
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(28px) }
+      to   { opacity:1; transform:translateY(0) }
+    }
+    @media(max-width:700px) {
+      .hero-photos { grid-template-columns:1fr }
+      .hero-photos img { height:260px }
+      .benefits-grid { grid-template-columns:1fr }
+      .nutrition-bar { grid-template-columns:1fr 1fr }
+      .content { padding:0 18px 60px }
+    }
+  </style>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+</head>
+<body>
+  <button type="button" id="open3D">View in 3D</button>
+
+
+  <div class="bg-circle bg-circle-1"></div>
+  <div class="bg-circle bg-circle-2"></div>
+
+  <!-- Botanical corner SVGs -->
+  <svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 290 Q 80 200 140 150 Q 200 100 270 20" stroke="#4a7c2f" stroke-width="1.5" fill="none"/>
+    <circle cx="100" cy="200" r="18" fill="#4a7c2f" opacity=".5"/>
+    <circle cx="150" cy="155" r="22" fill="#8aab6a" opacity=".45"/>
+    <circle cx="200" cy="110" r="16" fill="#4a7c2f" opacity=".6"/>
+    <ellipse cx="125" cy="178" rx="26" ry="13" fill="#8aab6a" transform="rotate(-30 125 178)"/>
+    <ellipse cx="175" cy="133" rx="22" ry="11" fill="#4a7c2f" transform="rotate(-50 175 133)"/>
+  </svg>
+  <svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 290 Q 80 200 140 150 Q 200 100 270 20" stroke="#4a7c2f" stroke-width="1.5" fill="none"/>
+    <circle cx="100" cy="200" r="18" fill="#4a7c2f" opacity=".5"/>
+    <circle cx="150" cy="155" r="22" fill="#8aab6a" opacity=".4"/>
+    <ellipse cx="125" cy="178" rx="26" ry="13" fill="#8aab6a" transform="rotate(-30 125 178)"/>
+  </svg>
+
+  <div class="hero">
+    <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+    <div class="logo-rule">
+      <span></span>
+      <div class="logo-ornament">✦</div>
+      <span></span>
+    </div>
+    <div class="hero-title">Kavitha</div>
+    <div class="hero-subtitle">Wood Apple — The Fragrant Stone Fruit of the Gods</div>
+    <div class="hero-sci">Limonia acidissima &nbsp;·&nbsp; Feronia elephantum &nbsp;·&nbsp; Feronia limonia</div>
+  </div>
+
+  <div class="hero-photos">
+    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9e/Limonia_acidissima_116485965.jpg/1280px-Limonia_acidissima_116485965.jpg" alt="Ripe wood apple fruit with hard grey shell"
+      onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/1/16/Limonia_acidissima_en_vente.jpg/1280px-Limonia_acidissima_en_vente.jpg" alt="Wood apple pulp — dark brown, aromatic, seed-studded"
+      onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+  </div>
+  <p class="photo-caption">Fig. 1 — The hard, woody shell of a ripe Kavitha fruit, greyish-green to yellow-brown at maturity &nbsp;·&nbsp; Fig. 2 — The dark brown aromatic pulp revealing seed clusters within</p>
+
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-leaf">❧</div>
+    <div class="divider-line"></div>
+  </div>
+
+  <div class="content">
+    <p class="intro-text">
+      Revered in Sanskrit as <em>Kapittha</em>, <em>Dantashekhara</em> (the crown of teeth), and <em>Surabhicchada</em> (the fragrant-leaved), Wood Apple has been honoured across Hindu, Buddhist, and folk traditions for millennia — its stone-hard shell a symbol of protection, its dark aromatic pulp prized in <em>Charaka Samhita</em> and <em>Sushruta Samhita</em> as a premier remedy for digestive ailments, liver disease, and fevers of every kind.
+    </p>
+
+    <!-- 01 Botanical Profile -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">01</span>
+        <h2 class="section-title">Botanical Profile</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">
+        Kavitha (<em>Limonia acidissima</em> L.) is a slow-growing, deciduous tree of the Rutaceae family — the same family as citrus — native to the dry plains and scrub forests of the Indian subcontinent, Sri Lanka, and Southeast Asia. It grows 9–15 m tall with an irregularly spreading crown, armed with sharp axillary spines, and bears pinnate aromatic leaves that release a citrus-like fragrance when crushed.
+      </p>
+      <p class="section-body">
+        The fruit — the defining feature of the tree — is a globose berry, 5–9 cm in diameter, with an extremely hard, woody, greyish-brown shell that must be cracked open with a hammer. Within lies a dark brown, sticky, strongly aromatic pulp filled with numerous small seeds and fibrous strands. The pulp is simultaneously astringent, acidic, and sweetly aromatic — a flavour profile unlike any other subtropical fruit. Trees begin fruiting at 15 years; a single mature tree may yield 50–200 fruits per season.
+      </p>
+      <table class="data-table">
+        <thead><tr><th>Property</th><th>Detail</th></tr></thead>
+        <tbody>
+          <tr><td>Family</td><td>Rutaceae (Citrus family)</td></tr>
+          <tr><td>Botanical Name</td><td>Limonia acidissima L. / Feronia elephantum Corrêa</td></tr>
+          <tr><td>Sanskrit Names</td><td>Kapittha, Dantashekhara, Surabhicchada, Dadhistha, Kapipriya</td></tr>
+          <tr><td>Telugu Names</td><td>Kavitha, Velaga, Vellaga Pandu</td></tr>
+          <tr><td>Common Names</td><td>Wood Apple, Elephant Apple, Monkey Fruit, Curd Fruit</td></tr>
+          <tr><td>Regional Names</td><td>Kait / Kaitha (Hindi), Vilam (Tamil), Vilampazham (Mal), Kaith (Bengali)</td></tr>
+          <tr><td>Origin</td><td>Dry forests of Indian subcontinent, Sri Lanka, SE Asia</td></tr>
+          <tr><td>Plant Type</td><td>Slow-growing deciduous tree (9–15 m); thorny branches</td></tr>
+          <tr><td>Fruiting Season</td><td>October–March (dry season, post-monsoon)</td></tr>
+          <tr><td>Medicinal Parts</td><td>Pulp (primary), leaves, bark, roots, gum, seed oil</td></tr>
+          <tr><td>Taste Profile</td><td>Amla (sour), Kashaya (astringent), Madhura (sweet when ripe)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 02 Phytochemistry -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">02</span>
+        <h2 class="section-title">Phytochemistry &amp; Composition</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">
+        Wood Apple is a phytochemically rich plant with each part — fruit pulp, leaves, bark, gum, and seeds — yielding a distinct and therapeutically active matrix of secondary metabolites. The fruit pulp is notable for its combination of organic acids, coumarins, flavonoids, and tannins. The leaves contain furocoumarins and essential oils, while the gum — a polysaccharide exudate tapped from the bark — finds use as a demulcent and pharmaceutical excipient.
+      </p>
+      <div class="nutrition-bar">
+        <div class="nutrition-cell">
+          <div class="nutrition-num">134</div>
+          <div class="nutrition-unit">kcal / 100g</div>
+          <div class="nutrition-label">Pulp energy</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">7.1</div>
+          <div class="nutrition-unit">g / 100g</div>
+          <div class="nutrition-label">Dietary fibre</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">55</div>
+          <div class="nutrition-unit">mg / 100g</div>
+          <div class="nutrition-label">Vitamin C</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">130</div>
+          <div class="nutrition-unit">mg / 100g</div>
+          <div class="nutrition-label">Calcium (pulp)</div>
+        </div>
+      </div>
+      <table class="data-table">
+        <thead><tr><th>Compound</th><th>Category</th><th>Primary Action</th></tr></thead>
+        <tbody>
+          <tr><td>Psoralen &amp; Marmesin</td><td>Furocoumarins (leaves/bark)</td><td>Antimicrobial, antifungal, photosensitising</td></tr>
+          <tr><td>Limonin &amp; Obacunone</td><td>Limonoids (seeds)</td><td>Anticancer, antimalarial, bitter-tonic</td></tr>
+          <tr><td>Quercetin &amp; Rutin</td><td>Flavonoids (pulp/leaves)</td><td>Antioxidant, anti-inflammatory, capillary support</td></tr>
+          <tr><td>Gallic &amp; Ferulic Acids</td><td>Phenolic acids (pulp)</td><td>Antioxidant, hepatoprotective, antimicrobial</td></tr>
+          <tr><td>Citric, Malic &amp; Tartaric Acids</td><td>Organic acids (pulp)</td><td>Digestive stimulant, astringent, cooling</td></tr>
+          <tr><td>Tannins (condensed)</td><td>Polyphenols (bark/pulp)</td><td>Antidiarrheal, astringent, wound-healing</td></tr>
+          <tr><td>Limonia Gum (polysaccharide)</td><td>Exudate (bark)</td><td>Demulcent, pharmaceutical binder</td></tr>
+          <tr><td>β-Sitosterol</td><td>Phytosterol (leaves/roots)</td><td>Anti-inflammatory, hypolipidemic</td></tr>
+          <tr><td>Calcium, Phosphorus, Iron</td><td>Minerals (pulp)</td><td>Bone health, haematopoiesis, enzyme cofactors</td></tr>
+          <tr><td>Riboflavin (B2), Thiamine (B1)</td><td>B-vitamins (pulp)</td><td>Energy metabolism, nerve function</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 03 Ayurvedic Significance -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">03</span>
+        <h2 class="section-title">Ayurvedic Significance</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">
+        Kapittha holds a distinguished place across all major classical Ayurvedic texts. Charaka includes it in <em>Kakolyadi Gana</em> and extols its use in <em>Aruchi</em> (anorexia), <em>Vomiting</em>, <em>Diarrhea</em>, and <em>Vatarakta</em>. Sushruta places it in <em>Ambasthadi Gana</em> with emphasis on its astringent-hepatoprotective properties. Vagbhata in <em>Ashtanga Hridayam</em> prescribes Kapittha Ghrita for liver disorders and chronic fevers. Bhavaprakasha Nighantu lists it in <em>Amradi Phala Varga</em> — the class of sour fruits.
+      </p>
+      <p class="section-body">
+        The classical verse — <em>"Kapittham grahi tiktoshnam dīpanam ruchikārakam, hridyam vātāmayashresthham kaphapittārtivāranam"</em> — describes it as absorbent (grāhi), bitter, hot-potency, digestive-stimulant, heart-pleasing, pre-eminent in Vata disorders, and a reliever of Kapha-Pitta diseases.
+      </p>
+      <p class="section-body">
+        <strong>Rasa:</strong> Amla (sour), Kashaya (astringent), Madhura when ripe &nbsp;·&nbsp; <strong>Guna:</strong> Grahi (absorbent), Laghu (light), Ruksha (dry) &nbsp;·&nbsp; <strong>Virya:</strong> Ushna (hot) &nbsp;·&nbsp; <strong>Vipaka:</strong> Amla (sour) &nbsp;·&nbsp; <strong>Karma:</strong> Deepana, Pachana, Grahi, Hridya
+      </p>
+      <table class="dosha-table">
+        <thead><tr><th>Dosha</th><th>Effect</th><th>Mechanism &amp; Notes</th></tr></thead>
+        <tbody>
+          <tr><td>Vata ↓</td><td>Pacifying</td><td>Madhura-amla rasa and ushna virya help relieve Vata-induced colicky pain, constipation, and spasms; classical use in Vataja gulma (abdominal tumours) and intestinal spasm</td></tr>
+          <tr><td>Pitta ↓</td><td>Mildly pacifying</td><td>Ripe fruit's sweet fraction and kashaya rasa help relieve Pitta-driven thirst, burning sensations, and liver heat; however, unripe fruit may increase Pitta due to excess amla-ushna combination</td></tr>
+          <tr><td>Kapha ↓</td><td>Pacifying</td><td>Grahi (drying/absorbent), ruksha (dry), and tikta qualities reduce Kapha accumulation, relieve respiratory mucus, and combat Kapha-type diarrhea and sluggish digestion</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 04 Benefits -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">04</span>
+        <h2 class="section-title">Key Health Benefits</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Modern pharmacological research has substantiated a wide array of Wood Apple's classical applications, with studies confirming antidiarrheal, hepatoprotective, antimicrobial, antioxidant, hypoglycemic, and immunomodulatory activities across leaf, bark, pulp, and gum extracts.</p>
+      <div class="benefits-grid">
+        <div class="benefit-card">
+          <div class="benefit-title">Digestive Health &amp; Antidiarrheal</div>
+          <div class="benefit-desc">The tannin-rich pulp's grahi (absorbent) quality is its most celebrated classical indication. It reduces intestinal hypermotility, firms loose stools, and is effective in chronic diarrhea, dysentery, irritable bowel, and colitis. The organic acids simultaneously stimulate bile secretion and digestive enzyme activity.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Liver Protection (Hepatoprotective)</div>
+          <div class="benefit-desc">Animal studies demonstrate significant hepatoprotective activity of pulp and leaf extracts against paracetamol-induced liver damage — reducing serum transaminases (SGOT, SGPT) and bilirubin toward normal. Gallic acid, ferulic acid, and marmesin contribute to this liver-shielding effect, corroborating classical use of Kapittha Ghrita in liver disorders.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Antidiabetic &amp; Blood Sugar Regulation</div>
+          <div class="benefit-desc">Ethanolic leaf and pulp extracts show dose-dependent reduction of blood glucose in streptozotocin-induced diabetic animal models. The mechanism is postulated to involve alpha-glucosidase inhibition and improved peripheral insulin sensitivity. Tannins and flavonoids appear to be the primary active fractions.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Antimicrobial &amp; Antifungal</div>
+          <div class="benefit-desc">Leaf and bark extracts demonstrate inhibitory activity against E. coli, Salmonella, Shigella, Staphylococcus aureus, and Candida albicans. Furocoumarins (psoralen, marmesin) and tannins are the primary antimicrobials. Bark paste has traditional applications in skin infections, ringworm, and parasitic infestations.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Respiratory &amp; Expectorant</div>
+          <div class="benefit-desc">The unripe pulp, dried and powdered, is traditionally used with honey for chronic cough, asthma, and bronchitis — its Kapha-reducing ushna-tikta properties help liquefy and expel respiratory mucus. Leaf infusions are used in folk medicine for relief of cold-associated congestion.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Cardiovascular &amp; Cholesterol</div>
+          <div class="benefit-desc">Rich in potassium, riboflavin, and beta-sitosterol, Wood Apple pulp supports cardiac function and healthy blood pressure. Animal studies show lipid-lowering effects of the extract, reducing LDL cholesterol and triglycerides. Its heart-tonic (hridya) classification in classical texts reflects this cardioprotective tradition.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Cooling &amp; Anti-fever (Antipyretic)</div>
+          <div class="benefit-desc">Kavitha sherbet — pulp mixed with jaggery, black salt, and cold water — is a beloved summer drink across Telangana and Andhra Pradesh precisely for its deeply cooling, electrolyte-replenishing properties. Classical texts recommend it in fever management, excessive thirst (trishna), and burning sensations.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Oral Health &amp; Dental Care</div>
+          <div class="benefit-desc">The Sanskrit epithet <em>Dantashekhara</em> — "crown of teeth" — reflects traditional use of Wood Apple in oral hygiene. Bark and leaf decoctions are used as gargles and mouth rinses for gum disease, stomatitis, and toothache; its astringent tannins tighten gum tissue and its antimicrobials suppress oral pathogens.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 05 How to Consume -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">05</span>
+        <h2 class="section-title">How to Consume Kavitha</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Wood Apple is most commonly consumed as a fresh fruit drink, chutney, or digestive preparation across South India and Telangana. Internal preparations should be adjusted based on individual constitution (prakriti) and health condition, with unripe fruit preparations reserved for digestive-astringent applications and ripe fruit preparations used for general nutrition and cooling purposes.</p>
+      <table class="consume-table">
+        <thead><tr><th>Form</th><th>Preparation</th><th>Dosage</th><th>Best Use</th></tr></thead>
+        <tbody>
+          <tr><td>Kavitha Sherbet (Fresh Juice)</td><td>Pulp + water + jaggery + black salt + cumin</td><td>150–200 ml once daily</td><td>Summer cooling, electrolyte replenishment, fever</td></tr>
+          <tr><td>Raw Pulp (Direct)</td><td>Scoop ripe pulp; eat with rock salt and pepper</td><td>50–100 g (2–3 tbsp) daily</td><td>Digestive stimulation, anorexia, constipation</td></tr>
+          <tr><td>Kavitha Chutney</td><td>Pulp + tamarind + chilli + salt; grind into chutney</td><td>30–50 g with meals</td><td>Appetiser, anorexia, rice accompaniment</td></tr>
+          <tr><td>Dried Pulp Powder</td><td>Unripe pulp dried and powdered</td><td>3–6 g with honey, twice daily</td><td>Chronic diarrhea, dysentery, IBS, cough</td></tr>
+          <tr><td>Leaf Decoction</td><td>Boil 10–15 fresh leaves in 400 ml water; reduce to 100 ml</td><td>50 ml twice daily</td><td>Diabetes management, liver support, fever</td></tr>
+          <tr><td>Bark Decoction (Gargle)</td><td>Boil bark pieces; cool and use as mouth rinse</td><td>As needed, 2–3× daily</td><td>Gum disease, mouth ulcers, stomatitis</td></tr>
+          <tr><td>Bark Paste (Topical)</td><td>Ground bark paste in water</td><td>Apply to affected area</td><td>Skin infections, ringworm, wound healing</td></tr>
+          <tr><td>Kapittha Ghrita (Classical)</td><td>Medicated ghee per classical preparation</td><td>Per practitioner direction</td><td>Liver disorders, chronic fever, Vatarakta</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 06 Safety -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">06</span>
+        <h2 class="section-title">Safety &amp; Precautions</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Wood Apple is broadly safe when consumed as food in customary amounts and has millennia of documented human use. However, therapeutic-dose preparations — particularly leaf and bark extracts — warrant attention to a few contraindications, especially for pregnant women, those with hyperacidity, and individuals on blood-sugar medications.</p>
+      <ul class="precaution-list">
+        <li><strong>Pregnancy:</strong> Unripe fruit and bark preparations are traditionally contraindicated in pregnancy due to potential uterine-stimulant activity. Ripe fruit as food is generally considered safe in moderation.</li>
+        <li><strong>Hyperacidity &amp; Peptic Ulcers:</strong> The amla (sour) and ushna (hot) properties of unripe or large quantities of Wood Apple may aggravate Pitta — use cautiously in gastritis, GERD, and acid peptic disease.</li>
+        <li><strong>Diabetes medications:</strong> Given documented hypoglycemic activity, concurrent use of therapeutic leaf extracts with oral antidiabetics (metformin, sulfonylureas) or insulin may potentiate glucose lowering — monitor blood sugar carefully.</li>
+        <li><strong>Constipation (dry type):</strong> The grahi (absorbent) and ruksha (dry) properties may worsen Vata-type dry constipation — not recommended in this condition without appropriate co-administration of lubricating herbs.</li>
+        <li><strong>Furocoumarins (photosensitivity):</strong> Leaf and bark preparations contain psoralen, a photosensitising furocoumarin — topical application followed by sun exposure may cause hyperpigmentation in sensitive individuals.</li>
+        <li><strong>Kidney stones:</strong> The high oxalate content in the pulp means individuals with a history of calcium-oxalate kidney stones should moderate consumption and ensure adequate hydration.</li>
+        <li><strong>Overconsumption:</strong> Very large quantities of fresh pulp may cause excessive intestinal binding, leading to constipation or abdominal discomfort — moderation (50–100 g pulp/day) is advised.</li>
+      </ul>
+    </div>
+
+    <div class="sources">
+      <div class="sources-title">References &amp; Sources</div>
+      <ul>
+        <li>Arun Kumar M et al. — "Wood Apple (Limonia acidissima): Pharmacognosy, Phytochemistry and Pharmacological Review" — Journal of Pharmacognosy and Phytochemistry, 2014</li>
+        <li>Hossain MA &amp; Shah MD — "A study on the total phenols content and antioxidant activity of essential oil and different solvent extracts of endemic plant Merremia borneensis" — Arabian J Chem, 2015</li>
+        <li>Shekar Shetty VG &amp; Shilpa AS — "Hepatoprotective activity of Feronia limonia against carbon tetrachloride-induced liver damage in rats" — Asian Pacific Journal of Tropical Biomedicine, 2012</li>
+        <li>Benherlal PS &amp; Arumughan C — "Chemical composition and in vitro antioxidant studies on Limonia acidissima pulp" — Journal of the Science of Food and Agriculture, 2007</li>
+        <li>Charaka Samhita — Kakolyadi Gana; Chikitsasthana — Kapittha references in digestive and fever therapy</li>
+        <li>Sushruta Samhita — Ambasthadi Gana; liver and astringent applications of Kapittha</li>
+        <li>Ashtanga Hridayam (Vagbhata) — Kapittha Ghrita in Yakrit (liver) and Jwara (fever) chikitsa</li>
+        <li>Bhavaprakasha Nighantu — Amradi Phala Varga; Dhanvantari Nighantu — Kapittha properties</li>
+        <li>Priyavrat Sharma — Dravyaguna Vigyana — Classical Ayurvedic properties of Kapittha</li>
+        <li>Patel PK et al. — "Feronia elephantum (Corr.) Primark: A comprehensive review of its botany, traditional uses, phytochemistry, and pharmacology" — Journal of Ethnopharmacology, 2012</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer>
+    <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a qualified practitioner before therapeutic use</p>
+  </footer>
+
+  <div id="viewerModal">
+    <div id="modal-topbar">
+      <span>3D Model — Kavitha</span>
+      <button type="button" id="close3D">✕</button>
+    </div>
+    <model-viewer src="kavitha3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+  </div>
+  <script>
+    (function() {
+      var open3D = document.getElementById('open3D');
+      var close3D = document.getElementById('close3D');
+      var modal = document.getElementById('viewerModal');
+      if (!open3D || !close3D || !modal) return;
+      function openModal() {
+        
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+      function closeModal() {
+        
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+      open3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); openModal();
+      });
+      close3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); closeModal();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+      });
+    })();
+  </script>
+
+</body>
+</html>

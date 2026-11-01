@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ashwagandha — Indian Ginseng | Swastha</title>
+
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+
+<!-- 3D Model Viewer Script -->
+<link rel="preload" href="ashwagandha3d.glb" as="fetch" crossorigin="anonymous">
+<script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+
+<style>
+:root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Jost', sans-serif;
+  background-color: var(--cream);
+  color: var(--ink);
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+}
+
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  opacity: 0.035; pointer-events: none; z-index: 100;
+}
+
+#open3D {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      padding: 10px 20px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: linear-gradient(135deg, #103B28, #184c34);
+      color: #F5F0E4;
+      border: 1px solid rgba(200, 164, 93, 0.4);
+      border-radius: 999px;
+      cursor: pointer;
+      z-index: 1000;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    #open3D:hover {
+      background: linear-gradient(135deg, #C8A45D, #E5C783);
+      color: #07170F;
+      border-color: #E5C783;
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(200, 164, 93, 0.35);
+    }
+    #viewerModal {
+      position: fixed;
+      inset: 0;
+      z-index: 9000;
+      display: none;
+      flex-direction: column;
+      background: rgba(7, 23, 15, 0.96);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+    #viewerModal.is-open {
+      display: flex !important;
+    }
+    #modal-topbar {
+      flex-shrink: 0;
+      height: 60px;
+      background: #07170F;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 32px;
+      border-bottom: 1px solid rgba(200, 164, 93, 0.2);
+      z-index: 99999;
+    }
+    #modal-topbar span {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 16px;
+      font-weight: 500;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #E5C783;
+      user-select: none;
+    }
+    #close3D {
+      width: 38px;
+      height: 38px;
+      background: rgba(255, 255, 255, 0.06);
+      color: #F5F0E4;
+      border: 1px solid rgba(200, 164, 93, 0.35);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      font-size: 16px;
+      font-weight: 300;
+      transition: all 0.25s ease;
+      outline: none;
+      flex-shrink: 0;
+    }
+    #close3D:hover {
+      background: #C8A45D;
+      color: #07170F;
+      border-color: #E5C783;
+      transform: rotate(90deg);
+    }
+    .modal-viewer-wrap {
+      flex: 1;
+      width: 100%;
+      height: calc(100% - 60px);
+      position: relative;
+      background: #07170F;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    #viewerModal model-viewer {
+      width: 100%;
+      height: 100%;
+      display: block;
+      background: #07170F;
+      --poster-color: transparent;
+    }
+    .model-loading-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(7, 23, 15, 0.88);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      z-index: 40;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.4s ease, visibility 0.4s ease;
+      pointer-events: none;
+    }
+    .model-loading-overlay.is-hidden {
+      opacity: 0;
+      visibility: hidden;
+    }
+    .model-loading-card {
+      text-align: center;
+      padding: 30px 36px;
+      background: rgba(16, 59, 40, 0.7);
+      border: 1px solid rgba(200, 164, 93, 0.3);
+      border-radius: 16px;
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.6);
+      max-width: 360px;
+      width: 88%;
+    }
+    .model-loading-spinner {
+      font-size: 26px;
+      color: #E5C783;
+      display: inline-block;
+      animation: pulseRotate 2s infinite linear;
+      margin-bottom: 12px;
+    }
+    @keyframes pulseRotate {
+      0% { transform: rotate(0deg) scale(0.9); opacity: 0.7; }
+      50% { transform: rotate(180deg) scale(1.15); opacity: 1; }
+      100% { transform: rotate(360deg) scale(0.9); opacity: 0.7; }
+    }
+    .model-loading-title {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 21px;
+      font-weight: 500;
+      color: #E5C783;
+      letter-spacing: 1px;
+      margin-bottom: 6px;
+    }
+    .model-loading-sub {
+      font-size: 11px;
+      color: #C7C9B9;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+    .model-progress-bar-wrap {
+      width: 100%;
+      height: 5px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 999px;
+      overflow: hidden;
+      border: 1px solid rgba(200, 164, 93, 0.2);
+    }
+    .model-progress-bar {
+      width: 15%;
+      height: 100%;
+      background: linear-gradient(90deg, #C8A45D, #E5C783);
+      border-radius: 999px;
+      transition: width 0.25s ease;
+    }
+
+.bg-circle { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0; }
+.bg-circle-1 { width: 700px; height: 700px; background: radial-gradient(circle, rgba(42,92,63,0.1) 0%, transparent 70%); top: -200px; right: -150px; }
+.bg-circle-2 { width: 500px; height: 500px; background: radial-gradient(circle, rgba(201,168,76,0.08) 0%, transparent 70%); bottom: -100px; left: -100px; }
+
+.botanical-svg { position: fixed; pointer-events: none; z-index: 1; opacity: 0.1; }
+.botanical-tl { top: -20px; left: -20px; width: 260px; }
+.botanical-br { bottom: -20px; right: -20px; width: 220px; transform: rotate(180deg); }
+
+.hero {
+  position: relative; z-index: 10;
+  padding: 54px 40px 0;
+  text-align: center;
+  opacity: 0;
+  animation: fadeUp 0.9s ease 0.1s forwards;
+}
+.back-link {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+  color: var(--sage); text-decoration: none; margin-bottom: 36px;
+  transition: color 0.3s;
+}
+.back-link:hover { color: var(--gold); }
+.logo-rule { display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 14px; }
+.logo-rule span { display: block; height: 1px; width: 70px; background: linear-gradient(to right, transparent, var(--gold)); }
+.logo-rule span:last-child { background: linear-gradient(to left, transparent, var(--gold)); }
+.logo-ornament { font-size: 13px; color: var(--gold); }
+.hero-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(48px, 10vw, 100px);
+  font-weight: 300; letter-spacing: 8px; line-height: 1;
+  color: var(--deep);
+}
+.hero-subtitle {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 18px; font-style: italic; font-weight: 300;
+  color: var(--earth); letter-spacing: 2px; margin-top: 8px;
+}
+.hero-sci {
+  font-size: 11px; font-weight: 200; letter-spacing: 5px;
+  color: var(--sage); margin-top: 6px;
+}
+
+.hero-photos {
+  position: relative; z-index: 10;
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 2px; max-width: 900px; margin: 40px auto 0;
+  opacity: 0; animation: fadeUp 0.9s ease 0.35s forwards;
+}
+.hero-photos img {
+  width: 100%; height: 380px;
+  object-fit: cover; object-position: center; display: block;
+  background: var(--parchment);
+}
+.hero-photos img:first-child { object-position: center 40%; }
+.photo-caption {
+  text-align: center; font-family: 'Cormorant Garamond', serif;
+  font-size: 12px; font-style: italic; color: var(--sage);
+  letter-spacing: 1px; padding: 10px 0 0;
+  max-width: 900px; margin: 0 auto;
+  position: relative; z-index: 10;
+  opacity: 0; animation: fadeUp 0.9s ease 0.5s forwards;
+}
+
+.divider {
+  display: flex; align-items: center; justify-content: center;
+  gap: 16px; margin: 50px auto 50px;
+  max-width: 600px;
+  opacity: 0; animation: fadeUp 0.9s ease 0.55s forwards;
+  position: relative; z-index: 10;
+}
+.divider-line { height: 1px; width: 120px; background: linear-gradient(to right, transparent, var(--sage)); }
+.divider-line:last-child { background: linear-gradient(to left, transparent, var(--sage)); }
+.divider-leaf { color: var(--forest); font-size: 18px; }
+
+.content {
+  position: relative; z-index: 10;
+  max-width: 860px; margin: 0 auto;
+  padding: 0 30px 80px;
+}
+.intro-text {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 20px; font-weight: 300; line-height: 1.75;
+  color: var(--ink); text-align: center;
+  max-width: 700px; margin: 0 auto 60px;
+  opacity: 0; animation: fadeUp 0.9s ease 0.6s forwards;
+}
+.intro-text em { color: var(--forest); font-style: italic; }
+
+.section {
+  margin-bottom: 60px;
+  opacity: 0; animation: fadeUp 0.9s ease forwards;
+}
+.section:nth-child(1) { animation-delay: 0.65s; }
+.section:nth-child(2) { animation-delay: 0.75s; }
+.section:nth-child(3) { animation-delay: 0.85s; }
+.section:nth-child(4) { animation-delay: 0.95s; }
+.section:nth-child(5) { animation-delay: 1.05s; }
+.section:nth-child(6) { animation-delay: 1.15s; }
+.section:nth-child(7) { animation-delay: 1.25s; }
+
+.section-header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
+.section-num { font-family: 'Cormorant Garamond', serif; font-size: 11px; letter-spacing: 4px; color: var(--gold); font-weight: 400; }
+.section-title { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 400; color: var(--deep); letter-spacing: 1px; }
+.section-rule { height: 1px; flex: 1; background: linear-gradient(to right, var(--gold), transparent); }
+.section-body { font-size: 13px; font-weight: 300; line-height: 1.9; color: var(--ink); margin-bottom: 24px; }
+
+.data-table { width: 100%; border-collapse: collapse; margin: 16px 0 8px; font-size: 12px; }
+.data-table thead tr { background: var(--deep); color: var(--gold); font-size: 10px; letter-spacing: 3px; text-transform: uppercase; }
+.data-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; }
+.data-table tbody tr:nth-child(even) { background: var(--parchment); }
+.data-table tbody tr:nth-child(odd) { background: var(--cream); }
+.data-table tbody tr { transition: background 0.2s; }
+.data-table tbody tr:hover { background: rgba(200, 164, 93, 0.15); }
+.data-table tbody td { padding: 10px 14px; color: var(--ink); border-bottom: 1px solid rgba(107,79,45,0.08); }
+.data-table tbody td:first-child { font-weight: 400; color: var(--deep); width: 28%; }
+
+.dosha-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px; }
+.dosha-table thead tr { background: var(--forest); color: var(--cream); }
+.dosha-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase; }
+.dosha-table tbody tr:nth-child(even) { background: var(--parchment); }
+.dosha-table tbody tr:nth-child(odd) { background: var(--cream); }
+.dosha-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(107,79,45,0.08); }
+.dosha-table tbody td:first-child { font-weight: 400; color: var(--forest); width: 18%; }
+.dosha-table tbody td:nth-child(2) { color: var(--earth); width: 20%; }
+
+.consume-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px; }
+.consume-table thead tr { background: var(--earth); color: var(--cream); }
+.consume-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase; }
+.consume-table tbody tr:nth-child(even) { background: var(--parchment); }
+.consume-table tbody tr:nth-child(odd) { background: var(--cream); }
+.consume-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(107,79,45,0.08); }
+.consume-table tbody td:first-child { font-weight: 400; color: var(--earth); width: 22%; }
+
+.benefits-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 1px; background: rgba(107,79,45,0.12);
+  border: 1px solid rgba(107,79,45,0.12);
+  margin: 8px 0;
+}
+.benefit-card {
+  background: var(--cream); padding: 24px 22px;
+  transition: background 0.3s; position: relative; overflow: hidden;
+}
+.benefit-card:hover { background: #ede4ce; }
+.benefit-card::before {
+  content: ''; position: absolute;
+  bottom: 0; left: 0; width: 0; height: 2px;
+  background: var(--gold); transition: width 0.4s;
+}
+.benefit-card:hover::before { width: 100%; }
+.benefit-title { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 600; color: var(--forest); margin-bottom: 8px; letter-spacing: 0.5px; }
+.benefit-desc { font-size: 11.5px; font-weight: 300; line-height: 1.75; color: var(--ink); opacity: 0.85; }
+
+.precaution-list { list-style: none; margin: 8px 0; }
+.precaution-list li {
+  display: flex; gap: 12px; align-items: flex-start;
+  padding: 10px 14px; font-size: 12px; font-weight: 300;
+  line-height: 1.7; color: var(--ink);
+  border-bottom: 1px solid rgba(107,79,45,0.08);
+}
+.precaution-list li:last-child { border-bottom: none; }
+.precaution-list li::before { content: '▸'; color: var(--gold); flex-shrink: 0; margin-top: 1px; }
+
+.sources { border-top: 1px solid rgba(107,79,45,0.15); padding-top: 24px; margin-top: 20px; }
+.sources-title { font-size: 10px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); margin-bottom: 12px; font-weight: 300; }
+.sources ul { list-style: none; }
+.sources ul li { font-family: 'Cormorant Garamond', serif; font-size: 13px; font-style: italic; color: var(--earth); padding: 5px 0; border-bottom: 1px solid rgba(107,79,45,0.06); }
+.sources ul li::before { content: '· '; color: var(--sage); }
+
+.nutrition-bar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: rgba(107,79,45,0.12);
+  border: 1px solid rgba(107,79,45,0.12);
+  margin: 20px 0;
+}
+.nutrition-cell {
+  background: var(--cream);
+  padding: 22px 16px;
+  text-align: center;
+  transition: background 0.3s;
+}
+.nutrition-cell:hover { background: var(--parchment); }
+.nutrition-num {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 36px; font-weight: 300;
+  color: var(--forest); line-height: 1;
+  margin-bottom: 4px;
+}
+.nutrition-unit {
+  font-size: 10px; letter-spacing: 2px;
+  text-transform: uppercase; color: var(--gold);
+  font-weight: 300;
+}
+.nutrition-label {
+  font-size: 11px; font-weight: 300;
+  color: var(--ink); margin-top: 5px;
+  letter-spacing: 0.5px;
+}
+
+footer {
+  position: relative; z-index: 10; text-align: center;
+  padding: 24px 20px 44px;
+  border-top: 1px solid rgba(107,79,45,0.12);
+  max-width: 860px; margin: 0 auto;
+}
+footer p { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); font-weight: 300; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 700px) {
+  .hero-photos { grid-template-columns: 1fr; }
+  .hero-photos img { height: 260px; }
+  .benefits-grid { grid-template-columns: 1fr; }
+  .nutrition-bar { grid-template-columns: 1fr 1fr; }
+  .content { padding: 0 18px 60px; }
+}
+</style>
+</head>
+<body>
+
+<button type="button" id="open3D">View in 3D</button>
+
+<div class="bg-circle bg-circle-1"></div>
+<div class="bg-circle bg-circle-2"></div>
+
+<svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#2a5c3f" stroke-width="1.5" fill="none"/>
+  <ellipse cx="90" cy="210" rx="12" ry="7" fill="#c9a84c" opacity="0.5" transform="rotate(-20 90 210)"/>
+  <ellipse cx="130" cy="175" rx="10" ry="6" fill="#c9a84c" opacity="0.6" transform="rotate(-35 130 175)"/>
+  <ellipse cx="170" cy="135" rx="9" ry="5" fill="#c9a84c" opacity="0.7" transform="rotate(-50 170 135)"/>
+  <ellipse cx="115" cy="195" rx="20" ry="10" fill="#7a9e7e" transform="rotate(-30 115 195)"/>
+  <ellipse cx="155" cy="155" rx="18" ry="9" fill="#2a5c3f" transform="rotate(-45 155 155)"/>
+  <ellipse cx="195" cy="115" rx="16" ry="8" fill="#7a9e7e" transform="rotate(-60 195 115)"/>
+</svg>
+<svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#2a5c3f" stroke-width="1.5" fill="none"/>
+  <ellipse cx="90" cy="210" rx="12" ry="7" fill="#c9a84c" opacity="0.5" transform="rotate(-20 90 210)"/>
+  <ellipse cx="130" cy="175" rx="10" ry="6" fill="#c9a84c" opacity="0.6" transform="rotate(-35 130 175)"/>
+  <ellipse cx="115" cy="195" rx="20" ry="10" fill="#7a9e7e" transform="rotate(-30 115 195)"/>
+</svg>
+
+<!-- HERO -->
+<div class="hero">
+  <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+  <div class="logo-rule">
+    <span></span><div class="logo-ornament">✦</div><span></span>
+  </div>
+  <div class="hero-title">Ashwagandha</div>
+  <div class="hero-subtitle">Indian Ginseng — The Strength of a Stallion</div>
+  <div class="hero-sci">Withania somnifera &nbsp;·&nbsp; Winter Cherry</div>
+</div>
+
+<!--
+  ✅ IMAGE FIX: Using lh3.googleusercontent.com/d/FILE_ID format.
+  Fig. 1 → ID: 1uokDVwRWX7F99PiqyBKzak2jRpKd8_Xu
+  Fig. 2 → ID: 17J13N3TNGCMyhQXCIq56emun52fcki3M
+  IMPORTANT: Both images must be shared as "Anyone with the link can view" in Google Drive.
+-->
+<div class="hero-photos">
+  <img
+    src="https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9e/Withania_somnifera_SA_fruit.jpg/1280px-Withania_somnifera_SA_fruit.jpg"
+    alt="Ashwagandha roots dried and fresh"
+    onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';"
+  >
+  <img
+    src="https://thumb.wikimedia.org/wikipedia/commons/thumb/2/24/Withania_somnifera_1DS-II_3-7489.jpg/1280px-Withania_somnifera_1DS-II_3-7489.jpg"
+    alt="Ashwagandha shrub with red berries"
+    onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';"
+  >
+</div>
+<p class="photo-caption">Fig. 1 — Dried ashwagandha roots, the primary medicinal part &nbsp;·&nbsp; Fig. 2 — Ashwagandha shrub bearing characteristic red berry fruits</p>
+
+<!-- DIVIDER -->
+<div class="divider">
+  <div class="divider-line"></div>
+  <div class="divider-leaf">❧</div>
+  <div class="divider-line"></div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="content">
+
+  <p class="intro-text">
+    Named for the <em>smell of a horse</em> and the <em>strength of a stallion</em>, Ashwagandha stands as Ayurveda's supreme adaptogen — a herb that builds resilience against all categories of stress while simultaneously rejuvenating body, mind, and reproductive vitality across more than <em>3,000 years</em> of continuous use.
+  </p>
+
+  <!-- 01 · BOTANICAL PROFILE -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">01</span>
+      <h2 class="section-title">Botanical Profile</h2>
+      <div class="section-rule"></div>
+    </div>
+    <p class="section-body">
+      Ashwagandha (<em>Withania somnifera</em> L. Dunal) is a small, woody, evergreen shrub of the Solanaceae (nightshade) family, growing to 35–75 cm in height. Native to the drier regions of India, Pakistan, Afghanistan, and Sri Lanka, it is also cultivated across subtropical areas of North Africa, the Mediterranean, and parts of Europe. The plant's central stem branches radially, bearing dull green, ovate leaves 10–12 cm in length. Small, greenish-yellow, bell-shaped flowers are borne in clusters of 4–6 in the leaf axils, and the plant's most visually distinctive feature is its small, spherical, red berries — enclosed within an enlarged papery green calyx that persists through fruiting.
+    </p>
+    <p class="section-body">
+      The root — the primary medicinal part — is thick, stout, tuberous, whitish-brown, and distinctly aromatic, with a scent classically described as resembling a wet horse (<em>ashwa</em> = horse, <em>gandha</em> = smell). This characteristic odour is caused by its high concentration of alkaloids and steroidal lactones. The species name <em>somnifera</em> means "sleep-inducing" in Latin — an early Western recognition of the herb's pronounced sedative and nervine qualities. In Ayurveda, no herb is more consistently associated with virility, strength, and the renewal of vitality than this quietly powerful desert shrub.
+    </p>
+
+    <table class="data-table">
+      <thead><tr><th>PROPERTY</th><th>Detail</th></tr></thead>
+      <tbody>
+        <tr><td>Family</td><td>Solanaceae (Nightshade family)</td></tr>
+        <tr><td>Botanical Name</td><td>Withania somnifera (L.) Dunal</td></tr>
+        <tr><td>Sanskrit Names</td><td>Ashwagandha, Hayagandha, Vajikari, Balada, Kushtagandha</td></tr>
+        <tr><td>Common Names</td><td>Ashwagandha, Indian Ginseng, Winter Cherry, Poison Gooseberry</td></tr>
+        <tr><td>Origin</td><td>India, Pakistan, Afghanistan, Sri Lanka; North Africa, Mediterranean</td></tr>
+        <tr><td>Plant Type</td><td>Small woody evergreen shrub (35–75 cm)</td></tr>
+        <tr><td>Fruiting Season</td><td>Winter (berries ripen November–February)</td></tr>
+        <tr><td>Medicinal Parts</td><td>Root (primary); leaves and berries used in some preparations</td></tr>
+        <tr><td>Taste Profile</td><td>Bitter (tikta), astringent (kashaya), with sweet post-digestive effect</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 02 · Phytochemical Composition -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">02</span>
+      <h2 class="section-title">Phytochemical Composition</h2>
+      <div class="section-rule"></div>
+    </div>
+    <p class="section-body">
+      The root's extraordinary therapeutic range is attributable to a family of steroidal lactones unique to the Withania genus — the <em>withanolides</em> — of which over 35 have been identified. Withanolide A is considered the primary active compound, responsible for the plant's neuroprotective, anti-inflammatory, and adaptogenic effects. Withaferin A, another prominent withanolide, has attracted substantial interest for its potent anticancer activity. The root also contains sitoindosides VII–X and glycowithanolides — compounds that have demonstrated the most consistent effects on stress hormone modulation (cortisol reduction) in clinical trials.
+    </p>
+    <p class="section-body">
+      Commercial extracts are typically standardised to contain 1.5–35% withanolides, though the full complexity of the root matrix — which includes alkaloids (somniferine, somnine, withanine), steroidal saponins, coumarins (scopoletin), iron, and a range of amino acids — is considered essential to its adaptogenic breadth. The chemical composition of root and leaf differs significantly; most clinical studies use root extract.
+    </p>
+
+    <div class="nutrition-bar">
+      <div class="nutrition-cell">
+        <div class="nutrition-num">35+</div>
+        <div class="nutrition-unit">identified</div>
+        <div class="nutrition-label">Withanolide compounds</div>
+      </div>
+      <div class="nutrition-cell">
+        <div class="nutrition-num">3000</div>
+        <div class="nutrition-unit">years</div>
+        <div class="nutrition-label">Documented Ayurvedic use</div>
+      </div>
+      <div class="nutrition-cell">
+        <div class="nutrition-num">41</div>
+        <div class="nutrition-unit">human trials</div>
+        <div class="nutrition-label">Reviewed in systematic meta-analysis</div>
+      </div>
+      <div class="nutrition-cell">
+        <div class="nutrition-num">All 3</div>
+        <div class="nutrition-unit">doshas</div>
+        <div class="nutrition-label">Balanced (tridoshic in context)</div>
+      </div>
+    </div>
+
+    <table class="data-table">
+      <thead><tr><th>Compound</th><th>Category</th><th>Primary Action</th></tr></thead>
+      <tbody>
+        <tr><td>Withanolide A</td><td>Steroidal lactone</td><td>Neuroprotective, anti-inflammatory, adaptogenic; crosses blood-brain barrier; combats Alzheimer's pathology</td></tr>
+        <tr><td>Withaferin A</td><td>Steroidal lactone</td><td>Anticancer (p53, NF-κB modulation), anti-angiogenic, anti-tumour</td></tr>
+        <tr><td>Sitoindoside IX &amp; X</td><td>Glycowithanolide</td><td>Adaptogenic, immunomodulatory, antioxidant, stress-hormone regulation</td></tr>
+        <tr><td>Somniferine &amp; Withanine</td><td>Alkaloids</td><td>Sedative, anxiolytic, nervous system modulation</td></tr>
+        <tr><td>Scopoletin</td><td>Coumarin</td><td>Antispasmodic, anti-inflammatory, antihypertensive</td></tr>
+        <tr><td>Withanosides IV &amp; V</td><td>Withanolide glycosides</td><td>Neuroregeneration, axon and dendrite outgrowth promotion</td></tr>
+        <tr><td>Steroidal Saponins</td><td>Sitoindosides VII, VIII</td><td>Anabolic, reproductive tonic, anti-inflammatory</td></tr>
+        <tr><td>Iron &amp; Amino Acids</td><td>Minerals / Nutrition</td><td>Haematopoiesis support, protein synthesis, energy metabolism</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 03 · Ayurvedic Significance -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">03</span>
+      <h2 class="section-title">Ayurvedic Significance</h2>
+      <div class="section-rule"></div>
+    </div>
+    <p class="section-body">
+      In Ayurveda, Ashwagandha is classified as the definitive <em>Balya</em> herb — a substance that directly builds physical strength, muscle tissue (mamsa dhatu), and vital energy (ojas). It simultaneously occupies the categories of <em>Rasayana</em> (rejuvenating tonic), <em>Vajikarana</em> (reproductive vitaliser), and <em>Medhya Rasayana</em> (cognitive enhancer) — a combination accorded to very few herbs in the entire Ayurvedic materia medica. The Charaka Samhita prescribes it specifically to treat debility, emaciation, and loss of strength; while the Ashtanga Hridayam recommends it for those who are old, weakened by disease, or seeking to enhance virility.
+    </p>
+    <p class="section-body">
+      Its Ayurvedic properties are: <em>guru</em> (heavy), <em>snigdha</em> (unctuous/oily) in quality; <em>tikta-kashaya</em> (bitter-astringent) in taste; <em>ushna virya</em> (hot potency); and <em>madhura vipaka</em> (sweet post-digestive effect). This profile enables it to nourish all seven dhatus (body tissues) progressively, making it a true whole-body tonic. Its heaviness and unctuousness specifically counteract Vata's tendency toward dryness and depletion — making Ashwagandha the foremost Ayurvedic remedy for Vata-related exhaustion, anxiety, insomnia, and wasting.
+    </p>
+
+    <table class="dosha-table">
+      <thead><tr><th>Dosha</th><th>Effect</th><th>Mechanism &amp; Notes</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Vata ↓</td>
+          <td>Strongly pacifying</td>
+          <td>Hot, heavy, unctuous qualities deeply nourish Vata's depleted, dry, anxious states; primary herb for Vata-origin insomnia, anxiety, nervous exhaustion, and wasting; best with warm milk and ghee</td>
+        </tr>
+        <tr>
+          <td>Kapha →</td>
+          <td>Mildly aggravating</td>
+          <td>Its heavy, nourishing qualities may increase Kapha in excess in those already Kapha-dominant; use in smaller doses with ginger or black pepper for Kapha constitutions; generally well-tolerated</td>
+        </tr>
+        <tr>
+          <td>Pitta ↓↑</td>
+          <td>Context-dependent</td>
+          <td>Hot potency may aggravate Pitta in excess; however, its sweet vipaka and ojas-building action calm emotional Pitta (anger, overdriving). Use with ghee or in the Ashtavarga Rasayana formula for Pitta types</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 04 · Key Health Benefits -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">04</span>
+      <h2 class="section-title">Key Health Benefits</h2>
+      <div class="section-rule"></div>
+    </div>
+    <p class="section-body">
+      Ashwagandha is one of the most extensively researched herbs in Ayurveda, with 41 human trials reviewed in major systematic analyses. Its benefits span stress physiology, neurological health, physical performance, hormonal function, and metabolic regulation — with multiple randomised controlled trials providing gold-standard evidence for several key applications.
+    </p>
+
+    <div class="benefits-grid">
+      <div class="benefit-card">
+        <div class="benefit-title">Adaptogenic Stress Relief</div>
+        <div class="benefit-desc">Multiple randomised controlled trials confirm significant reductions in perceived stress, anxiety, and serum cortisol levels with standardised root extract (300–600 mg/day). Ashwagandha modulates the hypothalamic-pituitary-adrenal (HPA) axis — the body's central stress-response system — reducing the cortisol surge associated with chronic stress without sedation or dependence.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Sleep Enhancement</div>
+        <div class="benefit-desc">The species epithet <em>somnifera</em> (sleep-inducing) is validated by clinical research. Randomised trials confirm improved sleep onset latency, total sleep time, and sleep quality in both healthy individuals and insomnia patients. The compound triethylene glycol in the leaf, and alkaloids in the root, contribute to its GABAergic (calming) nervous system action without the grogginess of pharmaceutical sleep aids.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Physical Performance &amp; Strength</div>
+        <div class="benefit-desc">Meta-analyses and multiple clinical trials confirm significant improvements in muscle strength, VO₂max (cardiorespiratory endurance), and recovery time in both trained athletes and healthy adults. Ashwagandha's anabolic action — nourishing mamsa (muscle) dhatu — is supported by increased testosterone levels and reduced exercise-induced muscle damage markers in supplementation studies.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Neuroprotection &amp; Cognitive Function</div>
+        <div class="benefit-desc">Withanolide A and withanosides IV and V promote outgrowth of axons and dendrites in neural cells — a unique neurorestorative property. Studies confirm protection against beta-amyloid plaque formation implicated in Alzheimer's disease, and improved cognitive performance, reaction time, and memory in stressed adults after 8–12 weeks of supplementation. Withanolide A has been confirmed to cross the blood-brain barrier.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Male Reproductive Health</div>
+        <div class="benefit-desc">Strongly supported by clinical evidence. Randomised trials demonstrate significantly improved sperm count, motility, and morphology in infertile males; elevated testosterone and LH (luteinising hormone) levels; and reduced seminal oxidative stress. Classically a premier <em>Vajikarana</em> (aphrodisiac and virilising) herb — Ayurvedic claims of enhancing sexual vigour are now backed by rigorous trial data.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Anti-inflammatory &amp; Immune Support</div>
+        <div class="benefit-desc">Withaferin A and withanolides inhibit NF-κB, COX-2, and other pro-inflammatory pathways. Sitoindosides IX and X significantly enhance both innate and adaptive immune function, increasing natural killer cell activity and immunoglobulin production. These combined actions make Ashwagandha particularly valuable in autoimmune-adjacent and chronic inflammatory conditions where immune modulation (not just suppression) is needed.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Thyroid &amp; Hormonal Balance</div>
+        <div class="benefit-desc">Preliminary clinical trials indicate that Ashwagandha root extract significantly elevates T3 and T4 thyroid hormone levels in subclinical hypothyroid patients. Its adaptogenic regulation of the HPA-thyroid axis connection offers a genuinely novel mechanism for addressing thyroid underfunction — an area of intense ongoing research interest.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Anti-diabetic &amp; Cardioprotective</div>
+        <div class="benefit-desc">Documented hypoglycaemic activity via withanolide-induced improvements in insulin receptor sensitivity. Reduces fasting blood glucose and post-prandial glucose in diabetic subjects. Additionally lowers total cholesterol, LDL, and triglycerides while protective of cardiac tissue against oxidative stress — aligning with its traditional classification as a cardiac tonic (hridya) in Ayurvedic texts.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 06 · How To Consume -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">06</span>
+      <h2 class="section-title">How to Consume Ashwagandha</h2>
+      <div class="section-rule"></div>
+    </div>
+    <p class="section-body">
+      Ashwagandha root powder is the classical preparation, traditionally taken with warm milk, honey, and ghee — a combination called <em>Ashwagandha Ksheerapaka</em> — considered the most nourishing and bioavailable form. Modern standardised extracts (KSM-66, Sensoril) are extensively studied and provide a convenient, consistent alternative. Evening or nighttime consumption is recommended to leverage the herb's sleep-enhancing properties; morning use is preferred for physical performance and stress management.
+    </p>
+
+    <table class="consume-table">
+      <thead><tr><th>Form</th><th>Preparation</th><th>Dosage</th><th>Best Time</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Root Powder (Churna)</td>
+          <td>Mix ½–1 tsp in warm full-fat milk with honey and a pinch of cardamom; or with warm water</td>
+          <td>3–6 g daily</td>
+          <td>At night, 30 min before sleep</td>
+        </tr>
+        <tr>
+          <td>Ashwagandha Ksheerapaka</td>
+          <td>Simmer 1 tsp powder in 1 cup milk + 3 cups water; reduce to 1 cup; strain; add honey off heat</td>
+          <td>1 cup daily</td>
+          <td>Nighttime; especially for Vata/insomnia</td>
+        </tr>
+        <tr>
+          <td>Standardised Extract Capsule</td>
+          <td>KSM-66 or Sensoril extract (root); take with warm milk or food</td>
+          <td>300–600 mg daily</td>
+          <td>Morning or evening, with meals</td>
+        </tr>
+        <tr>
+          <td>Ashwagandha Ghrita</td>
+          <td>Powder processed into ghee; 1 tsp taken directly or stirred into warm milk</td>
+          <td>5–10 g daily</td>
+          <td>Morning, before food (Vata/Pitta types)</td>
+        </tr>
+        <tr>
+          <td>Ashwagandha Arishta</td>
+          <td>Fermented liquid preparation (Ashwagandharishtam); dilute with equal water</td>
+          <td>15–30 ml twice daily</td>
+          <td>After meals</td>
+        </tr>
+        <tr>
+          <td>Tablet / Shilajit Combo</td>
+          <td>Classical pairing with Shilajit for maximised anabolic and adaptogenic effect</td>
+          <td>Per product dosing</td>
+          <td>Morning, with warm milk</td>
+        </tr>
+        <tr>
+          <td>Topical (Paste)</td>
+          <td>Root powder mixed with warm sesame oil; apply to joints or muscles for pain</td>
+          <td>Apply 2–3× weekly</td>
+          <td>Evening; leave 30–60 min</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 07 · PRECAUTIONS -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">07</span>
+      <h2 class="section-title">Safety &amp; Precautions</h2>
+      <div class="section-rule"></div>
+    </div>
+    <p class="section-body">
+      Ashwagandha has an excellent safety profile in clinical trials at standard doses (300–600 mg extract, or 3–6 g powder daily). A 2024 Expert Committee report from India's Ministry of Ayush confirmed its safety when used appropriately. Cautions below apply to specific populations and contexts.
+    </p>
+
+    <ul class="precaution-list">
+      <li><strong>Pregnancy:</strong> Avoid entirely. Ashwagandha has uterotonic properties and is classified as an abortifacient in high doses in classical texts. Do not use during pregnancy under any circumstances without specific medical direction.</li>
+      <li><strong>Thyroid disorders on medication:</strong> Ashwagandha can elevate T3 and T4 levels, potentially interacting with thyroid replacement therapy (levothyroxine). Monitor thyroid hormone levels closely if combining both.</li>
+      <li><strong>Autoimmune conditions:</strong> As an immunomodulatory herb, Ashwagandha may theoretically stimulate immune activity in conditions such as lupus, rheumatoid arthritis, or multiple sclerosis where immune hyperactivation is a concern. Consult a physician before use in these conditions.</li>
+      <li><strong>Sedatives and CNS depressants:</strong> Ashwagandha has genuine sedative properties. Combining with benzodiazepines, barbiturates, or alcohol may amplify CNS depression. Use with caution and inform your physician.</li>
+      <li><strong>Surgery:</strong> The herb's sedative, blood-pressure-lowering, and possible immunomodulatory effects may interact with anaesthesia and surgical medications. Discontinue at least 2 weeks before scheduled surgery.</li>
+      <li><strong>Liver concerns (rare, concentrated extracts):</strong> Rare cases of herb-induced liver injury have been reported with very high doses of concentrated commercial extracts (significantly above standard dose). Use standardised, quality-tested extracts from reputable manufacturers and stay within recommended ranges.</li>
+      <li><strong>Kapha constitution or obesity:</strong> The herb's heavy, nourishing properties may increase weight and Kapha in those already tending toward heaviness. Balance with warming spices (ginger, black pepper) and active lifestyle.</li>
+      <li><strong>Nightshade sensitivity:</strong> As a member of the Solanaceae family, those with known nightshade sensitivity or autoimmune reactions to nightshade plants should exercise caution and start with small doses.</li>
+    </ul>
+  </div>
+
+  <!-- SOURCES -->
+  <div class="sources">
+    <div class="sources-title">References &amp; Sources</div>
+    <ul>
+      <li>Lopresti AL, Smith SJ — "Ashwagandha (Withania somnifera) for the treatment and enhancement of mental and physical conditions: A systematic review" — Journal of Herbal Medicine, 2021</li>
+      <li>NIH Office of Dietary Supplements — "Ashwagandha: Health Professional Fact Sheet" — ods.od.nih.gov, 2024</li>
+      <li>PMC Review — "Ashwagandha (Withania somnifera) — Current Research on Health-Promoting Activities" — PMC10147008, 2023</li>
+      <li>Chandrasekhar K et al. — "A prospective, randomized double-blind, placebo-controlled study of safety and efficacy of a high-concentration full-spectrum Ashwagandha root extract in reducing stress and anxiety" — Indian Journal of Psychological Medicine, 2012</li>
+      <li>Ministry of Ayush, Government of India — "Safety of Ashwagandha (Withania somnifera)" — Expert Committee Report, 2024</li>
+      <li>Wankhede S et al. — "Examining the effect of Withania somnifera on muscle strength and recovery" — Journal of the International Society of Sports Nutrition, 2015</li>
+      <li>Ahmad MK et al. — "Withania somnifera improves semen quality" — Fertility and Sterility, 2010</li>
+      <li>Charaka Samhita, Chikitsasthana — Ashwagandha Rasayana and Vajikarana references</li>
+    </ul>
+  </div>
+
+</div><!-- /content -->
+
+<footer>
+  <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a qualified practitioner before therapeutic use</p>
+</footer>
+
+<!-- JS: modal logic -->
+<script>
+  (function() {
+    window.addEventListener('DOMContentLoaded', function() {
+      var open3D  = document.getElementById('open3D');
+      var close3D = document.getElementById('close3D');
+      var modal   = document.getElementById('viewerModal');
+
+      function openModal(e) {
+        var _aud = document.getElementById('ashwagandhaAudio'); if(_aud){ _aud.currentTime=0; var playPromise = _aud.play(); if (playPromise !== undefined) { playPromise.catch(function(e){ console.log(e); }); } }
+
+        if (e) { e.preventDefault(); e.stopPropagation(); }
+        modal.classList.add('is-open');
+        document.body.style.overflow = 'hidden';
+      }
+
+      function closeModal(e) {
+        var _aud = document.getElementById('ashwagandhaAudio'); if(_aud){ _aud.pause(); }
+
+        if (e) { e.preventDefault(); e.stopPropagation(); }
+        modal.classList.remove('is-open');
+        document.body.style.overflow = '';
+      }
+
+      open3D.addEventListener('click',  openModal,  false);
+      close3D.addEventListener('click', closeModal, false);
+
+      modal.addEventListener('click', function(e) {
+        if (e.target === modal) closeModal(e);
+      }, false);
+
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && modal.classList.contains('is-open')) closeModal();
+      });
+    });
+  })();
+</script>
+
+<!-- MODAL -->
+<div id="viewerModal">
+  <div class="modal-topbar">
+    <span class="modal-topbar-label">3D Model — Ashwagandha</span>
+    <button type="button" id="close3D">✕</button>
+  </div>
+  <div class="modal-viewer-wrap">
+    <model-viewer
+      src="ashwagandha3d.glb"
+      auto-rotate
+      camera-controls
+      shadow-intensity="1"
+      exposure="1">
+    </model-viewer>
+  </div>
+</div>
+
+
+<audio id="ashwagandhaAudio" src="ashwagandha_benefits.mp3" loop preload="auto"></audio>
+</body>
+</html>

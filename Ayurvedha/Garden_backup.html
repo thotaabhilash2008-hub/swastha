@@ -1,0 +1,1378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Virtual Herbal Garden — Swastha</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+:root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Jost', sans-serif;
+  background-color: var(--cream);
+  color: var(--ink);
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  opacity: 0.035;
+  pointer-events: none;
+  z-index: 100;
+}
+
+.bg-circle { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0; }
+.bg-circle-1 { width: 700px; height: 700px; background: radial-gradient(circle, rgba(42,92,63,0.1) 0%, transparent 70%); top: -200px; right: -150px; }
+.bg-circle-2 { width: 500px; height: 500px; background: radial-gradient(circle, rgba(201,168,76,0.08) 0%, transparent 70%); bottom: -100px; left: -100px; }
+
+.botanical-svg { position: fixed; pointer-events: none; z-index: 1; opacity: 0.1; }
+.botanical-tl { top: -20px; left: -20px; width: 260px; }
+.botanical-br { bottom: -20px; right: -20px; width: 220px; transform: rotate(180deg); }
+
+/* ── HEADER ── */
+header {
+  position: relative; z-index: 10;
+  padding: 54px 40px 0; text-align: center;
+  opacity: 0; animation: fadeUp 0.9s ease 0.1s forwards;
+}
+
+/* ── AUTH BAR (top right) ── */
+.auth-bar {
+  position: fixed; top: 20px; right: 28px; z-index: 50;
+  display: flex; align-items: center; gap: 12px;
+}
+.auth-link {
+  font-size: 9px; letter-spacing: 3px; text-transform: uppercase;
+  color: var(--sage); text-decoration: none;
+  transition: color 0.3s; font-weight: 300; font-family: 'Jost', sans-serif;
+}
+.auth-link:hover { color: var(--gold); }
+.auth-link.btn-style {
+  border: 1px solid rgba(42,92,63,0.3); color: var(--forest);
+  padding: 7px 16px; transition: all 0.3s;
+}
+.auth-link.btn-style:hover { background: var(--forest); color: var(--cream); }
+.auth-user-name {
+  font-size: 9px; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--sage); font-weight: 300; font-family: 'Jost', sans-serif;
+}
+.auth-signout {
+  background: none; border: none; cursor: pointer;
+  font-size: 9px; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--sage); font-family: 'Jost', sans-serif; font-weight: 300;
+  padding: 0; transition: color 0.3s;
+}
+.auth-signout:hover { color: var(--earth); }
+
+.back-link {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+  color: var(--sage); text-decoration: none; margin-bottom: 36px; transition: color 0.3s;
+}
+.back-link:hover { color: var(--gold); }
+.logo-rule { display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 14px; }
+.logo-rule span { display: block; height: 1px; width: 70px; background: linear-gradient(to right, transparent, var(--gold)); }
+.logo-rule span:last-child { background: linear-gradient(to left, transparent, var(--gold)); }
+.logo-ornament { font-size: 13px; color: var(--gold); }
+h1 { font-family: 'Cormorant Garamond', serif; font-size: clamp(42px, 7vw, 80px); font-weight: 300; letter-spacing: 6px; color: var(--deep); line-height: 1; }
+h1 span { color: var(--forest); }
+.tagline { font-family: 'Cormorant Garamond', serif; font-size: 17px; font-style: italic; font-weight: 300; color: var(--earth); letter-spacing: 2px; margin-top: 10px; }
+
+/* ── NAV ── */
+nav {
+  position: relative; z-index: 10; display: flex; justify-content: center;
+  margin: 48px auto 0; max-width: 700px;
+  border-top: 1px solid rgba(107,79,45,0.15); border-bottom: 1px solid rgba(107,79,45,0.15);
+  opacity: 0; animation: fadeUp 0.9s ease 0.3s forwards;
+}
+nav a {
+  text-decoration: none; font-size: 10px; letter-spacing: 3.5px; text-transform: uppercase;
+  font-weight: 300; color: var(--sage); padding: 16px 30px;
+  border-right: 1px solid rgba(107,79,45,0.15); transition: color 0.3s; position: relative;
+}
+nav a:last-child { border-right: none; }
+nav a::after { content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 0; height: 2px; background: var(--gold); transition: width 0.4s; }
+nav a:hover { color: var(--deep); }
+nav a:hover::after { width: 60%; }
+nav a.active { color: var(--forest); }
+nav a.active::after { width: 60%; }
+
+/* ── DIVIDER ── */
+.divider { display: flex; align-items: center; justify-content: center; gap: 16px; margin: 52px auto 50px; opacity: 0; animation: fadeUp 0.9s ease 0.45s forwards; }
+.divider-line { height: 1px; width: 100px; background: linear-gradient(to right, transparent, var(--sage)); }
+.divider-line:last-child { background: linear-gradient(to left, transparent, var(--sage)); }
+.divider-leaf { color: var(--forest); font-size: 16px; }
+
+/* ── SECTION LABEL ── */
+.section-label { text-align: center; font-size: 10px; letter-spacing: 5px; text-transform: uppercase; color: var(--gold); margin-bottom: 40px; font-weight: 300; position: relative; z-index: 10; opacity: 0; animation: fadeUp 0.9s ease 0.5s forwards; }
+
+/* ── MAIN LAYOUT ── */
+.main-layout { position: relative; z-index: 10; display: flex; gap: 0; max-width: 1300px; margin: 0 auto; padding: 0 30px; align-items: flex-start; opacity: 0; animation: fadeUp 0.9s ease 0.52s forwards; }
+
+/* ── FILTER SIDEBAR ── */
+.filter-sidebar { width: 220px; min-width: 220px; margin-right: 32px; position: sticky; top: 30px; max-height: 90vh; overflow-y: auto; }
+.filter-sidebar-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.filter-title { font-size: 9px; letter-spacing: 4px; text-transform: uppercase; color: var(--gold); font-weight: 300; }
+.filter-clear { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--sage); cursor: pointer; border: none; background: none; font-family: 'Jost', sans-serif; font-weight: 300; padding: 0; transition: color 0.3s; display: none; }
+.filter-clear.visible { display: block; }
+.filter-clear:hover { color: var(--earth); }
+.filter-rule { width: 100%; height: 1px; background: linear-gradient(to right, var(--gold), transparent); margin-bottom: 28px; }
+.filter-group { margin-bottom: 26px; }
+.filter-group-title { font-size: 9px; letter-spacing: 3.5px; text-transform: uppercase; color: var(--earth); font-weight: 400; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid rgba(107,79,45,0.12); }
+.filter-option { display: flex; align-items: center; gap: 10px; padding: 6px 0; cursor: pointer; transition: all 0.25s; }
+.filter-option:hover .filter-label { color: var(--deep); }
+.filter-check { width: 14px; height: 14px; min-width: 14px; border: 1px solid rgba(42,92,63,0.35); position: relative; transition: border-color 0.3s, background 0.3s; }
+.filter-check::after { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0); width: 6px; height: 6px; background: var(--forest); transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1); }
+.filter-option.active .filter-check { border-color: var(--forest); background: rgba(42,92,63,0.07); }
+.filter-option.active .filter-check::after { transform: translate(-50%,-50%) scale(1); }
+.filter-label { font-size: 11px; letter-spacing: 0.5px; color: var(--sage); font-weight: 300; transition: color 0.25s; line-height: 1.3; }
+.filter-option.active .filter-label { color: var(--forest); font-weight: 400; }
+.filter-count { margin-left: auto; font-size: 9px; color: rgba(122,158,126,0.6); letter-spacing: 1px; font-family: 'Cormorant Garamond', serif; font-style: italic; }
+
+.active-filters { margin-top: 20px; padding-top: 18px; border-top: 1px solid rgba(107,79,45,0.12); display: none; }
+.active-filters.visible { display: block; }
+.active-filters-label { font-size: 9px; letter-spacing: 3px; text-transform: uppercase; color: var(--earth); margin-bottom: 10px; }
+.filter-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+.filter-pill { display: inline-flex; align-items: center; gap: 5px; font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--forest); border: 1px solid rgba(42,92,63,0.3); padding: 4px 10px; border-radius: 20px; cursor: pointer; transition: all 0.2s; font-family: 'Jost', sans-serif; }
+.filter-pill:hover { background: var(--forest); color: var(--cream); }
+.filter-pill span { font-size: 10px; line-height: 1; }
+
+/* ── GARDEN WRAP ── */
+.garden-wrap { flex: 1; min-width: 0; }
+.results-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid rgba(107,79,45,0.1); }
+.results-count { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--sage); font-weight: 300; }
+.results-count strong { color: var(--forest); font-weight: 400; }
+.bm-page-link {
+  font-size: 9px; letter-spacing: 3px; text-transform: uppercase;
+  color: var(--gold); text-decoration: none; font-weight: 300;
+  transition: color 0.3s; display: none;
+}
+.bm-page-link:hover { color: var(--earth); }
+.bm-page-link.visible { display: inline; }
+
+/* ── PLANT GRID ── */
+.garden { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: rgba(107,79,45,0.12); border: 1px solid rgba(107,79,45,0.12); }
+
+.no-results { display: none; text-align: center; padding: 80px 20px; grid-column: 1 / -1; }
+.no-results.visible { display: block; }
+.no-results-icon { font-size: 28px; color: var(--sage); margin-bottom: 16px; opacity: 0.5; }
+.no-results-text { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-style: italic; color: var(--earth); font-weight: 300; margin-bottom: 6px; }
+.no-results-sub { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--sage); }
+
+/* ── PLANT CARD ── */
+.plant-card { display: block; text-decoration: none; color: inherit; background: var(--cream); padding: 44px 36px 40px; position: relative; cursor: pointer; overflow: hidden; transition: background 0.4s; opacity: 0; animation: fadeUp 0.9s ease forwards; }
+.plant-card:nth-child(1)  { animation-delay: 0.55s; } .plant-card:nth-child(2)  { animation-delay: 0.65s; }
+.plant-card:nth-child(3)  { animation-delay: 0.75s; } .plant-card:nth-child(4)  { animation-delay: 0.85s; }
+.plant-card:nth-child(5)  { animation-delay: 0.95s; } .plant-card:nth-child(6)  { animation-delay: 1.05s; }
+.plant-card:nth-child(7)  { animation-delay: 1.10s; } .plant-card:nth-child(8)  { animation-delay: 1.15s; }
+.plant-card:nth-child(9)  { animation-delay: 1.20s; } .plant-card:nth-child(10) { animation-delay: 1.25s; }
+.plant-card:nth-child(11) { animation-delay: 1.30s; } .plant-card:nth-child(12) { animation-delay: 1.35s; }
+.plant-card:nth-child(13) { animation-delay: 1.40s; } .plant-card:nth-child(14) { animation-delay: 1.45s; }
+.plant-card:nth-child(15) { animation-delay: 1.50s; } .plant-card:nth-child(16) { animation-delay: 1.55s; }
+.plant-card:nth-child(17) { animation-delay: 1.60s; } .plant-card:nth-child(18) { animation-delay: 1.65s; }
+.plant-card:nth-child(19) { animation-delay: 1.70s; } .plant-card:nth-child(20) { animation-delay: 1.75s; }
+.plant-card:nth-child(21) { animation-delay: 1.80s; } .plant-card:nth-child(22) { animation-delay: 1.85s; }
+.plant-card:nth-child(23) { animation-delay: 1.90s; } .plant-card:nth-child(24) { animation-delay: 1.95s; }
+.plant-card:nth-child(25) { animation-delay: 2.00s; } .plant-card:nth-child(26) { animation-delay: 2.05s; }
+.plant-card:nth-child(27) { animation-delay: 2.10s; } .plant-card:nth-child(28) { animation-delay: 2.15s; }
+.plant-card:nth-child(29) { animation-delay: 2.20s; } .plant-card:nth-child(30) { animation-delay: 2.25s; }
+.plant-card:nth-child(31) { animation-delay: 2.30s; } .plant-card:nth-child(32) { animation-delay: 2.35s; }
+.plant-card:nth-child(33) { animation-delay: 2.40s; } .plant-card:nth-child(34) { animation-delay: 2.45s; }
+.plant-card:nth-child(35) { animation-delay: 2.50s; } .plant-card:nth-child(36) { animation-delay: 2.55s; }
+.plant-card:nth-child(37) { animation-delay: 2.60s; } .plant-card:nth-child(38) { animation-delay: 2.65s; }
+.plant-card:nth-child(39) { animation-delay: 2.70s; } .plant-card:nth-child(40) { animation-delay: 2.75s; }
+.plant-card:nth-child(41) { animation-delay: 2.80s; } .plant-card:nth-child(42) { animation-delay: 2.85s; }
+.plant-card:nth-child(43) { animation-delay: 2.90s; } .plant-card:nth-child(44) { animation-delay: 2.95s; }
+.plant-card:nth-child(45) { animation-delay: 3.00s; } .plant-card:nth-child(46) { animation-delay: 3.05s; }
+.plant-card:nth-child(47) { animation-delay: 3.10s; } .plant-card:nth-child(48) { animation-delay: 3.15s; }
+.plant-card:nth-child(49) { animation-delay: 3.20s; } .plant-card:nth-child(50) { animation-delay: 3.25s; }
+.plant-card:nth-child(51) { animation-delay: 3.30s; } .plant-card:nth-child(52) { animation-delay: 3.35s; }
+.plant-card:nth-child(53) { animation-delay: 3.40s; } .plant-card:nth-child(54) { animation-delay: 3.45s; }
+.plant-card:nth-child(55) { animation-delay: 3.50s; } .plant-card:nth-child(56) { animation-delay: 3.55s; }
+.plant-card:nth-child(57) { animation-delay: 3.60s; } .plant-card:nth-child(58) { animation-delay: 3.65s; }
+.plant-card:nth-child(59) { animation-delay: 3.70s; } .plant-card:nth-child(60) { animation-delay: 3.75s; }
+.plant-card:nth-child(61) { animation-delay: 3.80s; } .plant-card:nth-child(62) { animation-delay: 3.85s; }
+.plant-card:nth-child(63) { animation-delay: 3.90s; } .plant-card:nth-child(64) { animation-delay: 3.95s; }
+.plant-card:nth-child(65) { animation-delay: 4.00s; } .plant-card:nth-child(66) { animation-delay: 4.05s; }
+.plant-card:nth-child(67) { animation-delay: 4.10s; } .plant-card:nth-child(68) { animation-delay: 4.15s; }
+.plant-card:nth-child(69) { animation-delay: 4.20s; } .plant-card:nth-child(70) { animation-delay: 4.25s; }
+.plant-card:nth-child(71) { animation-delay: 4.30s; } .plant-card:nth-child(72) { animation-delay: 4.35s; }
+.plant-card:nth-child(73) { animation-delay: 4.40s; } .plant-card:nth-child(74) { animation-delay: 4.45s; }
+
+
+.plant-card.hidden { display: none; }
+.plant-card::after { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 30% 70%, rgba(42,92,63,0.06), transparent 65%); opacity: 0; transition: opacity 0.5s; }
+.plant-card:hover::after { opacity: 1; }
+.plant-card:hover { background: rgba(16, 59, 40, 0.75); }
+
+.card-number { font-family: 'Cormorant Garamond', serif; font-size: 11px; letter-spacing: 4px; color: var(--gold); margin-bottom: 20px; display: block; }
+.plant-name { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 400; color: var(--deep); letter-spacing: 0.5px; margin-bottom: 4px; }
+.plant-sci { font-family: 'Cormorant Garamond', serif; font-size: 14px; font-style: italic; font-weight: 300; color: var(--sage); margin-bottom: 22px; }
+.card-sep { width: 36px; height: 1px; background: var(--gold); margin-bottom: 20px; transition: width 0.4s; }
+.plant-card:hover .card-sep { width: 60px; }
+.plant-uses { font-size: 12px; font-weight: 300; letter-spacing: 0.5px; color: var(--ink); line-height: 1.8; margin-bottom: 14px; opacity: 0.85; }
+.plant-uses strong { font-weight: 400; color: var(--earth); font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase; display: block; margin-bottom: 4px; }
+.plant-system { display: inline-block; font-size: 9px; letter-spacing: 3px; text-transform: uppercase; color: var(--forest); border: 1px solid rgba(42,92,63,0.3); padding: 4px 12px; border-radius: 20px; margin-bottom: 26px; }
+.card-benefits { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 18px; }
+.card-benefit-tag { font-size: 8px; letter-spacing: 2px; text-transform: uppercase; color: var(--earth); background: rgba(201,168,76,0.1); border: 1px solid rgba(201,168,76,0.25); padding: 3px 9px; border-radius: 20px; font-family: 'Jost', sans-serif; }
+.btn-bookmark { display: inline-flex; align-items: center; gap: 8px; background: none; border: 1px solid rgba(201,168,76,0.4); color: var(--gold); font-family: 'Jost', sans-serif; font-size: 10px; font-weight: 300; letter-spacing: 3px; text-transform: uppercase; padding: 10px 20px; cursor: pointer; border-radius: 0; transition: background 0.3s, color 0.3s, border-color 0.3s; position: relative; z-index: 2; }
+.btn-bookmark:hover { background: var(--gold); color: white; border-color: var(--gold); }
+.btn-bookmark.saved { background: var(--forest); color: var(--cream); border-color: var(--forest); }
+.btn-bookmark:disabled { opacity: 0.6; cursor: wait; }
+
+/* ── MOBILE FILTER TOGGLE ── */
+.filter-toggle { display: none; position: relative; z-index: 10; margin: 0 30px 20px; }
+.filter-toggle-btn { background: none; border: 1px solid rgba(42,92,63,0.3); color: var(--forest); font-family: 'Jost', sans-serif; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; padding: 12px 22px; cursor: pointer; transition: all 0.3s; display: inline-flex; align-items: center; gap: 10px; }
+.filter-toggle-btn:hover { background: var(--forest); color: var(--cream); }
+.filter-count-badge { background: var(--gold); color: white; border-radius: 50%; width: 16px; height: 16px; display: none; align-items: center; justify-content: center; font-size: 8px; }
+.filter-count-badge.visible { display: inline-flex; }
+
+.filter-drawer { display: none; position: fixed; inset: 0; z-index: 500; }
+.filter-drawer-overlay { position: absolute; inset: 0; background: rgba(26,51,38,0.5); backdrop-filter: blur(2px); }
+.filter-drawer-panel { position: absolute; left: 0; top: 0; bottom: 0; width: 280px; background: var(--cream); padding: 40px 28px; overflow-y: auto; transform: translateX(-100%); transition: transform 0.4s cubic-bezier(0.22,1,0.36,1); }
+.filter-drawer.open .filter-drawer-panel { transform: translateX(0); }
+.filter-drawer-close { position: absolute; top: 20px; right: 20px; background: none; border: none; color: var(--sage); font-size: 18px; cursor: pointer; padding: 4px; }
+
+/* ── TOAST ── */
+.toast { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--deep); color: var(--cream); font-size: 11px; letter-spacing: 3px; text-transform: uppercase; padding: 14px 28px; opacity: 0; transition: opacity 0.4s, transform 0.4s; z-index: 200; pointer-events: none; }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ── FOOTER ── */
+footer { position: relative; z-index: 10; text-align: center; padding: 30px 20px 50px; margin-top: 60px; border-top: 1px solid rgba(107,79,45,0.12); max-width: 1300px; margin-left: auto; margin-right: auto; }
+footer p { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); font-weight: 300; }
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 1060px) {
+  .filter-sidebar { display: none; }
+  .filter-toggle { display: block; }
+  .filter-drawer { display: block; }
+  .garden { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 600px) {
+  .garden { grid-template-columns: 1fr; }
+  nav { flex-wrap: wrap; }
+  nav a { padding: 12px 18px; }
+  .main-layout { padding: 0 20px; }
+}
+</style>
+</head>
+<body>
+
+<div class="bg-circle bg-circle-1"></div>
+<div class="bg-circle bg-circle-2"></div>
+
+<svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M10 290 Q 80 200 150 150 Q 200 110 260 20" stroke="#2a5c3f" stroke-width="1.5" fill="none"/>
+  <ellipse cx="150" cy="150" rx="28" ry="16" fill="#2a5c3f" transform="rotate(-40 150 150)"/>
+  <ellipse cx="200" cy="105" rx="22" ry="13" fill="#7a9e7e" transform="rotate(-55 200 105)"/>
+  <ellipse cx="100" cy="200" rx="20" ry="11" fill="#2a5c3f" transform="rotate(-20 100 200)"/>
+  <ellipse cx="250" cy="55" rx="18" ry="10" fill="#c9a84c" transform="rotate(-65 250 55)"/>
+</svg>
+<svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M10 290 Q 80 200 150 150 Q 200 110 260 20" stroke="#2a5c3f" stroke-width="1.5" fill="none"/>
+  <ellipse cx="150" cy="150" rx="28" ry="16" fill="#2a5c3f" transform="rotate(-40 150 150)"/>
+  <ellipse cx="200" cy="105" rx="22" ry="13" fill="#7a9e7e" transform="rotate(-55 200 105)"/>
+  <ellipse cx="100" cy="200" rx="20" ry="11" fill="#2a5c3f" transform="rotate(-20 100 200)"/>
+</svg>
+
+<!-- Auth bar top-right -->
+<div class="auth-bar" id="authBar">
+  <!-- Filled by JS -->
+</div>
+
+<header>
+  <a href="../index.html" class="back-link">← Back to Swastha</a>
+  <div class="logo-rule"><span></span><div class="logo-ornament">✦</div><span></span></div>
+  <h1>Virtual Herbal <span>Garden</span></h1>
+  <p class="tagline">Medicinal Plants of the AYUSH Systems</p>
+</header>
+
+<nav>
+  <a href="#" class="active">Home</a>
+  <a href="#">Virtual Tour</a>
+  <a href="#">About</a>
+</nav>
+
+<div class="divider">
+  <div class="divider-line"></div>
+  <div class="divider-leaf">❧</div>
+  <div class="divider-line"></div>
+</div>
+
+<p class="section-label">Featured Plants</p>
+
+<!-- Mobile Filter Toggle -->
+<div class="filter-toggle">
+  <button class="filter-toggle-btn" onclick="openDrawer()">
+    ⊞ &nbsp;Filter by Benefit
+    <span class="filter-count-badge" id="mobileBadge"></span>
+  </button>
+</div>
+
+<!-- Mobile Drawer -->
+<div class="filter-drawer" id="filterDrawer">
+  <div class="filter-drawer-overlay" onclick="closeDrawer()"></div>
+  <div class="filter-drawer-panel" id="drawerContent"></div>
+</div>
+
+<div class="main-layout">
+  <aside class="filter-sidebar" id="sidebarContent"></aside>
+
+  <div class="garden-wrap">
+    <div class="results-bar">
+      <span class="results-count">Showing <strong id="resultCount">74</strong> of 74 plants</span>
+      <a href="bookmarks.html" class="bm-page-link" id="bmPageLink">★ &nbsp;My Bookmarks</a>
+    </div>
+    <div class="garden" id="garden">
+
+      
+<a href="aak-madar.html" class="plant-card" data-key="aak-madar" data-benefits="anti-inflammatory,detox,hair-skin,immunity,liver,respiratory">
+        <span class="card-number">01</span>
+        <div class="plant-name" style="color:var(--forest);">Aak <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Calotropis procera · Calotropis gigantea</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Anti-inflammatory</span><span class="card-benefit-tag">Detox</span><span class="card-benefit-tag">Hair & Skin</span><span class="card-benefit-tag">Immunity</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Anti-inflammatory & analgesic, skin disease remedy & respiratory & bronchodilator</div>
+        <span class="plant-system">Ayurveda</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'aak-madar')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="adhapushpi.html" class="plant-card" data-key="adhapushpi" data-benefits="anti-inflammatory,blood-sugar,digestion,fever,hair-skin,immunity,kidney,respiratory">
+        <span class="card-number">02</span>
+        <div class="plant-name" style="color:var(--forest);">Adhapushpi <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Trichodesma indicum · Borago indica</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Anti-inflammatory</span><span class="card-benefit-tag">Blood Sugar</span><span class="card-benefit-tag">Digestion</span><span class="card-benefit-tag">Fever Relief</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Anti-inflammatory & anti-arthritic, diuretic & urinary support & respiratory & anti-tussive</div>
+        <span class="plant-system">Ayurveda</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'adhapushpi')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="agaru.html" class="plant-card" data-key="agaru" data-benefits="anti-inflammatory,anxiety,blood-sugar,cognitive,detox,digestion,energy,fever,hair-skin,heart,immunity,respiratory,stress">
+        <span class="card-number">03</span>
+        <div class="plant-name" style="color:var(--forest);">Agaru <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Aquilaria malaccensis · Aquilaria agallocha</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Anti-inflammatory</span><span class="card-benefit-tag">Anxiety Relief</span><span class="card-benefit-tag">Blood Sugar</span><span class="card-benefit-tag">Cognitive</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Respiratory support, neuroprotective & sedative & anti-inflammatory & analgesic</div>
+        <span class="plant-system">Ayurveda · Unani</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'agaru')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="Agastya.html" class="plant-card" data-key="agastya" data-benefits="anti-inflammatory,blood-sugar,detox,energy,fever,hair-skin,immunity,liver,respiratory">
+        <span class="card-number">04</span>
+        <div class="plant-name" style="color:var(--forest);">Agastya <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Sesbania grandiflora · Agati grandiflora</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Anti-inflammatory</span><span class="card-benefit-tag">Blood Sugar</span><span class="card-benefit-tag">Detox</span><span class="card-benefit-tag">Energy & Stamina</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Respiratory relief, night blindness & eye health & liver protection & detox</div>
+        <span class="plant-system">Ayurveda</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'agastya')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="Agiya Ghas.html" class="plant-card" data-key="agiya-ghas" data-benefits="anti-inflammatory,cognitive,digestion,fever,hair-skin,immunity,liver,respiratory,stress">
+        <span class="card-number">05</span>
+        <div class="plant-name" style="color:var(--forest);">Agiya Ghas <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Cymbopogon martinii (Roxb.) W.Watson · Syn. Andropogon martinii</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Anti-inflammatory</span><span class="card-benefit-tag">Cognitive</span><span class="card-benefit-tag">Digestion</span><span class="card-benefit-tag">Fever Relief</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Antimicrobial & antifungal, skin health & wound healing & fever management (jwaraghna)</div>
+        <span class="plant-system">Ayurveda</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'agiya-ghas')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="Agnimantha.html" class="plant-card" data-key="agnimantha" data-benefits="anti-inflammatory,detox,digestion,energy,fever,hair-skin,immunity,kidney,liver,neural,respiratory">
+        <span class="card-number">06</span>
+        <div class="plant-name" style="color:var(--forest);">Agnimantha <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Premna integrifolia · Premna serratifolia</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Anti-inflammatory</span><span class="card-benefit-tag">Detox</span><span class="card-benefit-tag">Digestion</span><span class="card-benefit-tag">Energy & Stamina</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Digestive fire kindler, dual anti-inflammatory action & anti-arthritic & vata disorders</div>
+        <span class="plant-system">Ayurveda</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'agnimantha')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="Ajmoda.html" class="plant-card" data-key="ajmoda" data-benefits="anti-inflammatory,cognitive,digestion,hair-skin,heart,immunity,kidney,liver,neural,respiratory,stress">
+        <span class="card-number">07</span>
+        <div class="plant-name" style="color:var(--forest);">Ajmoda <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Apium graveolens L. · Fam. Apiaceae</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Anti-inflammatory</span><span class="card-benefit-tag">Cognitive</span><span class="card-benefit-tag">Digestion</span><span class="card-benefit-tag">Hair & Skin</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Digestive fire & carminative, antihypertensive & diuretic & renal support</div>
+        <span class="plant-system">Ayurveda</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'ajmoda')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="Ajwain.html" class="plant-card" data-key="ajwain" data-benefits="anti-inflammatory,digestion,heart,immunity,neural,reproductive,respiratory,stress">
+        <span class="card-number">08</span>
+        <div class="plant-name" style="color:var(--forest);">Ajwain <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Trachyspermum ammi · Carum copticum</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Anti-inflammatory</span><span class="card-benefit-tag">Digestion</span><span class="card-benefit-tag">Heart Health</span><span class="card-benefit-tag">Immunity</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Digestive & carminative, respiratory relief & antimicrobial & antifungal</div>
+        <span class="plant-system">Ayurveda</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'ajwain')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="Akarkara.html" class="plant-card" data-key="akarkara" data-benefits="anti-inflammatory,cognitive,energy,fever,hair-skin,immunity,kidney,neural,reproductive,stress">
+        <span class="card-number">09</span>
+        <div class="plant-name" style="color:var(--forest);">Akarkara <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Anacyclus pyrethrum (L.) DC. · Fam. Asteraceae</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Anti-inflammatory</span><span class="card-benefit-tag">Cognitive</span><span class="card-benefit-tag">Energy & Stamina</span><span class="card-benefit-tag">Fever Relief</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Oral health & dental analgesic, aphrodisiac & male vitality (vajikara) & nervine stimulant & neurological support</div>
+        <span class="plant-system">Ayurveda · Unani · Siddha</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'akarkara')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="Akashbail.html" class="plant-card" data-key="akashbail" data-benefits="anti-inflammatory,anxiety,blood-sugar,detox,digestion,energy,fever,hair-skin,heart,hormonal,immunity,liver,neural,reproductive,stress">
+        <span class="card-number">10</span>
+        <div class="plant-name" style="color:var(--forest);">Akash Bail <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Cuscuta reflexa · Akashavalli · Aftimoon</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Anti-inflammatory</span><span class="card-benefit-tag">Anxiety Relief</span><span class="card-benefit-tag">Blood Sugar</span><span class="card-benefit-tag">Detox</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Hair growth & scalp health, hepatoprotective & liver tonic & nervous system & mental health</div>
+        <span class="plant-system">Ayurveda · Unani</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'akashbail')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="Akhrot.html" class="plant-card" data-key="akhrot" data-benefits="anti-inflammatory,blood-sugar,cognitive,digestion,energy,hair-skin,heart,hormonal,immunity,liver,reproductive">
+        <span class="card-number">11</span>
+        <div class="plant-name" style="color:var(--forest);">Akhrot <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Juglans regia · Persian Walnut · English Walnut</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Anti-inflammatory</span><span class="card-benefit-tag">Blood Sugar</span><span class="card-benefit-tag">Cognitive</span><span class="card-benefit-tag">Digestion</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Cardiovascular protection, brain & cognitive health & anti-inflammatory & antioxidant</div>
+        <span class="plant-system">Ayurveda · Unani</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'akhrot')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="Alfalfa.html" class="plant-card" data-key="alfalfa" data-benefits="anti-inflammatory,blood-sugar,cognitive,detox,digestion,energy,heart,hormonal,immunity,kidney,liver">
+        <span class="card-number">12</span>
+        <div class="plant-name" style="color:var(--forest);">Alfalfa <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Medicago sativa L. · Leguminosae (Fabaceae) · Rijka / Lasunghas</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Anti-inflammatory</span><span class="card-benefit-tag">Blood Sugar</span><span class="card-benefit-tag">Cognitive</span><span class="card-benefit-tag">Detox</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Cholesterol & cardiovascular health, hormonal balance & menopause support & bone density & vitamin k</div>
+        <span class="plant-system">Ayurveda · Unani</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'alfalfa')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="Aloe Vera.html" class="plant-card" data-key="aloe-vera" data-benefits="anti-inflammatory,blood-sugar,detox,digestion,hair-skin,hormonal,immunity,liver,reproductive">
+        <span class="card-number">13</span>
+        <div class="plant-name" style="color:var(--forest);">Aloe Vera <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Aloe barbadensis Mill. · Liliaceae / Asphodelaceae · Kumari · Ghrita Kumari · Kanyasara</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Anti-inflammatory</span><span class="card-benefit-tag">Blood Sugar</span><span class="card-benefit-tag">Detox</span><span class="card-benefit-tag">Digestion</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Burn & wound healing, digestive health & ibs & skin & dermatological applications</div>
+        <span class="plant-system">Ayurveda</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'aloe-vera')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="Alsi.html" class="plant-card" data-key="alsi" data-benefits="anti-inflammatory,blood-sugar,digestion,energy,hair-skin,heart,hormonal,immunity,reproductive">
+        <span class="card-number">14</span>
+        <div class="plant-name" style="color:var(--forest);">Alsi <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Linum usitatissimum · Linaceae</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Anti-inflammatory</span><span class="card-benefit-tag">Blood Sugar</span><span class="card-benefit-tag">Digestion</span><span class="card-benefit-tag">Energy & Stamina</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Cardiovascular protection, digestive & bowel health & hormonal balance & menopause</div>
+        <span class="plant-system">Ayurveda · Unani</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'alsi')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="Amaltas-cassia.html" class="plant-card" data-key="amaltas-cassia" data-benefits="anti-inflammatory,blood-sugar,detox,digestion,fever,hair-skin,immunity,liver,respiratory">
+        <span class="card-number">15</span>
+        <div class="plant-name" style="color:var(--forest);">Amaltas <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Cassia fistula L. · Fabaceae</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Anti-inflammatory</span><span class="card-benefit-tag">Blood Sugar</span><span class="card-benefit-tag">Detox</span><span class="card-benefit-tag">Digestion</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Gentle laxative & bowel regulator, skin disease & antifungal & antipyretic & fever management</div>
+        <span class="plant-system">Ayurveda</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'amaltas-cassia')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="Amba-haldi.html" class="plant-card" data-key="amba-haldi" data-benefits="anti-inflammatory,digestion,hair-skin,heart,immunity,liver">
+        <span class="card-number">16</span>
+        <div class="plant-name" style="color:var(--forest);">Amba Haldi <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Curcuma amada Roxb. · Zingiberaceae</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Anti-inflammatory</span><span class="card-benefit-tag">Digestion</span><span class="card-benefit-tag">Hair & Skin</span><span class="card-benefit-tag">Heart Health</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Digestive stimulant & appetiser, antiemetic & nausea relief & skin disease & wound care</div>
+        <span class="plant-system">Ayurveda</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'amba-haldi')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="amla.html" class="plant-card" data-key="amla" data-benefits="digestion,hair-skin,detox,immunity">
+        <span class="card-number">17</span>
+        <div class="plant-name" style="color:var(--forest);">Amla <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Phyllanthus emblica</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Hair & Skin</span><span class="card-benefit-tag">Digestion</span><span class="card-benefit-tag">Detox</span><span class="card-benefit-tag">Immunity</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Hair growth, digestion, vitamin C enrichment & liver detoxification</div>
+        <span class="plant-system">Ayurveda</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'amla')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="Anantmool.html" class="plant-card" data-key="anantmool" data-benefits="anti-inflammatory,blood-sugar,cognitive,detox,digestion,energy,hair-skin,immunity,kidney,liver,reproductive,stress">
+        <span class="card-number">18</span>
+        <div class="plant-name" style="color:var(--forest);">Anantmool <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Hemidesmus indicus · Apocynaceae</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Anti-inflammatory</span><span class="card-benefit-tag">Blood Sugar</span><span class="card-benefit-tag">Cognitive</span><span class="card-benefit-tag">Detox</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Blood purifier & detoxifier, skin disorders & psoriasis & anti-snake-venom activity</div>
+        <span class="plant-system">Ayurveda</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'anantmool')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="Anjeer.html" class="plant-card" data-key="anjeer" data-benefits="anti-inflammatory,blood-sugar,cognitive,detox,digestion,energy,hair-skin,heart,immunity,respiratory">
+        <span class="card-number">19</span>
+        <div class="plant-name" style="color:var(--forest);">Anjeer <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Ficus carica L. · Family: Moraceae</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Anti-inflammatory</span><span class="card-benefit-tag">Blood Sugar</span><span class="card-benefit-tag">Cognitive</span><span class="card-benefit-tag">Detox</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Digestive health & constipation relief, blood sugar regulation & bone health & calcium nutrition</div>
+        <span class="plant-system">Ayurveda · Unani</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'anjeer')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="Apamarg.html" class="plant-card" data-key="apamarg" data-benefits="anti-inflammatory,detox,digestion,energy,hair-skin,immunity,kidney,neural,reproductive,respiratory,stress">
+        <span class="card-number">20</span>
+        <div class="plant-name" style="color:var(--forest);">Apamarg <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Achyranthes aspera L. · Family: Amaranthaceae</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Anti-inflammatory</span><span class="card-benefit-tag">Detox</span><span class="card-benefit-tag">Digestion</span><span class="card-benefit-tag">Energy & Stamina</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Diuretic & kidney stone dissolution, anti-inflammatory & analgesic & respiratory & anti-asthmatic</div>
+        <span class="plant-system">Ayurveda</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'apamarg')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="Aparajita.html" class="plant-card" data-key="aparajita" data-benefits="anti-inflammatory,anxiety,blood-sugar,cognitive,hair-skin,heart,immunity,stress">
+        <span class="card-number">21</span>
+        <div class="plant-name" style="color:var(--forest);">Aparajita <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Clitoria ternatea · Fabaceae</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Anti-inflammatory</span><span class="card-benefit-tag">Anxiety Relief</span><span class="card-benefit-tag">Blood Sugar</span><span class="card-benefit-tag">Cognitive</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Memory & cognitive enhancement, anxiety, stress & mood & antioxidant powerhouse</div>
+        <span class="plant-system">Ayurveda</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'aparajita')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="Aralu.html" class="plant-card" data-key="aralu" data-benefits="anti-inflammatory,detox,digestion,fever,hair-skin,immunity,kidney,liver,respiratory">
+        <span class="card-number">22</span>
+        <div class="plant-name" style="color:var(--forest);">Aralu <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Cordia dichotoma G. Forst. · Family: Boraginaceae</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Anti-inflammatory</span><span class="card-benefit-tag">Detox</span><span class="card-benefit-tag">Digestion</span><span class="card-benefit-tag">Fever Relief</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Respiratory demulcent & antitussive, hepatoprotective & liver support & wound healing & anti-inflammatory</div>
+        <span class="plant-system">Ayurveda</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'aralu')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="arjuna.html" class="plant-card" data-key="arjuna" data-benefits="heart,detox,anti-inflammatory">
+        <span class="card-number">23</span>
+        <div class="plant-name" style="color:var(--forest);">Arjuna <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Terminalia arjuna</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Heart Health</span><span class="card-benefit-tag">Blood Pressure</span><span class="card-benefit-tag">Anti-atherosclerotic</span><span class="card-benefit-tag">Detox</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Cardiac tonic, antihypertensive, angina relief & cholesterol management</div>
+        <span class="plant-system">Ayurveda</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'arjuna')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="Arni.html" class="plant-card" data-key="arni" data-benefits="anti-inflammatory,blood-sugar,detox,digestion,fever,immunity,kidney,respiratory">
+        <span class="card-number">24</span>
+        <div class="plant-name" style="color:var(--forest);">Arni <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Clerodendrum phlomidis · Clerodendrum multiflorum</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Anti-inflammatory</span><span class="card-benefit-tag">Blood Sugar</span><span class="card-benefit-tag">Detox</span><span class="card-benefit-tag">Digestion</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Anti-inflammatory & pain relief, anti-obesity & metabolic & digestive fire & indigestion</div>
+        <span class="plant-system">Ayurveda</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'arni')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="Ashoka.html" class="plant-card" data-key="ashoka" data-benefits="anti-inflammatory,detox,energy,hair-skin,hormonal,immunity,neural,reproductive,stress">
+        <span class="card-number">25</span>
+        <div class="plant-name" style="color:var(--forest);">Ashoka <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Saraca asoca (Roxb.) De Wilde · Caesalpiniaceae</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Anti-inflammatory</span><span class="card-benefit-tag">Detox</span><span class="card-benefit-tag">Energy & Stamina</span><span class="card-benefit-tag">Hair & Skin</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Menorrhagia & uterine haemostasis, dysmenorrhea & pelvic pain & uterine tonic & endometrial health</div>
+        <span class="plant-system">Ayurveda</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'ashoka')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="ashwagandha.html" class="plant-card" data-key="ashwagandha" data-benefits="stress,immunity,hormonal,energy,cognitive">
+        <span class="card-number">26</span>
+        <div class="plant-name" style="color:var(--forest);">Ashwagandha <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Withania somnifera</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Stress Relief</span><span class="card-benefit-tag">Energy</span><span class="card-benefit-tag">Hormonal Balance</span><span class="card-benefit-tag">Immunity</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Stress adaptation, energy restoration, hormonal balance & immune fortification</div>
+        <span class="plant-system">Ayurveda</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'ashwagandha')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="Atibala.html" class="plant-card" data-key="atibala" data-benefits="anti-inflammatory,blood-sugar,energy,hair-skin,immunity,liver,neural,reproductive,respiratory">
+        <span class="card-number">27</span>
+        <div class="plant-name" style="color:var(--forest);">Atibala <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Abutilon indicum · Malvaceae</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Anti-inflammatory</span><span class="card-benefit-tag">Blood Sugar</span><span class="card-benefit-tag">Energy & Stamina</span><span class="card-benefit-tag">Hair & Skin</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Strength & vitality (balya), vata disorders & paralysis & hepatoprotective & liver tonic</div>
+        <span class="plant-system">Ayurveda · Unani</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'atibala')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="Ativisha.html" class="plant-card" data-key="ativisha" data-benefits="anti-inflammatory,detox,digestion,fever,immunity,stress">
+        <span class="card-number">28</span>
+        <div class="plant-name" style="color:var(--forest);">Ativisha <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Aconitum heterophyllum Wall. ex Royle · Ranunculaceae</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Anti-inflammatory</span><span class="card-benefit-tag">Detox</span><span class="card-benefit-tag">Digestion</span><span class="card-benefit-tag">Fever Relief</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Antidiarrheal — paediatric & adult, antipyretic — fever management & digestive stimulant & ama-pachana</div>
+        <span class="plant-system">Ayurveda</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'ativisha')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="Ayapan.html" class="plant-card" data-key="ayapan" data-benefits="anti-inflammatory,detox,digestion,energy,fever,hair-skin,heart,hormonal,immunity,liver,reproductive,respiratory">
+        <span class="card-number">29</span>
+        <div class="plant-name" style="color:var(--forest);">Ayapan <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Ayapana triplinervis · Eupatorium triplinerve</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Anti-inflammatory</span><span class="card-benefit-tag">Detox</span><span class="card-benefit-tag">Digestion</span><span class="card-benefit-tag">Energy & Stamina</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Bleeding control (haemostatic), wound healing & antiseptic & hepatoprotective & liver tonic</div>
+        <span class="plant-system">Ayurveda</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'ayapan')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="Babbul.html" class="plant-card" data-key="babbul" data-benefits="anti-inflammatory,blood-sugar,digestion,fever,hair-skin,immunity,neural">
+        <span class="card-number">30</span>
+        <div class="plant-name" style="color:var(--forest);">Babbul <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Acacia nilotica (L.) Willd. ex Delile · syn. Acacia arabica</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Anti-inflammatory</span><span class="card-benefit-tag">Blood Sugar</span><span class="card-benefit-tag">Digestion</span><span class="card-benefit-tag">Fever Relief</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Oral & dental health, anti-diarrheal & gi binding & wound healing & haemostasis</div>
+        <span class="plant-system">Ayurveda · Unani</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'babbul')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="Babuna.html" class="plant-card" data-key="babuna" data-benefits="anti-inflammatory,anxiety,blood-sugar,cognitive,digestion,fever,hair-skin,immunity,neural,respiratory,stress">
+        <span class="card-number">31</span>
+        <div class="plant-name" style="color:var(--forest);">Babuna <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Matricaria chamomilla L. (German) · Chamaemelum nobile (L.) All. (Roman)</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Anti-inflammatory</span><span class="card-benefit-tag">Anxiety Relief</span><span class="card-benefit-tag">Blood Sugar</span><span class="card-benefit-tag">Cognitive</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Anxiety & gad, sleep & insomnia & digestive — ibs, spasm & colic</div>
+        <span class="plant-system">Ayurveda · Unani</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'babuna')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="Bael.html" class="plant-card" data-key="bael" data-benefits="anti-inflammatory,blood-sugar,detox,digestion,fever,heart,immunity,liver,respiratory,stress">
+        <span class="card-number">32</span>
+        <div class="plant-name" style="color:var(--forest);">Bael <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Aegle marmelos · Rutaceae</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Anti-inflammatory</span><span class="card-benefit-tag">Blood Sugar</span><span class="card-benefit-tag">Detox</span><span class="card-benefit-tag">Digestion</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Digestive & anti-diarrhoeal, antidiabetic & glycaemic & anti-inflammatory & joint pain</div>
+        <span class="plant-system">Ayurveda</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'bael')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="Bakuchi.html" class="plant-card" data-key="bakuchi" data-benefits="anti-inflammatory,anxiety,cognitive,detox,energy,hair-skin,heart,hormonal,immunity,respiratory,stress">
+        <span class="card-number">33</span>
+        <div class="plant-name" style="color:var(--forest);">Bakuchi <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Psoralea corylifolia L. · syn. Cullen corylifolium</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Anti-inflammatory</span><span class="card-benefit-tag">Anxiety Relief</span><span class="card-benefit-tag">Cognitive</span><span class="card-benefit-tag">Detox</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Vitiligo & leucoderma (shvitra), anti-ageing & skin rejuvenation & psoriasis & eczema</div>
+        <span class="plant-system">Ayurveda · Unani · TCM</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'bakuchi')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="Bakula.html" class="plant-card" data-key="bakula" data-benefits="anti-inflammatory,cognitive,digestion,energy,hair-skin,heart,immunity,kidney,reproductive,stress">
+        <span class="card-number">34</span>
+        <div class="plant-name" style="color:var(--forest);">Bakula <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Mimusops elengi · Sapotaceae</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Anti-inflammatory</span><span class="card-benefit-tag">Cognitive</span><span class="card-benefit-tag">Digestion</span><span class="card-benefit-tag">Energy & Stamina</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Dental & gum health, cardiotonic (hrudya) & astringent & anti-diarrhoeal</div>
+        <span class="plant-system">Ayurveda</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'bakula')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="bala.html" class="plant-card" data-key="bala" data-benefits="neural,respiratory,anti-inflammatory,energy">
+        <span class="card-number">35</span>
+        <div class="plant-name" style="color:var(--forest);">Bala <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Sida cordifolia</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Strength</span><span class="card-benefit-tag">Neural Support</span><span class="card-benefit-tag">Respiratory</span><span class="card-benefit-tag">Anti-inflammatory</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Muscle & nerve strengthening, neurological support & anti-inflammatory Brimhana herb</div>
+        <span class="plant-system">Ayurveda</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'bala')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="Bambusa.html" class="plant-card" data-key="bambusa" data-benefits="anti-inflammatory,blood-sugar,cognitive,detox,digestion,energy,fever,hair-skin,heart,hormonal,immunity,kidney,neural,reproductive,respiratory,stress">
+        <span class="card-number">36</span>
+        <div class="plant-name" style="color:var(--forest);">Bambusa <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Bambusa bambos (L.) Voss · syn. Bambusa arundinacea (Retz.) Willd.</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Anti-inflammatory</span><span class="card-benefit-tag">Blood Sugar</span><span class="card-benefit-tag">Cognitive</span><span class="card-benefit-tag">Detox</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Respiratory health — kasa & shvasa, connective tissue & bone health & antipyretic & anti-inflammatory</div>
+        <span class="plant-system">Ayurveda · Unani · TCM</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'bambusa')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="Bayberry.html" class="plant-card" data-key="bayberry" data-benefits="blood-sugar,digestion,energy,fever,hair-skin,heart,immunity,liver,reproductive,respiratory">
+        <span class="card-number">37</span>
+        <div class="plant-name" style="color:var(--forest);">Bayberry <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Myrica esculenta Buch.-Ham. ex D. Don · Myricaceae</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Blood Sugar</span><span class="card-benefit-tag">Digestion</span><span class="card-benefit-tag">Energy & Stamina</span><span class="card-benefit-tag">Fever Relief</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Ent & oral health, respiratory & sinus support & digestive & hepatic aid</div>
+        <span class="plant-system">Ayurveda · Unani · Siddha</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'bayberry')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="Bea Leaves.html" class="plant-card" data-key="bea-leaves" data-benefits="anti-inflammatory,blood-sugar,digestion,energy,hair-skin,heart,immunity,liver,respiratory,stress">
+        <span class="card-number">38</span>
+        <div class="plant-name" style="color:var(--forest);">Tejpatta <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Cinnamomum tamala · Lauraceae</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Anti-inflammatory</span><span class="card-benefit-tag">Blood Sugar</span><span class="card-benefit-tag">Digestion</span><span class="card-benefit-tag">Energy & Stamina</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Digestive fire & ama reduction, antidiabetic & blood sugar & cardiovascular & cholesterol</div>
+        <span class="plant-system">Ayurveda</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'bea-leaves')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="Bhallataka.html" class="plant-card" data-key="bhallataka" data-benefits="anti-inflammatory,cognitive,detox,digestion,energy,hair-skin,immunity,liver,neural">
+        <span class="card-number">39</span>
+        <div class="plant-name" style="color:var(--forest);">Bhallataka <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Semecarpus anacardium L.f. · Anacardiaceae</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Anti-inflammatory</span><span class="card-benefit-tag">Cognitive</span><span class="card-benefit-tag">Detox</span><span class="card-benefit-tag">Digestion</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Rasayana & anti-ageing, anti-tumour & anti-cancer & anti-arthritic & joint support</div>
+        <span class="plant-system">Ayurveda</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'bhallataka')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="Bhanga.html" class="plant-card" data-key="bhanga" data-benefits="anti-inflammatory,anxiety,digestion,energy,hair-skin,immunity,liver,neural,respiratory,stress">
+        <span class="card-number">40</span>
+        <div class="plant-name" style="color:var(--forest);">Bhanga <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Cannabis sativa Linn. · Cannabaceae</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Anti-inflammatory</span><span class="card-benefit-tag">Anxiety Relief</span><span class="card-benefit-tag">Digestion</span><span class="card-benefit-tag">Energy & Stamina</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Pain relief & analgesic, neurological & anticonvulsant & digestive stimulant & anti-emetic</div>
+        <span class="plant-system">Ayurveda</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'bhanga')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="Bharangi.html" class="plant-card" data-key="bharangi" data-benefits="anti-inflammatory,detox,digestion,fever,hair-skin,immunity,liver,reproductive,respiratory">
+        <span class="card-number">41</span>
+        <div class="plant-name" style="color:var(--forest);">Bharangi <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Clerodendrum serratum · Lamiaceae</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Anti-inflammatory</span><span class="card-benefit-tag">Detox</span><span class="card-benefit-tag">Digestion</span><span class="card-benefit-tag">Fever Relief</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Asthma & bronchodilator, cough & expectorant (kasaghni) & anti-allergic & antihistamine</div>
+        <span class="plant-system">Ayurveda</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'bharangi')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="Bhojpatra.html" class="plant-card" data-key="bhojpatra" data-benefits="anti-inflammatory,detox,digestion,energy,fever,hair-skin,immunity,kidney,liver,neural,respiratory,stress">
+        <span class="card-number">42</span>
+        <div class="plant-name" style="color:var(--forest);">Bhojpatra <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Betula utilis D. Don · Betula bhojpattra</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Anti-inflammatory</span><span class="card-benefit-tag">Detox</span><span class="card-benefit-tag">Digestion</span><span class="card-benefit-tag">Energy & Stamina</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Anti-inflammatory & analgesic, skin diseases & wound healing & antitumour & cytotoxic</div>
+        <span class="plant-system">Ayurveda</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'bhojpatra')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="bhringraj.html" class="plant-card" data-key="bhringraj" data-benefits="hair-skin,detox,anti-inflammatory">
+        <span class="card-number">43</span>
+        <div class="plant-name" style="color:var(--forest);">Bhringraj <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Eclipta prostrata</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Hair & Skin</span><span class="card-benefit-tag">Detox</span><span class="card-benefit-tag">Anti-inflammatory</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Hair loss prevention, liver support, scalp nourishment & skin rejuvenation</div>
+        <span class="plant-system">Ayurveda</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'bhringraj')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="Bhumi Amla.html" class="plant-card" data-key="bhumi-amla" data-benefits="anti-inflammatory,blood-sugar,detox,digestion,fever,hair-skin,immunity,kidney,liver,stress">
+        <span class="card-number">44</span>
+        <div class="plant-name" style="color:var(--forest);">Bhumi Amla <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Phyllanthus niruri L. · Phyllanthus urinaria · Phyllanthus amarus</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Anti-inflammatory</span><span class="card-benefit-tag">Blood Sugar</span><span class="card-benefit-tag">Detox</span><span class="card-benefit-tag">Digestion</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Hepatoprotection & liver regeneration, anti-hepatitis b (hbv) & kidney stone dissolution</div>
+        <span class="plant-system">Ayurveda · Unani · Siddha</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'bhumi-amla')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="bibhitaki.html" class="plant-card" data-key="bibhitaki" data-benefits="respiratory,hair-skin,detox">
+        <span class="card-number">45</span>
+        <div class="plant-name" style="color:var(--forest);">Bibhitaki <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Terminalia bellirica</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Respiratory</span><span class="card-benefit-tag">Eye Health</span><span class="card-benefit-tag">Antiparasitic</span><span class="card-benefit-tag">Hair & Skin</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Triphala herb, respiratory health, eye clarity, hair growth & Kapha-pacifying</div>
+        <span class="plant-system">Ayurveda</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'bibhitaki')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="Borage.html" class="plant-card" data-key="borage" data-benefits="anti-inflammatory,anxiety,digestion,energy,hair-skin,heart,hormonal,kidney,reproductive,respiratory,stress">
+        <span class="card-number">46</span>
+        <div class="plant-name" style="color:var(--forest);">Borage <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Borago officinalis · Boraginaceae</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Anti-inflammatory</span><span class="card-benefit-tag">Anxiety Relief</span><span class="card-benefit-tag">Digestion</span><span class="card-benefit-tag">Energy & Stamina</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Atopic dermatitis & eczema, rheumatoid arthritis & joint & allergic rhinitis & histamine</div>
+        <span class="plant-system">Ayurveda</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'borage')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="Boswellia.html" class="plant-card" data-key="boswellia" data-benefits="anti-inflammatory,anxiety,cognitive,digestion,hair-skin,immunity,neural,respiratory,stress">
+        <span class="card-number">47</span>
+        <div class="plant-name" style="color:var(--forest);">Shallaki <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Boswellia serrata Roxb. ex Colebr. · Salai Guggul</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Anti-inflammatory</span><span class="card-benefit-tag">Anxiety Relief</span><span class="card-benefit-tag">Cognitive</span><span class="card-benefit-tag">Digestion</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Osteoarthritis & joint degeneration, rheumatoid arthritis & inflammatory bowel disease</div>
+        <span class="plant-system">Ayurveda · Unani</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'boswellia')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="brahmi.html" class="plant-card" data-key="brahmi" data-benefits="cognitive,stress,neural,anxiety">
+        <span class="card-number">48</span>
+        <div class="plant-name" style="color:var(--forest);">Brahmi <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Bacopa monnieri</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Cognitive</span><span class="card-benefit-tag">Anxiety Relief</span><span class="card-benefit-tag">Stress Relief</span><span class="card-benefit-tag">Neural Support</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Memory improvement, anxiety relief, cognitive enhancement & neural support</div>
+        <span class="plant-system">Ayurveda</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'brahmi')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="Brihati.html" class="plant-card" data-key="brihati" data-benefits="anti-inflammatory,digestion,energy,fever,hair-skin,heart,immunity,kidney,neural,respiratory">
+        <span class="card-number">49</span>
+        <div class="plant-name" style="color:var(--forest);">Brihati <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Solanum indicum · Solanaceae</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Anti-inflammatory</span><span class="card-benefit-tag">Digestion</span><span class="card-benefit-tag">Energy & Stamina</span><span class="card-benefit-tag">Fever Relief</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Cough, asthma & bronchitis, digestive & appetiser (deepana) & anti-inflammatory (dashamoola)</div>
+        <span class="plant-system">Ayurveda</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'brihati')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="Caraway.html" class="plant-card" data-key="caraway" data-benefits="anti-inflammatory,cognitive,detox,digestion,energy,hair-skin,immunity,neural,reproductive,respiratory,stress">
+        <span class="card-number">50</span>
+        <div class="plant-name" style="color:var(--forest);">Kala Jeera <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Carum carvi · Apiaceae</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Anti-inflammatory</span><span class="card-benefit-tag">Cognitive</span><span class="card-benefit-tag">Detox</span><span class="card-benefit-tag">Digestion</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Digestive & carminative, infant colic relief & lactation support (galactagogue)</div>
+        <span class="plant-system">Ayurveda</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'caraway')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="Cardamom.html" class="plant-card" data-key="cardamom" data-benefits="anti-inflammatory,anxiety,blood-sugar,detox,digestion,energy,hair-skin,heart,immunity,kidney,liver,neural,respiratory,stress">
+        <span class="card-number">51</span>
+        <div class="plant-name" style="color:var(--forest);">Ela <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Elettaria cardamomum (L.) Maton · Amomum subulatum Roxb. (Black Cardamom)</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Anti-inflammatory</span><span class="card-benefit-tag">Anxiety Relief</span><span class="card-benefit-tag">Blood Sugar</span><span class="card-benefit-tag">Detox</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Digestive & carminative, respiratory & anti-tussive & cardiovascular & anti-hypertensive</div>
+        <span class="plant-system">Ayurveda</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'cardamom')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="Castor.html" class="plant-card" data-key="castor" data-benefits="anti-inflammatory,detox,digestion,energy,hair-skin,heart,immunity,liver,neural,reproductive">
+        <span class="card-number">52</span>
+        <div class="plant-name" style="color:var(--forest);">Eranda <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Ricinus communis L. · Euphorbiaceae</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Anti-inflammatory</span><span class="card-benefit-tag">Detox</span><span class="card-benefit-tag">Digestion</span><span class="card-benefit-tag">Energy & Stamina</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Purgative & bowel regulation, joint & rheumatic conditions & skin, hair & topical applications</div>
+        <span class="plant-system">Ayurveda</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'castor')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="Celery.html" class="plant-card" data-key="celery" data-benefits="anti-inflammatory,detox,digestion,energy,hair-skin,heart,immunity,kidney,liver,respiratory,stress">
+        <span class="card-number">53</span>
+        <div class="plant-name" style="color:var(--forest);">Ajmoda <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Apium graveolens · Apiaceae</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Anti-inflammatory</span><span class="card-benefit-tag">Detox</span><span class="card-benefit-tag">Digestion</span><span class="card-benefit-tag">Energy & Stamina</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Digestive & carminative, antihypertensive (blood pressure) & diuretic & urinary health</div>
+        <span class="plant-system">Ayurveda</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'celery')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="Chakramarda.html" class="plant-card" data-key="chakramarda" data-benefits="anti-inflammatory,blood-sugar,cognitive,detox,digestion,fever,hair-skin,heart,immunity,liver">
+        <span class="card-number">54</span>
+        <div class="plant-name" style="color:var(--forest);">Chakramarda <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Senna obtusifolia (L.) H.S.Irwin & Barneby · Cassia tora L. (syn.)</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Anti-inflammatory</span><span class="card-benefit-tag">Blood Sugar</span><span class="card-benefit-tag">Cognitive</span><span class="card-benefit-tag">Detox</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Antifungal — ringworm & tinea, scabies & ectoparasites & eczema & psoriasis (topical)</div>
+        <span class="plant-system">Ayurveda · Siddha</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'chakramarda')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="Changeri.html" class="plant-card" data-key="changeri" data-benefits="anti-inflammatory,cognitive,digestion,energy,fever,hair-skin,immunity,liver">
+        <span class="card-number">55</span>
+        <div class="plant-name" style="color:var(--forest);">Changeri <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Oxalis corniculata L. · Oxalidaceae</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Anti-inflammatory</span><span class="card-benefit-tag">Cognitive</span><span class="card-benefit-tag">Digestion</span><span class="card-benefit-tag">Energy & Stamina</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Digestive stimulant & appetite, antidiarrhoeal & intestinal & antiparasitic & worm expulsion</div>
+        <span class="plant-system">Ayurveda · Siddha</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'changeri')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="chirayata.html" class="plant-card" data-key="chirayata" data-benefits="liver,blood-sugar,detox,immunity">
+        <span class="card-number">56</span>
+        <div class="plant-name" style="color:var(--forest);">Chirayata <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Swertia chirata</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Liver</span><span class="card-benefit-tag">Blood Sugar</span><span class="card-benefit-tag">Antimalarial</span><span class="card-benefit-tag">Detox</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Bitter tonic, hepatoprotection, blood sugar control & antimalarial Tikta herb</div>
+        <span class="plant-system">Ayurveda · Unani</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'chirayata')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="gotu-kola.html" class="plant-card" data-key="gotu-kola" data-benefits="cognitive,anxiety,hair-skin,anti-inflammatory">
+        <span class="card-number">57</span>
+        <div class="plant-name" style="color:var(--forest);">Gotu Kola <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Centella asiatica</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Cognitive</span><span class="card-benefit-tag">Wound Healing</span><span class="card-benefit-tag">Anxiety Relief</span><span class="card-benefit-tag">Anti-aging</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Memory, wound & scar healing, anxiety relief, venous insufficiency & skin anti-aging</div>
+        <span class="plant-system">Ayurveda · TCM · Unani</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'gotu-kola')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="guduchi.html" class="plant-card" data-key="guduchi" data-benefits="immunity,detox,anti-inflammatory,fever">
+        <span class="card-number">58</span>
+        <div class="plant-name" style="color:var(--forest);">Guduchi <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Tinospora cordifolia</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Immunity</span><span class="card-benefit-tag">Detox</span><span class="card-benefit-tag">Anti-inflammatory</span><span class="card-benefit-tag">Fever</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Immune modulation, fever management, blood purification & chronic disease support</div>
+        <span class="plant-system">Ayurveda</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'guduchi')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="haridra.html" class="plant-card" data-key="haridra" data-benefits="anti-inflammatory,cognitive,hair-skin,detox">
+        <span class="card-number">59</span>
+        <div class="plant-name" style="color:var(--forest);">Haridra <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Curcuma longa</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Anti-inflammatory</span><span class="card-benefit-tag">Antioxidant</span><span class="card-benefit-tag">Cognitive</span><span class="card-benefit-tag">Hair & Skin</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Master anti-inflammatory, wound healing, neuroprotection & metabolic support</div>
+        <span class="plant-system">Ayurveda · Siddha</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'haridra')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="haritaki.html" class="plant-card" data-key="haritaki" data-benefits="digestion,detox,cognitive,anti-inflammatory">
+        <span class="card-number">60</span>
+        <div class="plant-name" style="color:var(--forest);">Haritaki <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Terminalia chebula</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Digestive</span><span class="card-benefit-tag">Detox</span><span class="card-benefit-tag">Anti-aging</span><span class="card-benefit-tag">Cognitive</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Triphala herb, digestive rejuvenation, detox & Vata-pacifying rasayana</div>
+        <span class="plant-system">Ayurveda</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'haritaki')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="kalmegh.html" class="plant-card" data-key="kalmegh" data-benefits="immunity,detox,anti-inflammatory,liver">
+        <span class="card-number">61</span>
+        <div class="plant-name" style="color:var(--forest);">Kalmegh <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Andrographis paniculata</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Antiviral</span><span class="card-benefit-tag">Immunity</span><span class="card-benefit-tag">Detox</span><span class="card-benefit-tag">Antiparasitic</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Respiratory infections, hepatoprotection, antiviral, anti-inflammatory & anticancer</div>
+        <span class="plant-system">Ayurveda · Siddha · TCM</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'kalmegh')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="kapikacchu.html" class="plant-card" data-key="kapikacchu" data-benefits="neural,hormonal,reproductive,cognitive">
+        <span class="card-number">62</span>
+        <div class="plant-name" style="color:var(--forest);">Kapikacchu <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Mucuna pruriens</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Reproductive</span><span class="card-benefit-tag">Neural Support</span><span class="card-benefit-tag">Mood</span><span class="card-benefit-tag">Parkinson's</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Natural L-DOPA source, Parkinson's support, male fertility & dopaminergic tonic</div>
+        <span class="plant-system">Ayurveda</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'kapikacchu')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="kutki.html" class="plant-card" data-key="kutki" data-benefits="liver,detox,immunity,anti-inflammatory">
+        <span class="card-number">63</span>
+        <div class="plant-name" style="color:var(--forest);">Kutki <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Picrorhiza kurroa</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Liver</span><span class="card-benefit-tag">Detox</span><span class="card-benefit-tag">Immunity</span><span class="card-benefit-tag">Anti-inflammatory</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Hepatoprotection, immune modulation, autoimmune & respiratory Pitta herb</div>
+        <span class="plant-system">Ayurveda</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'kutki')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="manjistha.html" class="plant-card" data-key="manjistha" data-benefits="hair-skin,detox,anti-inflammatory">
+        <span class="card-number">64</span>
+        <div class="plant-name" style="color:var(--forest);">Manjistha <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Rubia cordifolia</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Blood Purifier</span><span class="card-benefit-tag">Hair & Skin</span><span class="card-benefit-tag">Detox</span><span class="card-benefit-tag">Lymphatic</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Blood purification, skin disorders, lymphatic cleansing & anti-inflammatory</div>
+        <span class="plant-system">Ayurveda</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'manjistha')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="moringa.html" class="plant-card" data-key="moringa" data-benefits="anti-inflammatory,blood-sugar,energy,immunity">
+        <span class="card-number">65</span>
+        <div class="plant-name" style="color:var(--forest);">Moringa <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Moringa oleifera</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Nutrition</span><span class="card-benefit-tag">Anti-inflammatory</span><span class="card-benefit-tag">Blood Sugar</span><span class="card-benefit-tag">Energy</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Superfood nutrition, anti-inflammatory, blood sugar support & energy</div>
+        <span class="plant-system">Ayurveda · Siddha</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'moringa')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="neem.html" class="plant-card" data-key="neem" data-benefits="anti-inflammatory,hair-skin,detox,immunity">
+        <span class="card-number">66</span>
+        <div class="plant-name" style="color:var(--forest);">Neem <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Azadirachta indica</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Anti-inflammatory</span><span class="card-benefit-tag">Hair & Skin</span><span class="card-benefit-tag">Detox</span><span class="card-benefit-tag">Immunity</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Antibacterial, blood purification, skin disorders & anti-inflammatory relief</div>
+        <span class="plant-system">Ayurveda</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'neem')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="pippali.html" class="plant-card" data-key="pippali" data-benefits="digestion,respiratory,anti-inflammatory,immunity">
+        <span class="card-number">67</span>
+        <div class="plant-name" style="color:var(--forest);">Pippali <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Piper longum</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Digestive</span><span class="card-benefit-tag">Respiratory</span><span class="card-benefit-tag">Bioenhancer</span><span class="card-benefit-tag">Anticancer</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Bioavailability enhancer, respiratory medicine, digestive fire & Trikatu component</div>
+        <span class="plant-system">Ayurveda</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'pippali')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="punarnava.html" class="plant-card" data-key="punarnava" data-benefits="detox,anti-inflammatory,liver,kidney">
+        <span class="card-number">68</span>
+        <div class="plant-name" style="color:var(--forest);">Punarnava <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Boerhavia diffusa</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Kidney</span><span class="card-benefit-tag">Anti-oedema</span><span class="card-benefit-tag">Detox</span><span class="card-benefit-tag">Anti-inflammatory</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Kidney rejuvenation, oedema reduction, hepatoprotection & anaemia support</div>
+        <span class="plant-system">Ayurveda</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'punarnava')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="shankhapushpi.html" class="plant-card" data-key="shankhapushpi" data-benefits="cognitive,anxiety,neural,stress">
+        <span class="card-number">69</span>
+        <div class="plant-name" style="color:var(--forest);">Shankhapushpi <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Convolvulus pluricaulis</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Cognitive</span><span class="card-benefit-tag">Anxiety Relief</span><span class="card-benefit-tag">Thyroid</span><span class="card-benefit-tag">Memory</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Memory, anxiety relief, thyroid modulation, antiepileptic & antihypertensive</div>
+        <span class="plant-system">Ayurveda</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'shankhapushpi')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="shatavari.html" class="plant-card" data-key="shatavari" data-benefits="hormonal,immunity,digestion,reproductive">
+        <span class="card-number">70</span>
+        <div class="plant-name" style="color:var(--forest);">Shatavari <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Asparagus racemosus</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Women's Health</span><span class="card-benefit-tag">Hormonal Balance</span><span class="card-benefit-tag">Immunity</span><span class="card-benefit-tag">Digestive</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Female reproductive tonic, galactagogue, hormonal balance & immunity</div>
+        <span class="plant-system">Ayurveda</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'shatavari')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="tulsi.html" class="plant-card" data-key="tulsi" data-benefits="immunity,respiratory,stress,anti-inflammatory">
+        <span class="card-number">71</span>
+        <div class="plant-name" style="color:var(--forest);">Tulsi <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Ocimum tenuiflorum</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Immunity</span><span class="card-benefit-tag">Respiratory</span><span class="card-benefit-tag">Stress Relief</span><span class="card-benefit-tag">Anti-inflammatory</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Immunity booster, cough relief, stress reduction & respiratory support</div>
+        <span class="plant-system">Ayurveda</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'tulsi')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="vacha.html" class="plant-card" data-key="vacha" data-benefits="cognitive,neural,respiratory,stress">
+        <span class="card-number">72</span>
+        <div class="plant-name" style="color:var(--forest);">Vacha <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Acorus calamus</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Cognitive</span><span class="card-benefit-tag">Speech</span><span class="card-benefit-tag">Respiratory</span><span class="card-benefit-tag">Neural Support</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Memory & speech enhancement, anticonvulsant, respiratory expectorant & Medhya Rasayana</div>
+        <span class="plant-system">Ayurveda</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'vacha')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="vidari-kanda.html" class="plant-card" data-key="vidari-kanda" data-benefits="reproductive,hormonal,heart,energy">
+        <span class="card-number">73</span>
+        <div class="plant-name" style="color:var(--forest);">Vidari Kanda <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Pueraria tuberosa</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Reproductive</span><span class="card-benefit-tag">Hormonal Balance</span><span class="card-benefit-tag">Heart Health</span><span class="card-benefit-tag">Bone Density</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Reproductive tonic, galactagogue, cardioprotective & phytoestrogenic Vajikarana herb</div>
+        <span class="plant-system">Ayurveda</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'vidari-kanda')">☆ &nbsp;Bookmark</button>
+      </a>
+<a href="yashtimadhu.html" class="plant-card" data-key="yashtimadhu" data-benefits="digestion,respiratory,cognitive,anti-inflammatory">
+        <span class="card-number">74</span>
+        <div class="plant-name" style="color:var(--forest);">Yashtimadhu <span style="font-size:12px;color:var(--gold);letter-spacing:2px;">→</span></div>
+        <div class="plant-sci">Glycyrrhiza glabra</div>
+        <div class="card-sep"></div>
+        <div class="card-benefits"><span class="card-benefit-tag">Digestive</span><span class="card-benefit-tag">Respiratory</span><span class="card-benefit-tag">Cognitive</span><span class="card-benefit-tag">Anti-inflammatory</span></div>
+        <div class="plant-uses"><strong>Uses</strong>Gastric ulcer healing, respiratory soothing, Medhya Rasayana & adrenal support</div>
+        <span class="plant-system">Ayurveda · Unani · TCM</span><br>
+        <button class="btn-bookmark" onclick="event.preventDefault(); event.stopPropagation(); handleBookmark(this, 'yashtimadhu')">☆ &nbsp;Bookmark</button>
+      </a>
+
+
+      <div class="no-results" id="noResults">
+        <div class="no-results-icon">❧</div>
+        <div class="no-results-text">No plants match your selection</div>
+        <div class="no-results-sub">Try adjusting your filters</div>
+      </div>
+
+    </div><!-- /garden -->
+  </div><!-- /garden-wrap -->
+</div><!-- /main-layout -->
+
+<footer>
+  <p>© 2026 Virtual Herbal Garden &nbsp;·&nbsp; AYUSH Educational Platform</p>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── SUPABASE CONFIG ──────────────────────────────────────────────
+// 🔑 Replace these two values with your Supabase project credentials
+const SUPABASE_URL      = 'https://yypvhggcauxhyeljjumh.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_tc95USCUy5sCeQfaZD1L_Q_DmzBFMZK';
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let currentUser   = null;
+let savedPlants   = new Set(); // plant_keys already bookmarked
+
+// ── INIT: check session & load saved bookmarks ───────────────────
+(async () => {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) {
+    currentUser = session.user;
+    await loadUserBookmarks();
+    renderAuthBar(true);
+  } else {
+    renderAuthBar(false);
+  }
+})();
+
+// ── LOAD USER'S EXISTING BOOKMARKS ──────────────────────────────
+async function loadUserBookmarks() {
+  const { data } = await sb
+    .from('bookmarks')
+    .select('plant_key')
+    .eq('user_id', currentUser.id);
+
+  if (data) {
+    data.forEach(row => savedPlants.add(row.plant_key));
+    // Update all bookmark buttons to reflect saved state
+    savedPlants.forEach(key => {
+      const card = document.querySelector(`.plant-card[data-key="${key}"]`);
+      if (card) {
+        const btn = card.querySelector('.btn-bookmark');
+        btn.classList.add('saved');
+        btn.innerHTML = '★ &nbsp;Saved';
+      }
+    });
+    // Show "My Bookmarks" link if any saved
+    if (savedPlants.size > 0) {
+      document.getElementById('bmPageLink').classList.add('visible');
+    }
+  }
+}
+
+// ── AUTH BAR ─────────────────────────────────────────────────────
+function renderAuthBar(loggedIn) {
+  const bar = document.getElementById('authBar');
+  if (loggedIn) {
+    const name = currentUser.user_metadata?.full_name || currentUser.email.split('@')[0];
+    bar.innerHTML = `
+      <span class="auth-user-name">✦ ${name}</span>
+      <a href="bookmarks.html" class="auth-link">My Bookmarks</a>
+      <button class="auth-signout" onclick="signOut()">Sign Out</button>
+    `;
+  } else {
+    bar.innerHTML = `
+      <a href="login.html" class="auth-link btn-style">Sign In</a>
+    `;
+  }
+}
+
+// ── HANDLE BOOKMARK CLICK ────────────────────────────────────────
+async function handleBookmark(btn, plantKey) {
+  // Not logged in → save intent & redirect to login
+  if (!currentUser) {
+    sessionStorage.setItem('pendingBookmark', plantKey);
+    window.location.href = 'login.html';
+    return;
+  }
+
+  btn.disabled = true;
+
+  if (savedPlants.has(plantKey)) {
+    // Already saved → remove
+    const { error } = await sb
+      .from('bookmarks')
+      .delete()
+      .eq('user_id', currentUser.id)
+      .eq('plant_key', plantKey);
+
+    if (!error) {
+      savedPlants.delete(plantKey);
+      btn.classList.remove('saved');
+      btn.innerHTML = '☆ &nbsp;Bookmark';
+      showToast('Bookmark removed');
+      if (savedPlants.size === 0) document.getElementById('bmPageLink').classList.remove('visible');
+    }
+  } else {
+    // Not yet saved → add
+    const { error } = await sb
+      .from('bookmarks')
+      .upsert(
+        { user_id: currentUser.id, plant_key: plantKey },
+        { onConflict: 'user_id,plant_key' }
+      );
+
+    if (!error) {
+      savedPlants.add(plantKey);
+      btn.classList.add('saved');
+      btn.innerHTML = '★ &nbsp;Saved';
+      showToast('✦  Plant bookmarked');
+      document.getElementById('bmPageLink').classList.add('visible');
+    }
+  }
+
+  btn.disabled = false;
+}
+
+// ── SIGN OUT ─────────────────────────────────────────────────────
+async function signOut() {
+  await sb.auth.signOut();
+  currentUser = null;
+  savedPlants.clear();
+  renderAuthBar(false);
+  // Reset all bookmark buttons
+  document.querySelectorAll('.btn-bookmark').forEach(btn => {
+    btn.classList.remove('saved');
+    btn.innerHTML = '☆ &nbsp;Bookmark';
+  });
+  document.getElementById('bmPageLink').classList.remove('visible');
+  showToast('Signed out');
+}
+
+// ── TOAST ────────────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ── FILTER SYSTEM ────────────────────────────────────────────────
+const filterGroups = [
+  {
+    title: 'Immunity & Protection',
+    filters: [
+      { key: 'immunity',          label: 'Immunity Boost' },
+      { key: 'anti-inflammatory', label: 'Anti-inflammatory' },
+      { key: 'detox',             label: 'Detoxification' },
+      { key: 'fever',             label: 'Fever Relief' },
+    ]
+  },
+  {
+    title: 'Mind & Mood',
+    filters: [
+      { key: 'stress',    label: 'Stress Relief' },
+      { key: 'cognitive', label: 'Cognitive Health' },
+      { key: 'anxiety',   label: 'Anxiety Relief' },
+      { key: 'neural',    label: 'Neural Support' },
+    ]
+  },
+  {
+    title: 'Body & Vitality',
+    filters: [
+      { key: 'respiratory',  label: 'Respiratory' },
+      { key: 'digestion',    label: 'Digestion' },
+      { key: 'energy',       label: 'Energy & Stamina' },
+      { key: 'hormonal',     label: 'Hormonal Balance' },
+      { key: 'heart',        label: 'Heart Health' },
+      { key: 'liver',        label: 'Liver Support' },
+      { key: 'kidney',       label: 'Kidney Health' },
+      { key: 'blood-sugar',  label: 'Blood Sugar' },
+      { key: 'reproductive', label: 'Reproductive' },
+    ]
+  },
+  {
+    title: 'Beauty & Rejuvenation',
+    filters: [
+      { key: 'hair-skin', label: 'Hair & Skin' },
+    ]
+  },
+];
+
+let activeFilters = new Set();
+
+function getBenefitCount(key) {
+  return document.querySelectorAll(`.plant-card[data-benefits*="${key}"]`).length;
+}
+function getAllFilterLabel(key) {
+  for (const g of filterGroups) for (const f of g.filters) if (f.key === key) return f.label;
+  return key;
+}
+function buildSidebarHTML() {
+  let html = `
+    <div class="filter-sidebar-header">
+      <div class="filter-title">Filter by Benefit</div>
+      <button class="filter-clear ${activeFilters.size > 0 ? 'visible' : ''}" onclick="clearFilters()">Clear all</button>
+    </div>
+    <div class="filter-rule"></div>`;
+  filterGroups.forEach(group => {
+    html += `<div class="filter-group"><div class="filter-group-title">${group.title}</div>`;
+    group.filters.forEach(f => {
+      const active = activeFilters.has(f.key) ? ' active' : '';
+      html += `
+        <div class="filter-option${active}" data-key="${f.key}" onclick="toggleFilter('${f.key}')">
+          <div class="filter-check"></div>
+          <span class="filter-label">${f.label}</span>
+          <span class="filter-count">${getBenefitCount(f.key)}</span>
+        </div>`;
+    });
+    html += `</div>`;
+  });
+  let pills = '';
+  activeFilters.forEach(key => {
+    pills += `<div class="filter-pill" onclick="toggleFilter('${key}')">${getAllFilterLabel(key)} <span>✕</span></div>`;
+  });
+  html += `
+    <div class="active-filters ${activeFilters.size > 0 ? 'visible' : ''}">
+      <div class="active-filters-label">Active filters</div>
+      <div class="filter-pills">${pills}</div>
+    </div>`;
+  return html;
+}
+function renderSidebars() {
+  const html = buildSidebarHTML();
+  document.getElementById('sidebarContent').innerHTML = html;
+  document.getElementById('drawerContent').innerHTML =
+    `<button class="filter-drawer-close" onclick="closeDrawer()">✕</button>` + html;
+}
+function toggleFilter(key) {
+  activeFilters.has(key) ? activeFilters.delete(key) : activeFilters.add(key);
+  applyFilters(); renderSidebars();
+  const badge = document.getElementById('mobileBadge');
+  badge.textContent = activeFilters.size;
+  badge.classList.toggle('visible', activeFilters.size > 0);
+}
+function clearFilters() {
+  activeFilters.clear(); applyFilters(); renderSidebars();
+  document.getElementById('mobileBadge').classList.remove('visible');
+}
+function applyFilters() {
+  const cards = document.querySelectorAll('.plant-card:not(#noResults)');
+  let visible = 0;
+  cards.forEach(card => {
+    if (activeFilters.size === 0) { card.classList.remove('hidden'); visible++; }
+    else {
+      const benefits = (card.dataset.benefits || '').split(',').map(b => b.trim());
+      const match = [...activeFilters].every(f => benefits.includes(f));
+      card.classList.toggle('hidden', !match);
+      if (match) visible++;
+    }
+  });
+  document.getElementById('resultCount').textContent = visible;
+  document.getElementById('noResults').classList.toggle('visible', visible === 0);
+}
+function openDrawer() {
+  const d = document.getElementById('filterDrawer');
+  d.style.display = 'block';
+  requestAnimationFrame(() => d.classList.add('open'));
+}
+function closeDrawer() {
+  const d = document.getElementById('filterDrawer');
+  d.classList.remove('open');
+  setTimeout(() => { d.style.display = 'none'; }, 400);
+}
+renderSidebars();
+</script>
+</body>
+</html>

@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bakuchi | Swastha</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+  <style>
+    #open3D {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      padding: 10px 18px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: var(--forest);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      z-index: 1000;
+      transition: .3s;
+    }
+    #open3D:hover {
+      background: var(--gold);
+      color: var(--deep);
+    }
+    #viewerModal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+    }
+    #modal-topbar {
+      flex-shrink: 0;
+      height: 58px;
+      background: #111111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px 0 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      z-index: 99999;
+    }
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 4.5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.72);
+      user-select: none;
+    }
+    #close3D {
+      width: 38px;
+      height: 38px;
+      font-size: 15px;
+      font-weight: 300;
+      background: transparent;
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background .2s, color .2s, transform .22s;
+      outline: none;
+      flex-shrink: 0;
+    }
+    #close3D:hover {
+      background: #ffffff;
+      color: #111111;
+      border-color: #ffffff;
+      transform: rotate(90deg);
+    }
+    #viewerModal model-viewer {
+      flex: 1;
+      width: 100%;
+      display: block;
+      background: #ffffff;
+    }
+
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+    * { margin:0; padding:0; box-sizing:border-box }
+    html { scroll-behavior:smooth }
+    body { font-family:'Jost',sans-serif; background:var(--cream); color:var(--ink); min-height:100vh; overflow-x:hidden; position:relative }
+    body::before {
+      content:''; position:fixed; inset:0;
+      background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity:.03; pointer-events:none; z-index:100;
+    }
+    .bg-circle { position:fixed; border-radius:50%; pointer-events:none; z-index:0 }
+    .bg-circle-1 { width:700px; height:700px; background:radial-gradient(circle,rgba(74,48,112,.1) 0%,transparent 70%); top:-200px; right:-150px }
+    .bg-circle-2 { width:500px; height:500px; background:radial-gradient(circle,rgba(196,154,40,.08) 0%,transparent 70%); bottom:-100px; left:-100px }
+
+    .botanical-svg { position:fixed; pointer-events:none; z-index:1; opacity:.09 }
+    .botanical-tl { top:-10px; left:-10px; width:270px }
+    .botanical-br { bottom:-10px; right:-10px; width:240px; transform:rotate(180deg) }
+
+    .hero { position:relative; z-index:10; padding:54px 40px 0; text-align:center; opacity:0; animation:fadeUp .9s ease .1s forwards }
+    .back-link { display:inline-flex; align-items:center; gap:8px; font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--sage); text-decoration:none; margin-bottom:36px; transition:color .3s }
+    .back-link:hover { color:var(--gold) }
+    .logo-rule { display:flex; align-items:center; justify-content:center; gap:20px; margin-bottom:14px }
+    .logo-rule span { display:block; height:1px; width:70px; background:linear-gradient(to right,transparent,var(--gold)) }
+    .logo-rule span:last-child { background:linear-gradient(to left,transparent,var(--gold)) }
+    .logo-ornament { font-size:13px; color:var(--gold) }
+    .hero-title { font-family:'Cormorant Garamond',serif; font-size:clamp(60px,11vw,104px); font-weight:300; letter-spacing:8px; line-height:1; color:var(--deep) }
+    .hero-subtitle { font-family:'Cormorant Garamond',serif; font-size:18px; font-style:italic; font-weight:300; color:var(--earth); letter-spacing:2px; margin-top:8px }
+    .hero-sci { font-size:11px; font-weight:200; letter-spacing:5px; color:var(--sage); margin-top:6px }
+
+    .hero-photos { position:relative; z-index:10; display:grid; grid-template-columns:1fr 1fr; gap:2px; max-width:900px; margin:40px auto 0; opacity:0; animation:fadeUp .9s ease .35s forwards }
+    .hero-photos img { width:100%; height:380px; object-fit:cover; object-position:center; display:block; background:var(--parchment) }
+    .hero-photos img:first-child { object-position:center 40% }
+    .photo-caption { text-align:center; font-family:'Cormorant Garamond',serif; font-size:12px; font-style:italic; color:var(--sage); letter-spacing:1px; padding:10px 0 0; max-width:900px; margin:0 auto; position:relative; z-index:10; opacity:0; animation:fadeUp .9s ease .5s forwards }
+
+    .divider { display:flex; align-items:center; justify-content:center; gap:16px; margin:50px auto; max-width:600px; opacity:0; animation:fadeUp .9s ease .55s forwards; position:relative; z-index:10 }
+    .divider-line { height:1px; width:120px; background:linear-gradient(to right,transparent,var(--sage)) }
+    .divider-line:last-child { background:linear-gradient(to left,transparent,var(--sage)) }
+    .divider-leaf { color:var(--forest); font-size:18px }
+
+    .content { position:relative; z-index:10; max-width:860px; margin:0 auto; padding:0 30px 80px }
+
+    .intro-text { font-family:'Cormorant Garamond',serif; font-size:20px; font-weight:300; line-height:1.75; color:var(--ink); text-align:center; max-width:700px; margin:0 auto 60px; opacity:0; animation:fadeUp .9s ease .6s forwards }
+    .intro-text em { color:var(--forest); font-style:italic }
+
+    .section { margin-bottom:60px; opacity:0; animation:fadeUp .9s ease forwards }
+    .section:nth-child(1) { animation-delay:.65s } .section:nth-child(2) { animation-delay:.75s }
+    .section:nth-child(3) { animation-delay:.85s } .section:nth-child(4) { animation-delay:.95s }
+    .section:nth-child(5) { animation-delay:1.05s } .section:nth-child(6) { animation-delay:1.15s }
+    .section:nth-child(7) { animation-delay:1.25s }
+
+    .section-header { display:flex; align-items:center; gap:14px; margin-bottom:20px }
+    .section-num { font-family:'Cormorant Garamond',serif; font-size:11px; letter-spacing:4px; color:var(--gold) }
+    .section-title { font-family:'Cormorant Garamond',serif; font-size:28px; font-weight:400; color:var(--deep); letter-spacing:1px }
+    .section-rule { height:1px; flex:1; background:linear-gradient(to right,var(--gold),transparent) }
+    .section-body { font-size:13px; font-weight:300; line-height:1.9; color:var(--ink); margin-bottom:24px }
+
+    .data-table { width:100%; border-collapse:collapse; margin:16px 0 8px; font-size:12px }
+    .data-table thead tr { background:var(--deep); color:var(--gold); font-size:10px; letter-spacing:3px; text-transform:uppercase }
+    .data-table thead th { padding:12px 14px; text-align:left; font-weight:400 }
+    .data-table tbody tr:nth-child(even) { background:var(--parchment) }
+    .data-table tbody tr:nth-child(odd) { background:var(--cream) }
+    .data-table tbody tr { transition:background .2s }
+    .data-table tbody tr:hover { background:#e0d4f5 }
+    .data-table tbody td { padding:10px 14px; color:var(--ink); border-bottom:1px solid rgba(74,48,112,.08) }
+    .data-table tbody td:first-child { font-weight:400; color:var(--deep); width:28% }
+
+    .dosha-table { width:100%; border-collapse:collapse; margin:16px 0; font-size:12px }
+    .dosha-table thead tr { background:var(--forest); color:var(--lavender) }
+    .dosha-table thead th { padding:12px 14px; text-align:left; font-weight:400; letter-spacing:2px; font-size:10px; text-transform:uppercase }
+    .dosha-table tbody tr:nth-child(even) { background:var(--parchment) }
+    .dosha-table tbody tr:nth-child(odd) { background:var(--cream) }
+    .dosha-table tbody td { padding:11px 14px; color:var(--ink); border-bottom:1px solid rgba(74,48,112,.08) }
+    .dosha-table tbody td:first-child { font-weight:400; color:var(--forest); width:18% }
+    .dosha-table tbody td:nth-child(2) { color:var(--earth); width:20% }
+
+    .consume-table { width:100%; border-collapse:collapse; margin:16px 0; font-size:12px }
+    .consume-table thead tr { background:var(--earth); color:var(--cream) }
+    .consume-table thead th { padding:12px 14px; text-align:left; font-weight:400; letter-spacing:2px; font-size:10px; text-transform:uppercase }
+    .consume-table tbody tr:nth-child(even) { background:var(--parchment) }
+    .consume-table tbody tr:nth-child(odd) { background:var(--cream) }
+    .consume-table tbody td { padding:11px 14px; color:var(--ink); border-bottom:1px solid rgba(74,48,112,.08) }
+    .consume-table tbody td:first-child { font-weight:400; color:var(--earth); width:22% }
+
+    .benefits-grid { display:grid; grid-template-columns:1fr 1fr; gap:1px; background:rgba(74,48,112,.12); border:1px solid rgba(74,48,112,.12); margin:8px 0 }
+    .benefit-card { background:var(--cream); padding:24px 22px; transition:background .3s; position:relative; overflow:hidden }
+    .benefit-card:hover { background:#ede4f8 }
+    .benefit-card::before { content:''; position:absolute; bottom:0; left:0; width:0; height:2px; background:var(--gold); transition:width .4s }
+    .benefit-card:hover::before { width:100% }
+    .benefit-title { font-family:'Cormorant Garamond',serif; font-size:16px; font-weight:600; color:var(--forest); margin-bottom:8px }
+    .benefit-desc { font-size:11.5px; font-weight:300; line-height:1.75; color:var(--ink); opacity:.85 }
+
+    .precaution-list { list-style:none; margin:8px 0 }
+    .precaution-list li { display:flex; gap:12px; align-items:flex-start; padding:10px 14px; font-size:12px; font-weight:300; line-height:1.7; color:var(--ink); border-bottom:1px solid rgba(74,48,112,.08) }
+    .precaution-list li:last-child { border-bottom:none }
+    .precaution-list li::before { content:'▸'; color:var(--gold); flex-shrink:0; margin-top:1px }
+
+    .nutrition-bar { display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:rgba(74,48,112,.12); border:1px solid rgba(74,48,112,.12); margin:20px 0 }
+    .nutrition-cell { background:var(--cream); padding:22px 16px; text-align:center; transition:background .3s }
+    .nutrition-cell:hover { background:var(--parchment) }
+    .nutrition-num { font-family:'Cormorant Garamond',serif; font-size:36px; font-weight:300; color:var(--forest); line-height:1; margin-bottom:4px }
+    .nutrition-unit { font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--gold); font-weight:300 }
+    .nutrition-label { font-size:11px; font-weight:300; color:var(--ink); margin-top:5px }
+
+    /* Bakuchiol spotlight box */
+    .spotlight-box {
+      border:1px solid rgba(196,154,40,.5);
+      background:linear-gradient(135deg,rgba(196,154,40,.07),rgba(74,48,112,.06));
+      padding:28px 30px; margin:20px 0; position:relative;
+    }
+    .spotlight-box::before {
+      content:'BAKUCHIOL — THE NATURAL RETINOL';
+      position:absolute; top:-1px; left:24px;
+      font-size:9px; letter-spacing:4px;
+      background:var(--cream); color:var(--gold);
+      padding:0 8px; transform:translateY(-50%);
+    }
+    .spotlight-box p { font-family:'Cormorant Garamond',serif; font-size:16px; font-weight:300; line-height:1.8; color:var(--ink); margin-bottom:12px }
+    .spotlight-box p:last-child { margin-bottom:0 }
+    .spotlight-box em { color:var(--forest) }
+    .spotlight-box strong { color:var(--deep); font-weight:400 }
+
+    /* PUVA callout */
+    .puva-box {
+      border-left:3px solid var(--forest);
+      background:rgba(74,48,112,.05);
+      padding:20px 24px; margin:20px 0;
+    }
+    .puva-box-label { font-size:9px; letter-spacing:4px; text-transform:uppercase; color:var(--sage); font-weight:300; margin-bottom:8px }
+    .puva-box p { font-family:'Cormorant Garamond',serif; font-size:15px; font-weight:300; line-height:1.75; color:var(--ink) }
+    .puva-box em { color:var(--forest) }
+
+    .sources { border-top:1px solid rgba(74,48,112,.15); padding-top:24px; margin-top:20px }
+    .sources-title { font-size:10px; letter-spacing:4px; text-transform:uppercase; color:var(--sage); margin-bottom:12px; font-weight:300 }
+    .sources ul { list-style:none }
+    .sources ul li { font-family:'Cormorant Garamond',serif; font-size:13px; font-style:italic; color:var(--earth); padding:5px 0; border-bottom:1px solid rgba(74,48,112,.06) }
+    .sources ul li::before { content:'· '; color:var(--sage) }
+
+    footer { position:relative; z-index:10; text-align:center; padding:24px 20px 44px; border-top:1px solid rgba(74,48,112,.12); max-width:860px; margin:0 auto }
+    footer p { font-size:11px; letter-spacing:4px; text-transform:uppercase; color:var(--sage); font-weight:300 }
+
+    @keyframes fadeUp { from { opacity:0; transform:translateY(28px) } to { opacity:1; transform:translateY(0) } }
+
+    @media(max-width:700px) {
+      .hero-photos { grid-template-columns:1fr } .hero-photos img { height:260px }
+      .benefits-grid { grid-template-columns:1fr } .nutrition-bar { grid-template-columns:1fr 1fr }
+      .content { padding:0 18px 60px }
+    }
+  </style>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+</head>
+<body>
+  <button type="button" id="open3D">View in 3D</button>
+
+
+<div class="bg-circle bg-circle-1"></div>
+<div class="bg-circle bg-circle-2"></div>
+
+<!-- Psoralea botanical SVG: compound leaves + small pea-flowers + seed pods -->
+<svg class="botanical-svg botanical-tl" viewBox="0 0 310 310" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- main stem -->
+  <path d="M18 295 Q 55 240 90 190 Q 140 125 220 45" stroke="#4a3070" stroke-width="1.8" fill="none"/>
+  <!-- lateral branches -->
+  <path d="M55 248 Q 35 230 20 218" stroke="#4a3070" stroke-width="1.1" fill="none"/>
+  <path d="M95 195 Q 115 178 128 162" stroke="#4a3070" stroke-width="1.1" fill="none"/>
+  <path d="M145 155 Q 125 140 110 128" stroke="#4a3070" stroke-width="1.1" fill="none"/>
+  <path d="M185 112 Q 202 95 215 82" stroke="#4a3070" stroke-width="1.1" fill="none"/>
+  <!-- leaves - ovate, gland-dotted -->
+  <ellipse cx="48" cy="252" rx="20" ry="10" fill="#4a3070" transform="rotate(-40 48 252)" opacity=".7"/>
+  <ellipse cx="38" cy="242" rx="15" ry="7" fill="#8a72b0" transform="rotate(-60 38 242)" opacity=".5"/>
+  <ellipse cx="104" cy="186" rx="22" ry="9" fill="#4a3070" transform="rotate(-50 104 186)" opacity=".75"/>
+  <ellipse cx="118" cy="168" rx="18" ry="8" fill="#8a72b0" transform="rotate(-65 118 168)" opacity=".5"/>
+  <ellipse cx="135" cy="148" rx="19" ry="8" fill="#4a3070" transform="rotate(-45 135 148)" opacity=".7"/>
+  <ellipse cx="200" cy="100" rx="17" ry="7" fill="#4a3070" transform="rotate(-55 200 100)" opacity=".7"/>
+  <!-- small purple pea-flowers -->
+  <ellipse cx="70" cy="236" rx="6" ry="4" fill="#6a4e9e" opacity=".65"/>
+  <ellipse cx="68" cy="232" rx="4" ry="3" fill="#c8a0f0" opacity=".5"/>
+  <ellipse cx="158" cy="138" rx="5" ry="3.5" fill="#6a4e9e" opacity=".6"/>
+  <ellipse cx="156" cy="134" rx="3.5" ry="2.5" fill="#c8a0f0" opacity=".45"/>
+  <ellipse cx="218" cy="80" rx="6" ry="4" fill="#6a4e9e" opacity=".6"/>
+  <!-- seed pods - small, rounded -->
+  <ellipse cx="78" cy="244" rx="8" ry="5" fill="#5c3d1e" transform="rotate(-20 78 244)" opacity=".55"/>
+  <ellipse cx="170" cy="124" rx="7" ry="4.5" fill="#5c3d1e" transform="rotate(-30 170 124)" opacity=".5"/>
+</svg>
+<svg class="botanical-svg botanical-br" viewBox="0 0 310 310" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M18 295 Q 55 240 90 190 Q 140 125 220 45" stroke="#4a3070" stroke-width="1.8" fill="none"/>
+  <path d="M55 248 Q 35 230 20 218" stroke="#4a3070" stroke-width="1.1" fill="none"/>
+  <ellipse cx="48" cy="252" rx="20" ry="10" fill="#4a3070" transform="rotate(-40 48 252)" opacity=".7"/>
+  <ellipse cx="104" cy="186" rx="22" ry="9" fill="#4a3070" transform="rotate(-50 104 186)" opacity=".75"/>
+  <ellipse cx="70" cy="236" rx="6" ry="4" fill="#6a4e9e" opacity=".65"/>
+  <ellipse cx="78" cy="244" rx="8" ry="5" fill="#5c3d1e" transform="rotate(-20 78 244)" opacity=".55"/>
+</svg>
+
+<div class="hero">
+  <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+  <div class="logo-rule"><span></span><div class="logo-ornament">✦</div><span></span></div>
+  <div class="hero-title">Bakuchi</div>
+  <div class="hero-subtitle">Babchi — The Sovereign of Skin</div>
+  <div class="hero-sci">Psoralea corylifolia L. &nbsp;·&nbsp; syn. Cullen corylifolium</div>
+</div>
+
+<div class="hero-photos">
+  <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/4/49/Psoralea_corylifolia_-_Agri-Horticultural_Society_of_India_-_Alipore_-_Kolkata_2013-01-05_2282.JPG/1280px-Psoralea_corylifolia_-_Agri-Horticultural_Society_of_India_-_Alipore_-_Kolkata_2013-01-05_2282.JPG" alt="Bakuchi Psoralea corylifolia purple-blue pea flowers in compact racemes"
+    onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+  <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ae/Psoralea_corylifolia_-_Agri-Horticultural_Society_of_India_-_Alipore_-_Kolkata_2013-01-05_2279.JPG/1280px-Psoralea_corylifolia_-_Agri-Horticultural_Society_of_India_-_Alipore_-_Kolkata_2013-01-05_2279.JPG" alt="Bakuchi dark aromatic seeds close-up, the primary medicinal part"
+    onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+</div>
+<p class="photo-caption">Fig. 1 — Compact racemes of violet-blue pea flowers of Bakuchi, borne on erect annual stems with distinctly gland-dotted leaves &nbsp;·&nbsp; Fig. 2 — The dark, aromatic, kidney-shaped seeds — the primary medicinal part — enclosed in a thin persistent pod</p>
+
+<div class="divider">
+  <div class="divider-line"></div>
+  <div class="divider-leaf">❧</div>
+  <div class="divider-line"></div>
+</div>
+
+<div class="content">
+
+  <p class="intro-text">Celebrated in Sanskrit as <em>Somaraji</em> — "the moon-sovereign" — for its legendary power to restore the moon-white patches of leucoderma to their natural colour, Bakuchi is Ayurveda's pre-eminent remedy for skin pigmentation disorders. Its seeds contain <em>psoralen</em>, the photosensitising compound that gave birth to modern PUVA therapy for vitiligo and psoriasis, and <em>bakuchiol</em>, a meroterpene now heralded by dermatology as the most clinically validated natural alternative to retinol — making Bakuchi simultaneously one of ancient medicine's oldest skin remedies and one of modern cosmeceutical science's newest discoveries.</p>
+
+  <!-- SECTION 01 -->
+  <div class="section">
+    <div class="section-header"><span class="section-num">01</span><h2 class="section-title">Botanical Profile</h2><div class="section-rule"></div></div>
+    <p class="section-body">Bakuchi (<em>Psoralea corylifolia</em>, syn. <em>Cullen corylifolium</em>) is an erect, branching annual herb of the Fabaceae (Leguminosae) family, growing to 60–120 cm in height. It is immediately recognisable by its distinctive leaves — broadly ovate to cordate (heart-shaped), 5–9 cm long, with conspicuous dark resinous glands that give them a punctate (dot-speckled) appearance and a strong, characteristic aromatic scent when crushed. The stipules are large, broad, and leafy.</p>
+    <p class="section-body">Flowers are small, blue-violet to purple, typical of the pea family (papilionaceous), borne in short, dense axillary racemes of 4–10 flowers. The fruit is an indehiscent, one-seeded pod enclosed in the persistent calyx — dark brown to black when ripe, kidney-shaped, barely 4–5 mm long, and covered with fine glands exuding a dark resinous coating with a bitter, pungent odour. It is these seeds — collected by stripping ripe plant tops — that constitute the sole commercial medicinal part.</p>
+    <p class="section-body">The plant is native to tropical and subtropical Asia — naturalised across the Indian subcontinent from Rajasthan to Tamil Nadu, and cultivated primarily in Gujarat, Madhya Pradesh, and Andhra Pradesh. It thrives in sandy, well-drained soils of disturbed ground, field margins, and waste places up to 2,000 m altitude. Seed harvest is in October–December when pods turn dark.</p>
+    <table class="data-table">
+      <thead><tr><th>PROPERTY</th><th>Detail</th></tr></thead>
+      <tbody>
+        <tr><td>Family</td><td>Fabaceae / Leguminosae (sub-family Papilionoideae)</td></tr>
+        <tr><td>Botanical Name</td><td>Psoralea corylifolia L. / Cullen corylifolium (L.) Medik.</td></tr>
+        <tr><td>Sanskrit Names</td><td>Bakuchi, Somaraji, Krishnaphala, Chandrika, Suprabha, Avalguja, Putiphali</td></tr>
+        <tr><td>Common Names</td><td>Babchi, Bavchi, Vakuchi, Scurf Pea, Malay Tea</td></tr>
+        <tr><td>Regional Names</td><td>Karbogi (Tel), Karpogaarish (Tam), Bawachi (Guj / Mar), Bakuchi (Hindi), Habbe-surbeti (Unani)</td></tr>
+        <tr><td>Origin / Range</td><td>Tropical Asia; cultivated in Gujarat, MP, AP; naturalised pantropically</td></tr>
+        <tr><td>Plant Type</td><td>Erect branching annual herb (60–120 cm); strong aromatic odour</td></tr>
+        <tr><td>Flowering Season</td><td>July–September; seed harvest October–December</td></tr>
+        <tr><td>Medicinal Parts</td><td>Seeds (primary); leaves, roots (secondary)</td></tr>
+        <tr><td>Taste Profile</td><td>Katu (pungent), Tikta (bitter), Kashaya (astringent)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- SECTION 02 -->
+  <div class="section">
+    <div class="section-header"><span class="section-num">02</span><h2 class="section-title">Phytochemistry &amp; Composition</h2><div class="section-rule"></div></div>
+    <p class="section-body">Bakuchi seeds are among the most pharmacochemically remarkable of any Ayurvedic drug, housing two entirely distinct and globally significant compound classes: the furanocoumarins (psoralens) — responsible for its photosensitising and repigmenting action — and bakuchiol — a structurally unique meroterpene with retinol-like biological activity that has become a major ingredient in modern dermatology. The seeds also yield a fixed oil (10–20%) rich in unsaturated fatty acids, as well as a complex matrix of flavonoids with potent phytoestrogenic and neuroprotective profiles.</p>
+    <div class="nutrition-bar">
+      <div class="nutrition-cell">
+        <div class="nutrition-num">~1</div>
+        <div class="nutrition-unit">% psoralen</div>
+        <div class="nutrition-label">Seed furanocoumarin</div>
+      </div>
+      <div class="nutrition-cell">
+        <div class="nutrition-num">20</div>
+        <div class="nutrition-unit">% fixed oil</div>
+        <div class="nutrition-label">Seed oil yield</div>
+      </div>
+      <div class="nutrition-cell">
+        <div class="nutrition-num">50+</div>
+        <div class="nutrition-unit">compounds</div>
+        <div class="nutrition-label">Bioactives identified</div>
+      </div>
+      <div class="nutrition-cell">
+        <div class="nutrition-num">3</div>
+        <div class="nutrition-unit">drug classes</div>
+        <div class="nutrition-label">Psoralens · Bakuchiol · Flavonoids</div>
+      </div>
+    </div>
+    <table class="data-table">
+      <thead><tr><th>Compound</th><th>Category</th><th>Primary Action</th></tr></thead>
+      <tbody>
+        <tr><td>Psoralen (Ficusin)</td><td>Linear furanocoumarin</td><td>Photosensitiser; activates melanocytes under UV to repigment skin; antitumour; antifungal</td></tr>
+        <tr><td>Isopsoralen (Angelicin)</td><td>Angular furanocoumarin</td><td>Photosensitiser (weaker); anti-inflammatory; anti-proliferative</td></tr>
+        <tr><td>Bakuchiol</td><td>Meroterpene (phenolic)</td><td>Retinol-like (RAR agonist); anti-ageing; antioxidant; antimicrobial; anti-inflammatory</td></tr>
+        <tr><td>Bavachin &amp; Isobavachin</td><td>Flavanones</td><td>Phytoestrogenic; anti-inflammatory; antitumour; osteogenic</td></tr>
+        <tr><td>Neobavaisoflavone</td><td>Isoflavone</td><td>Antioxidant; osteoblast-stimulating; anticancer (breast, prostate)</td></tr>
+        <tr><td>Corylin</td><td>Flavanone</td><td>Anti-inflammatory; neuroprotective; anti-adipogenic</td></tr>
+        <tr><td>Bavachinin</td><td>Flavanone chalcone</td><td>Antifungal; antimicrobial; anti-inflammatory</td></tr>
+        <tr><td>Psoralidin</td><td>Coumestan</td><td>Anticancer; phytoestrogenic; antiviral (incl. SARS-CoV-2 in silico)</td></tr>
+        <tr><td>Daidzein &amp; Genistein</td><td>Isoflavones</td><td>Phytoestrogenic; cardioprotective; bone-sparing</td></tr>
+        <tr><td>Fixed Oil (seed)</td><td>Fatty acids (oleic, linoleic, palmitic)</td><td>Emollient; vehicle for topical delivery; anti-inflammatory</td></tr>
+        <tr><td>β-Sitosterol</td><td>Phytosterol</td><td>Anti-inflammatory; immunomodulatory</td></tr>
+      </tbody>
+    </table>
+
+    <div class="spotlight-box">
+      <p><strong>Bakuchiol</strong> is a meroterpene phenol first isolated from Bakuchi seeds in 1966 by Mehta et al. For decades it remained a laboratory curiosity. In 2018, a landmark double-blind clinical trial published in the <em>British Journal of Dermatology</em> established that 0.5% bakuchiol applied twice daily produced results equivalent to 0.5% retinol for reducing wrinkles, hyperpigmentation, and improving skin elasticity — but with <em>significantly less irritation, photosensitivity, and dryness</em> than retinol. Unlike retinol, bakuchiol is photostable (safe for daytime use), non-teratogenic, and suitable for sensitive skin and during pregnancy. It activates retinoid receptor pathways (RAR-α, RAR-β, RAR-γ) through a distinct structural mechanism, upregulates collagen I, III, and IV synthesis, and inhibits MMP-1 (collagenase). The global cosmeceutical industry now recognises it as <em>the gold standard plant-derived retinol alternative</em>.</p>
+    </div>
+  </div>
+
+  <!-- SECTION 03 -->
+  <div class="section">
+    <div class="section-header"><span class="section-num">03</span><h2 class="section-title">Ayurvedic Significance</h2><div class="section-rule"></div></div>
+    <p class="section-body">Bakuchi occupies a singular position in classical Ayurveda as the foremost herb for <em>Shvitra</em> (leucoderma / vitiligo) and <em>Kushtha</em> (skin diseases broadly). It is mentioned in Charaka Samhita under <em>Kushtha Chikitsa</em> and in Sushruta Samhita's <em>Rasayana</em> and <em>Vrishya</em> (rejuvenating and aphrodisiac) formulations. Ashtanga Hridayam of Vagbhata cites it in <em>Kushtha, Kandu</em> (pruritus), and <em>Vatarakta</em> (gout/rheumatic) treatments. It features in several classical multi-herb formulations including <em>Somaraji Taila</em>, <em>Bakuchi Churna</em>, and <em>Marichadi Taila</em>.</p>
+    <p class="section-body">Classical shloka from Bhavaprakasha — <em>"Bakuchih katuka tiktoshna kaphavatajit, kushtha-shvitra-krimighni cha keshya rasayanottama"</em> — describes it as pungent and bitter in taste, hot in potency, pacifying Kapha and Vata, destroying skin diseases and leucoderma, killing parasites (krimi), promoting hair growth, and being the highest of rejuvenatives (<em>rasayana</em>). Bhavaprakasha Nighantu lists it in <em>Haritakyadi Varga</em>; Dhanvantari Nighantu and Raja Nighantu both designate it under <em>Guduchyadi Varga</em>.</p>
+    <table class="dosha-table">
+      <thead><tr><th>Dosha</th><th>Effect</th><th>Mechanism &amp; Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Vata ↓</td><td>Pacifying</td><td>Ushna virya (hot potency) and Snigdha (slightly unctuous) quality warm and nourish depleted Vata; helps in neurological conditions, joint pain, and skin dryness associated with Vata excess</td></tr>
+        <tr><td>Pitta ↑</td><td>Mildly aggravating</td><td>Katu (pungent) rasa and Ushna virya increase Pitta — contraindicated in Pitta excess, hyperacidity, and inflammatory conditions; combine with Pitta-pacifying adjuvants (coconut oil, ghee, milk) when needed</td></tr>
+        <tr><td>Kapha ↓</td><td>Pacifying</td><td>Katu-tikta rasa and Teekshna (sharp) quality effectively cut through Kapha accumulation; used in respiratory congestion, obesity, and chronic Kapha-driven skin conditions</td></tr>
+      </tbody>
+    </table>
+    <p class="section-body"><strong>Rasa:</strong> Katu (pungent), Tikta (bitter), Kashaya (astringent) &nbsp;·&nbsp; <strong>Guna:</strong> Laghu (light), Teekshna (sharp), Snigdha (slightly unctuous) &nbsp;·&nbsp; <strong>Virya:</strong> Ushna (hot) &nbsp;·&nbsp; <strong>Vipaka:</strong> Katu (pungent) &nbsp;·&nbsp; <strong>Karma:</strong> Kapha-Vata shamaka, Kushtha-hara, Keshya, Rasayana, Vrishya</p>
+
+    <div class="puva-box">
+      <div class="puva-box-label">Classical to Modern — The PUVA Connection</div>
+      <p>Ayurveda's instruction to apply Bakuchi seed paste and expose to sunlight for leucoderma is the ancient forerunner of modern PUVA (Psoralen + UVA) therapy — now the standard dermatological treatment for vitiligo and psoriasis worldwide. Psoralen intercalates with DNA in melanocytes and, upon UVA activation, forms crosslinks that stimulate melanogenesis and inhibit hyperproliferating keratinocytes. The classical Ayurvedic protocol for <em>Shvitra Chikitsa</em> described precisely this photochemotherapy mechanism two thousand years before it was understood pharmacologically.</p>
+    </div>
+  </div>
+
+  <!-- SECTION 04 -->
+  <div class="section">
+    <div class="section-header"><span class="section-num">04</span><h2 class="section-title">Key Health Benefits</h2><div class="section-rule"></div></div>
+    <p class="section-body">Bakuchi's pharmacological profile is unusually rich — its two flagship molecules (psoralen and bakuchiol) have entirely different mechanisms of action, giving the whole plant broad clinical application across dermatology, oncology, endocrinology, and neurology. Modern research has validated the majority of its classical indications.</p>
+    <div class="benefits-grid">
+      <div class="benefit-card">
+        <div class="benefit-title">Vitiligo &amp; Leucoderma (Shvitra)</div>
+        <div class="benefit-desc">Bakuchi's primary classical indication — and its most extensively validated modern application. Psoralen intercalates into melanocyte DNA and, activated by UV light, stimulates melanin synthesis and proliferation of dormant melanocytes. Topical seed oil applied before controlled sun exposure is the Ayurvedic PUVA protocol. Multiple clinical studies confirm repigmentation of vitiligo patches with psoralen-UVA therapy, with classical seed oil used as a gentler, less phototoxic alternative to synthetic methoxypsoralen.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Anti-Ageing &amp; Skin Rejuvenation</div>
+        <div class="benefit-desc">Bakuchiol, the seed's meroterpene, activates retinoid receptor pathways to upregulate collagen I, III, and IV synthesis; inhibit MMP-1 (collagenase); and reduce wrinkle depth, skin roughness, and hyperpigmentation. The 2018 British Journal of Dermatology RCT confirmed statistically equivalent efficacy to 0.5% retinol for facial wrinkle reduction — with significantly less irritation. Bakuchiol's photostability means it is safe for daytime application, unlike retinol, which degrades in sunlight.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Psoriasis &amp; Eczema</div>
+        <div class="benefit-desc">Psoralen's ability to inhibit hyperproliferating keratinocytes (via DNA crosslinking under UV) is the basis of PUVA therapy for psoriasis — now a globally standard dermatological treatment. Bavachin and isobavachin from Bakuchi additionally suppress NF-κB signalling and reduce pro-inflammatory cytokines (TNF-α, IL-6, IL-1β), providing anti-inflammatory action independent of photosensitisation. Classical seed oil has been applied in eczema and pruritic skin conditions.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Hair Loss &amp; Alopecia (Keshya)</div>
+        <div class="benefit-desc">Classical texts explicitly list Bakuchi as <em>Keshya</em> — hair-promoting. Seed oil applied to the scalp stimulates hair follicle melanocytes (repigmenting greying hair), increases local circulation via mild irritant action, and may promote follicle stem cell activation. Psoralea corylifolia extract shows DHT-inhibitory activity in vitro — relevant to androgenetic alopecia — and bavachin demonstrates 5α-reductase inhibition comparable to finasteride at high concentrations in cell models.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Antimicrobial &amp; Antifungal</div>
+        <div class="benefit-desc">Seed extracts show broad antimicrobial activity against Staphylococcus aureus, E. coli, Salmonella, and Mycobacterium tuberculosis — the last being particularly significant given the classical use of Bakuchi in <em>Kshaya</em> (tuberculosis/wasting). Bavachinin and bakuchicin demonstrate potent antifungal activity against dermatophytes (Trichophyton, Microsporum) and Candida — underpinning the classical topical use for fungal skin infections, tinea, and ringworm.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Bone Health &amp; Osteoporosis</div>
+        <div class="benefit-desc">Neobavaisoflavone and bavachin stimulate osteoblast differentiation and mineralisation while inhibiting osteoclast activity — a dual mechanism that makes Bakuchi's isoflavones among the most promising phytoestrogenic bone-protective agents in natural medicine. Multiple cell and animal studies confirm significant increase in bone mineral density markers. Relevant to classical Rasayana use in post-menopausal women and those with <em>Asthikshaya</em> (bone loss).</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Neuroprotective &amp; Anti-depressant</div>
+        <div class="benefit-desc">Corylin and bakuchiol demonstrate neuroprotective activity in glutamate-induced and oxidative stress neuronal injury models. Isobavachalcone shows MAO-A and MAO-B inhibitory activity — a mechanism shared with classical antidepressant drugs — suggesting a biochemical basis for the traditional use of Bakuchi seeds as a mood-elevating Rasayana. Animal models confirm anxiolytic and antidepressant-like effects of seed extract.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Antitumour &amp; Anticancer Potential</div>
+        <div class="benefit-desc">Psoralidin, neobavaisoflavone, and bakuchiol demonstrate cytotoxic activity against breast, prostate, colon, and lung cancer cell lines through multiple pathways — cell cycle arrest, apoptosis induction (caspase-3 activation), and inhibition of angiogenesis. Psoralen derivatives form the basis of photodynamic therapy for T-cell lymphoma (cutaneous). These are preliminary in vitro and animal data — clinical translation is in early stages, but the mechanistic evidence is compelling.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 05 -->
+  <div class="section">
+    <div class="section-header"><span class="section-num">05</span><h2 class="section-title">Traditional &amp; Ethnobotanical Uses</h2><div class="section-rule"></div></div>
+    <p class="section-body">Beyond Ayurveda, Bakuchi features in Traditional Chinese Medicine (TCM) as <em>Bu Gu Zhi</em> ("bone-supplementing seed") — a kidney-tonifying, Yang-warming herb used for lower back pain, impotence, urinary frequency, and alopecia. The Unani system uses it as <em>Habbe-surbeti</em> for skin diseases and as an aphrodisiac. Across folk traditions from Rajasthan to Tamil Nadu, it is one of the most reliably used skin-disease herbs.</p>
+    <table class="data-table">
+      <thead><tr><th>System / Region</th><th>Part Used</th><th>Traditional Application</th></tr></thead>
+      <tbody>
+        <tr><td>Ayurveda — Shvitra Chikitsa</td><td>Seed oil + sunlight</td><td>Topical PUVA: apply seed oil to white patches, expose to morning sunlight for 15–30 min; continue for 40+ days for repigmentation</td></tr>
+        <tr><td>TCM — Bu Gu Zhi</td><td>Seeds (internal)</td><td>Kidney-Yang tonic: impotence, cold lower back, frequent urination, alopecia; decocted with Morinda and Eucommia</td></tr>
+        <tr><td>Rajasthan folk</td><td>Seed paste</td><td>Applied to white patches of leucoderma; also for mange and skin infections in livestock</td></tr>
+        <tr><td>Unani tradition</td><td>Seeds + sesame oil</td><td>Aphrodisiac preparation (Muqawwi-e-bah); alopecia; white patches; fever</td></tr>
+        <tr><td>Tamil Nadu folk</td><td>Leaf paste</td><td>Applied to wounds and ulcers; leaf decoction drunk for intestinal worms (krimi)</td></tr>
+        <tr><td>Andhra Pradesh tribal</td><td>Seed decoction</td><td>Urinary tract infections; diuretic use; fever management</td></tr>
+        <tr><td>Deccan rural women</td><td>Seed oil (hair)</td><td>Scalp massage to prevent premature greying and reduce hair fall; mixed with coconut oil</td></tr>
+        <tr><td>Modern cosmeceutical</td><td>Bakuchiol extract</td><td>0.5% bakuchiol serums and creams: retinol alternative for wrinkle reduction, hyperpigmentation, and acne management</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- SECTION 06 -->
+  <div class="section">
+    <div class="section-header"><span class="section-num">06</span><h2 class="section-title">How to Use Bakuchi</h2><div class="section-rule"></div></div>
+    <p class="section-body">Bakuchi is used primarily <em>externally</em> in classical Ayurveda — seed oil as the most common preparation. Internal use of seeds requires strict physician supervision due to the potency of furanocoumarins and the plant's strongly Ushna (hot) and Teekshna (sharp) properties. The classical <em>Shodhana</em> (purification) of Bakuchi seeds — soaking in cow's milk or buttermilk for 24 hours before use — reduces phototoxic and hepatic irritant potential of raw seeds for internal preparations.</p>
+    <table class="consume-table">
+      <thead><tr><th>Form</th><th>Preparation</th><th>Dosage</th><th>Best Use</th></tr></thead>
+      <tbody>
+        <tr><td>Seed Oil (Topical)</td><td>Cold-pressed seed oil; apply to affected skin</td><td>Apply to patches; expose to morning sun 15–30 min; wash off after 4–6 hrs</td><td>Vitiligo / leucoderma (PUVA protocol)</td></tr>
+        <tr><td>Seed Powder (Shodhita)</td><td>Purified seed powder (milk-washed, dried); with honey or ghee</td><td>1–3 g twice daily, physician-directed</td><td>Internal Rasayana; bone health; anti-ageing</td></tr>
+        <tr><td>Seed Oil + Coconut Oil (Hair)</td><td>Mix 1 part Bakuchi oil with 4 parts coconut oil; warm gently</td><td>Apply to scalp 1–2× weekly; leave 2 hrs; wash off</td><td>Alopecia, premature greying, hair strengthening</td></tr>
+        <tr><td>Seed Paste (Topical)</td><td>Grind seeds with water or sesame oil into paste</td><td>Apply to affected skin area 1× daily; avoid eyes</td><td>Fungal infections, tinea, ringworm, eczema</td></tr>
+        <tr><td>Seed Decoction (Kwatha)</td><td>Boil 5–10 g shodhita seeds in 300 ml water; reduce to 75 ml</td><td>30 ml once daily, physician-directed</td><td>Urinary conditions, intestinal parasites, fever</td></tr>
+        <tr><td>Bakuchi Churna (classical)</td><td>Standard compound churna per pharmacopoeial formulation</td><td>Per practitioner direction</td><td>Kushtha roga, Shvitra, Kandu (pruritus)</td></tr>
+        <tr><td>Somaraji Taila (classical)</td><td>Medicated oil with Bakuchi as primary herb</td><td>Topical as directed</td><td>Comprehensive classical vitiligo treatment</td></tr>
+        <tr><td>Bakuchiol Serum (modern)</td><td>0.5% bakuchiol in emollient base; commercial preparation</td><td>Apply AM and/or PM to face</td><td>Anti-ageing, hyperpigmentation, acne (retinol alternative)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- SECTION 07 -->
+  <div class="section">
+    <div class="section-header"><span class="section-num">07</span><h2 class="section-title">Safety &amp; Precautions</h2><div class="section-rule"></div></div>
+    <p class="section-body">Bakuchi demands careful, informed use. Its furanocoumarins (psoralens) are potent photosensitisers — a property that is therapeutically valuable but can cause severe phototoxic burns if the skin is exposed to strong sunlight after topical application without a controlled protocol. Internal use of raw (unpurified) seeds carries hepatotoxic risk. Classical <em>Shodhana</em> purification is mandatory for internal preparations. <em>Bakuchiol</em> used in isolation (as in modern cosmeceuticals) is safe, well-tolerated, and non-phototoxic.</p>
+    <ul class="precaution-list">
+      <li><strong>Phototoxicity risk (topical):</strong> After applying Bakuchi seed oil or paste to skin, exposure must be controlled and timed. Uncontrolled prolonged sun exposure can cause severe blistering, hyperpigmentation, and burns. Always follow the protocol: brief morning sun (15–30 min) and then wash off. Never apply and leave exposed to full afternoon sun.</li>
+      <li><strong>Hepatotoxicity (internal — raw seeds):</strong> Unpurified raw seeds contain hepatotoxic constituents. Classical Shodhana (purification by milk-soaking 24 hrs) is mandatory before any internal preparation. Avoid prolonged internal use beyond 4–6 weeks without liver function monitoring.</li>
+      <li><strong>Pregnancy &amp; breastfeeding:</strong> Internal use of seeds is contraindicated in pregnancy — furanocoumarins may affect fetal DNA. However, bakuchiol (the isolated cosmeceutical meroterpene) is considered safe in pregnancy as a retinol alternative, unlike retinol which is teratogenic at systemic doses.</li>
+      <li><strong>Pitta constitution / heat excess:</strong> Strongly Ushna (hot) and Teekshna (sharp) properties — may severely aggravate Pitta, causing gastric burning, skin inflammation, and hyperacidity. Balance with cooling adjuvants (coconut oil topically; cow's milk or ghee internally) and use short courses.</li>
+      <li><strong>Eye caution (topical):</strong> Seed oil or paste must never contact the eyes — furanocoumarins are corneal photosensitisers and can cause serious eye damage on UV exposure. Wash hands thoroughly after handling.</li>
+      <li><strong>Drug interactions:</strong> Furanocoumarins inhibit CYP3A4 — the primary drug-metabolising enzyme — and may increase blood levels of drugs metabolised by this pathway (certain statins, immunosuppressants, anticoagulants, antiretrovirals). Consult a physician before internal use alongside any medications.</li>
+      <li><strong>Children:</strong> Topical use should be physician-supervised. Internal use in children under 12 is not recommended due to furanocoumarin potency. Bakuchiol cosmetic products (isolated meroterpene) are generally safe for older children as a skin-care ingredient.</li>
+      <li><strong>Fair skin / photosensitive individuals:</strong> People with very fair skin, history of photosensitivity, or photodermatoses should use Bakuchi seed preparations with extreme caution and under physician supervision — the phototoxic response is considerably more pronounced.</li>
+    </ul>
+  </div>
+
+  <div class="sources">
+    <div class="sources-title">References &amp; Sources</div>
+    <ul>
+      <li>Chopra RN, Nayar SL &amp; Chopra IC — Glossary of Indian Medicinal Plants — CSIR, New Delhi, 1956 (Psoralea corylifolia)</li>
+      <li>Chaudhary SK et al. — "A focused review of Psoralea corylifolia Linn.: Phytochemical, pharmacological and ethnobotanical study" — Journal of Ethnopharmacology, 2012</li>
+      <li>Dhaliwal S et al. — "Efficacy and tolerability of a retinol/bakuchiol serum vs. retinol alone" — British Journal of Dermatology, 2019 (landmark RCT)</li>
+      <li>Chiang HM et al. — "Bakuchiol: Natural retinol alternative for aging skin" — Journal of Cosmetic Dermatology, 2019</li>
+      <li>Sil P et al. — "Psoralen and isopsoralen: Mechanism of action in vitiligo and PUVA therapy" — Photodermatology, Photoimmunology &amp; Photomedicine, 2013</li>
+      <li>Adhikari A et al. — "Anticancer activity of compounds from Psoralea corylifolia" — Natural Product Research, 2014</li>
+      <li>Kumar R et al. — "Pharmacological evaluation of Bakuchi seeds as anti-alopecia agent" — Phytomedicine, 2015</li>
+      <li>Bhavaprakasha Nighantu — Haritakyadi Varga — classical entry for Bakuchi, Somaraji, Avalguja</li>
+      <li>Charaka Samhita — Chikitsa Sthana — Kushtha Chikitsa, Rasayana Adhyaya</li>
+      <li>Sushruta Samhita — Chikitsa Sthana — Kushtha, Vrishya, Rasayana Adhyaya</li>
+      <li>Ashtanga Hridayam (Vagbhata) — Chikitsa Sthana — Kushtha, Kandu, Vatarakta references</li>
+      <li>API (Ayurvedic Pharmacopoeia of India) — Part I, Vol. I — Bakuchi monograph with Shodhana specifications</li>
+    </ul>
+  </div>
+
+</div>
+
+<footer>
+  <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a qualified practitioner before therapeutic use</p>
+</footer>
+
+  <div id="viewerModal">
+    <div id="modal-topbar">
+      <span>3D Model — Bakuchi</span>
+      <button type="button" id="close3D">✕</button>
+    </div>
+    <model-viewer src="bakuchi3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+  </div>
+  <script>
+    (function() {
+      var open3D = document.getElementById('open3D');
+      var close3D = document.getElementById('close3D');
+      var modal = document.getElementById('viewerModal');
+      if (!open3D || !close3D || !modal) return;
+      function openModal() {
+        
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+      function closeModal() {
+        
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+      open3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); openModal();
+      });
+      close3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); closeModal();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+      });
+    })();
+  </script>
+
+</body>
+</html>

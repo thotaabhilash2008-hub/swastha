@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manjistha | Swastha</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap"
+    rel="stylesheet">
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+  <style>
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+
+    * { margin: 0; padding: 0; box-sizing: border-box }
+    html { scroll-behavior: smooth }
+
+    body {
+      font-family: 'Jost', sans-serif;
+      background: var(--cream);
+      color: var(--ink);
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity: .035;
+      pointer-events: none;
+      z-index: 100
+    }
+
+    #open3D {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      padding: 10px 18px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: var(--forest);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      z-index: 1000;
+      transition: .3s
+    }
+    #open3D:hover { background: var(--gold); color: var(--deep) }
+
+    #viewerModal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+    }
+    #modal-topbar {
+      flex-shrink: 0;
+      height: 58px;
+      background: #111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px 0 32px;
+      border-bottom: 1px solid rgba(255,255,255,.07);
+    }
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 4.5px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.72);
+      user-select: none;
+    }
+    #close3D {
+      width: 38px; height: 38px;
+      font-size: 15px; font-weight: 300;
+      background: transparent;
+      color: #fff;
+      border: 1.5px solid rgba(255,255,255,.7);
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .2s, color .2s, transform .22s;
+      outline: none; flex-shrink: 0;
+    }
+    #close3D:hover { background: #fff; color: #111; border-color: #fff; transform: rotate(90deg) }
+    #viewerModal model-viewer { flex: 1; width: 100%; display: block; background: #fff }
+
+    .bg-circle { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0 }
+    .bg-circle-1 {
+      width: 700px; height: 700px;
+      background: radial-gradient(circle, rgba(139,26,26,.1) 0%, transparent 70%);
+      top: -200px; right: -150px
+    }
+    .bg-circle-2 {
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(201,114,76,.08) 0%, transparent 70%);
+      bottom: -100px; left: -100px
+    }
+
+    .botanical-svg { position: fixed; pointer-events: none; z-index: 1; opacity: .08 }
+    .botanical-tl { top: -20px; left: -20px; width: 260px }
+    .botanical-br { bottom: -20px; right: -20px; width: 220px; transform: rotate(180deg) }
+
+    .hero {
+      position: relative; z-index: 10;
+      padding: 54px 40px 0;
+      text-align: center;
+      opacity: 0;
+      animation: fadeUp .9s ease .1s forwards
+    }
+
+    .back-link {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+      color: var(--sage); text-decoration: none; margin-bottom: 36px;
+      transition: color .3s
+    }
+    .back-link:hover { color: var(--gold) }
+
+    .logo-rule {
+      display: flex; align-items: center; justify-content: center;
+      gap: 20px; margin-bottom: 14px
+    }
+    .logo-rule span {
+      display: block; height: 1px; width: 70px;
+      background: linear-gradient(to right, transparent, var(--gold))
+    }
+    .logo-rule span:last-child { background: linear-gradient(to left, transparent, var(--gold)) }
+    .logo-ornament { font-size: 13px; color: var(--gold) }
+
+    .hero-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(64px, 12vw, 110px);
+      font-weight: 300; letter-spacing: 8px; line-height: 1;
+      color: var(--deep)
+    }
+    .hero-subtitle {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 18px; font-style: italic; font-weight: 300;
+      color: var(--earth); letter-spacing: 2px; margin-top: 8px
+    }
+    .hero-sci {
+      font-size: 11px; font-weight: 200;
+      letter-spacing: 5px; color: var(--sage); margin-top: 6px
+    }
+
+    .hero-photos {
+      position: relative; z-index: 10;
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 2px; max-width: 900px;
+      margin: 40px auto 0;
+      opacity: 0; animation: fadeUp .9s ease .35s forwards
+    }
+    .hero-photos img {
+      width: 100%; height: 380px;
+      object-fit: cover; object-position: center; display: block;
+      background: var(--parchment);
+    }
+
+    .photo-caption {
+      text-align: center;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 12px; font-style: italic; color: var(--sage);
+      letter-spacing: 1px; padding: 10px 0 0;
+      max-width: 900px; margin: 0 auto;
+      position: relative; z-index: 10;
+      opacity: 0; animation: fadeUp .9s ease .5s forwards
+    }
+
+    .divider {
+      display: flex; align-items: center; justify-content: center;
+      gap: 16px; margin: 50px auto; max-width: 600px;
+      opacity: 0; animation: fadeUp .9s ease .55s forwards;
+      position: relative; z-index: 10
+    }
+    .divider-line { height: 1px; width: 120px; background: linear-gradient(to right, transparent, var(--sage)) }
+    .divider-line:last-child { background: linear-gradient(to left, transparent, var(--sage)) }
+    .divider-leaf { color: var(--forest); font-size: 18px }
+
+    .content {
+      position: relative; z-index: 10;
+      max-width: 860px; margin: 0 auto;
+      padding: 0 30px 80px
+    }
+
+    .intro-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 20px; font-weight: 300; line-height: 1.75;
+      color: var(--ink); text-align: center;
+      max-width: 700px; margin: 0 auto 60px;
+      opacity: 0; animation: fadeUp .9s ease .6s forwards
+    }
+    .intro-text em { color: var(--forest); font-style: italic }
+
+    .section { margin-bottom: 60px; opacity: 0; animation: fadeUp .9s ease forwards }
+    .section:nth-child(1) { animation-delay: .65s }
+    .section:nth-child(2) { animation-delay: .75s }
+    .section:nth-child(3) { animation-delay: .85s }
+    .section:nth-child(4) { animation-delay: .95s }
+    .section:nth-child(5) { animation-delay: 1.05s }
+    .section:nth-child(6) { animation-delay: 1.15s }
+    .section:nth-child(7) { animation-delay: 1.25s }
+
+    .section-header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px }
+    .section-num { font-family: 'Cormorant Garamond', serif; font-size: 11px; letter-spacing: 4px; color: var(--gold) }
+    .section-title { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 400; color: var(--deep); letter-spacing: 1px }
+    .section-rule { height: 1px; flex: 1; background: linear-gradient(to right, var(--gold), transparent) }
+    .section-body { font-size: 13px; font-weight: 300; line-height: 1.9; color: var(--ink); margin-bottom: 24px }
+
+    .data-table { width: 100%; border-collapse: collapse; margin: 16px 0 8px; font-size: 12px }
+    .data-table thead tr { background: var(--deep); color: var(--gold); font-size: 10px; letter-spacing: 3px; text-transform: uppercase }
+    .data-table thead th { padding: 12px 14px; text-align: left; font-weight: 400 }
+    .data-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .data-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .data-table tbody tr { transition: background .2s }
+    .data-table tbody tr:hover { background: #e8d4c0 }
+    .data-table tbody td { padding: 10px 14px; color: var(--ink); border-bottom: 1px solid rgba(122,53,32,.08) }
+    .data-table tbody td:first-child { font-weight: 400; color: var(--deep); width: 28% }
+
+    .dosha-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .dosha-table thead tr { background: var(--forest); color: var(--cream) }
+    .dosha-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .dosha-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .dosha-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .dosha-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(122,53,32,.08) }
+    .dosha-table tbody td:first-child { font-weight: 400; color: var(--forest); width: 18% }
+    .dosha-table tbody td:nth-child(2) { color: var(--earth); width: 20% }
+
+    .consume-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .consume-table thead tr { background: var(--earth); color: var(--cream) }
+    .consume-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .consume-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .consume-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .consume-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(122,53,32,.08) }
+    .consume-table tbody td:first-child { font-weight: 400; color: var(--earth); width: 22% }
+
+    .benefits-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 1px; background: rgba(122,53,32,.12);
+      border: 1px solid rgba(122,53,32,.12); margin: 8px 0
+    }
+    .benefit-card {
+      background: var(--cream); padding: 24px 22px;
+      transition: background .3s; position: relative; overflow: hidden
+    }
+    .benefit-card:hover { background: #edd8c8 }
+    .benefit-card::before {
+      content: ''; position: absolute; bottom: 0; left: 0;
+      width: 0; height: 2px; background: var(--gold); transition: width .4s
+    }
+    .benefit-card:hover::before { width: 100% }
+    .benefit-title { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 600; color: var(--forest); margin-bottom: 8px }
+    .benefit-desc { font-size: 11.5px; font-weight: 300; line-height: 1.75; color: var(--ink); opacity: .85 }
+
+    .precaution-list { list-style: none; margin: 8px 0 }
+    .precaution-list li {
+      display: flex; gap: 12px; align-items: flex-start;
+      padding: 10px 14px; font-size: 12px; font-weight: 300;
+      line-height: 1.7; color: var(--ink);
+      border-bottom: 1px solid rgba(122,53,32,.08)
+    }
+    .precaution-list li:last-child { border-bottom: none }
+    .precaution-list li::before { content: '▸'; color: var(--gold); flex-shrink: 0; margin-top: 1px }
+
+    .sources { border-top: 1px solid rgba(122,53,32,.15); padding-top: 24px; margin-top: 20px }
+    .sources-title { font-size: 10px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); margin-bottom: 12px; font-weight: 300 }
+    .sources ul { list-style: none }
+    .sources ul li { font-family: 'Cormorant Garamond', serif; font-size: 13px; font-style: italic; color: var(--earth); padding: 5px 0; border-bottom: 1px solid rgba(122,53,32,.06) }
+    .sources ul li::before { content: '· '; color: var(--sage) }
+
+    .nutrition-bar {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 1px; background: rgba(122,53,32,.12);
+      border: 1px solid rgba(122,53,32,.12); margin: 20px 0
+    }
+    .nutrition-cell { background: var(--cream); padding: 22px 16px; text-align: center; transition: background .3s }
+    .nutrition-cell:hover { background: var(--parchment) }
+    .nutrition-num { font-family: 'Cormorant Garamond', serif; font-size: 36px; font-weight: 300; color: var(--forest); line-height: 1; margin-bottom: 4px }
+    .nutrition-unit { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); font-weight: 300 }
+    .nutrition-label { font-size: 11px; font-weight: 300; color: var(--ink); margin-top: 5px }
+
+    footer {
+      position: relative; z-index: 10;
+      text-align: center; padding: 24px 20px 44px;
+      border-top: 1px solid rgba(122,53,32,.12);
+      max-width: 860px; margin: 0 auto
+    }
+    footer p { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); font-weight: 300 }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(28px) }
+      to { opacity: 1; transform: translateY(0) }
+    }
+
+    @media(max-width:700px) {
+      .hero-photos { grid-template-columns: 1fr }
+      .hero-photos img { height: 260px }
+      .benefits-grid { grid-template-columns: 1fr }
+      .nutrition-bar { grid-template-columns: 1fr 1fr }
+      .content { padding: 0 18px 60px }
+    }
+  </style>
+</head>
+
+<body>
+
+  <button id="open3D">View in 3D</button>
+  <div id="viewerModal">
+    <div id="modal-topbar">
+      <span>3D Model — Manjistha</span>
+      <button id="close3D">✕</button>
+    </div>
+    <model-viewer src="manjistha3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+  </div>
+
+  <div class="bg-circle bg-circle-1"></div>
+  <div class="bg-circle bg-circle-2"></div>
+
+  <!-- Botanical vine SVG in madder red -->
+  <svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 290 Q 60 230 100 180 Q 150 120 220 50" stroke="#8b1a1a" stroke-width="1.5" fill="none"/>
+    <path d="M100 180 Q 130 160 155 140" stroke="#8b1a1a" stroke-width="1" fill="none" stroke-dasharray="3 4"/>
+    <ellipse cx="80" cy="215" rx="22" ry="10" fill="#8b1a1a" transform="rotate(-35 80 215)" opacity=".7"/>
+    <ellipse cx="120" cy="175" rx="20" ry="9" fill="#c9724c" transform="rotate(-50 120 175)" opacity=".6"/>
+    <ellipse cx="160" cy="135" rx="18" ry="8" fill="#8b1a1a" transform="rotate(-65 160 135)" opacity=".75"/>
+    <ellipse cx="195" cy="100" rx="16" ry="7" fill="#c9724c" transform="rotate(-70 195 100)" opacity=".55"/>
+    <circle cx="100" cy="180" r="5" fill="#c9724c" opacity=".8"/>
+    <circle cx="155" cy="130" r="4" fill="#8b1a1a" opacity=".7"/>
+    <circle cx="220" cy="50" r="6" fill="#c9724c" opacity=".6"/>
+  </svg>
+  <svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 290 Q 60 230 100 180 Q 150 120 220 50" stroke="#8b1a1a" stroke-width="1.5" fill="none"/>
+    <ellipse cx="80" cy="215" rx="22" ry="10" fill="#8b1a1a" transform="rotate(-35 80 215)" opacity=".7"/>
+    <ellipse cx="120" cy="175" rx="20" ry="9" fill="#c9724c" transform="rotate(-50 120 175)" opacity=".6"/>
+    <circle cx="100" cy="180" r="5" fill="#c9724c" opacity=".8"/>
+  </svg>
+
+  <div class="hero">
+    <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+    <div class="logo-rule"><span></span>
+      <div class="logo-ornament">✦</div><span></span>
+    </div>
+    <div class="hero-title">Manjistha</div>
+    <div class="hero-subtitle">Indian Madder — The Bright Red Root</div>
+    <div class="hero-sci">Rubia cordifolia L. &nbsp;·&nbsp; Rubia manjith Roxb.</div>
+  </div>
+
+  <div class="hero-photos">
+    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/7/71/Rubia_cordifolia.jpg/1280px-Rubia_cordifolia.jpg" alt="Manjistha climbing vine with whorled leaves"
+      onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/6/60/Rubia_Cordifolia_13.JPG/1280px-Rubia_Cordifolia_13.JPG" alt="Dried Manjistha roots showing characteristic madder red colour"
+      onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+  </div>
+  <p class="photo-caption">Fig. 1 — Rubia cordifolia climbing vine with rough, whorled leaves &nbsp;·&nbsp; Fig. 2 — Dried Manjistha roots showing their characteristic deep madder-red colouration</p>
+
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-leaf">❧</div>
+    <div class="divider-line"></div>
+  </div>
+
+  <div class="content">
+    <p class="intro-text">Known since antiquity as one of Ayurveda's foremost <em>blood-purifying</em> herbs, Manjistha's scarlet roots have dyed the robes of kings and healed the skin of commoners alike — its name literally meaning <em>"bright red"</em> in Sanskrit. Praised in Charaka Samhita as the supreme <em>Varnya</em> (complexion-enhancing) herb and honoured among the <em>Priyangvadi Gana</em>, this slow-climbing vine of the Himalayan foothills remains one of classical medicine's most celebrated allies for the blood, lymph, and skin.</p>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">01</span>
+        <h2 class="section-title">Botanical Profile</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Manjistha (<em>Rubia cordifolia</em> L.) is a perennial, herbaceous, climbing or scrambling vine of the Rubiaceae family — the madder family — native to the Himalayan foothills, the Western Ghats, and tropical mountain forests across Asia, Africa, and the Mediterranean. The plant climbs by means of tiny backward-pointing prickles on its stems and leaves, reaching 1.5–10 m in length. Its stems are quadrangular, slender, and rough.</p>
+      <p class="section-body">Leaves are borne in whorls of 4–6 at each node — heart-shaped (cordate) at the base, rough on both surfaces, with three prominent veins. Small, pale yellow or greenish-white five-petalled flowers appear in panicled cymes from July to October. The fruit is a fleshy, blackish-purple berry. But the plant's glory lies underground: the roots — thick, cylindrical, and up to a metre long — are covered in a characteristic deep red or madder-red bark, the source of the celebrated colourant alizarin and of the plant's medicinal potency.</p>
+      <table class="data-table">
+        <thead><tr><th>Property</th><th>Detail</th></tr></thead>
+        <tbody>
+          <tr><td>Family</td><td>Rubiaceae (Madder family)</td></tr>
+          <tr><td>Botanical Name</td><td>Rubia cordifolia L. / Rubia manjith Roxb.</td></tr>
+          <tr><td>Sanskrit Names</td><td>Manjistha, Vikasa, Samanga, Raktangi, Yojanavalll, Jingi, Mandukparni</td></tr>
+          <tr><td>Common Names</td><td>Indian Madder, Munjeet, Common Madder</td></tr>
+          <tr><td>Regional Names</td><td>Manjit (Hindi/Punjabi), Tamravalli (Tel), Manjetti (Kan), Punattiruvanchi (Mal), Manjitti (Tam)</td></tr>
+          <tr><td>Origin</td><td>Himalayan foothills (1,000–3,750 m), Western Ghats, tropical Asia &amp; Africa</td></tr>
+          <tr><td>Plant Type</td><td>Perennial climbing/scrambling herb; 1.5–10 m</td></tr>
+          <tr><td>Flowering Season</td><td>July–October</td></tr>
+          <tr><td>Medicinal Parts</td><td>Roots &amp; stem bark (primary); stem, leaves (secondary)</td></tr>
+          <tr><td>Taste Profile</td><td>Madhura (sweet), Tikta (bitter), Kashaya (astringent)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">02</span>
+        <h2 class="section-title">Phytochemistry &amp; Composition</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">The roots and stem bark of Manjistha are a rich repository of anthraquinones, iridoids, triterpenoids, and phenolic compounds. The characteristic red colour — used for millennia as the textile dye "madder" — is primarily due to alizarin and purpurin, both hydroxyanthraquinones with well-documented medicinal activity. These molecules, alongside a suite of glycosides and flavonoids, underpin the plant's remarkable versatility as an anti-inflammatory, lymphotropic, and antioxidant agent.</p>
+      <div class="nutrition-bar">
+        <div class="nutrition-cell">
+          <div class="nutrition-num">40+</div>
+          <div class="nutrition-unit">compounds</div>
+          <div class="nutrition-label">Isolated from roots</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">3</div>
+          <div class="nutrition-unit">doshas</div>
+          <div class="nutrition-label">Tridoshic at proper dose</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">3,750</div>
+          <div class="nutrition-unit">metres</div>
+          <div class="nutrition-label">Max altitude of growth</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">1,500+</div>
+          <div class="nutrition-unit">years</div>
+          <div class="nutrition-label">Recorded medicinal use</div>
+        </div>
+      </div>
+      <table class="data-table">
+        <thead><tr><th>Compound</th><th>Category</th><th>Primary Action</th></tr></thead>
+        <tbody>
+          <tr><td>Alizarin &amp; Purpurin</td><td>Hydroxyanthraquinones</td><td>Anti-inflammatory, antitumour, antimicrobial, dye pigments</td></tr>
+          <tr><td>Rubiadin &amp; Nordamnacanthal</td><td>Anthraquinones</td><td>Antibacterial, antifungal, cytotoxic to cancer cell lines</td></tr>
+          <tr><td>Mollugin</td><td>Naphthohydroquinone</td><td>Anti-inflammatory, antitumour, anti-HIV activity</td></tr>
+          <tr><td>Munjistin &amp; Xanthopurpurin</td><td>Quinizarin derivatives</td><td>Diuretic, anti-inflammatory</td></tr>
+          <tr><td>Bicoumarins (Cordifol, Rubicoumarin)</td><td>Coumarins</td><td>Anticoagulant, antispasmodic</td></tr>
+          <tr><td>Oleanolic &amp; Ursolic Acids</td><td>Pentacyclic triterpenoids</td><td>Hepatoprotective, anti-inflammatory, antitumour</td></tr>
+          <tr><td>Rubicoumaric Acid</td><td>Phenolic acid</td><td>Antioxidant, UV-protective</td></tr>
+          <tr><td>Rutin &amp; Kaempferol Glycosides</td><td>Flavonoids</td><td>Capillary-strengthening, antioxidant, anti-oedematous</td></tr>
+          <tr><td>Asperuloside (Iridoid glycoside)</td><td>Iridoid</td><td>Laxative, analgesic, anti-inflammatory</td></tr>
+          <tr><td>Calcium, Iron &amp; Magnesium</td><td>Minerals</td><td>Haematopoietic, bone &amp; nerve support</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">03</span>
+        <h2 class="section-title">Ayurvedic Significance</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Manjistha holds a position of singular honour in classical Ayurveda — listed in Charaka Samhita's <em>Varnya Mahakashaya</em> (complexion-enhancing group) and <em>Shonita Sthapana</em> (blood-stopping / blood-normalising group), in Sushruta's <em>Priyangvadi Gana</em> and <em>Pittashamana Gana</em>, and across all major Nighantu texts. It is considered the premier <em>Raktashodhaka</em> (blood purifier) and <em>Rakta Prasadana</em> (blood clarifier) of Ayurveda, acting uniquely on all three components of Rakta Dhatu — rasa (plasma), rakta (blood cells), and mamsa (tissue).</p>
+      <p class="section-body">The classical shloka from Bhavaprakasha Nighantu: <em>"Manjishtha Pittaraktahara Varnya Vishaghni ca Shothaghni Vedanasthapani"</em> — describing it as a remover of Pitta-vitiated blood, an enhancer of complexion, a destroyer of poison, a reducer of swelling, and a pacifier of pain.</p>
+      <table class="dosha-table">
+        <thead><tr><th>Dosha</th><th>Effect</th><th>Mechanism &amp; Notes</th></tr></thead>
+        <tbody>
+          <tr><td>Vata ↓</td><td>Mildly pacifying</td><td>Madhura (sweet) vipaka and nourishing action on Rasa-Rakta Dhatu pacifies Vata, especially in haemorrhagic and dry skin conditions; less prominent than its Pitta action</td></tr>
+          <tr><td>Pitta ↓↓</td><td>Strongly pacifying</td><td>Primary classical action — cools and purifies the blood, clears Pitta from Rakta Dhatu; indicated in skin eruptions, inflammatory skin conditions, bleeding disorders, and liver heat</td></tr>
+          <tr><td>Kapha ↓</td><td>Mildly pacifying</td><td>Bitter and astringent tastes, combined with its lymph-clearing and anti-oedematous actions, reduce Kapha accumulation in channels and lymphatics; aids in tumours and obstructions</td></tr>
+        </tbody>
+      </table>
+      <p class="section-body"><strong>Rasa:</strong> Madhura, Tikta, Kashaya &nbsp;·&nbsp; <strong>Guna:</strong> Guru (heavy), Ruksha (dry) &nbsp;·&nbsp; <strong>Virya:</strong> Ushna (hot) &nbsp;·&nbsp; <strong>Vipaka:</strong> Madhura (sweet) &nbsp;·&nbsp; <strong>Karma:</strong> Tridoshahara (tridoshic), chiefly Pitta-Kapha shamaka</p>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">04</span>
+        <h2 class="section-title">Key Health Benefits</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Modern pharmacological research has robustly confirmed Manjistha's classical applications — validating its antioxidant, anti-inflammatory, antimicrobial, immunomodulatory, antitumour, and wound-healing actions through extensive <em>in vitro</em>, <em>in vivo</em>, and emerging clinical research.</p>
+      <div class="benefits-grid">
+        <div class="benefit-card">
+          <div class="benefit-title">Blood &amp; Lymph Purification</div>
+          <div class="benefit-desc">Manjistha is Ayurveda's foremost Raktashodhaka — its anthraquinone and flavonoid content supports hepatic detoxification, lymphatic decongestion, and removal of metabolic waste from plasma and blood cells. It is foundational in Panchakarma preparatory therapies for skin and haematological disorders.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Skin Health &amp; Complexion</div>
+          <div class="benefit-desc">As the premier Varnya herb, Manjistha brightens skin tone, reduces hyperpigmentation, and clears chronic skin conditions including acne, eczema, psoriasis, and urticaria. Its purpurin content shows melanogenesis-inhibiting effects, while anti-inflammatory action calms inflamed, reactive skin.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Anti-inflammatory &amp; Analgesic</div>
+          <div class="benefit-desc">Multiple anthraquinones — particularly mollugin and rubiadin — inhibit COX-2 and pro-inflammatory cytokines (IL-1β, TNF-α). Demonstrated significant anti-arthritic and analgesic effects in animal models, supporting its classical use in joint diseases and painful inflammatory conditions.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Antioxidant Protection</div>
+          <div class="benefit-desc">Root extracts exhibit potent free-radical scavenging capacity (DPPH, ABTS assays) attributed to high phenolic content including rutin, alizarin, and rubicoumaric acid. Regular use supports cellular protection against oxidative stress-driven ageing and inflammation.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Urinary Tract &amp; Kidney Support</div>
+          <div class="benefit-desc">A classical diuretic and lithotriptic (stone-dissolving) herb — munjistin promotes urine flow and has been used for centuries in kidney stones, urinary gravel, and cystitis. Alizarin shows demonstrated ability to prevent calcium oxalate crystal growth in experimental models.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Antimicrobial &amp; Antifungal</div>
+          <div class="benefit-desc">Root extracts are active against Staphylococcus aureus, E. coli, Pseudomonas aeruginosa, Candida albicans, and Aspergillus species. Rubiadin and nordamnacanthal are particularly potent — supporting topical use in infected wounds, skin infections, and vaginal candidiasis.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Wound Healing &amp; Haemostasis</div>
+          <div class="benefit-desc">Included in Charaka's Shonita Sthapana Mahakashaya for its blood-stopping and wound-healing properties. Clinical studies have confirmed significantly accelerated wound closure times and improved collagen deposition with Manjistha-containing formulations applied topically.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Antitumour &amp; Immunomodulatory</div>
+          <div class="benefit-desc">Mollugin, purpurin, and rubiadin demonstrate selective cytotoxicity against MCF-7 (breast), HeLa (cervical), and HepG2 (liver) cancer cell lines. Polysaccharide fractions from roots modulate macrophage activity and enhance NK-cell response in immunological models.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">05</span>
+        <h2 class="section-title">How to Consume Manjistha</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Manjistha is predominantly used as a root powder or decoction, though classical formulations include medicated ghee (<em>ghrita</em>), medicated oils for skin, and compound formulations such as Manjisthadi Kwatha, Sarivadyasava, and Mahamanjisthadi Kwatha. Internal use is generally considered safe at standard doses; however, long-term high-dose use and pregnancy require physician supervision.</p>
+      <table class="consume-table">
+        <thead><tr><th>Form</th><th>Preparation</th><th>Dosage</th><th>Best Use</th></tr></thead>
+        <tbody>
+          <tr><td>Root Powder (Churna)</td><td>Dried root powder with warm water or milk</td><td>3–6 g daily, in 2 doses</td><td>Blood purification, skin, lymph</td></tr>
+          <tr><td>Decoction (Kwatha)</td><td>Boil 10–15 g root in 400 ml water; reduce to 100 ml</td><td>50–100 ml twice daily</td><td>Skin disorders, arthritis, UTI</td></tr>
+          <tr><td>Cold Infusion (Hima)</td><td>Soak root powder in cold water overnight</td><td>50 ml once daily</td><td>Fever, bleeding disorders, Pitta excess</td></tr>
+          <tr><td>Tablets / Capsules</td><td>Standardised root extract capsules</td><td>500 mg–1 g twice daily</td><td>Convenient daily use; acne, pigmentation</td></tr>
+          <tr><td>Mahamanjisthadi Kwatha</td><td>Classical poly-herbal compound decoction</td><td>Per practitioner direction</td><td>Chronic skin diseases, psoriasis</td></tr>
+          <tr><td>Medicated Ghee (Ghrita)</td><td>Manjistha processed into ghee base</td><td>5–10 g with warm water</td><td>Pitta-related eye, skin &amp; GI disorders</td></tr>
+          <tr><td>Root Paste (Topical)</td><td>Ground root mixed with honey or rose water</td><td>Apply for 20–30 min, rinse</td><td>Acne, hyperpigmentation, wound healing</td></tr>
+          <tr><td>Medicated Oil (Taila)</td><td>Root-infused sesame or coconut oil</td><td>Massage and leave 30+ min</td><td>Eczema, psoriasis, skin infections</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">06</span>
+        <h2 class="section-title">Safety &amp; Precautions</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Manjistha is one of Ayurveda's most extensively used and generally well-tolerated herbs. At standard therapeutic doses for usual durations, it carries an excellent safety profile confirmed by centuries of use. However, a few important considerations apply, especially for high-dose or extended use.</p>
+      <ul class="precaution-list">
+        <li><strong>Urine discolouration:</strong> A harmless but startling effect — Manjistha can turn urine red, orange, or deep yellow due to alizarin excretion. This is normal and not a sign of bleeding.</li>
+        <li><strong>Pregnancy:</strong> Avoid internal use, especially in the first trimester. Its blood-moving (<em>Raktashodhaka</em>) and uterine-stimulating properties may increase risk of miscarriage at higher doses.</li>
+        <li><strong>Breastfeeding:</strong> Use with caution and physician guidance; anthraquinone compounds may transfer through breast milk and cause infant diarrhoea.</li>
+        <li><strong>Kidney disease (advanced):</strong> Although classically diuretic and renoprotective, very high doses of anthraquinones may stress impaired kidneys. Use under supervision in chronic kidney disease.</li>
+        <li><strong>Anticoagulant medications:</strong> Coumarins (cordifol, rubicoumarin) in Manjistha may potentiate the effects of warfarin, aspirin, or other blood-thinners — monitor closely if combining.</li>
+        <li><strong>Hypoglycaemic drugs:</strong> Some evidence of mild blood sugar-lowering effect; monitor glucose if used alongside insulin or oral hypoglycaemics.</li>
+        <li><strong>Overconsumption:</strong> Doses greatly exceeding 6 g/day chronically may cause nausea, skin dryness (paradoxically), or gastrointestinal discomfort in some individuals due to astringent content.</li>
+        <li><strong>Contact sensitivity:</strong> Topical use of the raw root paste may occasionally cause mild skin staining (temporary reddish tint) or contact sensitivity in very sensitive skin types — patch test first.</li>
+      </ul>
+    </div>
+
+    <div class="sources">
+      <div class="sources-title">References &amp; Sources</div>
+      <ul>
+        <li>Charaka Samhita — Varnya Mahakashaya &amp; Shonita Sthapana Mahakashaya; Chikitsasthana 3.1.12</li>
+        <li>Sushruta Samhita — Priyangvadi Gana; Pittashamana Gana</li>
+        <li>Bhavaprakasha Nighantu — Haritakyadi Varga; classical properties shloka</li>
+        <li>Dhanvantari Nighantu, Raja Nighantu, Kaiyadeva Nighantu — Manjistha entries</li>
+        <li>Rao GM et al. — "Pharmacognostical, phytochemical studies on Rubia cordifolia" — Ancient Science of Life, 2004</li>
+        <li>Yoganarasimhan SN — Medicinal Plants of India (Vol. 2) — Manjistha monograph</li>
+        <li>Khare CP — Indian Medicinal Plants: An Illustrated Dictionary — Rubia cordifolia entry</li>
+        <li>Ali SI et al. — "Rubia cordifolia: a review of its phytochemistry and pharmacology" — Asian Pacific Journal of Tropical Biomedicine, 2014</li>
+        <li>Pandey S &amp; Jain S — "Ethnomedicinal, phytochemical and pharmacological review of Rubia cordifolia" — International Journal of Phytomedicine, 2016</li>
+        <li>Siddiqui BS et al. — "Isolation of anthraquinones from Rubia cordifolia" — Natural Product Letters, 2001</li>
+        <li>Priyavrat Sharma — Dravyaguna Vigyana (Vol. 2) — Classical pharmacology of Manjistha</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer>
+    <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a qualified practitioner before therapeutic use</p>
+  </footer>
+
+  <script>
+    const open3D = document.getElementById('open3D');
+    const close3D = document.getElementById('close3D');
+    const modal = document.getElementById('viewerModal');
+
+    function openModal() {
+    var _aud = document.getElementById('manjisthaAudio'); if(_aud){ _aud.currentTime=0; var playPromise = _aud.play(); if (playPromise !== undefined) { playPromise.catch(function(e){ console.log(e); }); } }
+
+      modal.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+      history.pushState({ modal: 'manjistha3d' }, '', '#3d');
+    }
+    function closeModal() {
+    var _aud = document.getElementById('manjisthaAudio'); if(_aud){ _aud.pause(); }
+
+      modal.style.display = 'none';
+      document.body.style.overflow = '';
+      if (window.location.hash === '#3d') history.replaceState(null, '', window.location.pathname);
+    }
+
+    open3D.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); openModal(); });
+    close3D.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); closeModal(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && modal.style.display === 'flex') closeModal(); });
+    window.addEventListener('popstate', () => { if (modal.style.display === 'flex') { modal.style.display = 'none'; document.body.style.overflow = ''; } });
+  </script>
+
+
+  <audio id="manjisthaAudio" src="manjistha_benefits.mp3" loop preload="auto"></audio>
+</body>
+</html>

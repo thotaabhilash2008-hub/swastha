@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Surya Mukhi | Swastha</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+  <style>
+    #open3D {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      padding: 10px 18px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: var(--forest);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      z-index: 1000;
+      transition: .3s;
+    }
+    #open3D:hover {
+      background: var(--gold);
+      color: var(--deep);
+    }
+    #viewerModal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+    }
+    #modal-topbar {
+      flex-shrink: 0;
+      height: 58px;
+      background: #111111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px 0 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      z-index: 99999;
+    }
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 4.5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.72);
+      user-select: none;
+    }
+    #close3D {
+      width: 38px;
+      height: 38px;
+      font-size: 15px;
+      font-weight: 300;
+      background: transparent;
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background .2s, color .2s, transform .22s;
+      outline: none;
+      flex-shrink: 0;
+    }
+    #close3D:hover {
+      background: #ffffff;
+      color: #111111;
+      border-color: #ffffff;
+      transform: rotate(90deg);
+    }
+    #viewerModal model-viewer {
+      flex: 1;
+      width: 100%;
+      display: block;
+      background: #ffffff;
+    }
+
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+    * { margin:0; padding:0; box-sizing:border-box }
+    html { scroll-behavior:smooth }
+    body {
+      font-family:'Jost',sans-serif;
+      background:var(--cream);
+      color:var(--ink);
+      min-height:100vh;
+      overflow-x:hidden;
+      position:relative
+    }
+    body::before {
+      content:'';
+      position:fixed;
+      inset:0;
+      background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity:.03;
+      pointer-events:none;
+      z-index:100
+    }
+
+    .bg-circle { position:fixed; border-radius:50%; pointer-events:none; z-index:0 }
+    .bg-circle-1 { width:700px; height:700px; background:radial-gradient(circle,rgba(232,184,0,.13) 0%,transparent 70%); top:-200px; right:-150px }
+    .bg-circle-2 { width:500px; height:500px; background:radial-gradient(circle,rgba(181,112,10,.1) 0%,transparent 70%); bottom:-100px; left:-100px }
+
+    .botanical-svg { position:fixed; pointer-events:none; z-index:1; opacity:.08 }
+    .botanical-tl { top:-30px; left:-30px; width:280px }
+    .botanical-br { bottom:-30px; right:-30px; width:250px; transform:rotate(180deg) }
+
+    .hero { position:relative; z-index:10; padding:54px 40px 0; text-align:center; opacity:0; animation:fadeUp .9s ease .1s forwards }
+    .back-link { display:inline-flex; align-items:center; gap:8px; font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--sage); text-decoration:none; margin-bottom:36px; transition:color .3s }
+    .back-link:hover { color:var(--gold) }
+    .logo-rule { display:flex; align-items:center; justify-content:center; gap:20px; margin-bottom:14px }
+    .logo-rule span { display:block; height:1px; width:70px; background:linear-gradient(to right,transparent,var(--gold)) }
+    .logo-rule span:last-child { background:linear-gradient(to left,transparent,var(--gold)) }
+    .logo-ornament { font-size:13px; color:var(--gold) }
+    .hero-title { font-family:'Cormorant Garamond',serif; font-size:clamp(52px,11vw,105px); font-weight:300; letter-spacing:6px; line-height:1; color:var(--deep) }
+    .hero-subtitle { font-family:'Cormorant Garamond',serif; font-size:18px; font-style:italic; font-weight:300; color:var(--earth); letter-spacing:2px; margin-top:8px }
+    .hero-sci { font-size:11px; font-weight:200; letter-spacing:5px; color:var(--sage); margin-top:6px }
+
+    .hero-photos { position:relative; z-index:10; display:grid; grid-template-columns:1fr 1fr; gap:2px; max-width:900px; margin:40px auto 0; opacity:0; animation:fadeUp .9s ease .35s forwards }
+    .hero-photos img { width:100%; height:380px; object-fit:cover; object-position:center; display:block; background:var(--parchment) }
+    .photo-caption { text-align:center; font-family:'Cormorant Garamond',serif; font-size:12px; font-style:italic; color:var(--sage); letter-spacing:1px; padding:10px 0 0; max-width:900px; margin:0 auto; position:relative; z-index:10; opacity:0; animation:fadeUp .9s ease .5s forwards }
+
+    .divider { display:flex; align-items:center; justify-content:center; gap:16px; margin:50px auto; max-width:600px; opacity:0; animation:fadeUp .9s ease .55s forwards; position:relative; z-index:10 }
+    .divider-line { height:1px; width:120px; background:linear-gradient(to right,transparent,var(--gold)) }
+    .divider-line:last-child { background:linear-gradient(to left,transparent,var(--gold)) }
+    .divider-leaf { color:var(--forest); font-size:18px }
+
+    .content { position:relative; z-index:10; max-width:860px; margin:0 auto; padding:0 30px 80px }
+    .intro-text { font-family:'Cormorant Garamond',serif; font-size:20px; font-weight:300; line-height:1.75; color:var(--ink); text-align:center; max-width:700px; margin:0 auto 60px; opacity:0; animation:fadeUp .9s ease .6s forwards }
+    .intro-text em { color:var(--forest); font-style:italic }
+
+    .section { margin-bottom:60px; opacity:0; animation:fadeUp .9s ease forwards }
+    .section:nth-child(1){animation-delay:.65s}.section:nth-child(2){animation-delay:.75s}
+    .section:nth-child(3){animation-delay:.85s}.section:nth-child(4){animation-delay:.95s}
+    .section:nth-child(5){animation-delay:1.05s}.section:nth-child(6){animation-delay:1.15s}
+    .section:nth-child(7){animation-delay:1.25s}
+
+    .section-header { display:flex; align-items:center; gap:14px; margin-bottom:20px }
+    .section-num { font-family:'Cormorant Garamond',serif; font-size:11px; letter-spacing:4px; color:var(--gold) }
+    .section-title { font-family:'Cormorant Garamond',serif; font-size:28px; font-weight:400; color:var(--deep); letter-spacing:1px }
+    .section-rule { height:1px; flex:1; background:linear-gradient(to right,var(--gold),transparent) }
+    .section-body { font-size:13px; font-weight:300; line-height:1.9; color:var(--ink); margin-bottom:24px }
+
+    .data-table { width:100%; border-collapse:collapse; margin:16px 0 8px; font-size:12px }
+    .data-table thead tr { background:var(--deep); color:var(--gold); font-size:10px; letter-spacing:3px; text-transform:uppercase }
+    .data-table thead th { padding:12px 14px; text-align:left; font-weight:400 }
+    .data-table tbody tr:nth-child(even){ background:var(--parchment) }
+    .data-table tbody tr:nth-child(odd){ background:var(--cream) }
+    .data-table tbody tr { transition:background .2s }
+    .data-table tbody tr:hover { background:#f0e0a0 }
+    .data-table tbody td { padding:10px 14px; color:var(--ink); border-bottom:1px solid rgba(181,112,10,.1) }
+    .data-table tbody td:first-child { font-weight:400; color:var(--deep); width:28% }
+
+    .dosha-table { width:100%; border-collapse:collapse; margin:16px 0; font-size:12px }
+    .dosha-table thead tr { background:var(--forest); color:var(--cream) }
+    .dosha-table thead th { padding:12px 14px; text-align:left; font-weight:400; letter-spacing:2px; font-size:10px; text-transform:uppercase }
+    .dosha-table tbody tr:nth-child(even){ background:var(--parchment) }
+    .dosha-table tbody tr:nth-child(odd){ background:var(--cream) }
+    .dosha-table tbody td { padding:11px 14px; color:var(--ink); border-bottom:1px solid rgba(181,112,10,.08) }
+    .dosha-table tbody td:first-child { font-weight:400; color:var(--forest); width:18% }
+    .dosha-table tbody td:nth-child(2){ color:var(--earth); width:20% }
+
+    .consume-table { width:100%; border-collapse:collapse; margin:16px 0; font-size:12px }
+    .consume-table thead tr { background:var(--earth); color:var(--cream) }
+    .consume-table thead th { padding:12px 14px; text-align:left; font-weight:400; letter-spacing:2px; font-size:10px; text-transform:uppercase }
+    .consume-table tbody tr:nth-child(even){ background:var(--parchment) }
+    .consume-table tbody tr:nth-child(odd){ background:var(--cream) }
+    .consume-table tbody td { padding:11px 14px; color:var(--ink); border-bottom:1px solid rgba(181,112,10,.08) }
+    .consume-table tbody td:first-child { font-weight:400; color:var(--earth); width:22% }
+
+    .benefits-grid { display:grid; grid-template-columns:1fr 1fr; gap:1px; background:rgba(181,112,10,.13); border:1px solid rgba(181,112,10,.13); margin:8px 0 }
+    .benefit-card { background:var(--cream); padding:24px 22px; transition:background .3s; position:relative; overflow:hidden }
+    .benefit-card:hover { background:#f5e8b0 }
+    .benefit-card::before { content:''; position:absolute; bottom:0; left:0; width:0; height:2px; background:var(--gold); transition:width .4s }
+    .benefit-card:hover::before { width:100% }
+    .benefit-title { font-family:'Cormorant Garamond',serif; font-size:16px; font-weight:600; color:var(--forest); margin-bottom:8px }
+    .benefit-desc { font-size:11.5px; font-weight:300; line-height:1.75; color:var(--ink); opacity:.85 }
+
+    .precaution-list { list-style:none; margin:8px 0 }
+    .precaution-list li { display:flex; gap:12px; align-items:flex-start; padding:10px 14px; font-size:12px; font-weight:300; line-height:1.7; color:var(--ink); border-bottom:1px solid rgba(181,112,10,.08) }
+    .precaution-list li:last-child { border-bottom:none }
+    .precaution-list li::before { content:'▸'; color:var(--gold); flex-shrink:0; margin-top:1px }
+
+    .nutrition-bar { display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:rgba(181,112,10,.13); border:1px solid rgba(181,112,10,.13); margin:20px 0 }
+    .nutrition-cell { background:var(--cream); padding:22px 16px; text-align:center; transition:background .3s }
+    .nutrition-cell:hover { background:var(--parchment) }
+    .nutrition-num { font-family:'Cormorant Garamond',serif; font-size:36px; font-weight:300; color:var(--forest); line-height:1; margin-bottom:4px }
+    .nutrition-unit { font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--gold); font-weight:300 }
+    .nutrition-label { font-size:11px; font-weight:300; color:var(--ink); margin-top:5px }
+
+    .sources { border-top:1px solid rgba(181,112,10,.15); padding-top:24px; margin-top:20px }
+    .sources-title { font-size:10px; letter-spacing:4px; text-transform:uppercase; color:var(--sage); margin-bottom:12px; font-weight:300 }
+    .sources ul { list-style:none }
+    .sources ul li { font-family:'Cormorant Garamond',serif; font-size:13px; font-style:italic; color:var(--earth); padding:5px 0; border-bottom:1px solid rgba(181,112,10,.06) }
+    .sources ul li::before { content:'· '; color:var(--sage) }
+
+    footer { position:relative; z-index:10; text-align:center; padding:24px 20px 44px; border-top:1px solid rgba(181,112,10,.12); max-width:860px; margin:0 auto }
+    footer p { font-size:11px; letter-spacing:4px; text-transform:uppercase; color:var(--sage); font-weight:300 }
+
+    @keyframes fadeUp { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:translateY(0)} }
+    @media(max-width:700px){
+      .hero-photos{grid-template-columns:1fr} .hero-photos img{height:260px}
+      .benefits-grid{grid-template-columns:1fr} .nutrition-bar{grid-template-columns:1fr 1fr}
+      .content{padding:0 18px 60px}
+    }
+  </style>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+</head>
+<body>
+  <button type="button" id="open3D">View in 3D</button>
+
+
+  <!-- Sunflower botanical SVGs -->
+  <svg class="botanical-svg botanical-tl" viewBox="0 0 320 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- stem -->
+    <path d="M60 320 Q 80 240 100 180 Q 115 130 130 80" stroke="#8a5c00" stroke-width="5" stroke-linecap="round" fill="none"/>
+    <!-- leaf left -->
+    <path d="M85 240 Q 30 210 10 170 Q 50 185 85 200" fill="#b5700a" opacity=".8"/>
+    <!-- leaf right -->
+    <path d="M105 185 Q 165 155 190 110 Q 150 140 105 150" fill="#8a5c00" opacity=".75"/>
+    <!-- flower head -->
+    <circle cx="130" cy="72" r="28" fill="#e8b800" opacity=".6"/>
+    <circle cx="130" cy="72" r="16" fill="#8a5c00" opacity=".7"/>
+    <!-- petals -->
+    <ellipse cx="130" cy="40" rx="7" ry="14" fill="#e8b800" opacity=".7" transform="rotate(0 130 72)"/>
+    <ellipse cx="130" cy="40" rx="7" ry="14" fill="#e8b800" opacity=".7" transform="rotate(45 130 72)"/>
+    <ellipse cx="130" cy="40" rx="7" ry="14" fill="#e8b800" opacity=".7" transform="rotate(90 130 72)"/>
+    <ellipse cx="130" cy="40" rx="7" ry="14" fill="#e8b800" opacity=".7" transform="rotate(135 130 72)"/>
+    <ellipse cx="130" cy="40" rx="7" ry="14" fill="#e8b800" opacity=".6" transform="rotate(22 130 72)"/>
+    <ellipse cx="130" cy="40" rx="7" ry="14" fill="#e8b800" opacity=".6" transform="rotate(67 130 72)"/>
+    <ellipse cx="130" cy="40" rx="7" ry="14" fill="#e8b800" opacity=".6" transform="rotate(112 130 72)"/>
+    <ellipse cx="130" cy="40" rx="7" ry="14" fill="#e8b800" opacity=".6" transform="rotate(157 130 72)"/>
+  </svg>
+  <svg class="botanical-svg botanical-br" viewBox="0 0 320 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M60 320 Q 80 240 100 180 Q 115 130 130 80" stroke="#8a5c00" stroke-width="5" stroke-linecap="round" fill="none"/>
+    <path d="M85 240 Q 30 210 10 170 Q 50 185 85 200" fill="#b5700a" opacity=".8"/>
+    <path d="M105 185 Q 165 155 190 110 Q 150 140 105 150" fill="#8a5c00" opacity=".75"/>
+    <circle cx="130" cy="72" r="28" fill="#e8b800" opacity=".55"/>
+    <circle cx="130" cy="72" r="16" fill="#8a5c00" opacity=".65"/>
+    <ellipse cx="130" cy="40" rx="7" ry="14" fill="#e8b800" opacity=".65" transform="rotate(0 130 72)"/>
+    <ellipse cx="130" cy="40" rx="7" ry="14" fill="#e8b800" opacity=".65" transform="rotate(60 130 72)"/>
+    <ellipse cx="130" cy="40" rx="7" ry="14" fill="#e8b800" opacity=".65" transform="rotate(120 130 72)"/>
+    <ellipse cx="130" cy="40" rx="7" ry="14" fill="#e8b800" opacity=".55" transform="rotate(30 130 72)"/>
+    <ellipse cx="130" cy="40" rx="7" ry="14" fill="#e8b800" opacity=".55" transform="rotate(90 130 72)"/>
+    <ellipse cx="130" cy="40" rx="7" ry="14" fill="#e8b800" opacity=".55" transform="rotate(150 130 72)"/>
+  </svg>
+
+  <div class="bg-circle bg-circle-1"></div>
+  <div class="bg-circle bg-circle-2"></div>
+
+  <div class="hero">
+    <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+    <div class="logo-rule"><span></span><div class="logo-ornament">✦</div><span></span></div>
+    <div class="hero-title">Surya Mukhi</div>
+    <div class="hero-subtitle">Sunflower — The Face That Follows the Sun</div>
+    <div class="hero-sci">Helianthus annuus L. &nbsp;·&nbsp; Asteraceae</div>
+  </div>
+
+  <div class="hero-photos">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/b/bd/Helianthus_annuus_exposed_2004-05-22.jpg" alt="Tall sunflower in full bloom facing the sun"
+      onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e5/Sonnenblume_Helianthus_1.JPG/1280px-Sonnenblume_Helianthus_1.JPG" alt="Sunflower seeds and cold-pressed sunflower oil"
+      onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+  </div>
+  <p class="photo-caption">Fig. 1 — Helianthus annuus in full heliotropic bloom, the disc florets arranged in a Fibonacci spiral &nbsp;·&nbsp; Fig. 2 — Cold-pressed Surya Mukhi taila (sunflower oil) and roasted seeds, both therapeutically active</p>
+
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-leaf">❧</div>
+    <div class="divider-line"></div>
+  </div>
+
+  <div class="content">
+    <p class="intro-text">Named <em>Surya Mukhi</em> — "the one whose face is toward the sun" — this magnificent American native arrived on Indian soil in the 17th century via Portuguese traders, yet swiftly earned a place in Ayurvedic and Unani practice. From its cold-pressed <em>taila</em> to its seeds, petals, leaves, and roots, every part of this solar plant carries therapeutic value — a rich source of essential fatty acids, fat-soluble vitamins, phytosterols, and polyphenols that modern research continues to validate.</p>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">01</span><h2 class="section-title">Botanical Profile</h2><div class="section-rule"></div></div>
+      <p class="section-body">Helianthus annuus is a tall, erect annual herb of the family Asteraceae, native to North America and now cultivated across six continents. The plant grows 1–3 metres tall on a stout, rough-hairy stem bearing large, alternate, heart-shaped leaves up to 30 cm across. Its characteristic large flower head — technically a pseudanthium — comprises hundreds of individual florets: sterile ray florets (the "petals") arranged around a central disc of fertile tubular florets, themselves arranged in an elegant Fibonacci spiral.</p>
+      <p class="section-body">Young sunflower plants exhibit true <em>heliotropism</em> — their growing tips track the sun from east to west during the day and reset overnight. Mature flowering heads face east. The fruit is an achene (commonly called a seed) enclosed in a black-striped hull, containing an oil-rich kernel. Commercially cultivated varieties yield 40–50% oil from the kernel. India is among the top five global producers, with Karnataka, Andhra Pradesh, Maharashtra, and Telangana as the primary growing states — making Surya Mukhi a herb of particular local relevance.</p>
+      <table class="data-table">
+        <thead><tr><th>PROPERTY</th><th>Detail</th></tr></thead>
+        <tbody>
+          <tr><td>Family</td><td>Asteraceae (Compositae)</td></tr>
+          <tr><td>Botanical Name</td><td>Helianthus annuus L.</td></tr>
+          <tr><td>Sanskrit Names</td><td>Surya Mukhi, Surya Kanti, Suryavarta, Dinakarapriya</td></tr>
+          <tr><td>Hindi / Common</td><td>Surajmukhi, Sunflower, Common Sunflower</td></tr>
+          <tr><td>Regional Names</td><td>Suryakanti (Tel/Kan), Suryamukhi (Mal/Tam), Suryaphool (Ben/Mar)</td></tr>
+          <tr><td>Origin</td><td>North America; introduced to India ~17th century</td></tr>
+          <tr><td>Plant Type</td><td>Tall erect annual herb (1–3 m)</td></tr>
+          <tr><td>Medicinal Parts</td><td>Seeds, seed oil (taila), petals (ray florets), leaves, roots, stem pith</td></tr>
+          <tr><td>Major Indian States</td><td>Karnataka, Andhra Pradesh, Telangana, Maharashtra, Odisha</td></tr>
+          <tr><td>Taste Profile</td><td>Madhura (sweet — seeds/oil); Tikta (bitter — leaves/petals)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">02</span><h2 class="section-title">Phytochemistry</h2><div class="section-rule"></div></div>
+      <p class="section-body">Surya Mukhi's therapeutic breadth reflects a phytochemical profile that spans virtually every major class of bioactive compound. The seed oil is its most commercially significant fraction — dominated by linoleic acid (omega-6) and oleic acid (omega-9) — but the whole plant contains sesquiterpene lactones (unique to Asteraceae), flavonoids, phenolic acids, phytosterols, and a distinctive array of fat-soluble vitamins.</p>
+      <p class="section-body">The petals and leaves contain heliangine, annuolide, and other sesquiterpene lactones with demonstrated cytotoxic and anti-inflammatory properties. The seed hull contains chlorogenic acid at concentrations rivalling green coffee. High-oleic varieties of sunflower oil — increasingly cultivated — offer a more stable lipid profile closer to olive oil in composition.</p>
+      <div class="nutrition-bar">
+        <div class="nutrition-cell"><div class="nutrition-num">65%</div><div class="nutrition-unit">linoleic acid</div><div class="nutrition-label">Standard seed oil</div></div>
+        <div class="nutrition-cell"><div class="nutrition-num">35mg</div><div class="nutrition-unit">Vit E / 100g</div><div class="nutrition-label">Seeds — highest common source</div></div>
+        <div class="nutrition-cell"><div class="nutrition-num">21g</div><div class="nutrition-unit">protein / 100g</div><div class="nutrition-label">Shelled dry seeds</div></div>
+        <div class="nutrition-cell"><div class="nutrition-num">80+</div><div class="nutrition-unit">compounds</div><div class="nutrition-label">Identified in whole plant</div></div>
+      </div>
+      <table class="data-table">
+        <thead><tr><th>Compound</th><th>Category</th><th>Primary Action</th></tr></thead>
+        <tbody>
+          <tr><td>Linoleic Acid (C18:2 ω-6)</td><td>Polyunsaturated fatty acid</td><td>Essential FA; anti-inflammatory prostaglandin precursor; skin barrier repair</td></tr>
+          <tr><td>Oleic Acid (C18:1 ω-9)</td><td>Monounsaturated fatty acid</td><td>Cardioprotective; LDL reduction; high-oleic varieties up to 90%</td></tr>
+          <tr><td>α-Tocopherol (Vitamin E)</td><td>Fat-soluble antioxidant</td><td>Lipid peroxidation inhibitor; skin repair; immune modulation</td></tr>
+          <tr><td>β-Sitosterol &amp; Campesterol</td><td>Phytosterols</td><td>Cholesterol absorption inhibition; anti-inflammatory; prostate support</td></tr>
+          <tr><td>Chlorogenic Acid</td><td>Hydroxycinnamic acid</td><td>Antioxidant; hepatoprotective; blood glucose modulation</td></tr>
+          <tr><td>Heliangine &amp; Annuolide</td><td>Sesquiterpene lactones</td><td>Anti-inflammatory, cytotoxic (in vitro), antimicrobial</td></tr>
+          <tr><td>Quercetin &amp; Kaempferol</td><td>Flavonols</td><td>Antioxidant, anti-inflammatory, capillary-strengthening</td></tr>
+          <tr><td>Tryptophan &amp; Methionine</td><td>Essential amino acids</td><td>Serotonin precursor; sulphur amino acid for liver detox</td></tr>
+          <tr><td>Magnesium, Selenium, Zinc</td><td>Trace minerals</td><td>Enzymatic cofactors; thyroid support; immune function</td></tr>
+          <tr><td>Vitamins B1, B6, Folate</td><td>B-vitamins</td><td>Nervous system support; homocysteine regulation; energy metabolism</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">03</span><h2 class="section-title">Ayurvedic &amp; Traditional Significance</h2><div class="section-rule"></div></div>
+      <p class="section-body">Surya Mukhi entered Indian traditional medicine relatively late — post-Columbian exchange — and therefore does not appear in the oldest classical texts (Charaka, Sushruta). However, later Nighantus including Raj Nighantu and Shaligrama Nighantu include it, and it is well-established in Unani (Tibb) medicine as <em>Aftab Parast</em>. Folk traditions across Karnataka, Maharashtra, and Andhra Pradesh have independently developed rich ethnobotanical applications for seeds, oil, petals, leaves, and roots across all systems of traditional medicine present in these states.</p>
+      <p class="section-body">Ayurvedic pharmacologists classify the seed oil (Surya Mukhi Taila) as <em>madhura</em> in rasa, <em>snigdha</em> (unctuous) in guna, and <em>ushna</em> (mildly warming) in virya — suitable for external application in Vata conditions and internal use as a cooking medium with attention to omega-6 balance. The seeds, being sweet and nutritive, are classified as <em>brimhana</em> (nourishing) and <em>balya</em> (strength-promoting).</p>
+      <table class="dosha-table">
+        <thead><tr><th>Dosha</th><th>Effect</th><th>Mechanism &amp; Notes</th></tr></thead>
+        <tbody>
+          <tr><td>Vata ↓</td><td>Pacifying</td><td>Snigdha (unctuous) seed oil and madhura (sweet) seeds directly nourish and ground Vata; oil massage is a premier Vata-pacifying therapy; seeds as brimhana in debility and emaciation</td></tr>
+          <tr><td>Pitta ↓↑</td><td>Neutral / mildly pacifying</td><td>Vitamin E and linoleic acid reduce oxidative Pitta; however, excessive omega-6 relative to omega-3 may promote inflammatory Pitta over time — balance with flaxseed or walnuts</td></tr>
+          <tr><td>Kapha ↑</td><td>Mildly aggravating</td><td>Heavy, unctuous, and sweet seeds and oil increase Kapha when consumed in excess; Kapha types should use in moderation; high-oleic oil is lighter and preferable</td></tr>
+        </tbody>
+      </table>
+      <p class="section-body"><strong>Seeds — Rasa:</strong> Madhura &nbsp;·&nbsp; <strong>Guna:</strong> Guru, Snigdha &nbsp;·&nbsp; <strong>Virya:</strong> Ushna (mild) &nbsp;·&nbsp; <strong>Karma:</strong> Brimhana, Balya, Vata shamaka &nbsp;·&nbsp; <strong>Petals/Leaves — Rasa:</strong> Tikta &nbsp;·&nbsp; <strong>Karma:</strong> Jwaraghna, Shothahara, Krimighna</p>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">04</span><h2 class="section-title">Key Health Benefits</h2><div class="section-rule"></div></div>
+      <div class="benefits-grid">
+        <div class="benefit-card">
+          <div class="benefit-title">Cardiovascular Protection</div>
+          <div class="benefit-desc">The most evidence-rich application. Linoleic acid reduces LDL cholesterol; phytosterols competitively inhibit cholesterol absorption in the gut; Vitamin E prevents LDL oxidation, a key step in atherosclerotic plaque formation. High-oleic sunflower oil shows effects comparable to olive oil in improving HDL/LDL ratio in clinical trials.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Skin Health &amp; Wound Healing</div>
+          <div class="benefit-desc">Surya Mukhi Taila is one of the best topical carriers in Ayurvedic practice — lightweight, non-comedogenic, and rich in linoleic acid, which is specifically depleted in acne-prone and eczematous skin. Studies show it preserves the neonatal skin barrier better than mustard oil. Vitamin E and sesquiterpene lactones in petals accelerate wound healing.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Anti-inflammatory Action</div>
+          <div class="benefit-desc">Sesquiterpene lactones (heliangine, annuolide) from petals and leaves potently inhibit NF-κB activation — a master switch of inflammatory gene expression. Chlorogenic acid suppresses COX-2. Traditional use of petal decoctions for inflammatory fevers, arthritis, and respiratory inflammation is supported by these multi-target mechanisms.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Nervous System &amp; Mood Support</div>
+          <div class="benefit-desc">Sunflower seeds are among the richest food sources of tryptophan — the dietary precursor to serotonin and melatonin. Magnesium (excellent in seeds) is a natural NMDA antagonist and anxiolytic. B6 is essential for GABAergic and dopaminergic neurotransmission. Together these make seeds a genuine food-medicine for anxiety, insomnia, and mood disorders.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Bone &amp; Joint Health</div>
+          <div class="benefit-desc">Magnesium (58mg/28g seeds) supports calcium metabolism and bone mineral density; selenium activates antioxidant glutathione peroxidase in joint cartilage; Vitamin E inhibits cartilage-degrading enzymes. Traditional oil massage for joint pain and Vata-origin musculoskeletal stiffness is validated by anti-inflammatory lipid profiling of the oil.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Antimicrobial &amp; Antipyretic</div>
+          <div class="benefit-desc">Leaf and petal extracts show significant activity against Staphylococcus aureus, E. coli, and Candida albicans in disc-diffusion assays. Traditional use of petal decoction (<em>Suryavarta Kwatha</em>) as a febrifuge in malarial and viral fevers across folk traditions of Karnataka and Maharashtra aligns with in vitro antimicrobial evidence.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Thyroid &amp; Hormonal Support</div>
+          <div class="benefit-desc">Selenium (26mcg/28g) is a direct cofactor for selenoenzymes that convert T4 to active T3 thyroid hormone. Zinc supports testosterone biosynthesis and progesterone signalling. Classical seed preparations as <em>vrishya</em> (aphrodisiac / reproductive tonic) in traditional systems map onto these documented mineral-mediated hormonal actions.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Digestive &amp; Hepatic Support</div>
+          <div class="benefit-desc">Chlorogenic acid in seeds and hull enhances bile production and flow; quercetin reduces hepatic oxidative stress; inulin-type fibres in the hull support prebiotic gut microbiome health. Oil pulling with raw sunflower oil (classical <em>Kavala</em>) removes oral pathogens and is associated with reduced gingival inflammation and systemic toxin load.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">05</span><h2 class="section-title">Parts Used &amp; Their Actions</h2><div class="section-rule"></div></div>
+      <p class="section-body">Uniquely among herbs documented in this garden, virtually every anatomical part of Surya Mukhi has a distinct and documented therapeutic application — from root to petal, from pressed oil to roasted seed hull.</p>
+      <table class="data-table">
+        <thead><tr><th>Part</th><th>Active Compounds</th><th>Traditional &amp; Modern Application</th></tr></thead>
+        <tbody>
+          <tr><td>Seeds (kernel)</td><td>Linoleic acid, Vit E, tryptophan, Mg, Se, Zn, B vitamins</td><td>Cardiovascular tonic, nervine, brimhana, reproductive support; eaten raw, roasted, or as tahini-style paste</td></tr>
+          <tr><td>Cold-pressed oil (Taila)</td><td>Linoleic + oleic acids, tocopherols, phytosterols</td><td>Cooking medium, Vata oil massage, skin barrier repair, oil pulling (Kavala), base for medicated oils</td></tr>
+          <tr><td>Ray petals (florets)</td><td>Sesquiterpene lactones, quercetin, kaempferol</td><td>Fever (Jwara), inflammation, headache — decoction or infusion; topical poultice for wounds</td></tr>
+          <tr><td>Leaves</td><td>Heliangine, chlorogenic acid, flavonoids</td><td>Antipyretic, antimicrobial, antidiarrheal; folk use in malaria, snake bite (poultice), skin infections</td></tr>
+          <tr><td>Root</td><td>Inulin, phenolic acids, sesquiterpenes</td><td>Diuretic, kidney stone passage, urinary tract support; decoction in Unani practice for dysuria</td></tr>
+          <tr><td>Stem pith</td><td>Lignin-derived compounds, polysaccharides</td><td>Urinary demulcent; traditional application for painful urination in Chinese and folk Indian medicine</td></tr>
+          <tr><td>Seed hull</td><td>Chlorogenic acid, dietary fibre, lignans</td><td>Prebiotic gut support; hull tea as antioxidant beverage; not typically consumed whole due to phytic acid</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">06</span><h2 class="section-title">How to Consume Surya Mukhi</h2><div class="section-rule"></div></div>
+      <table class="consume-table">
+        <thead><tr><th>Form</th><th>Preparation</th><th>Dosage</th><th>Best Use</th></tr></thead>
+        <tbody>
+          <tr><td>Raw seeds</td><td>Shell, soak overnight; eat on empty stomach or with breakfast</td><td>25–30g daily</td><td>Cardiovascular, nervous system, general nutrition</td></tr>
+          <tr><td>Roasted seeds</td><td>Dry-roast with rock salt; avoid refined salt or excess oil</td><td>20–25g as snack</td><td>Energy, mood, bone health, satiety</td></tr>
+          <tr><td>Seed butter (paste)</td><td>Blend roasted seeds into smooth paste; no additives</td><td>1–2 tbsp daily</td><td>Brimhana (nourishment), children's health, athletes</td></tr>
+          <tr><td>Cold-pressed oil — cooking</td><td>Use for low-to-medium heat cooking; avoid deep frying</td><td>2–3 tsp daily</td><td>Cardiovascular health, cooking medium</td></tr>
+          <tr><td>Oil massage (Abhyanga)</td><td>Warm cold-pressed oil; massage full body before bath</td><td>Daily or 3× weekly</td><td>Vata pacification, skin, joint pain, stress relief</td></tr>
+          <tr><td>Oil pulling (Kavala)</td><td>Swish 1 tbsp raw cold-pressed oil for 10–15 min on empty stomach; spit out</td><td>Daily, morning</td><td>Oral health, systemic detox, gum health</td></tr>
+          <tr><td>Petal decoction (Kwatha)</td><td>Boil 10g fresh or dried petals in 300ml water; reduce to 150ml; strain</td><td>50–100 ml twice daily</td><td>Fever, headache, inflammation, cough</td></tr>
+          <tr><td>Leaf poultice (topical)</td><td>Pound fresh leaves; apply to wounds, insect bites, inflamed skin</td><td>As needed</td><td>Wound healing, skin infections, local inflammation</td></tr>
+          <tr><td>Root decoction</td><td>Boil dried root pieces 5g in 200ml water; strain</td><td>50 ml once daily</td><td>Dysuria, kidney stones, urinary support</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">07</span><h2 class="section-title">Safety &amp; Precautions</h2><div class="section-rule"></div></div>
+      <p class="section-body">Surya Mukhi is generally among the safest therapeutic plants — food-grade at culinary amounts, with a well-established safety profile across centuries of global use. The following considerations apply to medicinal-level or prolonged use.</p>
+      <ul class="precaution-list">
+        <li><strong>Asteraceae allergy:</strong> Helianthus annuus belongs to the Asteraceae family — those with known allergies to ragweed, chrysanthemum, marigold, or chamomile may experience cross-reactivity, especially to petal preparations. Patch-test topical applications.</li>
+        <li><strong>Omega-6 excess:</strong> Standard sunflower oil is very high in omega-6 linoleic acid. Excessive consumption without balancing omega-3 intake (flaxseed, walnuts, fatty fish) can promote a pro-inflammatory state over time. Prefer high-oleic varieties for cooking or use in rotation with other oils.</li>
+        <li><strong>Seed allergy:</strong> Sunflower seed allergy, while less common than peanut or tree nut allergy, does occur and can be severe — anaphylaxis has been reported. Introduce to children cautiously.</li>
+        <li><strong>Cadmium accumulation:</strong> Sunflower is a hyperaccumulator of cadmium from soil — seeds grown in heavily contaminated industrial soils may carry elevated cadmium. Source seeds from certified organic farms when consuming regularly.</li>
+        <li><strong>Caloric density:</strong> Seeds are calorie-dense (580 kcal/100g) — those with obesity or Kapha excess should limit portions to 20–25g/day.</li>
+        <li><strong>Phytic acid in seeds:</strong> Raw seeds contain phytic acid which binds zinc and iron — soaking overnight or roasting significantly reduces phytate levels and improves mineral bioavailability.</li>
+        <li><strong>Oil stability:</strong> Standard (high-linoleic) sunflower oil oxidises rapidly at high heat, producing pro-inflammatory aldehydes. Never use for deep frying; use cold-pressed for dressings or low-heat sautéing. High-oleic varieties are more heat-stable.</li>
+        <li><strong>Blood pressure medication:</strong> Significant magnesium content may mildly potentiate antihypertensive medications — monitor if consuming large quantities alongside medications.</li>
+      </ul>
+    </div>
+
+    <div class="sources">
+      <div class="sources-title">References &amp; Sources</div>
+      <ul>
+        <li>Shaligrama Nighantu &amp; Raj Nighantu — Surya Mukhi classification and properties in later classical literature</li>
+        <li>Petrov V et al. — "Sunflower (Helianthus annuus L.) — a short overview" — Genetics &amp; Plant Physiology, 2014</li>
+        <li>Furtado A et al. — "Nutritional composition and antioxidant activity of sunflower seeds" — Food Chemistry, 2018</li>
+        <li>Yeboah S et al. — "Ethnobotanical uses and pharmacological properties of Helianthus annuus" — Journal of Ethnopharmacology, 2021</li>
+        <li>Soleymani S &amp; Ramezani M — "Anti-inflammatory sesquiterpene lactones of genus Helianthus" — Natural Product Research, 2019</li>
+        <li>Saraswat M et al. — "Sunflower oil vs. mustard oil as neonatal skin treatment" — Pediatric Dermatology, 2016</li>
+        <li>Garg ML et al. — "PUFA-enriched diets and lipid peroxidation — the role of antioxidant vitamins" — Asia Pacific Journal of Clinical Nutrition, 2003</li>
+        <li>Aguilera Y et al. — "Phenolic compounds in sunflower seeds — chlorogenic acid and related compounds" — LWT — Food Science and Technology, 2011</li>
+        <li>Amini Moghadam S et al. — "The effect of sunflower seed consumption on cardiovascular risk factors" — Journal of Research in Medical Sciences, 2017</li>
+        <li>ICAR — Indian Council of Agricultural Research — Sunflower cultivation in India: varieties, states, and agronomic profile</li>
+        <li>Priyavrat Sharma — Dravyaguna Vigyana — Surya Mukhi Taila in Ayurvedic pharmacognosy</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer>
+    <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a qualified practitioner before therapeutic use</p>
+  </footer>
+
+
+  <div id="viewerModal">
+    <div id="modal-topbar">
+      <span>3D Model — Surya Mukhi</span>
+      <button type="button" id="close3D">✕</button>
+    </div>
+    <model-viewer src="suryamukhi3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+  </div>
+  <script>
+    (function() {
+      var open3D = document.getElementById('open3D');
+      var close3D = document.getElementById('close3D');
+      var modal = document.getElementById('viewerModal');
+      if (!open3D || !close3D || !modal) return;
+      function openModal() {
+        
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+      function closeModal() {
+        
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+      open3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); openModal();
+      });
+      close3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); closeModal();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+      });
+    })();
+  </script>
+
+</body>
+</html>

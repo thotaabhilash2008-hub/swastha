@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tejpatta — Indian Bay Leaf | Swastha</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap"
+    rel="stylesheet">
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+  <style>
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box
+    }
+
+    html {
+      scroll-behavior: smooth
+    }
+
+    body {
+      font-family: 'Jost', sans-serif;
+      background: var(--cream);
+      color: var(--ink);
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity: .035;
+      pointer-events: none;
+      z-index: 100
+    }
+
+    #open3D {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      padding: 10px 18px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: var(--forest);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      z-index: 1000;
+      transition: .3s
+    }
+
+    #open3D:hover {
+      background: var(--gold);
+      color: var(--deep)
+    }
+
+    #viewerModal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+    }
+
+    #modal-topbar {
+      flex-shrink: 0;
+      height: 58px;
+      background: #111111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px 0 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      z-index: 99999;
+    }
+
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 4.5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.72);
+      user-select: none;
+    }
+
+    #close3D {
+      width: 38px;
+      height: 38px;
+      font-size: 15px;
+      font-weight: 300;
+      background: transparent;
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background .2s, color .2s, transform .22s;
+      outline: none;
+      flex-shrink: 0;
+    }
+
+    #close3D:hover {
+      background: #ffffff;
+      color: #111111;
+      border-color: #ffffff;
+      transform: rotate(90deg)
+    }
+
+    #viewerModal model-viewer {
+      flex: 1;
+      width: 100%;
+      display: block;
+      background: #ffffff;
+    }
+
+    .bg-circle {
+      position: fixed;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0
+    }
+
+    .bg-circle-1 {
+      width: 700px;
+      height: 700px;
+      background: radial-gradient(circle, rgba(42, 92, 63, .1) 0%, transparent 70%);
+      top: -200px;
+      right: -150px
+    }
+
+    .bg-circle-2 {
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(201, 168, 76, .08) 0%, transparent 70%);
+      bottom: -100px;
+      left: -100px
+    }
+
+    .botanical-svg {
+      position: fixed;
+      pointer-events: none;
+      z-index: 1;
+      opacity: .1
+    }
+
+    .botanical-tl {
+      top: -20px;
+      left: -20px;
+      width: 260px
+    }
+
+    .botanical-br {
+      bottom: -20px;
+      right: -20px;
+      width: 220px;
+      transform: rotate(180deg)
+    }
+
+    .hero {
+      position: relative;
+      z-index: 10;
+      padding: 54px 40px 0;
+      text-align: center;
+      opacity: 0;
+      animation: fadeUp .9s ease .1s forwards
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--sage);
+      text-decoration: none;
+      margin-bottom: 36px;
+      transition: color .3s
+    }
+
+    .back-link:hover {
+      color: var(--gold)
+    }
+
+    .logo-rule {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 14px
+    }
+
+    .logo-rule span {
+      display: block;
+      height: 1px;
+      width: 70px;
+      background: linear-gradient(to right, transparent, var(--gold))
+    }
+
+    .logo-rule span:last-child {
+      background: linear-gradient(to left, transparent, var(--gold))
+    }
+
+    .logo-ornament {
+      font-size: 13px;
+      color: var(--gold)
+    }
+
+    .hero-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(64px, 12vw, 110px);
+      font-weight: 300;
+      letter-spacing: 8px;
+      line-height: 1;
+      color: var(--deep)
+    }
+
+    .hero-subtitle {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 18px;
+      font-style: italic;
+      font-weight: 300;
+      color: var(--earth);
+      letter-spacing: 2px;
+      margin-top: 8px
+    }
+
+    .hero-sci {
+      font-size: 11px;
+      font-weight: 200;
+      letter-spacing: 5px;
+      color: var(--sage);
+      margin-top: 6px
+    }
+
+    .hero-photos {
+      position: relative;
+      z-index: 10;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2px;
+      max-width: 900px;
+      margin: 40px auto 0;
+      opacity: 0;
+      animation: fadeUp .9s ease .35s forwards
+    }
+
+    .hero-photos img {
+      width: 100%;
+      height: 380px;
+      object-fit: cover;
+      object-position: center;
+      display: block;
+      background: var(--parchment);
+    }
+
+    .hero-photos img:first-child {
+      object-position: center 40%
+    }
+
+    .photo-caption {
+      text-align: center;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 12px;
+      font-style: italic;
+      color: var(--sage);
+      letter-spacing: 1px;
+      padding: 10px 0 0;
+      max-width: 900px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 10;
+      opacity: 0;
+      animation: fadeUp .9s ease .5s forwards
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin: 50px auto;
+      max-width: 600px;
+      opacity: 0;
+      animation: fadeUp .9s ease .55s forwards;
+      position: relative;
+      z-index: 10
+    }
+
+    .divider-line {
+      height: 1px;
+      width: 120px;
+      background: linear-gradient(to right, transparent, var(--sage))
+    }
+
+    .divider-line:last-child {
+      background: linear-gradient(to left, transparent, var(--sage))
+    }
+
+    .divider-leaf {
+      color: var(--forest);
+      font-size: 18px
+    }
+
+    .content {
+      position: relative;
+      z-index: 10;
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 30px 80px
+    }
+
+    .intro-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 20px;
+      font-weight: 300;
+      line-height: 1.75;
+      color: var(--ink);
+      text-align: center;
+      max-width: 700px;
+      margin: 0 auto 60px;
+      opacity: 0;
+      animation: fadeUp .9s ease .6s forwards
+    }
+
+    .intro-text em {
+      color: var(--forest);
+      font-style: italic
+    }
+
+    .section {
+      margin-bottom: 60px;
+      opacity: 0;
+      animation: fadeUp .9s ease forwards
+    }
+
+    .section:nth-child(1) {
+      animation-delay: .65s
+    }
+
+    .section:nth-child(2) {
+      animation-delay: .75s
+    }
+
+    .section:nth-child(3) {
+      animation-delay: .85s
+    }
+
+    .section:nth-child(4) {
+      animation-delay: .95s
+    }
+
+    .section:nth-child(5) {
+      animation-delay: 1.05s
+    }
+
+    .section:nth-child(6) {
+      animation-delay: 1.15s
+    }
+
+    .section:nth-child(7) {
+      animation-delay: 1.25s
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 20px
+    }
+
+    .section-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 11px;
+      letter-spacing: 4px;
+      color: var(--gold)
+    }
+
+    .section-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 28px;
+      font-weight: 400;
+      color: var(--deep);
+      letter-spacing: 1px
+    }
+
+    .section-rule {
+      height: 1px;
+      flex: 1;
+      background: linear-gradient(to right, var(--gold), transparent)
+    }
+
+    .section-body {
+      font-size: 13px;
+      font-weight: 300;
+      line-height: 1.9;
+      color: var(--ink);
+      margin-bottom: 24px
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0 8px;
+      font-size: 12px
+    }
+
+    .data-table thead tr {
+      background: var(--deep);
+      color: var(--gold);
+      font-size: 10px;
+      letter-spacing: 3px;
+      text-transform: uppercase
+    }
+
+    .data-table thead th {
+      padding: 12px 14px;
+      text-align: left;
+      font-weight: 400
+    }
+
+    .data-table tbody tr:nth-child(even) {
+      background: var(--parchment)
+    }
+
+    .data-table tbody tr:nth-child(odd) {
+      background: var(--cream)
+    }
+
+    .data-table tbody tr {
+      transition: background .2s
+    }
+
+    .data-table tbody tr:hover {
+      background: rgba(200, 164, 93, 0.15)
+    }
+
+    .data-table tbody td {
+      padding: 10px 14px;
+      color: var(--ink);
+      border-bottom: 1px solid rgba(107, 79, 45, .08)
+    }
+
+    .data-table tbody td:first-child {
+      font-weight: 400;
+      color: var(--deep);
+      width: 28%
+    }
+
+    .dosha-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 12px
+    }
+
+    .dosha-table thead tr {
+      background: var(--forest);
+      color: var(--cream)
+    }
+
+    .dosha-table thead th {
+      padding: 12px 14px;
+      text-align: left;
+      font-weight: 400;
+      letter-spacing: 2px;
+      font-size: 10px;
+      text-transform: uppercase
+    }
+
+    .dosha-table tbody tr:nth-child(even) {
+      background: var(--parchment)
+    }
+
+    .dosha-table tbody tr:nth-child(odd) {
+      background: var(--cream)
+    }
+
+    .dosha-table tbody td {
+      padding: 11px 14px;
+      color: var(--ink);
+      border-bottom: 1px solid rgba(107, 79, 45, .08)
+    }
+
+    .dosha-table tbody td:first-child {
+      font-weight: 400;
+      color: var(--forest);
+      width: 18%
+    }
+
+    .dosha-table tbody td:nth-child(2) {
+      color: var(--earth);
+      width: 20%
+    }
+
+    .consume-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 12px
+    }
+
+    .consume-table thead tr {
+      background: var(--earth);
+      color: var(--cream)
+    }
+
+    .consume-table thead th {
+      padding: 12px 14px;
+      text-align: left;
+      font-weight: 400;
+      letter-spacing: 2px;
+      font-size: 10px;
+      text-transform: uppercase
+    }
+
+    .consume-table tbody tr:nth-child(even) {
+      background: var(--parchment)
+    }
+
+    .consume-table tbody tr:nth-child(odd) {
+      background: var(--cream)
+    }
+
+    .consume-table tbody td {
+      padding: 11px 14px;
+      color: var(--ink);
+      border-bottom: 1px solid rgba(107, 79, 45, .08)
+    }
+
+    .consume-table tbody td:first-child {
+      font-weight: 400;
+      color: var(--earth);
+      width: 22%
+    }
+
+    .benefits-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: rgba(107, 79, 45, .12);
+      border: 1px solid rgba(107, 79, 45, .12);
+      margin: 8px 0
+    }
+
+    .benefit-card {
+      background: var(--cream);
+      padding: 24px 22px;
+      transition: background .3s;
+      position: relative;
+      overflow: hidden
+    }
+
+    .benefit-card:hover {
+      background: #ede4ce
+    }
+
+    .benefit-card::before {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: var(--gold);
+      transition: width .4s
+    }
+
+    .benefit-card:hover::before {
+      width: 100%
+    }
+
+    .benefit-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--forest);
+      margin-bottom: 8px
+    }
+
+    .benefit-desc {
+      font-size: 11.5px;
+      font-weight: 300;
+      line-height: 1.75;
+      color: var(--ink);
+      opacity: .85
+    }
+
+    .precaution-list {
+      list-style: none;
+      margin: 8px 0
+    }
+
+    .precaution-list li {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      padding: 10px 14px;
+      font-size: 12px;
+      font-weight: 300;
+      line-height: 1.7;
+      color: var(--ink);
+      border-bottom: 1px solid rgba(107, 79, 45, .08)
+    }
+
+    .precaution-list li:last-child {
+      border-bottom: none
+    }
+
+    .precaution-list li::before {
+      content: '▸';
+      color: var(--gold);
+      flex-shrink: 0;
+      margin-top: 1px
+    }
+
+    .sources {
+      border-top: 1px solid rgba(107, 79, 45, .15);
+      padding-top: 24px;
+      margin-top: 20px
+    }
+
+    .sources-title {
+      font-size: 10px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--sage);
+      margin-bottom: 12px;
+      font-weight: 300
+    }
+
+    .sources ul {
+      list-style: none
+    }
+
+    .sources ul li {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 13px;
+      font-style: italic;
+      color: var(--earth);
+      padding: 5px 0;
+      border-bottom: 1px solid rgba(107, 79, 45, .06)
+    }
+
+    .sources ul li::before {
+      content: '· ';
+      color: var(--sage)
+    }
+
+    .nutrition-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: rgba(107, 79, 45, .12);
+      border: 1px solid rgba(107, 79, 45, .12);
+      margin: 20px 0
+    }
+
+    .nutrition-cell {
+      background: var(--cream);
+      padding: 22px 16px;
+      text-align: center;
+      transition: background .3s
+    }
+
+    .nutrition-cell:hover {
+      background: var(--parchment)
+    }
+
+    .nutrition-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 36px;
+      font-weight: 300;
+      color: var(--forest);
+      line-height: 1;
+      margin-bottom: 4px
+    }
+
+    .nutrition-unit {
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--gold);
+      font-weight: 300
+    }
+
+    .nutrition-label {
+      font-size: 11px;
+      font-weight: 300;
+      color: var(--ink);
+      margin-top: 5px
+    }
+
+    footer {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      padding: 24px 20px 44px;
+      border-top: 1px solid rgba(107, 79, 45, .12);
+      max-width: 860px;
+      margin: 0 auto
+    }
+
+    footer p {
+      font-size: 11px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--sage);
+      font-weight: 300
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(28px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
+
+    @media(max-width:700px) {
+      .hero-photos {
+        grid-template-columns: 1fr
+      }
+
+      .hero-photos img {
+        height: 260px
+      }
+
+      .benefits-grid {
+        grid-template-columns: 1fr
+      }
+
+      .nutrition-bar {
+        grid-template-columns: 1fr 1fr
+      }
+
+      .content {
+        padding: 0 18px 60px
+      }
+
+      #modal-topbar {
+        padding: 0 16px 0 20px
+      }
+
+      #modal-topbar span {
+        font-size: 9px;
+        letter-spacing: 3px
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <button id="open3D">View in 3D</button>
+
+  <div id="viewerModal">
+    <div id="modal-topbar">
+      <span>3D Model — Tejpatta</span>
+      <button id="close3D">✕</button>
+    </div>
+    <model-viewer src="tejpatta3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+  </div>
+
+  <div class="bg-circle bg-circle-1"></div>
+  <div class="bg-circle bg-circle-2"></div>
+
+  <svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#2a5c3f" stroke-width="1.5" fill="none" />
+    <circle cx="90" cy="210" r="8" fill="#2a5c3f" opacity="0.7" />
+    <circle cx="130" cy="175" r="10" fill="#7a9e7e" opacity="0.6" />
+    <circle cx="170" cy="135" r="7" fill="#2a5c3f" opacity="0.8" />
+    <circle cx="210" cy="95" r="9" fill="#c9a84c" opacity="0.5" />
+    <ellipse cx="115" cy="195" rx="20" ry="10" fill="#7a9e7e" transform="rotate(-30 115 195)" />
+    <ellipse cx="155" cy="155" rx="18" ry="9" fill="#2a5c3f" transform="rotate(-45 155 155)" />
+    <ellipse cx="195" cy="115" rx="16" ry="8" fill="#7a9e7e" transform="rotate(-60 195 115)" />
+  </svg>
+  <svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#2a5c3f" stroke-width="1.5" fill="none" />
+    <circle cx="90" cy="210" r="8" fill="#2a5c3f" opacity="0.7" />
+    <circle cx="130" cy="175" r="10" fill="#7a9e7e" opacity="0.6" />
+    <circle cx="170" cy="135" r="7" fill="#2a5c3f" opacity="0.8" />
+    <ellipse cx="115" cy="195" rx="20" ry="10" fill="#7a9e7e" transform="rotate(-30 115 195)" />
+  </svg>
+
+  <div class="hero">
+    <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+    <div class="logo-rule"><span></span>
+      <div class="logo-ornament">✦</div><span></span>
+    </div>
+    <div class="hero-title">Tejpatta</div>
+    <div class="hero-subtitle">Tamala Patra — The Indian Bay Leaf</div>
+    <div class="hero-sci">Cinnamomum tamala &nbsp;·&nbsp; Lauraceae</div>
+  </div>
+
+  <div class="hero-photos">
+    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/b/be/Cinnamomum_tamala_%28Bay_leaf%29_tree_in_RDA%2C_Bogra_03.jpg/1280px-Cinnamomum_tamala_%28Bay_leaf%29_tree_in_RDA%2C_Bogra_03.jpg" alt="Three-veined Tejpatta leaves"
+      onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9c/Cinnamomum_tamala_%28Bay_leaf%29_tree_in_RDA%2C_Bogra_02.jpg/1280px-Cinnamomum_tamala_%28Bay_leaf%29_tree_in_RDA%2C_Bogra_02.jpg" alt="Cinnamomum tamala tree"
+      onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+  </div>
+  <p class="photo-caption">Fig. 1 — Distinctive three-veined leathery Tejpatta leaves with their clove-like aroma &nbsp;·&nbsp; Fig. 2 — The Cinnamomum tamala tree growing wild in the Himalayan foothills, the source of true Indian Bay Leaf</p>
+
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-leaf">❧</div>
+    <div class="divider-line"></div>
+  </div>
+
+  <div class="content">
+    <p class="intro-text">Often confused with Mediterranean laurel, the true Indian bay leaf — <em>Tejpatta</em>, "the leaf of fire" — is a species of cinnamon, not bay. Its three-veined leaves with their clove-like fragrance traveled the ancient Silk Road as <em>malabathrum</em>, prized in Greek and Roman pharmacies long before Europe knew its source. In every Indian kitchen, it sits quietly in the spice rack, both flavour and digestive tonic.</p>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">01</span>
+        <h2 class="section-title">Botanical Profile</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Tejpatta (<em>Cinnamomum tamala</em> (Buch.-Ham.) T.Nees &amp; Eberm.) is a moderate-sized evergreen tree of the Lauraceae family — a close relative of true cinnamon (<em>Cinnamomum verum</em>) — reaching 7–20 metres in height. Native to the tropical and subtropical Himalayas at altitudes of 900–2500 m, the Khasi hills, the Nilgiris, and the Sikkim Himalayan foothills, the tree extends across India, Bangladesh, Nepal, Bhutan, and southern China.</p>
+      <p class="section-body">The leaves are the medicinal treasure — alternate, leathery, elliptic-lanceolate, 7–15 cm long, with a striking three-veined pattern radiating from the base (a defining feature distinguishing it from European laurel, which has a single midrib). Crushed, the leaves release a complex clove-pepper-cinnamon aroma. Small yellowish-white flowers bloom in panicles between March and May, followed by black drupe fruits. The dried leaves are the spice known as Tejpatta, also historically called <em>malabathrum</em> or <em>Indian cassia</em>. It is significant that despite the English name, this is not Mediterranean bay laurel (<em>Laurus nobilis</em>) — Tejpatta belongs to the cinnamon genus and has a sweeter, more aromatic profile.</p>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>PROPERTY</th>
+            <th>Detail</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Family</td>
+            <td>Lauraceae (Laurel family)</td>
+          </tr>
+          <tr>
+            <td>Botanical Name</td>
+            <td>Cinnamomum tamala (Buch.-Ham.) T.Nees &amp; Eberm.</td>
+          </tr>
+          <tr>
+            <td>Sanskrit Names</td>
+            <td>Tamala Patra, Tejpatra, Patra, Patraka, Varangaka, Tamalaka, Tamala</td>
+          </tr>
+          <tr>
+            <td>Common Names</td>
+            <td>Tejpatta, Tejpat, Indian Bay Leaf, Indian Cassia, Malabar Leaf, Malabathrum, Tamalapaku, Talisha Pattri</td>
+          </tr>
+          <tr>
+            <td>Origin</td>
+            <td>Tropical &amp; subtropical Himalayas; India, Nepal, Bhutan, Bangladesh, China</td>
+          </tr>
+          <tr>
+            <td>Plant Type</td>
+            <td>Medium-sized evergreen tree (7–20 m)</td>
+          </tr>
+          <tr>
+            <td>Flowering Season</td>
+            <td>March – May</td>
+          </tr>
+          <tr>
+            <td>Medicinal Parts</td>
+            <td>Leaves (primary), bark, essential oil</td>
+          </tr>
+          <tr>
+            <td>Taste Profile</td>
+            <td>Pungent (katu), sweet (madhura), with clove-pepper-cinnamon aroma</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">02</span>
+        <h2 class="section-title">Phytochemistry Composition</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Tejpatta's signature aroma and pharmacology come from a rich essential oil dominated by two compound classes — <em>cinnamaldehyde</em> (and trans-cinnamaldehyde) and <em>eugenol</em>. Different chemotypes of <em>Cinnamomum tamala</em> exist, with leaves variably dominated by either eugenol-rich or cinnamaldehyde-rich profiles, both validated as authentic in the Ayurvedic Pharmacopoeia of India.</p>
+      <p class="section-body">Beyond the essential oil, Tejpatta contains a remarkable array of polyphenols and flavonoids — <em>3,4,5,7-tetrahydroxyflavone</em>, <em>3,3,4,5,6-pentahydroxyflavone</em>, kaempferol, quercetin, rutin, tannins, saponins, sterols (β-sitosterol), and triterpenes. The IC50 of leaf ethanolic extract in DPPH antioxidant assay has been measured at 13.55 μg/ml — within twofold of ascorbic acid (5.35 μg/ml), confirming substantial free-radical scavenging power. These compounds together drive its anticancer, antidiabetic, antimicrobial, hepatoprotective, antidiarrhoeal, and immunomodulatory pharmacology.</p>
+      <div class="nutrition-bar">
+        <div class="nutrition-cell">
+          <div class="nutrition-num">13.55</div>
+          <div class="nutrition-unit">μg / ml</div>
+          <div class="nutrition-label">DPPH antioxidant IC50</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">2</div>
+          <div class="nutrition-unit">main chemotypes</div>
+          <div class="nutrition-label">Eugenol &amp; Cinnamaldehyde</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">3</div>
+          <div class="nutrition-unit">visible veins</div>
+          <div class="nutrition-label">Identifying leaf feature</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">3 of 3</div>
+          <div class="nutrition-unit">doshas</div>
+          <div class="nutrition-label">Tridosha-balancing</div>
+        </div>
+      </div>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Compound</th>
+            <th>Category</th>
+            <th>Primary Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Cinnamaldehyde &amp; trans-Cinnamaldehyde</td>
+            <td>Aromatic aldehydes</td>
+            <td>Antimicrobial, hypoglycaemic, anti-inflammatory — primary marker</td>
+          </tr>
+          <tr>
+            <td>Eugenol</td>
+            <td>Phenylpropanoid</td>
+            <td>Antibacterial, antifungal, analgesic, anti-yeast — secondary marker</td>
+          </tr>
+          <tr>
+            <td>3,4,5,7-Tetrahydroxyflavone</td>
+            <td>Flavonoid</td>
+            <td>Antioxidant, anti-inflammatory, anticancer</td>
+          </tr>
+          <tr>
+            <td>Kaempferol &amp; Quercetin</td>
+            <td>Flavonols</td>
+            <td>Antioxidant, anti-allergic, cardioprotective</td>
+          </tr>
+          <tr>
+            <td>Linalool &amp; α-Pinene</td>
+            <td>Terpenes (essential oil)</td>
+            <td>Sedative, antimicrobial, aromatic</td>
+          </tr>
+          <tr>
+            <td>β-Sitosterol</td>
+            <td>Phytosterol</td>
+            <td>Cholesterol-lowering, anti-inflammatory</td>
+          </tr>
+          <tr>
+            <td>Tannins</td>
+            <td>Polyphenols</td>
+            <td>Astringent, antidiarrhoeal, antimicrobial</td>
+          </tr>
+          <tr>
+            <td>Saponins &amp; Triterpenes</td>
+            <td>Glycosides / triterpenoids</td>
+            <td>Immunomodulatory, anti-inflammatory, antiviral</td>
+          </tr>
+          <tr>
+            <td>Rutin</td>
+            <td>Flavonol glycoside</td>
+            <td>Capillary-strengthening, antioxidant, anti-inflammatory</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">03</span>
+        <h2 class="section-title">Ayurvedic Significance</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Tejpatta is classified as a <em>Tridoshaja</em> herb — capable of balancing all three doshas — and is one of the spices celebrated as <em>Trijataka</em> ("three aromatic spices") alongside cinnamon and cardamom in classical Ayurvedic preparations. The Bhavaprakasha Nighantu, Charaka Samhita, and the Ayurvedic Pharmacopoeia of India describe it primarily as <em>Deepana</em> (digestive-fire kindler), <em>Pachana</em> (digestant), and <em>Amapachana</em> (Ama-toxin digester) — making it especially effective for problems caused by weak digestion and accumulated metabolic toxins.</p>
+      <p class="section-body">Its rasa (taste) is <em>katu</em> (pungent) and <em>madhura</em> (sweet); guna is <em>laghu</em> (light), <em>tikshna</em> (piercing), and <em>snigdha</em> (mildly unctuous); vipaka is <em>katu</em> (pungent); veerya is <em>ushna</em> (hot). The hot, piercing potency penetrates Ama and stagnant Kapha, while the sweet undertone keeps it gentle enough to balance Vata. Together with cardamom and cinnamon, Tejpatta forms the foundational <em>Trijataka</em> appearing in Chyavanprash, Sitopaladi Churna, and countless classical formulations.</p>
+      <table class="dosha-table">
+        <thead>
+          <tr>
+            <th>Dosha</th>
+            <th>Effect</th>
+            <th>Mechanism &amp; Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Vata ↓</td>
+            <td>Pacifying</td>
+            <td>Hot potency (ushna virya) and unctuous quality calm Vata-driven gas, bloating, and abdominal pain; warming action soothes nervous system and joints</td>
+          </tr>
+          <tr>
+            <td>Pitta ~</td>
+            <td>Mild balance</td>
+            <td>Although ushna in potency, the sweet undertone and mild action keep it tolerable for moderate Pitta; high doses may aggravate hyperacidity</td>
+          </tr>
+          <tr>
+            <td>Kapha ↓</td>
+            <td>Pacifying</td>
+            <td>Pungent, light, and piercing qualities reduce mucus, oedema, and metabolic heaviness; classical for Kapha-related cough, asthma, and respiratory congestion</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">04</span>
+        <h2 class="section-title">Key Health Benefits</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Modern pharmacological research has confirmed Tejpatta's role across an extraordinary range of therapeutic domains — anticancer, antidiabetic, antimicrobial, hepatoprotective, antidiarrhoeal, anti-inflammatory, antiulcer, and immunomodulatory — validating much of what classical Ayurvedic texts described centuries ago.</p>
+      <div class="benefits-grid">
+        <div class="benefit-card">
+          <div class="benefit-title">Digestive Fire &amp; Ama Reduction</div>
+          <div class="benefit-desc">The flagship Ayurvedic use — classical <em>Deepana-Pachana-Amapachana</em>. Stimulates digestive enzyme secretion, improves nutrient absorption, relieves flatulence, bloating, indigestion, and reduces accumulated Ama toxins. Tejpatta in food serves both as flavour and as a daily metabolic tonic.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Antidiabetic &amp; Blood Sugar</div>
+          <div class="benefit-desc">Cinnamaldehyde and related compounds enhance insulin sensitivity, modulate glucose uptake, and reduce fasting blood glucose in research models and clinical trials. Bay leaf tea is widely used in folk practice for type 2 diabetes management — supported by modern hypoglycaemic studies.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Cardiovascular &amp; Cholesterol</div>
+          <div class="benefit-desc">Reduces LDL cholesterol, total cholesterol, and triglycerides while supporting HDL. Eugenol and cinnamaldehyde together support healthy blood pressure, prevent platelet aggregation, and reduce oxidative stress on arterial walls — a triple action useful in metabolic syndrome.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Antimicrobial &amp; Antifungal</div>
+          <div class="benefit-desc">Eugenol-rich essential oil shows broad-spectrum activity against bacteria, fungi (including Candida albicans yeast infections), and viruses. Adding Tejpatta to fat-rich foods naturally extends shelf life by preventing oxidative spoilage — a culinary use rooted in pharmacology.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Respiratory Relief</div>
+          <div class="benefit-desc">Carminative, expectorant, and antimicrobial action eases cough, cold, coryza, sinusitis, allergy, and asthma. Bay leaf tea with Tulsi and black pepper is a classical home remedy for upper respiratory infections; vapor inhalation clears congestion.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Hepatoprotective &amp; Antioxidant</div>
+          <div class="benefit-desc">Documented hepatoprotective activity protects liver cells from toxin and oxidative damage. The leaf ethanolic extract's IC50 of 13.55 μg/ml in DPPH assay places it among the more potent natural antioxidants — useful in chronic inflammatory and metabolic conditions.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Anti-inflammatory &amp; Antirheumatic</div>
+          <div class="benefit-desc">Aqueous leaf extract demonstrates measurable anti-inflammatory activity in both in vivo and in vitro studies. Used traditionally for rheumatism, arthritis, and joint pain — both internally as bay leaf tea and externally as warm leaf compress.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Hair, Scalp &amp; Skin</div>
+          <div class="benefit-desc">Decoction of Tejpatta (5g in 400ml water reduced to 100ml) applied to the scalp combats dandruff, lice, and scalp infections. Combined with Bhringaraj, the treatment darkens and strengthens hair. Antimicrobial action also helps minor skin infections and wound healing.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">06</span>
+        <h2 class="section-title">How to Consume Tejpatta</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Tejpatta crosses freely between food and medicine. Its everyday culinary use — as the bay leaf added to biryanis, dals, curries, pickles, and pulao — already delivers measurable digestive and metabolic benefits. Therapeutic preparations include teas, decoctions, leaf powder, and topical applications. Dried leaves retain their potency for up to a year if stored airtight; the aroma fades with prolonged storage.</p>
+      <table class="consume-table">
+        <thead>
+          <tr>
+            <th>Form</th>
+            <th>Preparation</th>
+            <th>Dosage</th>
+            <th>Best Time</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Culinary Use</td>
+            <td>Whole or torn leaves added to dishes during cooking</td>
+            <td>1–2 leaves per dish</td>
+            <td>With meals (daily)</td>
+          </tr>
+          <tr>
+            <td>Tejpatta Tea</td>
+            <td>Steep 2–3 leaves in 1 cup hot water for 5–10 min</td>
+            <td>1–2 cups daily</td>
+            <td>After meals (digestion)</td>
+          </tr>
+          <tr>
+            <td>Combined Cold-Cough Tea</td>
+            <td>3–4 Tejpatta + Tulsi + black pepper, with honey</td>
+            <td>1 cup, 3× daily</td>
+            <td>For cold, cough, allergy, sinusitis</td>
+          </tr>
+          <tr>
+            <td>Leaf Decoction (Kwath)</td>
+            <td>Boil 1 tbsp coarse powder in 4 cups water; reduce to 1 cup</td>
+            <td>30–50 ml twice daily</td>
+            <td>Before meals (for indigestion, diabetes)</td>
+          </tr>
+          <tr>
+            <td>Leaf Powder</td>
+            <td>Dried leaves ground; mixed with honey</td>
+            <td>2 g with honey</td>
+            <td>For cough &amp; respiratory issues</td>
+          </tr>
+          <tr>
+            <td>Vapor Inhalation</td>
+            <td>Fresh or dried leaves boiled; steam inhaled</td>
+            <td>5–10 minutes</td>
+            <td>For cold, sinus, congestion</td>
+          </tr>
+          <tr>
+            <td>Scalp Decoction</td>
+            <td>5 g Tejpatta boiled in 400 ml water; reduce to 100 ml</td>
+            <td>Apply to roots, leave 3 hours, wash</td>
+            <td>For dandruff, lice, scalp health</td>
+          </tr>
+          <tr>
+            <td>Trijataka Churna</td>
+            <td>Equal parts Tejpatta + cinnamon + cardamom powder</td>
+            <td>1–3 g daily</td>
+            <td>Classical formulation in Chyavanprash, Sitopaladi</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">07</span>
+        <h2 class="section-title">Safety &amp; Precautions</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">In culinary doses, Tejpatta is universally regarded as safe and is consumed daily across India and South Asia. However, medicinal use of concentrated extracts, essential oil, or large quantities of leaves calls for care in specific clinical contexts — particularly given its hot potency and documented hypoglycaemic and antiplatelet activities.</p>
+      <ul class="precaution-list">
+        <li><strong>Pregnancy:</strong> Culinary amounts in cooking are widely consumed safely. Avoid medicinal doses, concentrated extracts, and essential oil during pregnancy due to potential uterine-stimulating effects of cinnamaldehyde.</li>
+        <li><strong>Breastfeeding:</strong> Culinary use is considered safe. Concentrated extracts and essential oil are best avoided during lactation; consult a qualified physician before therapeutic use.</li>
+        <li><strong>Antidiabetic medications:</strong> Documented hypoglycaemic activity may potentiate insulin and oral antidiabetics (metformin, glimepiride, glipizide). Monitor blood glucose closely if combining; do not stop prescribed diabetes medication without medical supervision.</li>
+        <li><strong>Surgery:</strong> Discontinue concentrated extracts and high-dose preparations at least 2 weeks before scheduled surgery, as Tejpatta may affect blood glucose, platelet function, and clotting time.</li>
+        <li><strong>Anticoagulant interactions:</strong> Eugenol and cinnamaldehyde have mild antiplatelet activity. Use with caution alongside warfarin, heparin, aspirin, or clopidogrel; consult a physician.</li>
+        <li><strong>Hyperacidity &amp; ulcers:</strong> Hot potency (ushna virya) and pungent quality may aggravate active hyperacidity, gastritis, or peptic ulcer flare-ups. Avoid high doses during active episodes; pair with cooling anupanas.</li>
+        <li><strong>Whole-leaf hazard:</strong> Whole bay leaves do not soften during cooking and remain sharp-edged. Always remove the leaf from the dish before serving — accidental ingestion can cause choking or gastrointestinal injury.</li>
+        <li><strong>Essential oil:</strong> Never consume undiluted Tejpatta essential oil. The concentrated cinnamaldehyde and eugenol may cause severe mucosal irritation. Always dilute in carrier oil for topical use; internal use of essential oil requires professional supervision.</li>
+      </ul>
+    </div>
+
+    <div class="sources">
+      <div class="sources-title">References &amp; Sources</div>
+      <ul>
+        <li>Sharma V &amp; Rao LJ — "An overview on chemical composition, bioactivity and processing of leaves of Cinnamomum tamala" — Critical Reviews in Food Science and Nutrition, 2014</li>
+        <li>Bhatt A et al. — "Pharmacognostic and phytochemical profile of Cinnamomum tamala Nees &amp; Eberm: A review" — Journal of Pharmacognosy and Phytochemistry, 2018</li>
+        <li>Pandey AK, Mishra AK, Mishra A — "Antifungal and antioxidative potential of oil and extracts derived from leaves of Indian spice plant Cinnamomum tamala" — Cellular &amp; Molecular Biology, 2012</li>
+        <li>Gambhire MN, Juvekar AR, Wankhede SS — "Anti-inflammatory activity of aqueous extract of Cinnamomum tamala leaves by in vivo and in vitro methods" — Journal of Pharmacy Research, 2009</li>
+        <li>Sharma G &amp; Nautiyal AR — "Cinnamomum tamala: A valuable tree from Himalayas" — International Journal of Medicinal &amp; Aromatic Plants, 2011</li>
+        <li>"Review Based Upon Ayurvedic and Traditional Uses of Cinnamomum tamala (Tejpatta)" — ResearchGate, 2021</li>
+        <li>Charaka Samhita &amp; Bhavaprakasha Nighantu — Classical descriptions of Tamala Patra and Trijataka</li>
+        <li>The Ayurvedic Pharmacopoeia of India, Vol. I, Part I — Government of India, Ministry of AYUSH</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer>
+    <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a
+      qualified practitioner before therapeutic use</p>
+  </footer>
+
+  <audio id="tejpattaAudio" src="tejpatta_benefits.mp3" loop preload="auto"></audio>
+
+  <script>
+    const open3D = document.getElementById('open3D');
+    const close3D = document.getElementById('close3D');
+    const modal = document.getElementById('viewerModal');
+    const tejpattaAudio = document.getElementById('tejpattaAudio');
+
+    function openModal() {
+      modal.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+      history.pushState({ modal: 'tejpatta3d' }, '', '#3d');
+      tejpattaAudio.play().catch(e => console.log('Audio autoplay blocked', e));
+    }
+
+    function closeModal() {
+      modal.style.display = 'none';
+      document.body.style.overflow = '';
+      if (window.location.hash === '#3d') {
+        history.replaceState(null, '', window.location.pathname);
+      }
+      tejpattaAudio.pause();
+      tejpattaAudio.currentTime = 0;
+    }
+
+    open3D.addEventListener('click', function (e) {
+      e.preventDefault(); e.stopPropagation();
+      openModal();
+    });
+
+    close3D.addEventListener('click', function (e) {
+      e.preventDefault(); e.stopPropagation();
+      closeModal();
+    });
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+    });
+
+    window.addEventListener('popstate', function (e) {
+      if (modal.style.display === 'flex') {
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+    });
+  </script>
+</body>
+
+</html>

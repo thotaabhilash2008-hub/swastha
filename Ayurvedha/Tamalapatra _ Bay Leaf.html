@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tamalapatra | Swastha</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+  <style>
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+    * { margin: 0; padding: 0; box-sizing: border-box }
+    html { scroll-behavior: smooth }
+    body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--ink); min-height: 100vh; overflow-x: hidden; position: relative }
+    body::before { content: ''; position: fixed; inset: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E"); opacity:.03; pointer-events:none; z-index:100 }
+
+    #open3D { position:fixed; top:25px; right:30px; padding:10px 18px; font-size:11px; letter-spacing:2px; text-transform:uppercase; background:var(--forest); color:#fff; border:none; cursor:pointer; z-index:1000; transition:.3s }
+    #open3D:hover { background:var(--gold); color:var(--deep) }
+    #viewerModal { position:fixed; inset:0; z-index:2000; display:none; flex-direction:column }
+    #modal-topbar { flex-shrink:0; height:58px; background:#111; display:flex; align-items:center; justify-content:space-between; padding:0 28px 0 32px; border-bottom:1px solid rgba(255,255,255,.07) }
+    #modal-topbar span { font-family:'Jost',sans-serif; font-size:11px; font-weight:300; letter-spacing:4.5px; text-transform:uppercase; color:rgba(255,255,255,.72) }
+    #close3D { width:38px; height:38px; font-size:15px; font-weight:300; background:transparent; color:#fff; border:1.5px solid rgba(255,255,255,.7); border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background .2s,color .2s,transform .22s }
+    #close3D:hover { background:#fff; color:#111; transform:rotate(90deg) }
+    #viewerModal model-viewer { flex:1; width:100%; display:block; background:#fff }
+
+    .bg-circle { position:fixed; border-radius:50%; pointer-events:none; z-index:0 }
+    .bg-circle-1 { width:700px; height:700px; background:radial-gradient(circle,rgba(59,94,43,.09) 0%,transparent 70%); top:-200px; right:-150px }
+    .bg-circle-2 { width:500px; height:500px; background:radial-gradient(circle,rgba(196,164,74,.07) 0%,transparent 70%); bottom:-100px; left:-100px }
+
+    /* Bay leaf SVG */
+    .botanical-svg { position:fixed; pointer-events:none; z-index:1; opacity:.09 }
+    .botanical-tl { top:-10px; left:-10px; width:240px }
+    .botanical-br { bottom:-10px; right:-10px; width:210px; transform:rotate(180deg) }
+
+    .hero { position:relative; z-index:10; padding:54px 40px 0; text-align:center; opacity:0; animation:fadeUp .9s ease .1s forwards }
+    .back-link { display:inline-flex; align-items:center; gap:8px; font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--sage); text-decoration:none; margin-bottom:36px; transition:color .3s }
+    .back-link:hover { color:var(--gold) }
+    .logo-rule { display:flex; align-items:center; justify-content:center; gap:20px; margin-bottom:14px }
+    .logo-rule span { display:block; height:1px; width:70px; background:linear-gradient(to right,transparent,var(--gold)) }
+    .logo-rule span:last-child { background:linear-gradient(to left,transparent,var(--gold)) }
+    .logo-ornament { font-size:13px; color:var(--gold) }
+    .hero-title { font-family:'Cormorant Garamond',serif; font-size:clamp(52px,10vw,100px); font-weight:300; letter-spacing:8px; line-height:1; color:var(--deep) }
+    .hero-subtitle { font-family:'Cormorant Garamond',serif; font-size:18px; font-style:italic; font-weight:300; color:var(--earth); letter-spacing:2px; margin-top:8px }
+    .hero-sci { font-size:11px; font-weight:200; letter-spacing:5px; color:var(--sage); margin-top:6px }
+
+    .hero-photos { position:relative; z-index:10; display:grid; grid-template-columns:1fr 1fr; gap:2px; max-width:900px; margin:40px auto 0; opacity:0; animation:fadeUp .9s ease .35s forwards }
+    .hero-photos img { width:100%; height:380px; object-fit:cover; object-position:center; display:block; background:var(--parchment) }
+    .photo-caption { text-align:center; font-family:'Cormorant Garamond',serif; font-size:12px; font-style:italic; color:var(--sage); letter-spacing:1px; padding:10px 0 0; max-width:900px; margin:0 auto; position:relative; z-index:10; opacity:0; animation:fadeUp .9s ease .5s forwards }
+
+    .divider { display:flex; align-items:center; justify-content:center; gap:16px; margin:50px auto; max-width:600px; opacity:0; animation:fadeUp .9s ease .55s forwards; position:relative; z-index:10 }
+    .divider-line { height:1px; width:120px; background:linear-gradient(to right,transparent,var(--sage)) }
+    .divider-line:last-child { background:linear-gradient(to left,transparent,var(--sage)) }
+    .divider-leaf { color:var(--forest); font-size:18px }
+
+    .content { position:relative; z-index:10; max-width:860px; margin:0 auto; padding:0 30px 80px }
+    .intro-text { font-family:'Cormorant Garamond',serif; font-size:20px; font-weight:300; line-height:1.75; color:var(--ink); text-align:center; max-width:700px; margin:0 auto 60px; opacity:0; animation:fadeUp .9s ease .6s forwards }
+    .intro-text em { color:var(--forest); font-style:italic }
+
+    .section { margin-bottom:60px; opacity:0; animation:fadeUp .9s ease forwards }
+    .section:nth-child(1){animation-delay:.65s}.section:nth-child(2){animation-delay:.75s}.section:nth-child(3){animation-delay:.85s}.section:nth-child(4){animation-delay:.95s}.section:nth-child(5){animation-delay:1.05s}.section:nth-child(6){animation-delay:1.15s}.section:nth-child(7){animation-delay:1.25s}
+
+    .section-header { display:flex; align-items:center; gap:14px; margin-bottom:20px }
+    .section-num { font-family:'Cormorant Garamond',serif; font-size:11px; letter-spacing:4px; color:var(--gold) }
+    .section-title { font-family:'Cormorant Garamond',serif; font-size:28px; font-weight:400; color:var(--deep); letter-spacing:1px }
+    .section-rule { height:1px; flex:1; background:linear-gradient(to right,var(--gold),transparent) }
+    .section-body { font-size:13px; font-weight:300; line-height:1.9; color:var(--ink); margin-bottom:24px }
+
+    .data-table { width:100%; border-collapse:collapse; margin:16px 0 8px; font-size:12px }
+    .data-table thead tr { background:var(--deep); color:var(--gold); font-size:10px; letter-spacing:3px; text-transform:uppercase }
+    .data-table thead th { padding:12px 14px; text-align:left; font-weight:400 }
+    .data-table tbody tr:nth-child(even){background:var(--parchment)}.data-table tbody tr:nth-child(odd){background:var(--cream)}
+    .data-table tbody tr { transition:background .2s }
+    .data-table tbody tr:hover { background:#ddd5bc }
+    .data-table tbody td { padding:10px 14px; color:var(--ink); border-bottom:1px solid rgba(74,103,65,.08) }
+    .data-table tbody td:first-child { font-weight:400; color:var(--deep); width:28% }
+
+    .dosha-table { width:100%; border-collapse:collapse; margin:16px 0; font-size:12px }
+    .dosha-table thead tr { background:var(--forest); color:var(--cream) }
+    .dosha-table thead th { padding:12px 14px; text-align:left; font-weight:400; letter-spacing:2px; font-size:10px; text-transform:uppercase }
+    .dosha-table tbody tr:nth-child(even){background:var(--parchment)}.dosha-table tbody tr:nth-child(odd){background:var(--cream)}
+    .dosha-table tbody td { padding:11px 14px; color:var(--ink); border-bottom:1px solid rgba(74,103,65,.08) }
+    .dosha-table tbody td:first-child { font-weight:400; color:var(--forest); width:18% }
+    .dosha-table tbody td:nth-child(2) { color:var(--earth); width:20% }
+
+    .consume-table { width:100%; border-collapse:collapse; margin:16px 0; font-size:12px }
+    .consume-table thead tr { background:var(--earth); color:var(--cream) }
+    .consume-table thead th { padding:12px 14px; text-align:left; font-weight:400; letter-spacing:2px; font-size:10px; text-transform:uppercase }
+    .consume-table tbody tr:nth-child(even){background:var(--parchment)}.consume-table tbody tr:nth-child(odd){background:var(--cream)}
+    .consume-table tbody td { padding:11px 14px; color:var(--ink); border-bottom:1px solid rgba(74,103,65,.08) }
+    .consume-table tbody td:first-child { font-weight:400; color:var(--earth); width:22% }
+
+    .benefits-grid { display:grid; grid-template-columns:1fr 1fr; gap:1px; background:rgba(59,94,43,.12); border:1px solid rgba(59,94,43,.12); margin:8px 0 }
+    .benefit-card { background:var(--cream); padding:24px 22px; transition:background .3s; position:relative; overflow:hidden }
+    .benefit-card:hover { background:#e5ddc8 }
+    .benefit-card::before { content:''; position:absolute; bottom:0; left:0; width:0; height:2px; background:var(--gold); transition:width .4s }
+    .benefit-card:hover::before { width:100% }
+    .benefit-title { font-family:'Cormorant Garamond',serif; font-size:16px; font-weight:600; color:var(--forest); margin-bottom:8px }
+    .benefit-desc { font-size:11.5px; font-weight:300; line-height:1.75; color:var(--ink); opacity:.85 }
+
+    .precaution-list { list-style:none; margin:8px 0 }
+    .precaution-list li { display:flex; gap:12px; align-items:flex-start; padding:10px 14px; font-size:12px; font-weight:300; line-height:1.7; color:var(--ink); border-bottom:1px solid rgba(74,103,65,.08) }
+    .precaution-list li:last-child { border-bottom:none }
+    .precaution-list li::before { content:'▸'; color:var(--gold); flex-shrink:0; margin-top:1px }
+
+    .nutrition-bar { display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:rgba(59,94,43,.12); border:1px solid rgba(59,94,43,.12); margin:20px 0 }
+    .nutrition-cell { background:var(--cream); padding:22px 16px; text-align:center; transition:background .3s }
+    .nutrition-cell:hover { background:var(--parchment) }
+    .nutrition-num { font-family:'Cormorant Garamond',serif; font-size:36px; font-weight:300; color:var(--forest); line-height:1; margin-bottom:4px }
+    .nutrition-unit { font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--gold); font-weight:300 }
+    .nutrition-label { font-size:11px; font-weight:300; color:var(--ink); margin-top:5px }
+
+    .sources { border-top:1px solid rgba(59,94,43,.15); padding-top:24px; margin-top:20px }
+    .sources-title { font-size:10px; letter-spacing:4px; text-transform:uppercase; color:var(--sage); margin-bottom:12px; font-weight:300 }
+    .sources ul { list-style:none }
+    .sources ul li { font-family:'Cormorant Garamond',serif; font-size:13px; font-style:italic; color:var(--earth); padding:5px 0; border-bottom:1px solid rgba(59,94,43,.06) }
+    .sources ul li::before { content:'· '; color:var(--sage) }
+
+    footer { position:relative; z-index:10; text-align:center; padding:24px 20px 44px; border-top:1px solid rgba(59,94,43,.12); max-width:860px; margin:0 auto }
+    footer p { font-size:11px; letter-spacing:4px; text-transform:uppercase; color:var(--sage); font-weight:300 }
+
+    @keyframes fadeUp { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:translateY(0)} }
+    @media(max-width:700px) {
+      .hero-photos{grid-template-columns:1fr}.hero-photos img{height:260px}
+      .benefits-grid{grid-template-columns:1fr}.nutrition-bar{grid-template-columns:1fr 1fr}
+      .content{padding:0 18px 60px}
+    }
+  </style>
+</head>
+<body>
+
+<button id="open3D">View in 3D</button>
+<div id="viewerModal">
+  <div id="modal-topbar"><span>3D Model — Tamalapatra</span><button id="close3D">✕</button></div>
+  <model-viewer src="tamalapatra3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+</div>
+
+<div class="bg-circle bg-circle-1"></div>
+<div class="bg-circle bg-circle-2"></div>
+
+<!-- Bay leaf branch decorations -->
+<svg class="botanical-svg botanical-tl" viewBox="0 0 240 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M20 310 Q 60 240 100 180 Q 140 120 200 30" stroke="#3b5e2b" stroke-width="2" fill="none"/>
+  <!-- leaves along stem -->
+  <ellipse cx="75" cy="228" rx="32" ry="14" fill="#3b5e2b" transform="rotate(-38 75 228)" opacity=".85"/>
+  <path d="M75 228 Q 60 218 48 230" stroke="#1e2d14" stroke-width="1" fill="none" opacity=".5"/>
+  <ellipse cx="105" cy="185" rx="28" ry="12" fill="#7c9e5e" transform="rotate(-55 105 185)" opacity=".8"/>
+  <path d="M105 185 Q 118 174 108 163" stroke="#1e2d14" stroke-width="1" fill="none" opacity=".5"/>
+  <ellipse cx="140" cy="140" rx="30" ry="13" fill="#3b5e2b" transform="rotate(-65 140 140)" opacity=".9"/>
+  <path d="M140 140 Q 126 130 135 118" stroke="#1e2d14" stroke-width="1" fill="none" opacity=".5"/>
+  <ellipse cx="168" cy="98" rx="26" ry="11" fill="#7c9e5e" transform="rotate(-72 168 98)" opacity=".75"/>
+  <ellipse cx="55" cy="262" rx="22" ry="9" fill="#7c9e5e" transform="rotate(-25 55 262)" opacity=".7"/>
+</svg>
+<svg class="botanical-svg botanical-br" viewBox="0 0 240 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M20 310 Q 60 240 100 180 Q 140 120 200 30" stroke="#3b5e2b" stroke-width="2" fill="none"/>
+  <ellipse cx="75" cy="228" rx="32" ry="14" fill="#3b5e2b" transform="rotate(-38 75 228)" opacity=".85"/>
+  <ellipse cx="105" cy="185" rx="28" ry="12" fill="#7c9e5e" transform="rotate(-55 105 185)" opacity=".8"/>
+  <ellipse cx="140" cy="140" rx="30" ry="13" fill="#3b5e2b" transform="rotate(-65 140 140)" opacity=".9"/>
+  <ellipse cx="55" cy="262" rx="22" ry="9" fill="#7c9e5e" transform="rotate(-25 55 262)" opacity=".7"/>
+</svg>
+
+<div class="hero">
+  <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+  <div class="logo-rule"><span></span><div class="logo-ornament">✦</div><span></span></div>
+  <div class="hero-title">Tamalapatra</div>
+  <div class="hero-subtitle">Indian Bay Leaf — The Sacred Leaf of Tamala</div>
+  <div class="hero-sci">Cinnamomum tamala (Buch.-Ham.) T.Nees &amp; Eberm. &nbsp;·&nbsp; Laurus cassia</div>
+</div>
+
+<div class="hero-photos">
+  <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/b/be/Cinnamomum_tamala_%28Bay_leaf%29_tree_in_RDA%2C_Bogra_03.jpg/1280px-Cinnamomum_tamala_%28Bay_leaf%29_tree_in_RDA%2C_Bogra_03.jpg" alt="Tamalapatra — fresh Cinnamomum tamala leaves with three parallel veins"
+    onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+  <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9c/Cinnamomum_tamala_%28Bay_leaf%29_tree_in_RDA%2C_Bogra_02.jpg/1280px-Cinnamomum_tamala_%28Bay_leaf%29_tree_in_RDA%2C_Bogra_02.jpg" alt="Cinnamomum tamala tree in Himalayan foothills"
+    onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+</div>
+<p class="photo-caption">Fig. 1 — Tamalapatra leaves showing the distinctive three parallel veins — the primary botanical identifier &nbsp;·&nbsp; Fig. 2 — Cinnamomum tamala tree growing in its native Himalayan foothill habitat</p>
+
+<div class="divider">
+  <div class="divider-line"></div>
+  <div class="divider-leaf">❧</div>
+  <div class="divider-line"></div>
+</div>
+
+<div class="content">
+  <p class="intro-text">Often mistaken in the West for the Mediterranean bay laurel (<em>Laurus nobilis</em>), <em>Tamalapatra</em> is a wholly distinct spice of the Indian subcontinent — broader, clove-scented, marked by <em>three parallel veins</em> running the length of the leaf, and venerated in Ayurveda as a warming digestive, blood sugar regulator, and aromatic cardiac tonic whose fragrance the gods themselves were said to favour.</p>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">01</span><h2 class="section-title">Botanical Profile</h2><div class="section-rule"></div></div>
+    <p class="section-body">Tamalapatra (<em>Cinnamomum tamala</em>) is a medium-to-large evergreen tree of the Lauraceae family, native to the subtropical Himalayan foothills from Nepal and Bhutan through Northeast India (Assam, Meghalaya, Arunachal Pradesh) and extending into Bhutan, Bangladesh, and parts of Myanmar. It grows between 900–2,100 m altitude, favouring moist mixed forests with rich loamy soils.</p>
+    <p class="section-body">The tree reaches 8–17 m in height, with dark grey-brown aromatic bark that has a cinnamon-like fragrance when cut. Leaves are the primary medicinal and culinary part — large (8–15 cm long), ovate to elliptic, leathery, glossy dark green above and paler beneath, with three prominent parallel veins arising from the base. This triveined structure immediately distinguishes it from <em>Laurus nobilis</em> (Mediterranean bay, pinnately veined) and is the definitive field identification marker. Dried leaves retain their fragrance for months and are used extensively in North Indian cuisine (biryanis, curries, dals) and Ayurvedic medicine alike.</p>
+    <table class="data-table">
+      <thead><tr><th>Property</th><th>Detail</th></tr></thead>
+      <tbody>
+        <tr><td>Family</td><td>Lauraceae</td></tr>
+        <tr><td>Botanical Name</td><td>Cinnamomum tamala (Buch.-Ham.) T.Nees &amp; Eberm.</td></tr>
+        <tr><td>Sanskrit Names</td><td>Tamalapatra, Tamala, Patra, Tejpatra, Tejapatta, Surasa</td></tr>
+        <tr><td>Common Names</td><td>Indian Bay Leaf, Tejpat, Tejpatta, Malabar Leaf</td></tr>
+        <tr><td>Regional Names</td><td>Tejpat (Hindi/Bengali), Tamalapatra (Kannada), Talishapatra (Tamil), Malay Ela (Malayalam)</td></tr>
+        <tr><td>Origin</td><td>Subtropical Himalayan foothills — Nepal, NE India, Bhutan, Myanmar</td></tr>
+        <tr><td>Altitude Range</td><td>900–2,100 m</td></tr>
+        <tr><td>Plant Type</td><td>Medium-to-large evergreen tree (8–17 m)</td></tr>
+        <tr><td>Key Identifier</td><td>Three prominent parallel veins from leaf base (vs. pinnate veins of Laurus nobilis)</td></tr>
+        <tr><td>Medicinal Parts</td><td>Leaves (primary), bark, fruits, root bark</td></tr>
+        <tr><td>Aroma Profile</td><td>Warm, clove-like, cinnamon-adjacent, with faint camphoraceous note</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">02</span><h2 class="section-title">Phytochemical Composition</h2><div class="section-rule"></div></div>
+    <p class="section-body">The essential oil of Tamalapatra leaves is dominated by eugenol (30–70%) — the same compound responsible for the characteristic fragrance of cloves — along with cinnamaldehyde, linalool, and caryophyllene. This eugenol-rich profile accounts for its antimicrobial, anti-inflammatory, and local anaesthetic properties. The leaves additionally contain a rich matrix of polyphenols, tannins, flavonoids, and diterpenes.</p>
+    <p class="section-body">Of particular pharmacological importance are the <em>A-type proanthocyanidins</em> — a class of condensed tannins found in the leaves and bark that have demonstrated significant insulin-mimetic activity in clinical and laboratory studies, directly relevant to Tamalapatra's classical use in metabolic and diabetic conditions.</p>
+    <div class="nutrition-bar">
+      <div class="nutrition-cell"><div class="nutrition-num">30–70</div><div class="nutrition-unit">% Eugenol</div><div class="nutrition-label">Dominant essential oil constituent</div></div>
+      <div class="nutrition-cell"><div class="nutrition-num">1–3</div><div class="nutrition-unit">% EO yield</div><div class="nutrition-label">Essential oil from fresh leaves</div></div>
+      <div class="nutrition-cell"><div class="nutrition-num">A-type</div><div class="nutrition-unit">PACs</div><div class="nutrition-label">Insulin-mimetic proanthocyanidins</div></div>
+      <div class="nutrition-cell"><div class="nutrition-num">High</div><div class="nutrition-unit">ORAC</div><div class="nutrition-label">Antioxidant capacity (leaf extract)</div></div>
+    </div>
+    <table class="data-table">
+      <thead><tr><th>Compound</th><th>Category</th><th>Primary Action</th></tr></thead>
+      <tbody>
+        <tr><td>Eugenol</td><td>Phenylpropanoid (essential oil)</td><td>Antimicrobial, anti-inflammatory, analgesic, antifungal; COX-inhibitor</td></tr>
+        <tr><td>Cinnamaldehyde</td><td>Aldehyde (essential oil)</td><td>Antimicrobial, antifungal, insulin-sensitising, thermogenic</td></tr>
+        <tr><td>Linalool</td><td>Monoterpene alcohol</td><td>Anxiolytic, sedative, anti-inflammatory, antinociceptive</td></tr>
+        <tr><td>β-Caryophyllene</td><td>Sesquiterpene</td><td>Anti-inflammatory (CB2 agonist), analgesic, gastroprotective</td></tr>
+        <tr><td>A-type Proanthocyanidins</td><td>Condensed tannins</td><td>Insulin-mimetic, glucose transport stimulation, anti-diabetic</td></tr>
+        <tr><td>Quercetin &amp; Kaempferol</td><td>Flavonoids</td><td>Antioxidant, anti-inflammatory, anti-allergic, cardioprotective</td></tr>
+        <tr><td>Catechins &amp; EGCG</td><td>Flavan-3-ols</td><td>Antioxidant, anti-diabetic, lipid-lowering</td></tr>
+        <tr><td>Diterpenes (Terpinen-4-ol)</td><td>Terpenoids</td><td>Diuretic, antimicrobial, kidney-protective</td></tr>
+        <tr><td>Rutin</td><td>Flavonoid glycoside</td><td>Capillary strengthening, anti-inflammatory, antioxidant</td></tr>
+        <tr><td>Tannic &amp; Gallic Acids</td><td>Hydrolysable tannins</td><td>Astringent, antimicrobial, antidiarrhoeal, wound-healing</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">03</span><h2 class="section-title">Ayurvedic Significance</h2><div class="section-rule"></div></div>
+    <p class="section-body">Tamalapatra is extensively cited throughout classical Ayurvedic literature. Charaka Samhita lists it among the <em>Surasadi Gana</em> — a group of aromatic herbs used for their digestive, carminative, and Ama-clearing properties. Sushruta includes it in the <em>Eladi Gana</em> (the group of aromatics centred on cardamom). It is a key ingredient in <em>Talisadi Churna</em>, <em>Sitopaladi Churna</em> (as Talisa/Tamalapatra in the South Indian tradition), and <em>Dasamula</em>-adjacent formulations for respiratory and digestive disorders.</p>
+    <p class="section-body">Bhavaprakasha Nighantu (Haritakyadi Varga) describes Tamalapatra as <em>katu-tikta-kashaya</em> in taste, ushna in virya, and especially effective against <em>tridosha</em> — with primary action on Kapha and Vata disorders. Classical shloka: <em>"Tamalah katu tikta cha ushno vaatakaphapahah / Deepano rochano grahi shwasapleehavishapahah"</em> — describing it as a digestive stimulant, appetiser, constipating (in diarrhoea), and effective against asthma, splenomegaly, and toxins.</p>
+    <table class="dosha-table">
+      <thead><tr><th>Dosha</th><th>Effect</th><th>Mechanism &amp; Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Vata ↓</td><td>Pacifying</td><td>Ushna virya (hot potency) and Snigdha (slightly unctuous) quality warm and ground Vata — effective in bloating, flatulence, intestinal spasm, and neuralgic pain</td></tr>
+        <tr><td>Pitta ↑</td><td>Mildly aggravating</td><td>Hot potency and pungent taste may increase Pitta in excess; used cautiously in bleeding disorders, heavy menstruation, and hyperacidity</td></tr>
+        <tr><td>Kapha ↓↓</td><td>Strongly pacifying</td><td>Katu (pungent) and Tikta (bitter) taste with Ushna virya strongly clear Kapha — primary action in respiratory congestion, productive cough, obesity, and Ama accumulation</td></tr>
+      </tbody>
+    </table>
+    <p class="section-body"><strong>Rasa:</strong> Katu (pungent), Tikta (bitter), Kashaya (astringent) &nbsp;·&nbsp; <strong>Guna:</strong> Laghu (light), Ruksha (dry) &nbsp;·&nbsp; <strong>Virya:</strong> Ushna (hot) &nbsp;·&nbsp; <strong>Vipaka:</strong> Katu (pungent) &nbsp;·&nbsp; <strong>Karma:</strong> Deepana, Pachana, Grahi, Kaphavata shamaka</p>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">04</span><h2 class="section-title">Key Health Benefits</h2><div class="section-rule"></div></div>
+    <p class="section-body">Tamalapatra has attracted significant modern pharmacological interest — particularly for its anti-diabetic, antimicrobial, and cardioprotective properties — with a growing body of clinical and preclinical evidence validating its extensive traditional applications across digestive, metabolic, and respiratory health.</p>
+    <div class="benefits-grid">
+      <div class="benefit-card">
+        <div class="benefit-title">Blood Sugar Regulation &amp; Anti-Diabetic</div>
+        <div class="benefit-desc">Among the most evidence-backed applications: multiple studies demonstrate that Cinnamomum tamala leaf extract significantly lowers fasting blood glucose, improves HbA1c, and enhances insulin sensitivity. The A-type proanthocyanidins act as insulin mimetics — activating glucose transport proteins (GLUT4) independently of insulin. A key clinical study found that 1–3 g of Indian bay leaf powder daily for 30 days significantly reduced glucose and LDL in Type 2 diabetics.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Digestive Stimulant &amp; Carminative</div>
+        <div class="benefit-desc">Tamalapatra's classical role as <em>Deepana</em> (kindling digestive fire) and <em>Pachana</em> (Ama-digesting) is its most foundational application in daily Ayurvedic practice. Essential oil constituents stimulate bile production, increase digestive enzyme secretion, and reduce intestinal spasm. Traditionally prescribed for bloating, flatulence, dyspepsia, anorexia, and sluggish digestion — often simply added to cooking for this effect.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Cardioprotective &amp; Cholesterol-Lowering</div>
+        <div class="benefit-desc">Both clinical and animal studies show significant reduction in total cholesterol, LDL, and triglycerides, with increase in HDL cholesterol with Tamalapatra supplementation. Eugenol and cinnamaldehyde inhibit platelet aggregation (anti-thrombotic), while quercetin and rutin strengthen capillary integrity and reduce vascular inflammation — making it a holistic cardiovascular herb.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Respiratory &amp; Anti-tussive</div>
+        <div class="benefit-desc">As a primary ingredient of Talisadi Churna, Tamalapatra clears Kapha from the respiratory tract, reduces bronchospasm, and has expectorant properties. The volatile eugenol and caryophyllene provide both antimicrobial coverage (against respiratory pathogens) and anti-inflammatory relief of bronchial mucosa — used in cough, asthma, bronchitis, and hoarse voice.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Antimicrobial &amp; Antifungal</div>
+        <div class="benefit-desc">Essential oil demonstrates potent broad-spectrum activity against E. coli, Salmonella, Staphylococcus aureus, Candida albicans, Aspergillus species, and several drug-resistant organisms. Eugenol's mechanism of action includes membrane disruption and efflux pump inhibition, making the leaf oil a subject of active interest in natural food preservation and antimicrobial formulation research.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Anti-inflammatory &amp; Analgesic</div>
+        <div class="benefit-desc">Eugenol and β-caryophyllene are well-characterised COX-1/COX-2 inhibitors with analgesic and anti-inflammatory activity comparable to non-steroidal anti-inflammatory drugs in animal models. Classical topical application of Tamalapatra leaf paste or oil to arthritic joints, headaches, and rheumatic pain aligns with this well-established mechanism.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Diuretic &amp; Renal Support</div>
+        <div class="benefit-desc">Classical texts describe Tamalapatra as beneficial in <em>Mutrakriccha</em> (dysuria) and urinary retention. Modern studies confirm diuretic activity with increased urine output and electrolyte excretion. The terpenic fraction, particularly terpinen-4-ol, mediates this effect — also providing protective action against renal oxidative stress.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Anxiolytic &amp; Neurological</div>
+        <div class="benefit-desc">Linalool — a major terpene constituent of the essential oil — is one of the most studied anxiolytic plant compounds, demonstrating GABA-modulating activity in rodent models equivalent to low-dose benzodiazepines without dependency. Aromatherapeutic use of Tamalapatra leaf oil for stress, anxiety, and insomnia reflects this phytochemical reality.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">05</span><h2 class="section-title">Classical Formulations Containing Tamalapatra</h2><div class="section-rule"></div></div>
+    <p class="section-body">Tamalapatra (as Tejpatra or Talisa/Talisapatra in South Indian texts) appears across a wide range of classical Ayurvedic compound preparations spanning digestive, respiratory, and metabolic indications.</p>
+    <table class="data-table">
+      <thead><tr><th>Formulation</th><th>System</th><th>Primary Indication</th></tr></thead>
+      <tbody>
+        <tr><td>Talisadi Churna</td><td>Ayurveda</td><td>Chronic cough, asthma, bronchitis, anorexia, Pitta-Kapha fevers — Tamalapatra (as Talisa) is the lead ingredient</td></tr>
+        <tr><td>Sitopaladi Churna (South tradition)</td><td>Ayurveda</td><td>Respiratory disorders, fever, loss of appetite — Talisa replaces or accompanies Vanshalochan in some regional traditions</td></tr>
+        <tr><td>Lavangadi Churna</td><td>Ayurveda</td><td>Nausea, vomiting, digestive weakness, dyspepsia</td></tr>
+        <tr><td>Tejapatra Ghrita</td><td>Ayurveda</td><td>Medicated ghee for digestive disorders, Vata-Kapha respiratory conditions</td></tr>
+        <tr><td>Chyavanprash</td><td>Ayurveda</td><td>One of 49 herbs in the classical Rasayana — immunity, longevity, respiratory strength</td></tr>
+        <tr><td>Brahma Rasayana</td><td>Ayurveda</td><td>Long-term Rasayana formulation for memory, immunity, and longevity</td></tr>
+        <tr><td>Dashamoola Kwatha (variant)</td><td>Ayurveda</td><td>Vata-Kapha fevers, joint pain, respiratory debility</td></tr>
+        <tr><td>Habb-e-Zanjabeel (Unani)</td><td>Unani Tibb</td><td>Digestive stimulant, carminative, cardiac tonic</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">06</span><h2 class="section-title">How to Consume Tamalapatra</h2><div class="section-rule"></div></div>
+    <p class="section-body">Tamalapatra is among the most versatile of Ayurvedic herbs — usable as a whole dried leaf in cooking, a powdered supplement, decoction, essential oil, or compound formulation. Unlike many potent herbs, it is a food-grade spice used daily in Indian kitchens, making low-dose therapeutic use readily accessible without formal prescription.</p>
+    <table class="consume-table">
+      <thead><tr><th>Form</th><th>Preparation</th><th>Dosage</th><th>Best Use</th></tr></thead>
+      <tbody>
+        <tr><td>Whole Dried Leaf (Culinary)</td><td>Add to curries, dals, rice, biryanis while cooking; remove before eating</td><td>1–2 leaves per dish, daily</td><td>Digestive stimulation, flavouring, general wellness</td></tr>
+        <tr><td>Leaf Powder (Churna)</td><td>Finely ground dried leaves; with warm water, honey, or ghee</td><td>1–3 g twice daily</td><td>Blood sugar, digestion, cholesterol support</td></tr>
+        <tr><td>Decoction (Kwatha)</td><td>Boil 5–6 dried leaves in 400 ml water; reduce to 100 ml; strain</td><td>50–100 ml twice daily</td><td>Respiratory conditions, fever, urinary disorders</td></tr>
+        <tr><td>Talisadi Churna</td><td>Classical compound powder; with honey or ghee</td><td>1–3 g 2–3× daily</td><td>Chronic cough, asthma, anorexia, fever</td></tr>
+        <tr><td>Essential Oil (Aromatherapy)</td><td>Diffuse 3–5 drops in water-based diffuser; or dilute 2% in carrier oil</td><td>Diffuse 30–60 min; topical as needed</td><td>Anxiety, respiratory congestion, pain relief</td></tr>
+        <tr><td>Leaf Oil (Topical massage)</td><td>Dilute 2–3% in sesame or coconut oil; warm slightly</td><td>Apply to affected joints 1–2× daily</td><td>Arthritis, rheumatic pain, headache</td></tr>
+        <tr><td>Tea / Hot Infusion</td><td>Steep 2–3 dried leaves in boiling water 10–15 min; strain; add ginger or honey</td><td>1–2 cups daily</td><td>Digestion, blood sugar, mild respiratory conditions</td></tr>
+        <tr><td>In Chyavanprash / Rasayana</td><td>As ingredient in compound; as directed by formulation</td><td>1–2 tsp of Chyavanprash daily</td><td>Immunity, longevity, respiratory Rasayana</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">07</span><h2 class="section-title">Safety &amp; Precautions</h2><div class="section-rule"></div></div>
+    <p class="section-body">Tamalapatra is a food-grade spice with an excellent safety profile at culinary and standard therapeutic doses. Centuries of culinary use across South Asia confirm general tolerability. However, concentrated extracts, essential oil, and high-dose supplementation warrant specific consideration for certain populations.</p>
+    <ul class="precaution-list">
+      <li><strong>General safety:</strong> Culinary use (1–2 leaves daily in cooking) is safe for virtually all healthy adults and children. Powdered leaf at 1–3 g/day is well-tolerated in clinical studies of up to 40 days with no significant adverse effects reported.</li>
+      <li><strong>Pregnancy:</strong> Culinary amounts are safe. Medicinal doses (powdered extract, high-dose decoctions) should be avoided in pregnancy due to Ushna virya (hot potency) and potential uterotonic effect of eugenol at high concentrations — consistent with avoiding cloves in therapeutic doses during pregnancy.</li>
+      <li><strong>Blood sugar medications:</strong> Tamalapatra has clinically demonstrated blood glucose lowering. Individuals on metformin, sulfonylureas, insulin, or other hypoglycaemics should monitor blood glucose closely and inform their physician — risk of additive hypoglycaemia with therapeutic doses.</li>
+      <li><strong>Anticoagulants:</strong> Eugenol has anti-platelet activity. High-dose supplementation combined with warfarin, aspirin, clopidogrel, or other blood thinners may potentiate bleeding risk — use supplemental (non-culinary) doses only under medical guidance.</li>
+      <li><strong>Laurus nobilis confusion:</strong> Note that many Western sources conflate Tamalapatra with Mediterranean bay laurel (<em>Laurus nobilis</em>) — they are botanically distinct species with different chemical profiles. Ensure you source authentic <em>Cinnamomum tamala</em> (trivenate leaves) for therapeutic use.</li>
+      <li><strong>Essential oil — internal use:</strong> Neat (undiluted) essential oil must never be taken internally. Eugenol at high doses is hepatotoxic. Dilute to 2% maximum for topical application; use aromatherapy-grade for diffusion only.</li>
+      <li><strong>Pitta excess conditions:</strong> The herb's hot potency may aggravate conditions of Pitta excess — including gastric ulcers, acid reflux, hyperacidity, inflammatory bowel disease, or heavy menstrual bleeding. Reduce dose or avoid supplemental use in active flares.</li>
+      <li><strong>Children:</strong> Culinary use is safe. Therapeutic supplemental doses should be scaled appropriately under practitioner guidance for children below 12.</li>
+    </ul>
+  </div>
+
+  <div class="sources">
+    <div class="sources-title">References &amp; Sources</div>
+    <ul>
+      <li>Charaka Samhita — Surasadi Gana: Tamalapatra classification and digestive indications</li>
+      <li>Bhavaprakasha Nighantu — Haritakyadi Varga: Tejapatra properties, shloka, and Karma</li>
+      <li>Sharangadhara Samhita — Madhyamakhanda: Talisadi Churna primary classical reference</li>
+      <li>Khan A et al. — "Cinnamon improves glucose and lipids of people with type 2 diabetes" — Diabetes Care, 2003</li>
+      <li>Broadhurst CL et al. — "Insulin-like biological activity of culinary and medicinal plant aqueous extracts in vitro" — Journal of Agricultural and Food Chemistry, 2000</li>
+      <li>Agrawal P et al. — "Randomized placebo-controlled, single blind trial of holy basil leaves in patients with noninsulin-dependent diabetes mellitus" — Journal of Ethnopharmacology, 2001</li>
+      <li>Ranasinghe P et al. — "Medicinal properties of 'true' cinnamon (Cinnamomum zeylanicum): a systematic review" — BMC Complementary and Alternative Medicine, 2013</li>
+      <li>Chouhan S et al. — "Antimicrobial Activity of Some Essential Oils — Present Status and Future Perspectives" — Medicines (MDPI), 2017</li>
+      <li>Peana AT et al. — "(−)-Linalool produces antinociception in two experimental models of pain" — European Journal of Pharmacology, 2003</li>
+      <li>Dravyaguna Vigyana — Prof. P.V. Sharma: Tamalapatra monograph, classical properties and formulations</li>
+    </ul>
+  </div>
+</div>
+
+<footer>
+  <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a qualified practitioner before therapeutic use</p>
+</footer>
+
+<script>
+  const open3D = document.getElementById('open3D');
+  const close3D = document.getElementById('close3D');
+  const modal = document.getElementById('viewerModal');
+  function openModal() {
+    var _aud = document.getElementById('tamalapatraAudio'); if(_aud){ _aud.currentTime=0; var playPromise = _aud.play(); if (playPromise !== undefined) { playPromise.catch(function(e){ console.log(e); }); } }
+ modal.style.display='flex'; document.body.style.overflow='hidden'; history.pushState({modal:'tamalapatra3d'},'','#3d'); }
+  function closeModal() {
+    var _aud = document.getElementById('tamalapatraAudio'); if(_aud){ _aud.pause(); }
+ modal.style.display='none'; document.body.style.overflow=''; if(window.location.hash==='#3d') history.replaceState(null,'',window.location.pathname); }
+  open3D.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); openModal(); });
+  close3D.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); closeModal(); });
+  document.addEventListener('keydown', e => { if(e.key==='Escape' && modal.style.display==='flex') closeModal(); });
+  window.addEventListener('popstate', () => { if(modal.style.display==='flex') { modal.style.display='none'; document.body.style.overflow=''; } });
+</script>
+
+  <audio id="tamalapatraAudio" src="tamalapatra_benefits.mp3" loop preload="auto"></audio>
+</body>
+</html>

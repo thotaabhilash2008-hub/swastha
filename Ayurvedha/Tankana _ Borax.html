@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tankana | Swastha</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap"
+    rel="stylesheet">
+  <style>
+    #open3D {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      padding: 10px 18px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: var(--forest);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      z-index: 1000;
+      transition: .3s;
+    }
+    #open3D:hover {
+      background: var(--gold);
+      color: var(--deep);
+    }
+    #viewerModal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+    }
+    #modal-topbar {
+      flex-shrink: 0;
+      height: 58px;
+      background: #111111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px 0 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      z-index: 99999;
+    }
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 4.5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.72);
+      user-select: none;
+    }
+    #close3D {
+      width: 38px;
+      height: 38px;
+      font-size: 15px;
+      font-weight: 300;
+      background: transparent;
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background .2s, color .2s, transform .22s;
+      outline: none;
+      flex-shrink: 0;
+    }
+    #close3D:hover {
+      background: #ffffff;
+      color: #111111;
+      border-color: #ffffff;
+      transform: rotate(90deg);
+    }
+    #viewerModal model-viewer {
+      flex: 1;
+      width: 100%;
+      display: block;
+      background: #ffffff;
+    }
+
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+
+    * { margin: 0; padding: 0; box-sizing: border-box }
+    html { scroll-behavior: smooth }
+
+    body {
+      font-family: 'Jost', sans-serif;
+      background: var(--cream);
+      color: var(--ink);
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity: .035;
+      pointer-events: none;
+      z-index: 100
+    }
+
+    .bg-circle {
+      position: fixed;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0
+    }
+    .bg-circle-1 {
+      width: 700px; height: 700px;
+      background: radial-gradient(circle, rgba(201,168,76,.12) 0%, transparent 70%);
+      top: -200px; right: -150px
+    }
+    .bg-circle-2 {
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(42,92,63,.08) 0%, transparent 70%);
+      bottom: -100px; left: -100px
+    }
+
+    /* Crystal SVG decoration */
+    .crystal-svg {
+      position: fixed;
+      pointer-events: none;
+      z-index: 1;
+      opacity: .09
+    }
+    .crystal-tl { top: -10px; left: -10px; width: 240px }
+    .crystal-br { bottom: -10px; right: -10px; width: 200px; transform: rotate(180deg) }
+
+    .hero {
+      position: relative;
+      z-index: 10;
+      padding: 54px 40px 0;
+      text-align: center;
+      opacity: 0;
+      animation: fadeUp .9s ease .1s forwards
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--sage);
+      text-decoration: none;
+      margin-bottom: 36px;
+      transition: color .3s
+    }
+    .back-link:hover { color: var(--gold) }
+
+    .logo-rule {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 14px
+    }
+    .logo-rule span {
+      display: block;
+      height: 1px;
+      width: 70px;
+      background: linear-gradient(to right, transparent, var(--gold))
+    }
+    .logo-rule span:last-child { background: linear-gradient(to left, transparent, var(--gold)) }
+    .logo-ornament { font-size: 13px; color: var(--gold) }
+
+    .hero-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(64px, 12vw, 110px);
+      font-weight: 300;
+      letter-spacing: 8px;
+      line-height: 1;
+      color: var(--deep)
+    }
+    .hero-subtitle {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 18px;
+      font-style: italic;
+      font-weight: 300;
+      color: var(--earth);
+      letter-spacing: 2px;
+      margin-top: 8px
+    }
+    .hero-sci {
+      font-size: 11px;
+      font-weight: 200;
+      letter-spacing: 5px;
+      color: var(--sage);
+      margin-top: 6px
+    }
+
+    /* Crystal visual instead of photos */
+    .hero-visual {
+      position: relative;
+      z-index: 10;
+      max-width: 900px;
+      margin: 44px auto 0;
+      display: flex;
+      gap: 2px;
+      opacity: 0;
+      animation: fadeUp .9s ease .35s forwards
+    }
+    .crystal-panel {
+      flex: 1;
+      height: 360px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      background: var(--parchment)
+    }
+    .crystal-panel svg { width: 100%; height: 100% }
+
+    .photo-caption {
+      text-align: center;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 12px;
+      font-style: italic;
+      color: var(--sage);
+      letter-spacing: 1px;
+      padding: 10px 0 0;
+      max-width: 900px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 10;
+      opacity: 0;
+      animation: fadeUp .9s ease .5s forwards
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin: 50px auto;
+      max-width: 600px;
+      opacity: 0;
+      animation: fadeUp .9s ease .55s forwards;
+      position: relative;
+      z-index: 10
+    }
+    .divider-line {
+      height: 1px; width: 120px;
+      background: linear-gradient(to right, transparent, var(--sage))
+    }
+    .divider-line:last-child { background: linear-gradient(to left, transparent, var(--sage)) }
+    .divider-leaf { color: var(--gold); font-size: 18px }
+
+    .content {
+      position: relative;
+      z-index: 10;
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 30px 80px
+    }
+
+    .intro-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 20px;
+      font-weight: 300;
+      line-height: 1.75;
+      color: var(--ink);
+      text-align: center;
+      max-width: 700px;
+      margin: 0 auto 60px;
+      opacity: 0;
+      animation: fadeUp .9s ease .6s forwards
+    }
+    .intro-text em { color: var(--forest); font-style: italic }
+
+    .section {
+      margin-bottom: 60px;
+      opacity: 0;
+      animation: fadeUp .9s ease forwards
+    }
+    .section:nth-child(1) { animation-delay: .65s }
+    .section:nth-child(2) { animation-delay: .75s }
+    .section:nth-child(3) { animation-delay: .85s }
+    .section:nth-child(4) { animation-delay: .95s }
+    .section:nth-child(5) { animation-delay: 1.05s }
+    .section:nth-child(6) { animation-delay: 1.15s }
+    .section:nth-child(7) { animation-delay: 1.25s }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 20px
+    }
+    .section-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 11px;
+      letter-spacing: 4px;
+      color: var(--gold)
+    }
+    .section-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 28px;
+      font-weight: 400;
+      color: var(--deep);
+      letter-spacing: 1px
+    }
+    .section-rule {
+      height: 1px; flex: 1;
+      background: linear-gradient(to right, var(--gold), transparent)
+    }
+
+    .section-body {
+      font-size: 13px;
+      font-weight: 300;
+      line-height: 1.9;
+      color: var(--ink);
+      margin-bottom: 24px
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0 8px;
+      font-size: 12px
+    }
+    .data-table thead tr {
+      background: var(--deep);
+      color: var(--gold);
+      font-size: 10px;
+      letter-spacing: 3px;
+      text-transform: uppercase
+    }
+    .data-table thead th { padding: 12px 14px; text-align: left; font-weight: 400 }
+    .data-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .data-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .data-table tbody tr { transition: background .2s }
+    .data-table tbody tr:hover { background: rgba(200, 164, 93, 0.15) }
+    .data-table tbody td { padding: 10px 14px; color: var(--ink); border-bottom: 1px solid rgba(107,79,45,.08) }
+    .data-table tbody td:first-child { font-weight: 400; color: var(--deep); width: 28% }
+
+    .dosha-table {
+      width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px
+    }
+    .dosha-table thead tr { background: var(--forest); color: var(--cream) }
+    .dosha-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .dosha-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .dosha-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .dosha-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(107,79,45,.08) }
+    .dosha-table tbody td:first-child { font-weight: 400; color: var(--forest); width: 18% }
+    .dosha-table tbody td:nth-child(2) { color: var(--earth); width: 20% }
+
+    .consume-table {
+      width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px
+    }
+    .consume-table thead tr { background: var(--earth); color: var(--cream) }
+    .consume-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .consume-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .consume-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .consume-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(107,79,45,.08) }
+    .consume-table tbody td:first-child { font-weight: 400; color: var(--earth); width: 22% }
+
+    .benefits-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: rgba(107,79,45,.12);
+      border: 1px solid rgba(107,79,45,.12);
+      margin: 8px 0
+    }
+    .benefit-card {
+      background: var(--cream);
+      padding: 24px 22px;
+      transition: background .3s;
+      position: relative;
+      overflow: hidden
+    }
+    .benefit-card:hover { background: #ede4ce }
+    .benefit-card::before {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0;
+      width: 0; height: 2px;
+      background: var(--gold);
+      transition: width .4s
+    }
+    .benefit-card:hover::before { width: 100% }
+    .benefit-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--forest);
+      margin-bottom: 8px
+    }
+    .benefit-desc {
+      font-size: 11.5px;
+      font-weight: 300;
+      line-height: 1.75;
+      color: var(--ink);
+      opacity: .85
+    }
+
+    .precaution-list { list-style: none; margin: 8px 0 }
+    .precaution-list li {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      padding: 10px 14px;
+      font-size: 12px;
+      font-weight: 300;
+      line-height: 1.7;
+      color: var(--ink);
+      border-bottom: 1px solid rgba(107,79,45,.08)
+    }
+    .precaution-list li:last-child { border-bottom: none }
+    .precaution-list li::before { content: '▸'; color: var(--gold); flex-shrink: 0; margin-top: 1px }
+
+    .nutrition-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: rgba(107,79,45,.12);
+      border: 1px solid rgba(107,79,45,.12);
+      margin: 20px 0
+    }
+    .nutrition-cell {
+      background: var(--cream);
+      padding: 22px 16px;
+      text-align: center;
+      transition: background .3s
+    }
+    .nutrition-cell:hover { background: var(--parchment) }
+    .nutrition-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 36px;
+      font-weight: 300;
+      color: var(--forest);
+      line-height: 1;
+      margin-bottom: 4px
+    }
+    .nutrition-unit { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); font-weight: 300 }
+    .nutrition-label { font-size: 11px; font-weight: 300; color: var(--ink); margin-top: 5px }
+
+    .sources {
+      border-top: 1px solid rgba(107,79,45,.15);
+      padding-top: 24px;
+      margin-top: 20px
+    }
+    .sources-title {
+      font-size: 10px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--sage);
+      margin-bottom: 12px;
+      font-weight: 300
+    }
+    .sources ul { list-style: none }
+    .sources ul li {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 13px;
+      font-style: italic;
+      color: var(--earth);
+      padding: 5px 0;
+      border-bottom: 1px solid rgba(107,79,45,.06)
+    }
+    .sources ul li::before { content: '· '; color: var(--sage) }
+
+    footer {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      padding: 24px 20px 44px;
+      border-top: 1px solid rgba(107,79,45,.12);
+      max-width: 860px;
+      margin: 0 auto
+    }
+    footer p {
+      font-size: 11px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--sage);
+      font-weight: 300
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(28px) }
+      to { opacity: 1; transform: translateY(0) }
+    }
+
+    @media(max-width:700px) {
+      .hero-visual { flex-direction: column }
+      .crystal-panel { height: 220px }
+      .benefits-grid { grid-template-columns: 1fr }
+      .nutrition-bar { grid-template-columns: 1fr 1fr }
+      .content { padding: 0 18px 60px }
+    }
+  </style>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+</head>
+
+<body>
+  <button type="button" id="open3D">View in 3D</button>
+
+
+  <div class="bg-circle bg-circle-1"></div>
+  <div class="bg-circle bg-circle-2"></div>
+
+  <!-- Crystal / mineral decorative SVGs -->
+  <svg class="crystal-svg crystal-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <polygon points="80,10 140,60 120,140 40,150 10,80" stroke="#c9a84c" stroke-width="1.2" fill="none"/>
+    <polygon points="140,60 200,30 220,110 140,130 120,140" stroke="#c9a84c" stroke-width="0.8" fill="none" opacity="0.6"/>
+    <line x1="80" y1="10" x2="40" y2="150" stroke="#c9a84c" stroke-width="0.6" opacity="0.4"/>
+    <line x1="140" y1="60" x2="120" y2="140" stroke="#c9a84c" stroke-width="0.6" opacity="0.4"/>
+    <polygon points="30,180 70,160 90,210 55,240 20,220" stroke="#2a5c3f" stroke-width="1" fill="none" opacity="0.7"/>
+    <circle cx="140" cy="60" r="4" fill="#c9a84c" opacity="0.8"/>
+    <circle cx="80" cy="10" r="3" fill="#c9a84c" opacity="0.6"/>
+  </svg>
+  <svg class="crystal-svg crystal-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <polygon points="80,10 140,60 120,140 40,150 10,80" stroke="#c9a84c" stroke-width="1.2" fill="none"/>
+    <polygon points="140,60 200,30 220,110 140,130 120,140" stroke="#c9a84c" stroke-width="0.8" fill="none" opacity="0.6"/>
+    <circle cx="140" cy="60" r="4" fill="#c9a84c" opacity="0.8"/>
+  </svg>
+
+  <div class="hero">
+    <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+    <div class="logo-rule"><span></span>
+      <div class="logo-ornament">✦</div><span></span>
+    </div>
+    <div class="hero-title">Tankana</div>
+    <div class="hero-subtitle">Borax — The Purifying Salt of the Himalayas</div>
+    <div class="hero-sci">Sodium Tetraborate Decahydrate &nbsp;·&nbsp; Na₂B₄O₇·10H₂O</div>
+  </div>
+
+  <!-- Illustrated crystal panels instead of photos -->
+  <div class="hero-visual">
+    <!-- Panel 1: Raw borax crystals illustration -->
+    <div class="crystal-panel">
+      <svg viewBox="0 0 450 360" xmlns="http://www.w3.org/2000/svg">
+        <rect width="450" height="360" fill="#ede4d0"/>
+        <!-- Background glow -->
+        <radialGradient id="glow1" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#f5efe3" stop-opacity="0.9"/>
+          <stop offset="100%" stop-color="#ddd0b8" stop-opacity="0"/>
+        </radialGradient>
+        <ellipse cx="225" cy="180" rx="180" ry="140" fill="url(#glow1)"/>
+        <!-- Large crystal cluster -->
+        <g opacity="0.85">
+          <polygon points="180,280 160,180 200,120 240,180 220,280" fill="#e8f0e9" stroke="#2a5c3f" stroke-width="1.2"/>
+          <polygon points="200,120 240,180 220,280 260,280 280,180 240,100" fill="#d8e8dc" stroke="#2a5c3f" stroke-width="1"/>
+          <polygon points="160,180 140,240 180,280 180,280 160,180" fill="#c8dace" stroke="#2a5c3f" stroke-width="0.8"/>
+          <!-- Highlight facets -->
+          <polygon points="200,120 220,150 200,170 180,150" fill="#f0f8f2" opacity="0.7"/>
+          <polygon points="240,100 260,130 240,150 220,130" fill="#f0f8f2" opacity="0.5"/>
+        </g>
+        <!-- Small crystals -->
+        <g opacity="0.7">
+          <polygon points="100,260 90,210 110,185 130,210 120,265" fill="#e0ece4" stroke="#2a5c3f" stroke-width="0.9"/>
+          <polygon points="300,250 285,200 305,175 325,200 310,255" fill="#dce8e0" stroke="#2a5c3f" stroke-width="0.9"/>
+          <polygon points="320,290 310,255 325,240 340,255 335,295" fill="#e4ece6" stroke="#2a5c3f" stroke-width="0.8"/>
+          <polygon points="130,300 120,270 135,255 150,270 145,305" fill="#dce8e0" stroke="#2a5c3f" stroke-width="0.8"/>
+        </g>
+        <!-- Gold sparkles -->
+        <g fill="#c9a84c" opacity="0.6">
+          <circle cx="200" cy="122" r="3"/>
+          <circle cx="240" cy="102" r="2"/>
+          <circle cx="160" cy="182" r="2.5"/>
+          <text x="340" y="160" font-size="18" opacity="0.4">✦</text>
+          <text x="95" y="175" font-size="14" opacity="0.35">✦</text>
+        </g>
+        <!-- Label -->
+        <text x="225" y="340" text-anchor="middle" font-family="Cormorant Garamond, serif" font-size="12" fill="#6b4f2d" font-style="italic" letter-spacing="2">Raw Crystal Form</text>
+      </svg>
+    </div>
+    <!-- Panel 2: Purified / calcined Tankana powder illustration -->
+    <div class="crystal-panel">
+      <svg viewBox="0 0 450 360" xmlns="http://www.w3.org/2000/svg">
+        <rect width="450" height="360" fill="#ede4d0"/>
+        <radialGradient id="glow2" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#fff8ec" stop-opacity="0.8"/>
+          <stop offset="100%" stop-color="#ddd0b8" stop-opacity="0"/>
+        </radialGradient>
+        <ellipse cx="225" cy="180" rx="160" ry="120" fill="url(#glow2)"/>
+        <!-- Shodhita / calcined form: powder mound in a vessel -->
+        <!-- Vessel -->
+        <ellipse cx="225" cy="275" rx="110" ry="18" fill="#b8a88a" opacity="0.5"/>
+        <path d="M115,275 Q115,320 225,325 Q335,320 335,275 Z" fill="#c9b494" opacity="0.55"/>
+        <path d="M115,260 Q115,275 225,280 Q335,275 335,260 Q335,245 225,240 Q115,245 115,260Z" fill="#d6c4a4" opacity="0.6"/>
+        <!-- Powder pile -->
+        <ellipse cx="225" cy="252" rx="95" ry="22" fill="#f0ece0" opacity="0.9"/>
+        <path d="M148,252 Q175,218 225,212 Q275,218 302,252 Q275,260 225,262 Q175,260 148,252Z" fill="#f5f0e6" opacity="0.95"/>
+        <!-- Powder shimmer dots -->
+        <g fill="#c9a84c" opacity="0.35">
+          <circle cx="195" cy="238" r="1.5"/>
+          <circle cx="215" cy="230" r="1"/>
+          <circle cx="240" cy="233" r="1.5"/>
+          <circle cx="260" cy="240" r="1"/>
+          <circle cx="225" cy="227" r="2"/>
+          <circle cx="250" cy="228" r="1.2"/>
+          <circle cx="200" cy="245" r="1"/>
+        </g>
+        <!-- Floating micro-crystals above powder -->
+        <g opacity="0.45">
+          <polygon points="190,190 185,172 195,162 205,172 200,192" fill="#e0ece4" stroke="#2a5c3f" stroke-width="0.8"/>
+          <polygon points="245,180 240,165 250,155 260,165 255,182" fill="#dce8e0" stroke="#2a5c3f" stroke-width="0.8"/>
+          <polygon points="165,210 160,195 170,185 180,196 175,212" fill="#e4ece6" stroke="#2a5c3f" stroke-width="0.7"/>
+          <polygon points="275,200 270,188 278,180 286,188 282,202" fill="#dce8e0" stroke="#2a5c3f" stroke-width="0.7"/>
+        </g>
+        <!-- Gold flecks -->
+        <g fill="#c9a84c" opacity="0.55">
+          <text x="155" y="185" font-size="12" opacity="0.4">✦</text>
+          <text x="290" y="175" font-size="10" opacity="0.35">✦</text>
+          <circle cx="225" cy="165" r="2.5"/>
+        </g>
+        <!-- Label -->
+        <text x="225" y="340" text-anchor="middle" font-family="Cormorant Garamond, serif" font-size="12" fill="#6b4f2d" font-style="italic" letter-spacing="2">Shodhita (Purified) Form</text>
+      </svg>
+    </div>
+  </div>
+  <p class="photo-caption">Fig. 1 — Raw Tankana crystals as mined from Himalayan saline deposits &nbsp;·&nbsp; Fig. 2 — Shodhita Tankana after classical purification (calcination with lemon juice or cow's milk)</p>
+
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-leaf">❧</div>
+    <div class="divider-line"></div>
+  </div>
+
+  <div class="content">
+    <p class="intro-text">Known as <em>Tankana Kshara</em> in classical Ayurveda — a mineral salt of ancient repute — Borax was prized by Charaka, Sushruta, and Vagbhata alike as a powerful <em>mucolytic, digestive stimulant, and uterine tonic</em>. Sourced from the saline lake-beds of Tibet and the Himalayas, this white crystalline salt has served Ayurvedic, Unani, and Siddha medicine for millennia, occupying a unique position as both <em>Kshara</em> (alkali mineral) and a critical adjunct in hundreds of classical formulations.</p>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">01</span>
+        <h2 class="section-title">Mineral Profile</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Tankana is sodium tetraborate decahydrate — a naturally occurring boron mineral found in the dried beds of saline lakes, particularly in Tibet (Tso Kar, Pangong), Central Asia, and parts of California (Death Valley). In its natural state it forms colourless to white monoclinic prismatic crystals that lose water (effloresce) on exposure to dry air, forming a chalky white powder. The name <em>Tankana</em> derives from the Sanskrit root referring to its place of origin — the Tankana region of Tibet — and it is classified in Ayurveda as a <em>Kshara</em> (alkaline mineral) under the sub-category <em>Khanija Kshara</em> (mineral alkali).</p>
+      <p class="section-body">Classical texts distinguish two forms: <em>Shodhita Tankana</em> (purified, calcined borax — also called Suhaga) and <em>Ashodhita Tankana</em> (raw borax). The Shodhita form — produced by roasting raw crystals until they swell, lose their water of crystallisation, and become an opaque white powder — is the therapeutically preferred form for internal use and is considered safer and more bioavailable.</p>
+      <table class="data-table">
+        <thead><tr><th>PROPERTY</th><th>Detail</th></tr></thead>
+        <tbody>
+          <tr><td>Chemical Name</td><td>Sodium Tetraborate Decahydrate</td></tr>
+          <tr><td>Molecular Formula</td><td>Na₂B₄O₇·10H₂O</td></tr>
+          <tr><td>Sanskrit Names</td><td>Tankana, Tankana Kshara, Suhaga, Karpura Tankana, Shvetala</td></tr>
+          <tr><td>Hindi / Common</td><td>Suhaga, Borax, Tinkal</td></tr>
+          <tr><td>Regional Names</td><td>Ponkam (Tam), Vellicharam (Mal), Veligaram (Tel), Tincal (Persian)</td></tr>
+          <tr><td>Ayurvedic Category</td><td>Kshara (Khanija / Mineral Alkali), Upadhatu class</td></tr>
+          <tr><td>Source</td><td>Saline lake-beds of Tibet, Himalayas, Central Asia</td></tr>
+          <tr><td>Appearance (Raw)</td><td>White–colourless monoclinic crystals; chalky on efflorescence</td></tr>
+          <tr><td>Appearance (Shodhita)</td><td>Light, opaque white powder (Phula / blown borax)</td></tr>
+          <tr><td>Taste Profile</td><td>Kshara (alkaline/acrid), Lavana (saline), slightly sweet</td></tr>
+          <tr><td>pH (aqueous)</td><td>~9.2 (alkaline)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">02</span>
+        <h2 class="section-title">Chemistry &amp; Composition</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Tankana's therapeutic profile is rooted in its boron chemistry. As a borate salt it is both a Lewis acid and a source of reactive borate ions in solution — capable of complexing with polyols, inhibiting certain enzymes, and modulating inflammatory pathways. Upon calcination (Shodhana), the decahydrate loses all 10 molecules of water of crystallisation to form anhydrous sodium tetraborate (Na₂B₄O₇), which is more concentrated and thermally stable.</p>
+      <div class="nutrition-bar">
+        <div class="nutrition-cell">
+          <div class="nutrition-num">36.5%</div>
+          <div class="nutrition-unit">B₄O₇²⁻</div>
+          <div class="nutrition-label">Tetraborate ion</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">16.3%</div>
+          <div class="nutrition-unit">Na</div>
+          <div class="nutrition-label">Sodium content</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">47.2%</div>
+          <div class="nutrition-unit">H₂O</div>
+          <div class="nutrition-label">Water of crystallisation</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">9.2</div>
+          <div class="nutrition-unit">pH</div>
+          <div class="nutrition-label">Aqueous solution</div>
+        </div>
+      </div>
+      <table class="data-table">
+        <thead><tr><th>Component / Action</th><th>Mechanism</th><th>Significance</th></tr></thead>
+        <tbody>
+          <tr><td>Borate Ion (B(OH)₄⁻)</td><td>Lewis acid complexation with polyols</td><td>Enzyme inhibition, anti-inflammatory modulation</td></tr>
+          <tr><td>Sodium (Na⁺)</td><td>Electrolyte, osmotic activity</td><td>Mucosal hydration, bronchial secretion thinning</td></tr>
+          <tr><td>Alkalinity (pH ~9.2)</td><td>Saponification of mucus glycoproteins</td><td>Mucolytic action in respiratory &amp; GI tract</td></tr>
+          <tr><td>Boron (B)</td><td>Hormonal co-factor, bone metabolism</td><td>Oestrogen metabolism, osteoporosis research interest</td></tr>
+          <tr><td>Anti-fungal property</td><td>Disrupts fungal cell membrane integrity</td><td>Boric acid / borax use in vaginal candidiasis</td></tr>
+          <tr><td>Flux activity</td><td>Lowers melting point of metal oxides</td><td>Used in classical Rasa Shastra as Samskara dravya</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">03</span>
+        <h2 class="section-title">Ayurvedic Significance</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Tankana is referenced across the foundational classical texts: Charaka Samhita (Kalpasthana), Sushruta Samhita (Kalpa Sthana), Ashtanga Hridayam, Sharangdhara Samhita, Bhavaprakasha Nighantu, and Rasa Ratna Samuchchaya. It is particularly prominent in <em>Rasa Shastra</em> (Ayurvedic alchemy/pharmaceutical science) where it serves as a <em>Samskara Dravya</em> — a processing agent used to purify and prepare mercury, metals, and other minerals by acting as a flux.</p>
+      <p class="section-body">Classical shloka from Bhavaprakasha: <em>"Tankanaṃ kṣārasaṃjñaṃ ca śleṣmaghnaṃ kāsanāśanam, dīpanaṃ lekhanaṃ tīkṣṇaṃ yonidoṣāpaham param"</em> — describing Tankana as a Kshara substance that destroys Kapha and cough, is a digestive stimulant (<em>deepana</em>), scraping (<em>lekhana</em>), sharp (<em>tikshna</em>), and supreme in curing disorders of the female reproductive tract (<em>yoni dosha</em>).</p>
+      <table class="dosha-table">
+        <thead><tr><th>Dosha</th><th>Effect</th><th>Mechanism &amp; Notes</th></tr></thead>
+        <tbody>
+          <tr><td>Vata ↔</td><td>Neutral / mild ↓</td><td>Ushna virya partially pacifies Vata in respiratory and digestive contexts; however excess use may dry mucous membranes and disturb Vata</td></tr>
+          <tr><td>Pitta ↑</td><td>Mildly aggravating</td><td>Alkaline, tikshna (sharp), and ushna (hot) qualities may aggravate Pitta; not recommended in hyperacidity, gastritis, or heavy Pitta conditions</td></tr>
+          <tr><td>Kapha ↓↓</td><td>Strongly pacifying</td><td>Primary Doshic action — lekhana (scraping), tikshna (penetrating), and ushna (hot) properties powerfully digest and expel Kapha; premier in respiratory Kapha disorders</td></tr>
+        </tbody>
+      </table>
+      <p class="section-body"><strong>Rasa:</strong> Kshara (alkaline), Lavana (saline) &nbsp;·&nbsp; <strong>Guna:</strong> Laghu (light), Tikshna (sharp), Snigdha (slightly unctuous) &nbsp;·&nbsp; <strong>Virya:</strong> Ushna (hot) &nbsp;·&nbsp; <strong>Vipaka:</strong> Katu (pungent) &nbsp;·&nbsp; <strong>Karma:</strong> Kapha-Vata shamaka, Deepana, Lekhana, Shoolahara</p>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">04</span>
+        <h2 class="section-title">Key Health Benefits</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Tankana's classical indications span respiratory medicine, gynaecology, digestive disorders, dental care, and Rasa Shastra pharmaceutical processing. Modern research has confirmed several of these applications, particularly its anti-fungal, mucolytic, anti-inflammatory, and antimicrobial properties.</p>
+      <div class="benefits-grid">
+        <div class="benefit-card">
+          <div class="benefit-title">Mucolytic &amp; Respiratory</div>
+          <div class="benefit-desc">Tankana's primary classical application — thinning and expelling tenacious Kapha (mucus) from the respiratory tract. Used in cough (<em>kasa</em>), bronchitis, asthma, whooping cough, and chronic respiratory congestion. Its alkalinity saponifies mucus glycoproteins, making them easier to expectorate. Combined with honey or ginger juice for enhanced effect.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Gynaecological &amp; Uterine</div>
+          <div class="benefit-desc">Described as <em>yonidoshapaha param</em> — supreme in uterine disorders. Used internally for dysmenorrhoea, amenorrhoea, and leucorrhoea, and externally as a vaginal douche for infections. Modern research confirms boric acid / borax efficacy against recurrent vaginal candidiasis (supported by clinical trials) and bacterial vaginosis.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Digestive Stimulant (Deepana)</div>
+          <div class="benefit-desc">Classified as <em>Deepana</em> (kindles digestive fire) and <em>Pachana</em> (digests Ama). Small doses stimulate gastric secretions and improve appetite in anorexia (<em>aruchi</em>) and indigestion (<em>ajirna</em>). Used in preparations for flatulence, colic (<em>shoola</em>), and abdominal distension due to Kapha.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Dental &amp; Oral Health</div>
+          <div class="benefit-desc">A well-documented traditional application: Tankana powder mixed with mustard oil is a classical tooth-cleaning agent for pyorrhoea (periodontitis), toothache, and bad breath. Its alkalinity neutralises oral acid; antimicrobial borates suppress pathogenic oral bacteria. Used in classical <em>Dantamanjana</em> (tooth powder) formulations.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Anti-fungal &amp; Antimicrobial</div>
+          <div class="benefit-desc">Borate ions disrupt fungal membrane integrity and inhibit spore germination — the basis for topical and vaginal antifungal applications. Studies confirm activity against Candida albicans, Aspergillus, and dermatophytes. Also active against several gram-positive bacteria and has been used in classical preparations for skin infections and wounds.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Rasa Shastra Processing</div>
+          <div class="benefit-desc">Uniquely among Ayurvedic minerals, Tankana's most important role may be as a pharmaceutical adjunct — serving as a flux to reduce the melting point of metals and purify mercury, gold, silver, and other minerals in classical <em>Shodhana</em> and <em>Marana</em> (calcination) processes. Indispensable in the preparation of Rasayana and Rasa preparations.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Anti-inflammatory &amp; Analgesic</div>
+          <div class="benefit-desc">Boron modulates inflammatory cytokines and has been studied for arthritis and joint pain. Traditional Ayurvedic use includes topical application for joint swelling and muscle pain. Emerging research on dietary boron supplementation shows promise for reducing inflammatory markers in osteoarthritis and rheumatoid arthritis.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Fever &amp; Throat Disorders</div>
+          <div class="benefit-desc">Used in <em>jwara</em> (fever), tonsillitis, and sore throat both internally (small dose) and as a gargle. Combined with rock salt and warm water as a classical gargle preparation for pharyngitis and laryngitis. Also used as errhine (nasal cleansing agent) to clear upper respiratory mucus in chronic sinusitis.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">05</span>
+        <h2 class="section-title">Classical Formulations</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Tankana features as a primary or adjunct ingredient in numerous classical Ayurvedic formulations across Charaka Samhita, Sharangdhara Samhita, Ashtanga Hridayam, and Rasa Ratna Samuchchaya.</p>
+      <table class="data-table">
+        <thead><tr><th>Formulation</th><th>Reference Text</th><th>Primary Indication</th></tr></thead>
+        <tbody>
+          <tr><td>Tankana + Honey + Ginger</td><td>Folk / Classical</td><td>Acute cough, bronchitis — standard mucolytic preparation</td></tr>
+          <tr><td>Sitopaladi Churna</td><td>Sharangdhara Samhita</td><td>Cough, cold, fever, anorexia — Tankana as ingredient</td></tr>
+          <tr><td>Tankana + Rock Salt Gargle</td><td>Classical throat care</td><td>Tonsillitis, pharyngitis, laryngitis</td></tr>
+          <tr><td>Tankana + Mustard Oil Paste</td><td>Classical dental</td><td>Pyorrhoea, toothache, gingival disease</td></tr>
+          <tr><td>Dantamanjana Churna</td><td>Classical Ayurveda</td><td>Oral hygiene, periodontitis, dental caries prevention</td></tr>
+          <tr><td>Tankana Varti (vaginal)</td><td>Sushruta Samhita</td><td>Leucorrhoea, yoni shoola, vaginal infections</td></tr>
+          <tr><td>Navayas Loha / Rasa preps</td><td>Rasa Ratna Samuchchaya</td><td>As flux in metal calcination — Shodhana and Marana</td></tr>
+          <tr><td>Talisadi Churna</td><td>Ashtanga Hridayam</td><td>Kapha-Vata respiratory disorders — Tankana as Kshara</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">06</span>
+        <h2 class="section-title">How to Use Tankana</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Tankana is used both internally and externally. <strong>Only Shodhita (calcined/purified) Tankana should be used for internal purposes.</strong> Raw borax is not suitable for internal consumption due to higher sodium and borate ion concentrations. Internal doses are small — classical texts typically specify 125–500 mg (¼ to ½ Ratti equivalent). Always use under supervision of a qualified Vaidya for internal applications.</p>
+      <table class="consume-table">
+        <thead><tr><th>Form</th><th>Preparation</th><th>Dosage</th><th>Best Use</th></tr></thead>
+        <tbody>
+          <tr><td>Shodhita Powder + Honey</td><td>125–250 mg Shodhita Tankana stirred into 1 tsp honey</td><td>125–250 mg, 1–2× daily</td><td>Cough, bronchitis, respiratory Kapha</td></tr>
+          <tr><td>Shodhita Powder + Ginger</td><td>Mix with fresh ginger juice</td><td>125 mg, twice daily</td><td>Indigestion, flatulence, Kapha disorders</td></tr>
+          <tr><td>Gargle Solution</td><td>250 mg in 200 ml warm water with rock salt</td><td>Gargle 2–3× daily</td><td>Sore throat, tonsillitis, pharyngitis</td></tr>
+          <tr><td>Dental Powder (topical)</td><td>Mix Shodhita powder with mustard oil to paste</td><td>Apply and massage gently</td><td>Pyorrhoea, gum disease, toothache</td></tr>
+          <tr><td>Nasal Errhine</td><td>Very dilute solution (0.5%) in distilled water</td><td>1–2 drops per nostril</td><td>Sinusitis, nasal congestion (with supervision)</td></tr>
+          <tr><td>Vaginal Application</td><td>Classical Varti or boric acid capsule (modern)</td><td>Per practitioner direction</td><td>Recurrent vaginal candidiasis, leucorrhoea</td></tr>
+          <tr><td>Topical Paste</td><td>Shodhita powder + coconut oil or ghee</td><td>Apply to affected area</td><td>Skin fungal infections, wound care</td></tr>
+          <tr><td>Rasa Shastra Use</td><td>As flux in metal/mineral processing</td><td>Per Rasa text specifications</td><td>Shodhana &amp; Marana of metals in classical pharmacy</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">07</span>
+        <h2 class="section-title">Safety &amp; Precautions</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Shodhita Tankana at classical doses (125–500 mg) is considered safe and well-tolerated in Ayurvedic practice. However, borax (raw sodium tetraborate) is regulated in many countries — the EU has classified it as a reproductive toxin (Category 1B) at high doses. Internal use of raw borax or high doses of borax solutions is dangerous. Classical Ayurvedic use employs tiny doses of the calcined form, which is fundamentally different from the large-dose exposures studied in toxicological literature.</p>
+      <ul class="precaution-list">
+        <li><strong>Pregnancy:</strong> Strictly contraindicated internally. Tankana is a classical <em>garbhashaya sankochaka</em> (uterine contractor) and has historically been used as an abortifacient. Even topical vaginal use should be avoided in pregnancy.</li>
+        <li><strong>Infants and young children:</strong> Do not use internally in children under 5. Borate ions are more slowly excreted in infants; even small doses can cause toxicity. Use under strict specialist supervision only.</li>
+        <li><strong>Kidney disease:</strong> Borate is primarily renally excreted. Impaired kidney function significantly reduces excretion capacity — avoid internal use in renal insufficiency or chronic kidney disease.</li>
+        <li><strong>Raw borax vs. Shodhita:</strong> Never use raw, uncalcined borax internally. Only classically purified Shodhita Tankana (Phula Tankana) should be consumed, and only at classical doses under supervision.</li>
+        <li><strong>Dose discipline:</strong> Internal dose must not exceed 500 mg per day. Excess borate accumulates and can cause nausea, vomiting, diarrhoea, dermatitis, and in severe toxicity — renal and neurological effects.</li>
+        <li><strong>Pitta constitution:</strong> Its ushna (hot), tikshna (sharp) qualities aggravate Pitta — avoid in hyperacidity, gastritis, peptic ulcer, or inflammatory Pitta conditions without corrective co-medications.</li>
+        <li><strong>Prolonged use:</strong> Not recommended for continuous internal use beyond the prescribed therapeutic period. Periodic breaks and liver/kidney function monitoring are advisable.</li>
+        <li><strong>Drug interactions:</strong> No well-documented classical or modern drug interactions, but caution with nephrotoxic drugs, hormonal medications (boron influences oestrogen metabolism), and anti-coagulants.</li>
+        <li><strong>Topical safety:</strong> Generally safe topically at concentrations used in Ayurvedic practice. Avoid application to large areas of broken or inflamed skin where absorption is increased. Keep away from eyes.</li>
+      </ul>
+    </div>
+
+    <div class="sources">
+      <div class="sources-title">References &amp; Sources</div>
+      <ul>
+        <li>Charaka Samhita — Kalpasthana — Tankana Kshara references</li>
+        <li>Sushruta Samhita — Kalpasthana — Tankana in vaginal preparations and surgical contexts</li>
+        <li>Ashtanga Hridayam — Vagbhata — Tankana as Kshara and processing agent</li>
+        <li>Bhavaprakasha Nighantu — Dhatu-Upadhatu Varga — Tankana classification and properties</li>
+        <li>Rasa Ratna Samuchchaya — Tankana as flux in Rasa Shastra metal preparation</li>
+        <li>Sharangdhara Samhita — Formulations containing Tankana including Sitopaladi Churna</li>
+        <li>Deshpande AP et al. — "Ayurvedic perspective of Tankana (Borax): A review" — Journal of Ayurveda and Integrative Medicine, 2016</li>
+        <li>Patel P et al. — "Pharmaceutical standardisation of Shodhita Tankana" — Ancient Science of Life, 2014</li>
+        <li>Iavazzo C et al. — "Boric acid for recurrent vulvovaginal candidiasis — the clinical evidence" — Journal of Women's Health, 2011</li>
+        <li>Pizzorno L — "Nothing Boring About Boron" — Integrative Medicine: A Clinician's Journal, 2015</li>
+        <li>European Chemicals Agency (ECHA) — Sodium tetraborate classification as reproductive toxin Cat. 1B — 2010</li>
+        <li>Priyavrat Sharma — Dravyaguna Vigyana — Classical properties of Tankana Kshara</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer>
+    <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a qualified practitioner before therapeutic use</p>
+  </footer>
+
+
+  <div id="viewerModal">
+    <div id="modal-topbar">
+      <span>3D Model — Tankana</span>
+      <button type="button" id="close3D">✕</button>
+    </div>
+    <model-viewer src="tankana3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+  </div>
+  <script>
+    (function() {
+      var open3D = document.getElementById('open3D');
+      var close3D = document.getElementById('close3D');
+      var modal = document.getElementById('viewerModal');
+      if (!open3D || !close3D || !modal) return;
+      function openModal() {
+        
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+      function closeModal() {
+        
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+      open3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); openModal();
+      });
+      close3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); closeModal();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+      });
+    })();
+  </script>
+
+</body>
+</html>

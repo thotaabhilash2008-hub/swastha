@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kusha / Darbha | Swastha</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+  <style>
+    #open3D {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      padding: 10px 18px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: var(--forest);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      z-index: 1000;
+      transition: .3s;
+    }
+    #open3D:hover {
+      background: var(--gold);
+      color: var(--deep);
+    }
+    #viewerModal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+    }
+    #modal-topbar {
+      flex-shrink: 0;
+      height: 58px;
+      background: #111111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px 0 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      z-index: 99999;
+    }
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 4.5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.72);
+      user-select: none;
+    }
+    #close3D {
+      width: 38px;
+      height: 38px;
+      font-size: 15px;
+      font-weight: 300;
+      background: transparent;
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background .2s, color .2s, transform .22s;
+      outline: none;
+      flex-shrink: 0;
+    }
+    #close3D:hover {
+      background: #ffffff;
+      color: #111111;
+      border-color: #ffffff;
+      transform: rotate(90deg);
+    }
+    #viewerModal model-viewer {
+      flex: 1;
+      width: 100%;
+      display: block;
+      background: #ffffff;
+    }
+
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+    * { margin:0; padding:0; box-sizing:border-box }
+    html { scroll-behavior:smooth }
+    body { font-family:'Jost',sans-serif; background:var(--cream); color:var(--ink); min-height:100vh; overflow-x:hidden; position:relative }
+    body::before { content:''; position:fixed; inset:0; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E"); opacity:.035; pointer-events:none; z-index:100 }
+
+    .bg-circle { position:fixed; border-radius:50%; pointer-events:none; z-index:0 }
+    .bg-circle-1 { width:700px; height:700px; background:radial-gradient(circle, rgba(58,107,47,.10) 0%, transparent 70%); top:-200px; right:-150px }
+    .bg-circle-2 { width:500px; height:500px; background:radial-gradient(circle, rgba(184,168,76,.08) 0%, transparent 70%); bottom:-100px; left:-100px }
+
+    /* Grass blade botanical SVG */
+    .botanical-svg { position:fixed; pointer-events:none; z-index:1; opacity:.10 }
+    .botanical-tl { top:-10px; left:-10px; width:240px }
+    .botanical-br { bottom:-10px; right:-10px; width:220px; transform:rotate(180deg) }
+
+    .hero { position:relative; z-index:10; padding:54px 40px 0; text-align:center; opacity:0; animation:fadeUp .9s ease .1s forwards }
+    .back-link { display:inline-flex; align-items:center; gap:8px; font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--sage); text-decoration:none; margin-bottom:36px; transition:color .3s }
+    .back-link:hover { color:var(--gold) }
+    .logo-rule { display:flex; align-items:center; justify-content:center; gap:20px; margin-bottom:14px }
+    .logo-rule span { display:block; height:1px; width:70px; background:linear-gradient(to right,transparent,var(--gold)) }
+    .logo-rule span:last-child { background:linear-gradient(to left,transparent,var(--gold)) }
+    .logo-ornament { font-size:13px; color:var(--gold) }
+    .hero-title { font-family:'Cormorant Garamond',serif; font-size:clamp(64px,12vw,110px); font-weight:300; letter-spacing:8px; line-height:1; color:var(--deep) }
+    .hero-subtitle { font-family:'Cormorant Garamond',serif; font-size:18px; font-style:italic; font-weight:300; color:var(--earth); letter-spacing:2px; margin-top:8px }
+    .hero-sci { font-size:11px; font-weight:200; letter-spacing:5px; color:var(--sage); margin-top:6px }
+
+    .hero-photos { position:relative; z-index:10; display:grid; grid-template-columns:1fr 1fr; gap:2px; max-width:900px; margin:40px auto 0; opacity:0; animation:fadeUp .9s ease .35s forwards }
+    .hero-photos img { width:100%; height:380px; object-fit:cover; object-position:center; display:block; background:var(--parchment) }
+    .photo-caption { text-align:center; font-family:'Cormorant Garamond',serif; font-size:12px; font-style:italic; color:var(--sage); letter-spacing:1px; padding:10px 0 0; max-width:900px; margin:0 auto; position:relative; z-index:10; opacity:0; animation:fadeUp .9s ease .5s forwards }
+
+    .divider { display:flex; align-items:center; justify-content:center; gap:16px; margin:50px auto; max-width:600px; opacity:0; animation:fadeUp .9s ease .55s forwards; position:relative; z-index:10 }
+    .divider-line { height:1px; width:120px; background:linear-gradient(to right,transparent,var(--sage)) }
+    .divider-line:last-child { background:linear-gradient(to left,transparent,var(--sage)) }
+    .divider-leaf { color:var(--forest); font-size:18px }
+
+    .content { position:relative; z-index:10; max-width:860px; margin:0 auto; padding:0 30px 80px }
+    .intro-text { font-family:'Cormorant Garamond',serif; font-size:20px; font-weight:300; line-height:1.75; color:var(--ink); text-align:center; max-width:700px; margin:0 auto 60px; opacity:0; animation:fadeUp .9s ease .6s forwards }
+    .intro-text em { color:var(--forest); font-style:italic }
+
+    .section { margin-bottom:60px; opacity:0; animation:fadeUp .9s ease forwards }
+    .section:nth-child(1){animation-delay:.65s} .section:nth-child(2){animation-delay:.75s} .section:nth-child(3){animation-delay:.85s} .section:nth-child(4){animation-delay:.95s} .section:nth-child(5){animation-delay:1.05s} .section:nth-child(6){animation-delay:1.15s} .section:nth-child(7){animation-delay:1.25s}
+
+    .section-header { display:flex; align-items:center; gap:14px; margin-bottom:20px }
+    .section-num { font-family:'Cormorant Garamond',serif; font-size:11px; letter-spacing:4px; color:var(--gold) }
+    .section-title { font-family:'Cormorant Garamond',serif; font-size:28px; font-weight:400; color:var(--deep); letter-spacing:1px }
+    .section-rule { height:1px; flex:1; background:linear-gradient(to right,var(--gold),transparent) }
+    .section-body { font-size:13px; font-weight:300; line-height:1.9; color:var(--ink); margin-bottom:24px }
+
+    .data-table { width:100%; border-collapse:collapse; margin:16px 0 8px; font-size:12px }
+    .data-table thead tr { background:var(--deep); color:var(--gold); font-size:10px; letter-spacing:3px; text-transform:uppercase }
+    .data-table thead th { padding:12px 14px; text-align:left; font-weight:400 }
+    .data-table tbody tr:nth-child(even){ background:var(--parchment) } .data-table tbody tr:nth-child(odd){ background:var(--cream) }
+    .data-table tbody tr { transition:background .2s } .data-table tbody tr:hover { background:#ddd8c0 }
+    .data-table tbody td { padding:10px 14px; color:var(--ink); border-bottom:1px solid rgba(90,107,45,.08) }
+    .data-table tbody td:first-child { font-weight:400; color:var(--deep); width:28% }
+
+    .dosha-table { width:100%; border-collapse:collapse; margin:16px 0; font-size:12px }
+    .dosha-table thead tr { background:var(--forest); color:var(--cream) }
+    .dosha-table thead th { padding:12px 14px; text-align:left; font-weight:400; letter-spacing:2px; font-size:10px; text-transform:uppercase }
+    .dosha-table tbody tr:nth-child(even){ background:var(--parchment) } .dosha-table tbody tr:nth-child(odd){ background:var(--cream) }
+    .dosha-table tbody td { padding:11px 14px; color:var(--ink); border-bottom:1px solid rgba(90,107,45,.08) }
+    .dosha-table tbody td:first-child { font-weight:400; color:var(--forest); width:18% }
+    .dosha-table tbody td:nth-child(2) { color:var(--earth); width:20% }
+
+    .consume-table { width:100%; border-collapse:collapse; margin:16px 0; font-size:12px }
+    .consume-table thead tr { background:var(--earth); color:var(--cream) }
+    .consume-table thead th { padding:12px 14px; text-align:left; font-weight:400; letter-spacing:2px; font-size:10px; text-transform:uppercase }
+    .consume-table tbody tr:nth-child(even){ background:var(--parchment) } .consume-table tbody tr:nth-child(odd){ background:var(--cream) }
+    .consume-table tbody td { padding:11px 14px; color:var(--ink); border-bottom:1px solid rgba(90,107,45,.08) }
+    .consume-table tbody td:first-child { font-weight:400; color:var(--earth); width:22% }
+
+    .benefits-grid { display:grid; grid-template-columns:1fr 1fr; gap:1px; background:rgba(90,107,45,.12); border:1px solid rgba(90,107,45,.12); margin:8px 0 }
+    .benefit-card { background:var(--cream); padding:24px 22px; transition:background .3s; position:relative; overflow:hidden }
+    .benefit-card:hover { background:#e5dfc8 }
+    .benefit-card::before { content:''; position:absolute; bottom:0; left:0; width:0; height:2px; background:var(--gold); transition:width .4s }
+    .benefit-card:hover::before { width:100% }
+    .benefit-title { font-family:'Cormorant Garamond',serif; font-size:16px; font-weight:600; color:var(--forest); margin-bottom:8px }
+    .benefit-desc { font-size:11.5px; font-weight:300; line-height:1.75; color:var(--ink); opacity:.85 }
+
+    .precaution-list { list-style:none; margin:8px 0 }
+    .precaution-list li { display:flex; gap:12px; align-items:flex-start; padding:10px 14px; font-size:12px; font-weight:300; line-height:1.7; color:var(--ink); border-bottom:1px solid rgba(90,107,45,.08) }
+    .precaution-list li:last-child { border-bottom:none }
+    .precaution-list li::before { content:'▸'; color:var(--gold); flex-shrink:0; margin-top:1px }
+
+    .nutrition-bar { display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:rgba(90,107,45,.12); border:1px solid rgba(90,107,45,.12); margin:20px 0 }
+    .nutrition-cell { background:var(--cream); padding:22px 16px; text-align:center; transition:background .3s }
+    .nutrition-cell:hover { background:var(--parchment) }
+    .nutrition-num { font-family:'Cormorant Garamond',serif; font-size:36px; font-weight:300; color:var(--forest); line-height:1; margin-bottom:4px }
+    .nutrition-unit { font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--gold); font-weight:300 }
+    .nutrition-label { font-size:11px; font-weight:300; color:var(--ink); margin-top:5px }
+
+    .sacred-banner { background:var(--deep); color:var(--cream); padding:28px 30px; margin:8px 0 24px; border-left:3px solid var(--gold); position:relative; overflow:hidden }
+    .sacred-banner::before { content:'॥'; position:absolute; right:20px; top:50%; transform:translateY(-50%); font-size:80px; color:rgba(255,255,255,.04); font-family:'Cormorant Garamond',serif }
+    .sacred-banner p { font-family:'Cormorant Garamond',serif; font-size:15px; font-style:italic; line-height:1.8; font-weight:300; opacity:.92 }
+    .sacred-banner .shloka-src { font-size:10px; letter-spacing:3px; text-transform:uppercase; color:var(--gold); margin-top:8px; opacity:.8; font-style:normal; font-family:'Jost',sans-serif; font-weight:300 }
+
+    .sources { border-top:1px solid rgba(90,107,45,.15); padding-top:24px; margin-top:20px }
+    .sources-title { font-size:10px; letter-spacing:4px; text-transform:uppercase; color:var(--sage); margin-bottom:12px; font-weight:300 }
+    .sources ul { list-style:none }
+    .sources ul li { font-family:'Cormorant Garamond',serif; font-size:13px; font-style:italic; color:var(--earth); padding:5px 0; border-bottom:1px solid rgba(90,107,45,.06) }
+    .sources ul li::before { content:'· '; color:var(--sage) }
+
+    footer { position:relative; z-index:10; text-align:center; padding:24px 20px 44px; border-top:1px solid rgba(90,107,45,.12); max-width:860px; margin:0 auto }
+    footer p { font-size:11px; letter-spacing:4px; text-transform:uppercase; color:var(--sage); font-weight:300 }
+
+    @keyframes fadeUp { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:translateY(0)} }
+
+    @media(max-width:700px) {
+      .hero-photos { grid-template-columns:1fr }
+      .hero-photos img { height:260px }
+      .benefits-grid { grid-template-columns:1fr }
+      .nutrition-bar { grid-template-columns:1fr 1fr }
+      .content { padding:0 18px 60px }
+    }
+  </style>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+</head>
+<body>
+  <button type="button" id="open3D">View in 3D</button>
+
+
+  <div class="bg-circle bg-circle-1"></div>
+  <div class="bg-circle bg-circle-2"></div>
+
+  <!-- Grass-blade botanical decoration -->
+  <svg class="botanical-svg botanical-tl" viewBox="0 0 280 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M60 310 Q 55 240 70 170 Q 85 100 60 20" stroke="#3a6b2f" stroke-width="1.5" fill="none"/>
+    <path d="M90 310 Q 88 230 100 150 Q 112 70 95 10" stroke="#3a6b2f" stroke-width="1.2" fill="none"/>
+    <path d="M120 310 Q 122 245 130 180 Q 138 115 118 30" stroke="#8aab6e" stroke-width="1.2" fill="none"/>
+    <path d="M40 310 Q 30 250 45 190 Q 60 130 38 50" stroke="#8aab6e" stroke-width="1" fill="none"/>
+    <path d="M70 170 Q 100 155 130 140" stroke="#3a6b2f" stroke-width="0.8" fill="none"/>
+    <path d="M88 230 Q 115 215 138 200" stroke="#8aab6e" stroke-width="0.7" fill="none"/>
+  </svg>
+  <svg class="botanical-svg botanical-br" viewBox="0 0 280 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M60 310 Q 55 240 70 170 Q 85 100 60 20" stroke="#3a6b2f" stroke-width="1.5" fill="none"/>
+    <path d="M90 310 Q 88 230 100 150 Q 112 70 95 10" stroke="#3a6b2f" stroke-width="1.2" fill="none"/>
+    <path d="M120 310 Q 122 245 130 180 Q 138 115 118 30" stroke="#8aab6e" stroke-width="1.2" fill="none"/>
+  </svg>
+
+  <div class="hero">
+    <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+    <div class="logo-rule"><span></span><div class="logo-ornament">✦</div><span></span></div>
+    <div class="hero-title">Kusha</div>
+    <div class="hero-subtitle">Darbha — The Sacred Grass of the Vedas</div>
+    <div class="hero-sci">Desmostachya bipinnata &nbsp;·&nbsp; Poa cynosuroides</div>
+  </div>
+
+  <div class="hero-photos">
+    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/6/62/%E0%A4%95%E0%A5%81%E0%A4%B6%E0%A4%BE_%E0%A4%B5_%E0%A4%85%E0%A4%B6%E0%A5%8D%E0%A4%B5%E0%A4%A4%E0%A5%8D%E0%A4%A5_%E0%A4%AA%E0%A4%A4%E0%A5%8D%E0%A4%A4%E0%A5%80_Desmostachya_Bipinnata_and_Holy_Peepal.jpg/1280px-%E0%A4%95%E0%A5%81%E0%A4%B6%E0%A4%BE_%E0%A4%B5_%E0%A4%85%E0%A4%B6%E0%A5%8D%E0%A4%B5%E0%A4%A4%E0%A5%8D%E0%A4%A5_%E0%A4%AA%E0%A4%A4%E0%A5%8D%E0%A4%A4%E0%A5%80_Desmostachya_Bipinnata_and_Holy_Peepal.jpg" alt="Kusha grass blades in ritual setting with golden light"
+      onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/7/78/Desmostachya_bipinnata_416865704.jpg/1280px-Desmostachya_bipinnata_416865704.jpg" alt="Desmostachya bipinnata growing in its natural wetland habitat"
+      onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+  </div>
+  <p class="photo-caption">Fig. 1 — Kusha grass, the primordial seat of sages and sacrifice &nbsp;·&nbsp; Fig. 2 — Desmostachya bipinnata in its natural riparian habitat</p>
+
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-leaf">❧</div>
+    <div class="divider-line"></div>
+  </div>
+
+  <div class="content">
+    <p class="intro-text">Among all grasses that clothe the earth, <em>Kusha</em> alone was chosen by Vishnu as his seat in the churning of the cosmic ocean, by Brahma to seat the gods, and by the sages of every age as the sacred ground of tapasya. Yet beyond its profound ritual sanctity, Kusha is a potent Ayurvedic herb — described by Charaka among the <em>Trnapanchamula</em>, by Sushruta among the <em>Mutravirechaniya</em>, and by Bhavaprakasha as the supreme <em>mutral</em> (diuretic) and <em>trishnashaman</em> (thirst-quenching) grass.</p>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">01</span><h2 class="section-title">Botanical Profile</h2><div class="section-rule"></div></div>
+      <p class="section-body">Kusha (<em>Desmostachya bipinnata</em>) is a tall, robust perennial grass of the Poaceae family, native to South Asia, North Africa, the Middle East, and tropical East Africa. The plant grows in dense tufts reaching 30–180 cm in height, with stiff, sharp-tipped leaves (culms) that are bluish-green and smooth with scabrid margins — the very sharpness that made them ideal for the ritual cutting of <em>darbha</em> rings. It thrives along riverbanks, moist wastelands, canal margins, and irrigated fields up to 800 m altitude.</p>
+      <p class="section-body">The rhizome is thick, creeping, and fibrous — the primary medicinal part used in Ayurvedic formulation. Roots are sweet, cooling, and highly mucilaginous. The plant flowers from August to December producing spikes arranged in a bipinnate panicle — the structural feature referenced in its species epithet <em>bipinnata</em>. It is frequently confused with <em>Imperata cylindrica</em> (Kasha) in vernacular usage, but distinguished by its bipinnate spikelets and habitat preference.</p>
+      <table class="data-table">
+        <thead><tr><th>PROPERTY</th><th>Detail</th></tr></thead>
+        <tbody>
+          <tr><td>Family</td><td>Poaceae (Gramineae)</td></tr>
+          <tr><td>Botanical Name</td><td>Desmostachya bipinnata (L.) Stapf. / Poa cynosuroides Retz.</td></tr>
+          <tr><td>Sanskrit Names</td><td>Kusha, Darbha, Pavitra, Yajnabhushana, Sharasha, Suchismita, Barhisha</td></tr>
+          <tr><td>Common Names</td><td>Halfa Grass, Salt Reed Grass, Cogon Grass (allied sp.), Darbha</td></tr>
+          <tr><td>Regional Names</td><td>Darbha (Tel/Kan), Dharba (Tam/Mal), Kusha (Hin), Durba (Ben)</td></tr>
+          <tr><td>Origin</td><td>South Asia, North Africa, Middle East, tropical East Africa</td></tr>
+          <tr><td>Plant Type</td><td>Tall perennial rhizomatous grass (30–180 cm)</td></tr>
+          <tr><td>Flowering Season</td><td>August–December</td></tr>
+          <tr><td>Medicinal Parts</td><td>Rhizome & roots (primary), leaves, whole plant</td></tr>
+          <tr><td>Taste Profile</td><td>Madhura (sweet), Kashaya (astringent)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">02</span><h2 class="section-title">Sacred & Vedic Significance</h2><div class="section-rule"></div></div>
+      <p class="section-body">No other grass in the entire plant kingdom carries the spiritual weight of Kusha. It is mentioned in the Rigveda, Atharvaveda, Ramayana, Mahabharata, and Manusmriti — an unbroken thread of sacredness spanning four millennia. In the Bhagavad Gita (6.11), Krishna himself prescribes a seat of Kusha grass covered with deerskin for the seated yogi: <em>"shuchau deshe pratishthaapya sthiramasanamaatmanah, natyuchhritam naatineecham chailajinakushottaram"</em>.</p>
+      <div class="sacred-banner">
+        <p>"Kusho vai pavitram" — Kusha is verily the purifier.<br>Darbha (Kusha) is the sacred medium between the divine and the human, the bridge between the gross and the subtle. Wherever Kusha is placed, that ground becomes consecrated. Wherever Kusha is held, the hands become fit for sacred action.</p>
+        <div class="shloka-src">Shatapatha Brahmana · Taittiriya Upanishad reference</div>
+      </div>
+      <p class="section-body">In Vedic ritual, Kusha is indispensable: it is woven into <em>pavitra</em> rings worn on the fingers during yajna, spread as the seat of the gods (<em>barhis</em>), used to filter Soma juice, strewn at the conclusion of every major rite (<em>paryagni</em>), and placed in the hands and mouths of the deceased to purify the passage of the soul. The Pitri-tarpana (ancestral offerings), Shraddha ceremonies, and all sixteen Samskaras invoke Kusha as a purifier of the ritual space.</p>
+      <p class="section-body">The grass is considered by the Puranas to have sprung from the feathers of Garuda as he carried the pot of Amrita — hence its association with immortality and purification. Its sharp tips are said to pierce negative energies; its contact with water is said to sanctify it instantly. The mere act of sitting on Kusha mats during meditation was understood — and is now being validated — as a form of subtle electromagnetic grounding.</p>
+      <table class="data-table">
+        <thead><tr><th>Ritual Context</th><th>Use of Kusha</th><th>Source</th></tr></thead>
+        <tbody>
+          <tr><td>Yajna / Homa</td><td>Seat of deities (barhis); filtering Soma; strewing around fire</td><td>Rigveda, Shatapatha Brahmana</td></tr>
+          <tr><td>Daily Pooja</td><td>Pavitra ring on ring finger of right hand during ritual</td><td>Grihyasutras</td></tr>
+          <tr><td>Shraddha / Pitri</td><td>Spread on ground for ancestral seat; placed in tarpana vessel</td><td>Manusmriti, Garuda Purana</td></tr>
+          <tr><td>Yoga / Dhyana</td><td>Kusha mat as meditation seat — insulating and purifying</td><td>Bhagavad Gita 6.11</td></tr>
+          <tr><td>Death Rites</td><td>Placed in hands & mouth of deceased for soul purification</td><td>Antyesti Samskara</td></tr>
+          <tr><td>Upanayana</td><td>Brahmacharini carries Kusha staff; sits on Kusha during ceremony</td><td>Grihyasutras</td></tr>
+          <tr><td>Panchagavya</td><td>Kusha-water used in sacred bath preparations</td><td>Dharmashastra texts</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">03</span><h2 class="section-title">Phytochemistry</h2><div class="section-rule"></div></div>
+      <p class="section-body">Phytochemical investigation of Kusha has revealed a rich profile of bioactive constituents including flavonoids, terpenoids, phenolic acids, sterols, and significant quantities of silica — the latter likely responsible for the sharp, purifying nature of the leaves recognised in ancient ritual. The rhizome and roots, used primarily in Ayurveda, are mucilaginous, sweet, and loaded with polysaccharides and mineral salts.</p>
+      <div class="nutrition-bar">
+        <div class="nutrition-cell">
+          <div class="nutrition-num">18</div>
+          <div class="nutrition-unit">amino acids</div>
+          <div class="nutrition-label">Identified in leaf extract</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">12+</div>
+          <div class="nutrition-unit">flavonoids</div>
+          <div class="nutrition-label">Documented in rhizome</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">High</div>
+          <div class="nutrition-unit">silica</div>
+          <div class="nutrition-label">Leaf & stem content</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">Rich</div>
+          <div class="nutrition-unit">polysaccharides</div>
+          <div class="nutrition-label">Root mucilage fraction</div>
+        </div>
+      </div>
+      <table class="data-table">
+        <thead><tr><th>Compound</th><th>Category</th><th>Primary Action</th></tr></thead>
+        <tbody>
+          <tr><td>Luteolin & Apigenin</td><td>Flavones</td><td>Anti-inflammatory, antioxidant, anxiolytic</td></tr>
+          <tr><td>Cylindrin</td><td>Triterpenoid</td><td>Diuretic, hepatoprotective</td></tr>
+          <tr><td>β-Sitosterol & Stigmasterol</td><td>Phytosterols</td><td>Anti-inflammatory, hormonal modulation</td></tr>
+          <tr><td>Arundoin & Fernenol</td><td>Triterpenes</td><td>Diuretic, anti-inflammatory, haemostatic</td></tr>
+          <tr><td>Silica (SiO₂)</td><td>Inorganic mineral</td><td>Connective tissue support, antimicrobial surface</td></tr>
+          <tr><td>Mucilaginous Polysaccharides</td><td>Carbohydrate fraction</td><td>Demulcent, diuretic, soothing to urinary tract</td></tr>
+          <tr><td>Gallic Acid & Ellagic Acid</td><td>Phenolic acids</td><td>Antioxidant, astringent, antimicrobial</td></tr>
+          <tr><td>Chlorogenic Acid</td><td>Hydroxycinnamic acid</td><td>Antioxidant, anti-hyperglycemic</td></tr>
+          <tr><td>Potassium Salts</td><td>Minerals</td><td>Diuretic, renal-supportive, cardiac tonic</td></tr>
+          <tr><td>Gramine (trace)</td><td>Indole alkaloid</td><td>Sedative, anxiolytic (structural only — low concentration)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">04</span><h2 class="section-title">Ayurvedic Significance</h2><div class="section-rule"></div></div>
+      <p class="section-body">Kusha is classified by Charaka in the <em>Trnapanchamula</em> — the five medicinal roots of grasses — alongside Kasha, Shara, Ikshu, and Itkata, prescribed collectively in decoction for Pitta-aggravated conditions, particularly of the urinary tract and reproductive system. Sushruta lists it in <em>Mutravirechaniya Gana</em> (diuretics) and <em>Sandhaniya Gana</em> (wound-healing). Vagbhata invokes it in kidney stone, urinary burning, and haemorrhagic disorders.</p>
+      <p class="section-body">Bhavaprakasha Nighantu (Haritakyadi Varga) states: <em>"Kusha-o madhuro sheetah kashayo laghuhi smritah, mutralah pittashamano raktapittaharo guru"</em> — sweet, cool, astringent, light; diuretic, Pitta-pacifying, and haemostatic. Classical preparations include Trnapanchamula Kwatha, Chaturmula Kwatha, Sarivadyasava, and Chandanasava.</p>
+      <table class="dosha-table">
+        <thead><tr><th>Dosha</th><th>Effect</th><th>Mechanism & Notes</th></tr></thead>
+        <tbody>
+          <tr><td>Vata ↓</td><td>Mildly pacifying</td><td>Madhura (sweet) rasa and snigdha (unctuous) quality of the root mucilage nourish and stabilise Vata; indicated in Vata-origin bleeding disorders and dry urinary conditions</td></tr>
+          <tr><td>Pitta ↓↓</td><td>Strongly pacifying</td><td>Sheetha virya (cold potency) and madhura-kashaya rasa powerfully cool and pacify Pitta; primary indication in burning urination, haematuria, excessive thirst, and Pitta-type fevers</td></tr>
+          <tr><td>Kapha ↑</td><td>Mildly increasing</td><td>Madhura rasa, laghu guna, and snigdha quality may mildly increase Kapha when used in excess; generally well-tolerated at therapeutic doses due to kashaya modulating effect</td></tr>
+        </tbody>
+      </table>
+      <p class="section-body"><strong>Rasa:</strong> Madhura (sweet), Kashaya (astringent) &nbsp;·&nbsp; <strong>Guna:</strong> Laghu (light), Snigdha (unctuous) &nbsp;·&nbsp; <strong>Virya:</strong> Sheeta (cold) &nbsp;·&nbsp; <strong>Vipaka:</strong> Madhura (sweet) &nbsp;·&nbsp; <strong>Karma:</strong> Pitta-Vata shamaka, Mutral, Stambhana</p>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">05</span><h2 class="section-title">Key Health Benefits</h2><div class="section-rule"></div></div>
+      <p class="section-body">Modern pharmacological studies on <em>Desmostachya bipinnata</em> have confirmed diuretic, anti-inflammatory, antioxidant, antimicrobial, wound-healing, haemostatic, and hepatoprotective activities — vindicating the full range of its classical therapeutic claims across Ayurveda, Unani, and traditional African medicine.</p>
+      <div class="benefits-grid">
+        <div class="benefit-card">
+          <div class="benefit-title">Diuretic & Urinary Tract Support</div>
+          <div class="benefit-desc">The rhizome decoction is among the most classical urinary remedies in Ayurveda. Diuretic activity confirmed in animal models with significant increase in urine output and sodium excretion. Indicated in dysuria, burning micturition, urethritis, cystitis, and urinary calculi (kidney stones) — the mucilage soothes the epithelium while the potassium salts promote gentle flushing.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Haemostatic & Raktapitta</div>
+          <div class="benefit-desc">Kusha is a premier classical herb for <em>Raktapitta</em> — bleeding disorders precipitated by Pitta excess. The astringent-sweet combination arrests haemorrhage from the urinary tract (haematuria), respiratory tract (haemoptysis), and uterine excess (menorrhagia). The kashaya rasa tightens capillaries; the sheeta virya reduces the inflammatory drive behind Pitta-type bleeding.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Antipyretic & Thirst-Quenching</div>
+          <div class="benefit-desc">Trnapanchamula kwatha — decoction of the five grass roots led by Kusha — is a time-honoured Ayurvedic cooling tonic prescribed in fevers of Pitta origin, including typhoid, malarial, and inflammatory fevers accompanied by intense thirst. The cooling virya and sweet post-digestive taste replace lost fluids and mineral salts while calming the febrile state.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Hepatoprotective Activity</div>
+          <div class="benefit-desc">Ethanolic extracts of the rhizome demonstrated significant hepatoprotection against carbon tetrachloride-induced liver damage in animal models, reducing liver enzyme elevations (AST, ALT, ALP) and restoring hepatic architecture. The triterpenoids cylindrin and arundoin are the principal active agents.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Anti-inflammatory & Analgesic</div>
+          <div class="benefit-desc">Aqueous and ethanolic extracts significantly inhibit carrageenan-induced paw edema and writhing in standard anti-inflammatory and analgesic assays. Flavone content — luteolin and apigenin — suppresses COX pathway inflammatory mediators. Classical use in gout, joint inflammation, and abdominal pain aligns with these findings.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Wound Healing & Skin Conditions</div>
+          <div class="benefit-desc">Both leaf paste and root decoction are used traditionally for wound healing, burns, and skin infections. <em>In vivo</em> wound-healing studies confirm accelerated epithelialisation and collagen synthesis — attributed to the combined action of silica (connective tissue support), phenolic acids (antimicrobial), and mucilaginous polysaccharides (biofilm formation over the wound surface).</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Anxiolytic & Nervous System Support</div>
+          <div class="benefit-desc">Traditional yogic use of Kusha mats for meditation has prompted modern investigation. Animal studies suggest mild sedative-anxiolytic effects of leaf extracts, with reduced locomotor activity and enhanced pentobarbital sleep time. The flavonoid apigenin is a known GABA-A receptor positive modulator — providing a plausible mechanistic basis for the classical insistence on Kusha as a meditation substrate.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Anti-diabetic & Metabolic</div>
+          <div class="benefit-desc">Root extracts in streptozotocin-induced diabetic rats showed significant reduction in fasting blood glucose, glycosylated haemoglobin, and improvement in lipid profile. The mechanism appears to involve both insulin secretagogue activity and peripheral glucose uptake enhancement, alongside antioxidant protection of pancreatic beta cells.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">06</span><h2 class="section-title">How to Use Kusha / Darbha</h2><div class="section-rule"></div></div>
+      <p class="section-body">Kusha's primary medicinal part is its rhizome and roots, though the whole plant — grass, roots, and nodes — is used in different preparations. Internally, the decoction (kwatha) of fresh or dried roots is the most common and classical mode. Externally, the fresh leaf paste and darbha water (kusha-infused water) are widely used both ritually and therapeutically.</p>
+      <table class="consume-table">
+        <thead><tr><th>Form</th><th>Preparation</th><th>Dosage</th><th>Best Use</th></tr></thead>
+        <tbody>
+          <tr><td>Root Decoction (Kwatha)</td><td>Boil 10–15 g dried roots in 200 ml water; reduce to 50 ml; strain</td><td>30–50 ml twice daily before meals</td><td>Dysuria, haematuria, fever, urinary stones</td></tr>
+          <tr><td>Trnapanchamula Kwatha</td><td>Equal parts Kusha, Kasha, Shara, Ikshu, Itkata roots decocted</td><td>40–50 ml twice daily</td><td>Pitta fevers, burning urination, thirst</td></tr>
+          <tr><td>Cold Infusion (Hima)</td><td>Soak fresh roots overnight in cold water; strain morning</td><td>30–40 ml once daily, morning</td><td>Acute burning urination, Pitta excess</td></tr>
+          <tr><td>Root Powder (Churna)</td><td>Dried root powdered; with honey or warm milk</td><td>3–5 g twice daily</td><td>Chronic urinary conditions, reproductive health</td></tr>
+          <tr><td>Darbha Water (Ritual)</td><td>Fresh Kusha blades immersed in copper vessel with water overnight</td><td>Sip 10–20 ml on empty stomach</td><td>Daily purification, electrolyte balance, grounding</td></tr>
+          <tr><td>Leaf Paste (Topical)</td><td>Fresh leaves ground to paste with water</td><td>Apply to wound or burn area 1–2× daily</td><td>Wound healing, burns, skin inflammation</td></tr>
+          <tr><td>Kusha Mat (External)</td><td>Woven Darbha mat sat upon during meditation</td><td>Daily practice</td><td>Grounding, anxiolytic, electromagnetic insulation</td></tr>
+          <tr><td>Classical Formulations</td><td>Sarivadyasava, Chandanasava, Chaturmula Kwatha</td><td>Per practitioner direction</td><td>Urinary, reproductive & bleeding disorders</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">07</span><h2 class="section-title">Safety & Precautions</h2><div class="section-rule"></div></div>
+      <p class="section-body">Kusha is among the safest herbs in the Ayurvedic materia medica — it contains no known toxic alkaloids or hepatotoxic compounds, and has been used freely for millennia across populations of all ages. Its principal risk is overuse causing Kapha aggravation and mild hyponatremia (with excessive diuretic use). It is, however, a potent coolant — inappropriate in cold, Vata-dominant, or Kapha-dominant constitutions without careful modification.</p>
+      <ul class="precaution-list">
+        <li><strong>Cold constitutions (Vata/Kapha dominant):</strong> The sheeta (cold) virya may aggravate Vata and Kapha in persons with cold, damp constitutions — combine with warming spices like ginger or black pepper when using internally in such individuals.</li>
+        <li><strong>Pregnancy:</strong> The root decoction in classical doses is generally considered safe; however, avoid high doses as the diuretic and uterine-stimulating properties of large quantities are unknown. Consult an Ayurvedic practitioner.</li>
+        <li><strong>Electrolyte balance:</strong> Prolonged use of high-dose diuretic preparations (Trnapanchamula kwatha) may deplete electrolytes — use with adequate fluid intake and consider periodic breaks.</li>
+        <li><strong>Leaf cuts:</strong> The sharp-tipped leaves of Kusha can cause skin cuts and eye injuries during handling — traditional handling involves grasping the base, not the tip. Handle fresh grass carefully.</li>
+        <li><strong>Drug interactions:</strong> May potentiate the diuretic effect of prescription diuretics — inform your physician if combining with antihypertensive or diuretic medications.</li>
+        <li><strong>Botanical confusion:</strong> Ensure correct identification — Kusha (Desmostachya bipinnata) is sometimes confused with Kasha (Saccharum spontaneum) or Ikshu (sugarcane) varieties. Authentic Darbha is identified by its bipinnate spikelets and dense, tufted growth form.</li>
+      </ul>
+    </div>
+
+    <div class="sources">
+      <div class="sources-title">References & Sources</div>
+      <ul>
+        <li>Charaka Samhita, Sutrasthana — Trnapanchamula Gana (Ch. 4); Chikitsasthana — fever & urinary formulations</li>
+        <li>Sushruta Samhita — Mutravirechaniya Gana, Sandhaniya Gana</li>
+        <li>Bhavaprakasha Nighantu — Haritakyadi Varga; Kusha properties and indications</li>
+        <li>Ashtanga Hridayam (Vagbhata) — Chaturmula Kwatha and urinary disorder management</li>
+        <li>Nadkarni KM — "Indian Materia Medica" — Desmostachya bipinnata monograph</li>
+        <li>Mukherjee PK et al. — "Traditional use of Desmostachya bipinnata (Darbha) in Indian systems of medicine" — Journal of Ethnopharmacology</li>
+        <li>Bhatt L et al. — "Pharmacognostical and phytochemical investigation of Desmostachya bipinnata" — Ancient Science of Life</li>
+        <li>Patel V et al. — "Hepatoprotective and diuretic activity of Desmostachya bipinnata rhizome extract" — International Journal of Pharmaceutical Sciences</li>
+        <li>Taittiriya Samhita, Shatapatha Brahmana — ritual references to Kusha / Barhis</li>
+        <li>Bhagavad Gita 6.11 — Kusha seat instruction for dhyana yoga</li>
+        <li>Garuda Purana — mythological origin of Kusha from Garuda's feathers</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer>
+    <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a qualified practitioner before therapeutic use</p>
+  </footer>
+
+
+  <div id="viewerModal">
+    <div id="modal-topbar">
+      <span>3D Model — Kusha</span>
+      <button type="button" id="close3D">✕</button>
+    </div>
+    <model-viewer src="kusha3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+  </div>
+  <script>
+    (function() {
+      var open3D = document.getElementById('open3D');
+      var close3D = document.getElementById('close3D');
+      var modal = document.getElementById('viewerModal');
+      if (!open3D || !close3D || !modal) return;
+      function openModal() {
+        
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+      function closeModal() {
+        
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+      open3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); openModal();
+      });
+      close3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); closeModal();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+      });
+    })();
+  </script>
+
+</body>
+</html>

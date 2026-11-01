@@ -1,0 +1,2115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SWASTHA — Digital Ecosystem for AYUSH | Education • Visualization • Heritage</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,600&family=Jost:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg-primary: #07170F;
+  --bg-secondary: #103B28;
+  --botanical: #47734C;
+  --gold: #C8A45D;
+  --gold-warm: #E5C783;
+  --gold-bright: #F4DE9C;
+  --ivory: #F5F0E4;
+  --sage: #C7C9B9;
+  --dark-glass: rgba(16, 59, 40, 0.45);
+  --dark-glass-hover: rgba(16, 59, 40, 0.72);
+  --border-gold: rgba(200, 164, 93, 0.32);
+  --border-gold-hover: rgba(229, 199, 131, 0.65);
+
+  /* Legacy theme aliases */
+  --cream: #07170F;
+  --parchment: #103B28;
+  --earth: #E5C783;
+  --forest: #47734C;
+  --deep: #F5F0E4;
+  --ink: #F5F0E4;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Jost', sans-serif;
+  color: var(--ivory);
+  background-color: var(--bg-primary);
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+  line-height: 1.6;
+}
+
+/* ==================== CINEMATIC FOREST BACKGROUND ==================== */
+.cinematic-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+/* Base Forest Canopy Gradient */
+.cinematic-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 50% -12%, rgba(229, 199, 131, 0.28) 0%, rgba(16, 59, 40, 0.48) 35%, transparent 75%),
+    radial-gradient(ellipse at 85% 15%, rgba(71, 115, 76, 0.3) 0%, transparent 60%),
+    radial-gradient(ellipse at 15% 45%, rgba(16, 59, 40, 0.5) 0%, transparent 65%),
+    radial-gradient(ellipse at 50% 90%, rgba(16, 59, 40, 0.6) 0%, rgba(7, 23, 15, 0.98) 80%),
+    linear-gradient(180deg, #07170F 0%, #0B2418 35%, #081B12 70%, #07170F 100%);
+}
+
+/* Subtle Organic Texture */
+.cinematic-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  opacity: 0.8;
+}
+
+/* Floating Gold Atmospheric Dust Particles */
+.dust-mote {
+  position: fixed;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--gold-warm) 0%, rgba(200, 164, 93, 0) 70%);
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.35;
+  animation: floatDust infinite ease-in-out alternate;
+}
+.dust-1 { width: 5px; height: 5px; top: 18%; left: 14%; animation-duration: 11s; }
+.dust-2 { width: 3px; height: 3px; top: 32%; right: 28%; animation-duration: 14s; animation-delay: 2s; }
+.dust-3 { width: 4px; height: 4px; top: 58%; left: 32%; animation-duration: 16s; animation-delay: 4s; }
+.dust-4 { width: 3px; height: 3px; top: 75%; right: 18%; animation-duration: 12s; animation-delay: 1s; }
+.dust-5 { width: 5px; height: 5px; top: 25%; right: 42%; animation-duration: 15s; animation-delay: 3s; }
+
+@keyframes floatDust {
+  0%   { transform: translateY(0) translateX(0); opacity: 0.2; }
+  50%  { opacity: 0.55; }
+  100% { transform: translateY(-35px) translateX(20px); opacity: 0.15; }
+}
+
+/* Botanical Vignettes in Corners */
+.botanical-svg {
+  position: fixed;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.18;
+}
+.botanical-svg path { stroke: var(--botanical) !important; }
+.botanical-svg ellipse { fill: var(--botanical) !important; }
+.botanical-svg circle { fill: var(--gold) !important; }
+.botanical-tl { top: -20px; left: -20px; width: 320px; }
+.botanical-br { bottom: -20px; right: -20px; width: 280px; transform: rotate(180deg); }
+
+/* ==================== NAVIGATION BAR ==================== */
+.site-nav {
+  position: sticky;
+  top: 0;
+  width: 100%;
+  z-index: 1000;
+  background: rgba(7, 23, 15, 0.78);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-bottom: 1px solid rgba(200, 164, 93, 0.22);
+  transition: all 0.3s ease;
+}
+
+.nav-container {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 16px 36px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brand-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: var(--ivory);
+}
+
+.brand-logo-icon {
+  width: 28px;
+  height: 28px;
+  color: var(--gold-warm);
+  filter: drop-shadow(0 0 8px rgba(229, 199, 131, 0.45));
+}
+
+.brand-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 26px;
+  font-weight: 500;
+  letter-spacing: 5px;
+  color: var(--ivory);
+  text-transform: uppercase;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 34px;
+  list-style: none;
+}
+
+.nav-link {
+  font-size: 13.5px;
+  font-weight: 400;
+  letter-spacing: 1.2px;
+  color: var(--ivory);
+  text-decoration: none;
+  position: relative;
+  padding: 6px 0;
+  transition: color 0.3s ease;
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 1.5px;
+  background: linear-gradient(90deg, transparent, var(--gold-warm), transparent);
+  transform: translateX(-50%);
+  transition: width 0.3s ease;
+}
+
+.nav-link:hover {
+  color: var(--gold-warm);
+}
+
+.nav-link:hover::after {
+  width: 100%;
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.nav-search-btn {
+  background: rgba(16, 59, 40, 0.5);
+  border: 1px solid rgba(200, 164, 93, 0.3);
+  border-radius: 9999px;
+  color: var(--sage);
+  padding: 8px 16px;
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+}
+
+.nav-search-btn:hover {
+  background: rgba(16, 59, 40, 0.8);
+  border-color: var(--gold-warm);
+  color: var(--ivory);
+}
+
+.nav-signin-btn {
+  background: rgba(16, 59, 40, 0.6);
+  border: 1px solid rgba(200, 164, 93, 0.65);
+  border-radius: 9999px;
+  color: var(--ivory);
+  text-decoration: none;
+  padding: 8px 24px;
+  font-size: 13px;
+  letter-spacing: 1.2px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+}
+
+.nav-signin-btn:hover {
+  background: linear-gradient(135deg, rgba(20, 72, 49, 1), rgba(16, 59, 40, 1));
+  border-color: var(--gold-warm);
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5), 0 0 16px rgba(200, 164, 93, 0.25);
+}
+
+.mobile-menu-toggle {
+  display: none;
+  background: transparent;
+  border: none;
+  color: var(--ivory);
+  font-size: 24px;
+  cursor: pointer;
+}
+
+/* ==================== HERO SECTION (OPTION 1) ==================== */
+.hero-section {
+  position: relative;
+  z-index: 10;
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 50px 36px 60px;
+}
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  align-items: center;
+  gap: 40px;
+}
+
+.hero-content {
+  animation: fadeUp 1s ease forwards;
+}
+
+.hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--gold-warm);
+  margin-bottom: 14px;
+}
+
+.hero-eyebrow::before,
+.hero-eyebrow::after {
+  content: '';
+  display: inline-block;
+  width: 24px;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--gold));
+}
+.hero-eyebrow::after {
+  background: linear-gradient(to left, transparent, var(--gold));
+}
+
+.hero-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(52px, 6.8vw, 88px);
+  font-weight: 300;
+  letter-spacing: 8px;
+  line-height: 1;
+  color: var(--ivory);
+  text-shadow: 0 4px 28px rgba(0, 0, 0, 0.7);
+  margin-bottom: 12px;
+}
+
+.hero-subtitle {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(20px, 2.2vw, 26px);
+  font-style: italic;
+  font-weight: 300;
+  color: var(--gold-warm);
+  letter-spacing: 2px;
+  margin-bottom: 12px;
+}
+
+.hero-shloka {
+  font-size: 13.5px;
+  letter-spacing: 4px;
+  color: var(--sage);
+  font-weight: 300;
+  margin-bottom: 18px;
+}
+
+.hero-description {
+  font-size: 15px;
+  line-height: 1.7;
+  color: rgba(245, 240, 228, 0.82);
+  max-width: 540px;
+  margin-bottom: 32px;
+}
+
+.hero-ctas {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(135deg, var(--gold-warm) 0%, var(--gold) 100%);
+  color: #07170F;
+  text-decoration: none;
+  font-size: 13.5px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 14px 30px;
+  border-radius: 9999px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 6px 24px rgba(200, 164, 93, 0.35);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, var(--gold-bright) 0%, var(--gold-warm) 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(200, 164, 93, 0.5);
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(16, 59, 40, 0.45);
+  color: var(--ivory);
+  text-decoration: none;
+  font-size: 13.5px;
+  font-weight: 400;
+  letter-spacing: 1.5px;
+  padding: 13px 28px;
+  border-radius: 9999px;
+  border: 1px solid rgba(200, 164, 93, 0.45);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+  background: rgba(16, 59, 40, 0.75);
+  border-color: var(--gold-warm);
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 16px rgba(200, 164, 93, 0.2);
+}
+
+/* Hero Centerpiece Medallion (Right Column) */
+.hero-visual {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeUp 1.2s ease forwards;
+}
+
+.hero-sunburst-halo {
+  position: absolute;
+  inset: -15%;
+  background: radial-gradient(circle, rgba(229, 199, 131, 0.28) 0%, rgba(16, 59, 40, 0.3) 40%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 1;
+  filter: blur(20px);
+}
+
+.hero-frame {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 480px;
+  aspect-ratio: 1 / 1;
+  border-radius: 32px;
+  overflow: hidden;
+  border: 1px solid rgba(229, 199, 131, 0.4);
+  box-shadow:
+    0 24px 60px rgba(0, 0, 0, 0.65),
+    0 0 40px rgba(200, 164, 93, 0.22),
+    inset 0 0 30px rgba(7, 23, 15, 0.6);
+  background: rgba(7, 23, 15, 0.8);
+}
+
+.hero-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hero-frame:hover img {
+  transform: scale(1.04);
+}
+
+.hero-frame-caption {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 24px 24px 18px;
+  background: linear-gradient(180deg, transparent 0%, rgba(7, 23, 15, 0.92) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.hero-caption-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 18px;
+  color: var(--gold-warm);
+  letter-spacing: 1.5px;
+}
+
+.hero-caption-sub {
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--sage);
+}
+
+/* ==================== SECTION DIVIDER ==================== */
+.section-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin: 30px auto 45px;
+  position: relative;
+  z-index: 10;
+}
+.section-divider-line {
+  height: 1px;
+  width: 100px;
+  background: linear-gradient(to right, transparent, var(--gold));
+}
+.section-divider-line:last-child {
+  background: linear-gradient(to left, transparent, var(--gold));
+}
+.section-divider-leaf {
+  color: var(--gold-warm);
+  font-size: 18px;
+}
+
+/* ==================== MODULES SECTION (5 AYUSH CARDS) ==================== */
+.modules-section {
+  position: relative;
+  z-index: 10;
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 0 36px 90px;
+}
+
+.modules-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.modules-eyebrow {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--gold-warm);
+  margin-bottom: 6px;
+}
+
+.modules-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(32px, 3.8vw, 44px);
+  font-weight: 300;
+  letter-spacing: 4px;
+  color: var(--ivory);
+}
+
+.modules-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 18px;
+}
+
+.module-card {
+  position: relative;
+  cursor: pointer;
+  padding: 38px 18px 34px;
+  text-align: center;
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: 1px solid var(--border-gold);
+  border-radius: 10px;
+  background: linear-gradient(180deg, rgba(16, 59, 40, 0.48) 0%, rgba(7, 23, 15, 0.72) 100%);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(229, 199, 131, 0.18);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: visible;
+  animation: fadeUp 0.9s ease forwards;
+}
+
+.module-card:hover {
+  background: linear-gradient(180deg, rgba(20, 72, 49, 0.82) 0%, rgba(7, 23, 15, 0.92) 100%);
+  border-color: var(--border-gold-hover);
+  transform: translateY(-8px);
+  box-shadow:
+    0 20px 42px rgba(0, 0, 0, 0.65),
+    0 0 28px rgba(200, 164, 93, 0.24),
+    inset 0 1px 0 rgba(229, 199, 131, 0.35);
+}
+
+.module-number {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 4px;
+  color: var(--gold-warm);
+  margin-bottom: 22px;
+}
+
+.module-icon-stage {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  border: 1px solid rgba(200, 164, 93, 0.38);
+  margin: 0 auto 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background: rgba(7, 23, 15, 0.85);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+  transition: all 0.4s ease;
+}
+
+.module-card:hover .module-icon-stage {
+  border-color: var(--gold-warm);
+  box-shadow: 0 0 24px rgba(200, 164, 93, 0.32);
+}
+
+/* 3D Burst-out artwork */
+.module-icon-stage img {
+  width: 140px;
+  height: 140px;
+  object-fit: contain;
+  position: absolute;
+  bottom: -32px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-radius: 0;
+  filter: drop-shadow(0 10px 18px rgba(0,0,0,0.6));
+  z-index: 10;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), filter 0.4s ease;
+}
+
+.module-card:hover .module-icon-stage img {
+  transform: translateX(-50%) translateY(-10px) scale(1.08);
+  filter: drop-shadow(0 18px 26px rgba(0,0,0,0.7)) drop-shadow(0 4px 10px rgba(200,164,93,0.3));
+}
+
+.module-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: 2.5px;
+  color: var(--ivory);
+  margin-bottom: 6px;
+  transition: color 0.3s ease;
+}
+
+.module-card:hover .module-name {
+  color: var(--gold-warm);
+}
+
+.module-sub {
+  font-size: 11px;
+  font-weight: 300;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--sage);
+  line-height: 1.5;
+  margin-bottom: 20px;
+}
+
+.module-arrow-circle {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid rgba(200, 164, 93, 0.38);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gold);
+  font-size: 14px;
+  transition: all 0.3s ease;
+  margin-top: auto;
+}
+
+.module-card:hover .module-arrow-circle {
+  background: var(--gold-warm);
+  color: #07170F;
+  border-color: var(--gold-warm);
+  transform: scale(1.1);
+  box-shadow: 0 0 14px rgba(229, 199, 131, 0.5);
+}
+
+/* ==================== 3D VIRTUAL LAB SHOWCASE SECTION ==================== */
+.lab-section {
+  position: relative;
+  z-index: 10;
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 0 36px 90px;
+}
+
+.lab-banner {
+  background: linear-gradient(135deg, rgba(16, 59, 40, 0.6) 0%, rgba(7, 23, 15, 0.85) 100%);
+  border: 1px solid var(--border-gold);
+  border-radius: 20px;
+  padding: 48px 48px;
+  display: grid;
+  grid-template-columns: 1fr 1.1fr;
+  align-items: center;
+  gap: 40px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(229, 199, 131, 0.2);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.lab-info-eyebrow {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 3.5px;
+  text-transform: uppercase;
+  color: var(--gold-warm);
+  margin-bottom: 12px;
+}
+
+.lab-info-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(30px, 3.4vw, 42px);
+  font-weight: 300;
+  letter-spacing: 3px;
+  color: var(--ivory);
+  line-height: 1.2;
+  margin-bottom: 16px;
+}
+
+.lab-info-desc {
+  font-size: 14.5px;
+  color: var(--sage);
+  line-height: 1.7;
+  margin-bottom: 28px;
+}
+
+.lab-specimen-pills {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 30px;
+}
+
+.specimen-pill {
+  background: rgba(7, 23, 15, 0.7);
+  border: 1px solid rgba(200, 164, 93, 0.35);
+  border-radius: 9999px;
+  padding: 6px 16px;
+  font-size: 12px;
+  color: var(--ivory);
+  text-decoration: none;
+  transition: all 0.25s ease;
+}
+
+.specimen-pill:hover {
+  background: rgba(16, 59, 40, 0.85);
+  border-color: var(--gold-warm);
+  color: var(--gold-warm);
+}
+
+.lab-visual-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.lab-thumb-card {
+  position: relative;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(200, 164, 93, 0.28);
+  aspect-ratio: 4 / 3;
+  text-decoration: none;
+  display: block;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  transition: all 0.35s ease;
+}
+
+.lab-thumb-card:hover {
+  border-color: var(--gold-warm);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6), 0 0 18px rgba(200, 164, 93, 0.2);
+}
+
+.lab-thumb-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.6s ease;
+}
+
+.lab-thumb-card:hover img {
+  transform: scale(1.06);
+}
+
+.lab-thumb-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 40%, rgba(7, 23, 15, 0.95) 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 14px 16px;
+}
+
+.lab-thumb-badge {
+  font-size: 9.5px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--gold-warm);
+  margin-bottom: 2px;
+}
+
+.lab-thumb-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 16px;
+  color: var(--ivory);
+  letter-spacing: 1px;
+}
+
+/* ==================== CLASSICAL DISCIPLINES SECTION ==================== */
+.disciplines-section {
+  position: relative;
+  z-index: 10;
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 0 36px 90px;
+}
+
+.disciplines-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.disciplines-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+.discipline-card {
+  background: linear-gradient(180deg, rgba(16, 59, 40, 0.45) 0%, rgba(7, 23, 15, 0.75) 100%);
+  border: 1px solid var(--border-gold);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.4);
+  transition: all 0.35s ease;
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+}
+
+.discipline-card:hover {
+  border-color: var(--border-gold-hover);
+  transform: translateY(-6px);
+  box-shadow: 0 18px 38px rgba(0, 0, 0, 0.6), 0 0 22px rgba(200, 164, 93, 0.2);
+}
+
+.discipline-image {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  position: relative;
+}
+
+.discipline-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s ease;
+}
+
+.discipline-card:hover .discipline-image img {
+  transform: scale(1.06);
+}
+
+.discipline-body {
+  padding: 22px 20px;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.discipline-tag {
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--gold-warm);
+  margin-bottom: 6px;
+}
+
+.discipline-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 20px;
+  color: var(--ivory);
+  letter-spacing: 1.5px;
+  margin-bottom: 8px;
+  line-height: 1.25;
+}
+
+.discipline-desc {
+  font-size: 12.5px;
+  color: var(--sage);
+  line-height: 1.6;
+}
+
+/* ==================== ABOUT & MANUSCRIPT SECTION ==================== */
+.about-section {
+  position: relative;
+  z-index: 10;
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 0 36px 100px;
+}
+
+.about-banner {
+  background: linear-gradient(135deg, rgba(16, 59, 40, 0.5) 0%, rgba(7, 23, 15, 0.8) 100%);
+  border: 1px solid var(--border-gold);
+  border-radius: 20px;
+  padding: 50px;
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  align-items: center;
+  gap: 40px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+}
+
+.about-manuscript-frame {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(229, 199, 131, 0.4);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6), 0 0 24px rgba(200, 164, 93, 0.2);
+}
+
+.about-manuscript-frame img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.about-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(30px, 3.2vw, 42px);
+  color: var(--ivory);
+  letter-spacing: 3px;
+  margin-bottom: 16px;
+  font-weight: 300;
+}
+
+.about-shloka-box {
+  background: rgba(7, 23, 15, 0.65);
+  border-left: 2px solid var(--gold-warm);
+  padding: 14px 18px;
+  margin-bottom: 20px;
+  border-radius: 0 8px 8px 0;
+}
+
+.about-shloka-text {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 17px;
+  font-style: italic;
+  color: var(--gold-warm);
+  line-height: 1.5;
+  margin-bottom: 4px;
+}
+
+.about-shloka-trans {
+  font-size: 12px;
+  color: var(--sage);
+  letter-spacing: 1px;
+}
+
+.about-desc {
+  font-size: 14.5px;
+  color: rgba(245, 240, 228, 0.85);
+  line-height: 1.7;
+  margin-bottom: 24px;
+}
+
+/* ==================== FOOTER ==================== */
+footer {
+  position: relative;
+  z-index: 10;
+  border-top: 1px solid rgba(200, 164, 93, 0.22);
+  background: rgba(7, 23, 15, 0.95);
+  padding: 70px 36px 40px;
+}
+
+.footer-container {
+  max-width: 1320px;
+  margin: 0 auto;
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr 1fr;
+  gap: 40px;
+  margin-bottom: 50px;
+}
+
+.footer-brand-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 26px;
+  letter-spacing: 5px;
+  color: var(--ivory);
+  margin-bottom: 12px;
+}
+
+.footer-brand-desc {
+  font-size: 13px;
+  color: var(--sage);
+  line-height: 1.7;
+  max-width: 320px;
+  margin-bottom: 18px;
+}
+
+.footer-col-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 17px;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--gold-warm);
+  margin-bottom: 18px;
+}
+
+.footer-links {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.footer-links a {
+  color: var(--sage);
+  text-decoration: none;
+  font-size: 13px;
+  transition: color 0.25s ease;
+}
+
+.footer-links a:hover {
+  color: var(--gold-warm);
+}
+
+.footer-bottom {
+  border-top: 1px solid rgba(200, 164, 93, 0.15);
+  padding-top: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11.5px;
+  color: var(--sage);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+/* ==================== SEARCH MODAL ==================== */
+.search-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(7, 23, 15, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  z-index: 10000;
+  display: none;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 90px 20px 40px;
+}
+
+.search-modal-backdrop.open {
+  display: flex;
+}
+
+.search-modal {
+  width: 100%;
+  max-width: 650px;
+  background: rgba(16, 59, 40, 0.85);
+  border: 1px solid var(--border-gold-hover);
+  border-radius: 16px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.8), 0 0 30px rgba(200, 164, 93, 0.25);
+  overflow: hidden;
+  animation: fadeUp 0.3s ease;
+}
+
+.search-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 24px;
+  border-bottom: 1px solid rgba(200, 164, 93, 0.25);
+}
+
+.search-input {
+  flex-grow: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 18px;
+  font-family: inherit;
+  color: var(--ivory);
+}
+
+.search-input::placeholder {
+  color: var(--sage);
+  opacity: 0.7;
+}
+
+.search-close-btn {
+  background: transparent;
+  border: none;
+  color: var(--sage);
+  font-size: 20px;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.search-results-list {
+  max-height: 380px;
+  overflow-y: auto;
+  padding: 12px 16px;
+}
+
+.search-result-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: var(--ivory);
+  transition: background 0.2s ease;
+}
+
+.search-result-item:hover {
+  background: rgba(7, 23, 15, 0.6);
+  color: var(--gold-warm);
+}
+
+/* ==================== INTRO VIDEO OVERLAY EXPERIENCE ==================== */
+.intro-overlay {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  min-height: 100dvh;
+  z-index: 999999;
+  background: #0d1712;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  touch-action: none;
+  overscroll-behavior: none;
+  transition: opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.85s ease;
+}
+
+.intro-logo-container {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.85s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1), filter 0.85s ease;
+}
+
+.intro-video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  width: 100dvw;
+  height: 100dvh;
+  object-fit: cover;
+  pointer-events: none;
+  display: block;
+}
+
+.intro-controls {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+}
+
+/* Dynamic positioning covers Gemini watermark with 100% precision */
+.intro-sound-button {
+  position: absolute;
+  z-index: 20;
+  bottom: max(96px, env(safe-area-inset-bottom, 96px));
+  right: max(32px, env(safe-area-inset-right, 32px));
+  min-width: 230px;
+  min-height: 66px;
+  padding: 18px 34px;
+  background: #091a12;
+  background: linear-gradient(135deg, rgba(16, 59, 40, 0.98), rgba(7, 23, 15, 0.98));
+  border: 1px solid rgba(229, 199, 131, 0.75);
+  border-radius: 9999px;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  color: var(--ivory);
+  font: 500 1rem 'Jost', sans-serif;
+  letter-spacing: 0.8px;
+  cursor: pointer;
+  pointer-events: auto;
+  box-shadow: 0 0 0 16px rgba(7, 23, 15, 0.96),
+              0 0 45px 30px rgba(7, 23, 15, 0.95),
+              0 12px 35px rgba(0, 0, 0, 0.85);
+  transition: transform 0.25s ease, background 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  user-select: none;
+}
+
+.intro-sound-button:hover {
+  background: linear-gradient(135deg, rgba(20, 72, 49, 1), rgba(16, 59, 40, 1));
+  border-color: var(--gold-warm);
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 0 0 18px rgba(7, 23, 15, 0.98),
+              0 0 50px 35px rgba(7, 23, 15, 0.98),
+              0 16px 40px rgba(0, 0, 0, 0.9);
+}
+
+.intro-sound-button.active {
+  background: linear-gradient(135deg, rgba(20, 72, 49, 0.98), rgba(16, 59, 40, 0.98));
+  border-color: var(--gold-warm);
+  color: var(--ivory);
+}
+
+.intro-skip-button {
+  position: absolute;
+  z-index: 10;
+  top: max(24px, env(safe-area-inset-top, 24px));
+  right: max(24px, env(safe-area-inset-right, 24px));
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 9999px;
+  padding: 8px 18px;
+  background: rgba(13, 23, 18, 0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #ede4d0;
+  font: 300 0.85rem 'Jost', sans-serif;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  pointer-events: auto;
+  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+.intro-skip-button:hover {
+  background: rgba(201, 168, 76, 0.25);
+  border-color: var(--gold);
+  color: #ffffff;
+}
+
+.intro-overlay.intro-exit {
+  opacity: 0;
+  pointer-events: none;
+}
+
+@media (max-width: 600px), (orientation: portrait) {
+  .intro-sound-button {
+    min-width: 180px;
+    min-height: 52px;
+    padding: 12px 22px;
+    font-size: 0.88rem;
+    box-shadow: 0 0 0 12px rgba(7, 23, 15, 0.96),
+                0 0 35px 25px rgba(7, 23, 15, 0.95),
+                0 10px 30px rgba(0, 0, 0, 0.85);
+  }
+}
+
+.intro-overlay.intro-exit .intro-logo-container {
+  transform: scale(1.05);
+  opacity: 0;
+  filter: blur(16px);
+}
+
+/* ==================== ANIMATIONS & RESPONSIVE ==================== */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 1080px) {
+  .hero-grid { grid-template-columns: 1fr; text-align: center; gap: 48px; }
+  .hero-description { margin-left: auto; margin-right: auto; }
+  .hero-ctas { justify-content: center; }
+  .hero-frame { max-width: 420px; margin: 0 auto; }
+  .modules-grid { grid-template-columns: repeat(3, 1fr); }
+  .disciplines-grid { grid-template-columns: repeat(2, 1fr); }
+  .lab-banner { grid-template-columns: 1fr; }
+  .about-banner { grid-template-columns: 1fr; }
+  .footer-grid { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 768px) {
+  .nav-links { display: none; }
+  .nav-links.open {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: rgba(7, 23, 15, 0.98);
+    padding: 24px;
+    border-bottom: 1px solid var(--border-gold);
+    gap: 16px;
+  }
+  .mobile-menu-toggle { display: block; }
+  .modules-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
+  .disciplines-grid { grid-template-columns: 1fr; }
+  .footer-grid { grid-template-columns: 1fr; }
+  .footer-bottom { flex-direction: column; gap: 12px; text-align: center; }
+}
+
+@media (max-width: 480px) {
+  .modules-grid { grid-template-columns: 1fr; max-width: 320px; margin: 0 auto; }
+  .lab-banner, .about-banner { padding: 28px 20px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- CINEMATIC FOREST BACKGROUND LAYERS -->
+<div class="cinematic-bg" aria-hidden="true"></div>
+
+<!-- ATMOSPHERIC PARTICLES -->
+<div class="dust-mote dust-1" aria-hidden="true"></div>
+<div class="dust-mote dust-2" aria-hidden="true"></div>
+<div class="dust-mote dust-3" aria-hidden="true"></div>
+<div class="dust-mote dust-4" aria-hidden="true"></div>
+<div class="dust-mote dust-5" aria-hidden="true"></div>
+
+<!-- CORNER BOTANICAL ARTWORK -->
+<svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <path d="M10 290 Q 80 200 150 150 Q 200 110 260 20" stroke="#2a5c3f" stroke-width="1.5" fill="none"/>
+  <path d="M30 280 Q 60 200 90 160" stroke="#2a5c3f" stroke-width="1" fill="none"/>
+  <ellipse cx="150" cy="150" rx="28" ry="16" fill="#2a5c3f" transform="rotate(-40 150 150)"/>
+  <ellipse cx="200" cy="105" rx="22" ry="13" fill="#7a9e7e" transform="rotate(-55 200 105)"/>
+  <ellipse cx="100" cy="200" rx="20" ry="11" fill="#2a5c3f" transform="rotate(-20 100 200)"/>
+  <ellipse cx="250" cy="55" rx="18" ry="10" fill="#c9a84c" transform="rotate(-65 250 55)"/>
+  <circle cx="260" cy="20" r="5" fill="#c9a84c" opacity="0.7"/>
+</svg>
+
+<svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <path d="M10 290 Q 80 200 150 150 Q 200 110 260 20" stroke="#2a5c3f" stroke-width="1.5" fill="none"/>
+  <ellipse cx="150" cy="150" rx="28" ry="16" fill="#2a5c3f" transform="rotate(-40 150 150)"/>
+  <ellipse cx="200" cy="105" rx="22" ry="13" fill="#7a9e7e" transform="rotate(-55 200 105)"/>
+  <ellipse cx="100" cy="200" rx="20" ry="11" fill="#2a5c3f" transform="rotate(-20 100 200)"/>
+  <ellipse cx="250" cy="55" rx="18" ry="10" fill="#c9a84c" transform="rotate(-65 250 55)"/>
+</svg>
+
+<!-- INTRO LOADING VIDEO EXPERIENCE -->
+<div id="intro-overlay" class="intro-overlay" role="dialog" aria-modal="true" aria-label="Swastha Intro">
+  <div id="intro-logo-container" class="intro-logo-container">
+    <video
+      id="intro-video"
+      class="intro-video"
+      autoplay
+      playsinline
+      webkit-playsinline
+      preload="auto"
+    >
+      <!-- 9:16 Portrait / Mobile Video -->
+      <source src="mobile_intro.mp4" type="video/mp4" media="(orientation: portrait), (max-aspect-ratio: 1/1)">
+      <!-- 16:9 Landscape / Desktop Video -->
+      <source src="swastha_intro.mp4" type="video/mp4" media="(orientation: landscape), (min-aspect-ratio: 1/1)">
+      <source src="swastha_intro.mp4" type="video/mp4">
+    </video>
+  </div>
+  <div class="intro-controls">
+    <button id="intro-sound-button" class="intro-sound-button" type="button" aria-label="Toggle Audio">
+      🔊 Enable Audio
+    </button>
+    <button id="intro-skip-button" class="intro-skip-button" type="button" aria-label="Skip Intro">
+      Skip &rarr;
+    </button>
+  </div>
+</div>
+
+<!-- TOP NAVIGATION BAR -->
+<header class="site-nav">
+  <div class="nav-container">
+    <a href="#" class="brand-group">
+      <!-- Lotus SVG Icon -->
+      <svg class="brand-logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2C12 2 15 6 15 9C15 11 13.5 12.5 12 13C10.5 12.5 9 11 9 9C9 6 12 2 12 2Z"/>
+        <path d="M12 13C13.5 13.5 17 15 17 18C17 20 15 21 12 21C9 21 7 20 7 18C7 15 10.5 13.5 12 13Z"/>
+        <path d="M15 9C17 7 21 8 22 11C22.5 13 21 15.5 17 16"/>
+        <path d="M9 9C7 7 3 8 2 11C1.5 13 3 15.5 7 16"/>
+      </svg>
+      <span class="brand-name">SWASTHA</span>
+    </a>
+
+    <ul class="nav-links" id="nav-links">
+      <li><a href="#" class="nav-link">Home</a></li>
+      <li><a href="#explore" class="nav-link">Explore</a></li>
+      <li><a href="#modules" class="nav-link">Modules</a></li>
+      <li><a href="#3d-lab" class="nav-link">3D Lab</a></li>
+      <li><a href="#about" class="nav-link">About</a></li>
+    </ul>
+
+    <div class="nav-actions">
+      <button id="search-trigger-btn" class="nav-search-btn" type="button" aria-label="Search Medicinal Plants">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <span>Search...</span>
+      </button>
+
+      <a href="Ayurvedha/login.html" class="nav-signin-btn">Sign In</a>
+
+      <button id="mobile-toggle-btn" class="mobile-menu-toggle" type="button" aria-label="Toggle Navigation">
+        ☰
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- HERO SECTION (OPTION 1 LAYOUT) -->
+<section class="hero-section" id="home">
+  <div class="hero-grid">
+    <!-- Left Column: Content -->
+    <div class="hero-content">
+      <div class="hero-eyebrow">Digital Ecosystem for AYUSH</div>
+      <h1 class="hero-title">SWASTHA</h1>
+      <p class="hero-subtitle">Education • Visualization • Heritage</p>
+      <p class="hero-shloka">सर्वे भवन्तु सुखिनः सर्वे सन्तु निरामयाः</p>
+      <p class="hero-description">
+        A modern digital platform to learn, explore and visualize the rich knowledge of AYUSH through immersive 3D experiences.
+      </p>
+      <div class="hero-ctas">
+        <button id="hero-watch-intro-btn" class="btn-primary" type="button">
+          ▶ Watch Intro
+        </button>
+        <a href="#modules" class="btn-secondary">
+          Explore Modules &rarr;
+        </a>
+      </div>
+    </div>
+
+    <!-- Right Column: Ayurvedic Centerpiece Medallion -->
+    <div class="hero-visual">
+      <div class="hero-sunburst-halo"></div>
+      <div class="hero-frame">
+        <img
+          src="assets/hero_medallion.jpg"
+          alt="Ayurvedic Sage in Deep Forest Meditation with Medicinal Herbs"
+          onerror="this.src='assets/hero_medallion_hq.jpg'"
+        >
+        <div class="hero-frame-caption">
+          <div>
+            <div class="hero-caption-title">The Sacred Grove</div>
+            <div class="hero-caption-sub">Ayurvedic Sanctuary & Healing Science</div>
+          </div>
+          <span style="color: var(--gold-warm); font-size: 20px;">✦</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION DIVIDER -->
+<div class="section-divider">
+  <div class="section-divider-line"></div>
+  <div class="section-divider-leaf">❧</div>
+  <div class="section-divider-line"></div>
+</div>
+
+<!-- 5 AYUSH MODULE CARDS ROW (OPTION 1) -->
+<section class="modules-section" id="modules">
+  <div class="modules-header">
+    <div class="modules-eyebrow">Traditional Systems of Medicine</div>
+    <h2 class="modules-title">The Five Healing Paths</h2>
+  </div>
+
+  <div class="modules-grid">
+    <!-- 01 · Ayurveda -->
+    <a href="Ayurvedha/index.html" class="module-card">
+      <span class="module-number">01</span>
+      <div class="module-icon-stage">
+        <img
+          src="https://lh3.googleusercontent.com/d/1LnZSOCR7J_E1im6xonL9039NfMXtZSHl"
+          alt="Ayurveda"
+          onerror="this.style.display='none';"
+        >
+      </div>
+      <h3 class="module-name">AYURVEDA</h3>
+      <p class="module-sub">Balance of Life</p>
+      <div class="module-arrow-circle">&rarr;</div>
+    </a>
+
+    <!-- 02 · Yoga -->
+    <a href="Yoga/index.html" class="module-card">
+      <span class="module-number">02</span>
+      <div class="module-icon-stage">
+        <img
+          src="https://lh3.googleusercontent.com/d/1ghD3PzSs7ytgPnukt3-O4W7DzV_WBbOd"
+          alt="Yoga"
+          onerror="this.style.display='none';"
+        >
+      </div>
+      <h3 class="module-name">YOGA</h3>
+      <p class="module-sub">Union of Self</p>
+      <div class="module-arrow-circle">&rarr;</div>
+    </a>
+
+    <!-- 03 · Unani -->
+    <a href="Unani/index.html" class="module-card">
+      <span class="module-number">03</span>
+      <div class="module-icon-stage">
+        <img
+          src="https://lh3.googleusercontent.com/d/11yEn2ijBzz6PrmErIhe1QIBYYu_4h8BD"
+          alt="Unani"
+          onerror="this.style.display='none';"
+        >
+      </div>
+      <h3 class="module-name">UNANI</h3>
+      <p class="module-sub">Greco-Arabic Healing</p>
+      <div class="module-arrow-circle">&rarr;</div>
+    </a>
+
+    <!-- 04 · Siddha -->
+    <a href="Sidhha/index.html" class="module-card">
+      <span class="module-number">04</span>
+      <div class="module-icon-stage">
+        <img
+          src="https://lh3.googleusercontent.com/d/1xsYEG7ZxY-Rt3Jm6EiKJP0H1z4SiUFfX"
+          alt="Siddha"
+          onerror="this.style.display='none';"
+        >
+      </div>
+      <h3 class="module-name">SIDDHA</h3>
+      <p class="module-sub">Ancient Wisdom</p>
+      <div class="module-arrow-circle">&rarr;</div>
+    </a>
+
+    <!-- 05 · Homeopathy -->
+    <a href="Homeopathy/index.html" class="module-card">
+      <span class="module-number">05</span>
+      <div class="module-icon-stage">
+        <img
+          src="https://lh3.googleusercontent.com/d/1ixTa-pljEecPZK6BsUmwtYxzr38Q0MXZ"
+          alt="Homeopathy"
+          onerror="this.style.display='none';"
+        >
+      </div>
+      <h3 class="module-name">HOMEOPATHY</h3>
+      <p class="module-sub">Subtle Healing</p>
+      <div class="module-arrow-circle">&rarr;</div>
+    </a>
+  </div>
+</section>
+
+<!-- 3D VIRTUAL LAB SHOWCASE SECTION -->
+<section class="lab-section" id="3d-lab">
+  <div class="lab-banner">
+    <div class="lab-info">
+      <div class="lab-info-eyebrow">Interactive Herbarium & 3D Lab</div>
+      <h2 class="lab-info-title">Botanical Visualization in Real 3D</h2>
+      <p class="lab-info-desc">
+        Explore living Ayurvedic flora with real-time 3D rotation, morphological dissection, Sanskrit Rasapanchaka properties, and authentic classical formulations.
+      </p>
+
+      <div class="lab-specimen-pills">
+        <a href="Ayurvedha/Tulsi.html" class="specimen-pill">✦ Tulsi (Holy Basil) 3D</a>
+        <a href="Ayurvedha/Ashwagandha.html" class="specimen-pill">✦ Ashwagandha</a>
+        <a href="Ayurvedha/Brahmi.html" class="specimen-pill">✦ Brahmi</a>
+        <a href="Ayurvedha/Shatavari.html" class="specimen-pill">✦ Shatavari</a>
+      </div>
+
+      <a href="Ayurvedha/index.html" class="btn-primary">
+        Enter 3D Botanical Lab &rarr;
+      </a>
+    </div>
+
+    <div class="lab-visual-grid">
+      <a href="Ayurvedha/Tulsi.html" class="lab-thumb-card">
+        <img src="assets/tulsi_3d_specimen_ai.jpg" alt="Tulsi 3D Model">
+        <div class="lab-thumb-overlay">
+          <div class="lab-thumb-badge">Interactive 3D GLB</div>
+          <div class="lab-thumb-name">Tulasi (Ocimum Sanctum)</div>
+        </div>
+      </a>
+
+      <a href="Ayurvedha/index.html" class="lab-thumb-card">
+        <img src="assets/sharira_rachana_anatomy_ai.jpg" alt="Ayurvedic Anatomy">
+        <div class="lab-thumb-overlay">
+          <div class="lab-thumb-badge">Sharira Rachana</div>
+          <div class="lab-thumb-name">Marma & Energy Points</div>
+        </div>
+      </a>
+
+      <a href="Ayurvedha/Ashwagandha.html" class="lab-thumb-card">
+        <img src="assets/ashwagandha_dravya_guna_ai.jpg" alt="Materia Medica">
+        <div class="lab-thumb-overlay">
+          <div class="lab-thumb-badge">Dravya Guna</div>
+          <div class="lab-thumb-name">Ashwagandha Specimen</div>
+        </div>
+      </a>
+
+      <a href="Ayurvedha/bookmarks.html" class="lab-thumb-card">
+        <img src="assets/rasa_shastra_alchemy_ai.jpg" alt="Formulations">
+        <div class="lab-thumb-overlay">
+          <div class="lab-thumb-badge">Rasa Shastra</div>
+          <div class="lab-thumb-name">Alchemy & Preparations</div>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- CLASSICAL DISCIPLINES SECTION -->
+<section class="disciplines-section" id="explore">
+  <div class="disciplines-header">
+    <div class="modules-eyebrow">Pillars of Classical Science</div>
+    <h2 class="modules-title">Ayurvedic Disciplines</h2>
+  </div>
+
+  <div class="disciplines-grid">
+    <div class="discipline-card">
+      <div class="discipline-image">
+        <img src="assets/ashwagandha_dravya_guna_ai.jpg" alt="Dravya Guna">
+      </div>
+      <div class="discipline-body">
+        <div class="discipline-tag">Herbology & Materia Medica</div>
+        <h3 class="discipline-title">Dravya Guna</h3>
+        <p class="discipline-desc">
+          The comprehensive study of medicinal flora, active herbal properties, Rasa, Guna, Virya, Vipaka, and Prabhava.
+        </p>
+      </div>
+    </div>
+
+    <div class="discipline-card">
+      <div class="discipline-image">
+        <img src="assets/rasa_shastra_alchemy_ai.jpg" alt="Rasa Shastra">
+      </div>
+      <div class="discipline-body">
+        <div class="discipline-tag">Alchemy & Formulations</div>
+        <h3 class="discipline-title">Rasa Shastra</h3>
+        <p class="discipline-desc">
+          Classical mineral and herbal alchemy, purification procedures (Shodhana), Bhasma preparation, and potent formulations.
+        </p>
+      </div>
+    </div>
+
+    <div class="discipline-card">
+      <div class="discipline-image">
+        <img src="assets/roga_nidana_1793528233757.jpg" alt="Roga Nidana">
+      </div>
+      <div class="discipline-body">
+        <div class="discipline-tag">Diagnostics & Pathology</div>
+        <h3 class="discipline-title">Roga Nidana</h3>
+        <p class="discipline-desc">
+          Traditional clinical pathology: Nadi Pariksha (pulse reading), dosha imbalances, etiology, and fivefold diagnostic methods.
+        </p>
+      </div>
+    </div>
+
+    <div class="discipline-card">
+      <div class="discipline-image">
+        <img src="assets/sharira_rachana_anatomy_ai.jpg" alt="Sharira Rachana">
+      </div>
+      <div class="discipline-body">
+        <div class="discipline-tag">Anatomy & Vital Points</div>
+        <h3 class="discipline-title">Sharira Rachana</h3>
+        <p class="discipline-desc">
+          Holistic anatomical science, mapping the 107 Marma vital points, Srotas channels, and subtle energetic bodily conduits.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT & MANUSCRIPTS SECTION -->
+<section class="about-section" id="about">
+  <div class="about-banner">
+    <div class="about-text">
+      <div class="modules-eyebrow">Ancient Heritage & Modern Technology</div>
+      <h2 class="about-title">Living Manuscript of AYUSH</h2>
+
+      <div class="about-shloka-box">
+        <div class="about-shloka-text">"स्वस्थस्य स्वास्थ्य रक्षणम्, आतुरस्य विकार प्रशमनम् च"</div>
+        <div class="about-shloka-trans">— Charaka Samhita (To protect the health of the healthy and alleviate the disorders of the diseased)</div>
+      </div>
+
+      <p class="about-desc">
+        SWASTHA preserves India’s timeless traditional medicine treatises — Charaka Samhita, Sushruta Samhita, and Ashtanga Hridaya — transforming ancient palm leaf manuscripts into high-fidelity, interactive 3D digital experiences for practitioners, students, and seekers worldwide.
+      </p>
+
+      <a href="Ayurvedha/index.html" class="btn-secondary">
+        Explore 190+ Botanical Species &rarr;
+      </a>
+    </div>
+
+    <div class="about-manuscript-frame">
+      <img src="assets/about_manuscript_hq.jpg" alt="Classical Ayurvedic Palm Leaf Manuscript">
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-container">
+    <div class="footer-grid">
+      <!-- Col 1: Brand & Mission -->
+      <div>
+        <div class="brand-group" style="margin-bottom: 12px;">
+          <svg class="brand-logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M12 2C12 2 15 6 15 9C15 11 13.5 12.5 12 13C10.5 12.5 9 11 9 9C9 6 12 2 12 2Z"/>
+            <path d="M12 13C13.5 13.5 17 15 17 18C17 20 15 21 12 21C9 21 7 20 7 18C7 15 10.5 13.5 12 13Z"/>
+          </svg>
+          <span class="footer-brand-title">SWASTHA</span>
+        </div>
+        <p class="footer-brand-desc">
+          Digital ecosystem dedicated to AYUSH education, interactive 3D specimen visualization, and traditional medicinal heritage.
+        </p>
+      </div>
+
+      <!-- Col 2: AYUSH Modules -->
+      <div>
+        <h4 class="footer-col-title">AYUSH Systems</h4>
+        <ul class="footer-links">
+          <li><a href="Ayurvedha/index.html">Ayurveda — Science of Life</a></li>
+          <li><a href="Yoga/index.html">Yoga — Union of Mind & Body</a></li>
+          <li><a href="Unani/index.html">Unani — Humoral Medicine</a></li>
+          <li><a href="Sidhha/index.html">Siddha — Ancient Tamil Wisdom</a></li>
+          <li><a href="Homeopathy/index.html">Homeopathy — Subtle Healing</a></li>
+        </ul>
+      </div>
+
+      <!-- Col 3: Virtual Labs -->
+      <div>
+        <h4 class="footer-col-title">Virtual Labs</h4>
+        <ul class="footer-links">
+          <li><a href="Ayurvedha/Tulsi.html">3D Tulsi Specimen</a></li>
+          <li><a href="Ayurvedha/index.html">Full Botanical Herbarium</a></li>
+          <li><a href="Ayurvedha/bookmarks.html">Saved Plants & Bookmarks</a></li>
+          <li><a href="#explore">Classical Disciplines</a></li>
+        </ul>
+      </div>
+
+      <!-- Col 4: Portals -->
+      <div>
+        <h4 class="footer-col-title">Portal</h4>
+        <ul class="footer-links">
+          <li><a href="Ayurvedha/login.html">Sign In / Register</a></li>
+          <li><a href="javascript:void(0);" onclick="window.startIntroVideoExperience();">Replay Intro Video</a></li>
+          <li><a href="#about">Heritage & Manuscripts</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <div>Rooted in tradition &nbsp;·&nbsp; Guided by nature &nbsp;·&nbsp; Healing within</div>
+      <div>&copy; 2026 SWASTHA. All Rights Reserved.</div>
+    </div>
+  </div>
+</footer>
+
+<!-- INTERACTIVE SEARCH MODAL -->
+<div id="search-modal" class="search-modal-backdrop" role="dialog" aria-modal="true" aria-label="Search Plants">
+  <div class="search-modal">
+    <div class="search-input-wrapper">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--gold-warm)" stroke-width="2">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <input
+        type="text"
+        id="search-input"
+        class="search-input"
+        placeholder="Search 190+ Ayurvedic plants (e.g., Tulsi, Ashwagandha)..."
+        autocomplete="off"
+      >
+      <button id="search-close-btn" class="search-close-btn" type="button" aria-label="Close search">✕</button>
+    </div>
+    <div id="search-results" class="search-results-list">
+      <!-- Dynamically filled from plants.json -->
+    </div>
+  </div>
+</div>
+
+<!-- ==================== JAVASCRIPT CONTROLLERS ==================== -->
+<script>
+(function() {
+  // Mobile Nav Toggle
+  const mobileToggle = document.getElementById('mobile-toggle-btn');
+  const navLinks = document.getElementById('nav-links');
+  if (mobileToggle && navLinks) {
+    mobileToggle.addEventListener('click', () => {
+      navLinks.classList.toggle('open');
+    });
+  }
+
+  // Search Modal Controller
+  const searchTrigger = document.getElementById('search-trigger-btn');
+  const searchModal = document.getElementById('search-modal');
+  const searchClose = document.getElementById('search-close-btn');
+  const searchInput = document.getElementById('search-input');
+  const searchResults = document.getElementById('search-results');
+  let plantsData = [];
+
+  // Fetch plants.json for instant search
+  fetch('assets/plants.json')
+    .then(r => r.json())
+    .then(data => { plantsData = data; })
+    .catch(() => { plantsData = []; });
+
+  function openSearch() {
+    if (searchModal) {
+      searchModal.classList.add('open');
+      if (searchInput) {
+        searchInput.value = '';
+        searchInput.focus();
+        renderSearchResults('');
+      }
+    }
+  }
+
+  function closeSearch() {
+    if (searchModal) {
+      searchModal.classList.remove('open');
+    }
+  }
+
+  function renderSearchResults(query) {
+    if (!searchResults) return;
+    const cleanQuery = query.trim().toLowerCase();
+    const matches = plantsData.filter(p => {
+      if (!cleanQuery) return true;
+      return (p.name && p.name.toLowerCase().includes(cleanQuery)) ||
+             (p.id && p.id.toLowerCase().includes(cleanQuery));
+    }).slice(0, 15);
+
+    if (matches.length === 0) {
+      searchResults.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--sage); font-size: 14px;">No plants found matching your search.</div>';
+      return;
+    }
+
+    searchResults.innerHTML = matches.map(p => `
+      <a href="${p.url}" class="search-result-item">
+        <span>${p.name.replace('', '·')}</span>
+        <span style="font-size: 11px; letter-spacing: 1px; color: var(--gold-warm); text-transform: uppercase;">View 3D &rarr;</span>
+      </a>
+    `).join('');
+  }
+
+  if (searchTrigger) searchTrigger.addEventListener('click', openSearch);
+  if (searchClose) searchClose.addEventListener('click', closeSearch);
+  if (searchModal) {
+    searchModal.addEventListener('click', (e) => {
+      if (e.target === searchModal) closeSearch();
+    });
+  }
+  if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+      renderSearchResults(e.target.value);
+    });
+  }
+
+  // ==================== INTRO VIDEO CONTROLLER ====================
+  const introOverlay = document.getElementById('intro-overlay');
+  const introVideo = document.getElementById('intro-video');
+  const soundButton = document.getElementById('intro-sound-button');
+  const skipButton = document.getElementById('intro-skip-button');
+  const heroWatchIntroBtn = document.getElementById('hero-watch-intro-btn');
+  let isFinished = false;
+  let introTimeout;
+
+  const DESKTOP_VIDEO = 'swastha_intro.mp4';
+  const MOBILE_VIDEO = 'mobile_intro.mp4';
+
+  function isPortraitMode() {
+    const isPortraitMedia = window.matchMedia && window.matchMedia('(orientation: portrait)').matches;
+    const isNarrowRatio = (window.innerWidth / window.innerHeight) < 1.0;
+    const isMobileWidth = window.innerWidth <= 768;
+    return isPortraitMedia || isNarrowRatio || isMobileWidth;
+  }
+
+  function resolveVideoSource() {
+    if (!introVideo) return;
+    const targetSource = isPortraitMode() ? MOBILE_VIDEO : DESKTOP_VIDEO;
+    const currentSrc = introVideo.currentSrc || introVideo.src || '';
+    if (!currentSrc.includes(targetSource)) {
+      const wasMuted = introVideo.muted;
+      const curTime = introVideo.currentTime;
+      const wasPaused = introVideo.paused;
+      introVideo.src = targetSource;
+      introVideo.load();
+      introVideo.muted = wasMuted;
+      if (curTime > 0 && curTime < (introVideo.duration || 10)) {
+        introVideo.currentTime = curTime;
+      }
+      if (!wasPaused && !isFinished) {
+        const p = introVideo.play();
+        if (p !== undefined) p.catch(() => {});
+      }
+    }
+  }
+
+  function lockScroll() {
+    document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
+    document.body.style.touchAction = 'none';
+  }
+
+  function unlockScroll() {
+    document.body.style.overflow = '';
+    document.documentElement.style.overflow = '';
+    document.body.style.touchAction = '';
+  }
+
+  function finishIntro() {
+    if (isFinished) return;
+    isFinished = true;
+    clearTimeout(introTimeout);
+    introOverlay.classList.add('intro-exit');
+    setTimeout(() => {
+      introOverlay.style.display = 'none';
+      if (introVideo) {
+        introVideo.pause();
+      }
+      unlockScroll();
+    }, 850);
+  }
+
+  function scheduleSafetyTimeout() {
+    clearTimeout(introTimeout);
+    let duration = 10;
+    if (introVideo && introVideo.duration && isFinite(introVideo.duration)) {
+      duration = introVideo.duration;
+    }
+    introTimeout = setTimeout(finishIntro, Math.ceil((duration + 1) * 1000));
+  }
+
+  function alignSoundButtonWithWatermark() {
+    if (!introVideo || !soundButton) return;
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const isMobile = isPortraitMode();
+
+    // 16:9 Desktop (1920x1080): Gemini watermark center is ~ (1740, 888)
+    // 9:16 Mobile  (1080x1920): Gemini watermark center is ~ (900, 1728)
+    const videoW = isMobile ? 1080 : 1920;
+    const videoH = isMobile ? 1920 : 1080;
+    const wmNormX = isMobile ? (900 / 1080) : (1740 / 1920);
+    const wmNormY = isMobile ? (1728 / 1920) : (888 / 1080);
+
+    const videoRatio = videoW / videoH;
+    const screenRatio = vw / vh;
+
+    let renderedW, renderedH, offsetX, offsetY;
+    if (screenRatio > videoRatio) {
+      renderedW = vw;
+      renderedH = vw / videoRatio;
+      offsetX = 0;
+      offsetY = (vh - renderedH) / 2;
+    } else {
+      renderedH = vh;
+      renderedW = vh * videoRatio;
+      offsetX = (vw - renderedW) / 2;
+      offsetY = 0;
+    }
+
+    const watermarkX = offsetX + (renderedW * wmNormX);
+    const watermarkY = offsetY + (renderedH * wmNormY);
+
+    const distFromRight = vw - watermarkX;
+    const distFromBottom = vh - watermarkY;
+
+    const btnW = soundButton.offsetWidth || (isMobile ? 180 : 230);
+    const btnH = soundButton.offsetHeight || (isMobile ? 52 : 66);
+
+    const targetRight = Math.max(12, Math.min(vw - btnW - 12, Math.round(distFromRight - (btnW / 2))));
+    const targetBottom = Math.max(12, Math.min(vh - btnH - 12, Math.round(distFromBottom - (btnH / 2))));
+
+    soundButton.style.right = targetRight + 'px';
+    soundButton.style.bottom = targetBottom + 'px';
+  }
+
+  function handleLayoutChange() {
+    resolveVideoSource();
+    alignSoundButtonWithWatermark();
+  }
+
+  window.addEventListener('resize', handleLayoutChange);
+  window.addEventListener('orientationchange', handleLayoutChange);
+  if (window.matchMedia) {
+    try {
+      window.matchMedia('(orientation: portrait)').addEventListener('change', handleLayoutChange);
+    } catch (e) {
+      window.matchMedia('(orientation: portrait)').addListener(handleLayoutChange);
+    }
+  }
+
+  function startIntro() {
+    isFinished = false;
+    introOverlay.style.display = 'flex';
+    introOverlay.classList.remove('intro-exit');
+    lockScroll();
+    resolveVideoSource();
+    alignSoundButtonWithWatermark();
+    requestAnimationFrame(alignSoundButtonWithWatermark);
+
+    if (introVideo) {
+      introVideo.currentTime = 0;
+      introVideo.muted = false;
+      const playPromise = introVideo.play();
+      if (playPromise !== undefined) {
+        playPromise.then(() => {
+          if (soundButton) {
+            soundButton.innerHTML = '🔊 Audio: On';
+            soundButton.classList.add('active');
+          }
+        }).catch(() => {
+          if (!isFinished) {
+            introVideo.muted = true;
+            if (soundButton) {
+              soundButton.innerHTML = '🔊 Enable Audio';
+              soundButton.classList.remove('active');
+            }
+            const mutedPlayPromise = introVideo.play();
+            if (mutedPlayPromise !== undefined) {
+              mutedPlayPromise.catch((mutedErr) => {
+                if (!isFinished) {
+                  console.error('Intro video playback fallback error:', mutedErr);
+                  finishIntro();
+                }
+              });
+            }
+          }
+        });
+      }
+    }
+    scheduleSafetyTimeout();
+  }
+
+  window.startIntroVideoExperience = startIntro;
+
+  if (heroWatchIntroBtn) {
+    heroWatchIntroBtn.addEventListener('click', startIntro);
+  }
+
+  if (skipButton) {
+    skipButton.addEventListener('click', (event) => {
+      event.stopPropagation();
+      finishIntro();
+    });
+  }
+
+  if (introOverlay) {
+    introOverlay.addEventListener('click', (event) => {
+      if (!event.target.closest('button')) {
+        finishIntro();
+      }
+    });
+  }
+
+  if (soundButton && introVideo) {
+    soundButton.addEventListener('click', (event) => {
+      event.stopPropagation();
+      if (introVideo.muted) {
+        introVideo.muted = false;
+        soundButton.innerHTML = '🔊 Audio: On';
+        soundButton.classList.add('active');
+        const playPromise = introVideo.play();
+        if (playPromise !== undefined) {
+          playPromise.catch((err) => {
+            console.error('Audio unmuting error:', err);
+          });
+        }
+      } else {
+        introVideo.muted = true;
+        soundButton.innerHTML = '🔇 Enable Audio';
+        soundButton.classList.remove('active');
+      }
+    });
+  }
+
+  if (introVideo) {
+    introVideo.addEventListener('loadedmetadata', () => {
+      scheduleSafetyTimeout();
+      alignSoundButtonWithWatermark();
+    });
+    introVideo.addEventListener('canplay', alignSoundButtonWithWatermark);
+    introVideo.addEventListener('ended', () => {
+      finishIntro();
+    });
+    introVideo.addEventListener('error', () => {
+      console.error('Intro video error');
+      finishIntro();
+    });
+  }
+
+  // Prevent scroll propagation on touch devices during intro
+  const preventScroll = (e) => {
+    if (!isFinished && introOverlay.style.display !== 'none') {
+      if (!e.target.closest('button')) {
+        if (e.cancelable) e.preventDefault();
+      }
+    }
+  };
+  window.addEventListener('touchmove', preventScroll, { passive: false });
+
+  // Escape, Enter or Space hotkeys
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      if (searchModal && searchModal.classList.contains('open')) {
+        closeSearch();
+        return;
+      }
+    }
+    if (!isFinished && introOverlay && introOverlay.style.display !== 'none') {
+      if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        finishIntro();
+      }
+    }
+  });
+
+  // Launch initial startup
+  lockScroll();
+  startIntro();
+})();
+</script>
+
+</body>
+</html>

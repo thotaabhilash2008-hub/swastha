@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Akarkara | Swastha</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+  <style>
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+    *{margin:0;padding:0;box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{font-family:'Jost',sans-serif;background:var(--cream);color:var(--ink);min-height:100vh;overflow-x:hidden;position:relative}
+    body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");opacity:.03;pointer-events:none;z-index:100}
+
+    #open3D{position:fixed;top:25px;right:30px;padding:10px 18px;font-size:11px;letter-spacing:2px;text-transform:uppercase;background:var(--forest);color:#fff;border:none;cursor:pointer;z-index:1000;transition:.3s}
+    #open3D:hover{background:var(--forest);color:var(--deep)}
+    #viewerModal{position:fixed;inset:0;z-index:2000;display:none;flex-direction:column}
+    #modal-topbar{flex-shrink:0;height:58px;background:#111;display:flex;align-items:center;justify-content:space-between;padding:0 28px 0 32px;border-bottom:1px solid rgba(255,255,255,.07)}
+    #modal-topbar span{font-family:'Jost',sans-serif;font-size:11px;font-weight:300;letter-spacing:4.5px;text-transform:uppercase;color:rgba(255,255,255,.72);user-select:none}
+    #close3D{width:38px;height:38px;font-size:15px;background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.7);border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s,color .2s,transform .22s;outline:none;flex-shrink:0}
+    #close3D:hover{background:#fff;color:#111;border-color:#fff;transform:rotate(90deg)}
+    #viewerModal model-viewer{flex:1;width:100%;display:block;background:#fff}
+
+    .bg-circle{position:fixed;border-radius:50%;pointer-events:none;z-index:0}
+    .bg-circle-1{width:700px;height:700px;background:radial-gradient(circle,rgba(160,56,32,.08) 0%,transparent 70%);top:-200px;right:-150px}
+    .bg-circle-2{width:500px;height:500px;background:radial-gradient(circle,rgba(200,136,12,.07) 0%,transparent 70%);bottom:-100px;left:-100px}
+
+    /* Botanical SVG — Anacyclus daisy with ray florets + taproot */
+    .botanical-svg{position:fixed;pointer-events:none;z-index:1;opacity:.08}
+    .botanical-tl{top:-10px;left:-10px;width:250px}
+    .botanical-br{bottom:-10px;right:-10px;width:230px;transform:rotate(180deg)}
+
+    .hero{position:relative;z-index:10;padding:54px 40px 0;text-align:center;opacity:0;animation:fadeUp .9s ease .1s forwards}
+    .back-link{display:inline-flex;align-items:center;gap:8px;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--sage);text-decoration:none;margin-bottom:36px;transition:color .3s}
+    .back-link:hover{color:var(--gold)}
+    .logo-rule{display:flex;align-items:center;justify-content:center;gap:20px;margin-bottom:14px}
+    .logo-rule span{display:block;height:1px;width:70px;background:linear-gradient(to right,transparent,var(--gold))}
+    .logo-rule span:last-child{background:linear-gradient(to left,transparent,var(--gold))}
+    .logo-ornament{font-size:13px;color:var(--gold)}
+    .hero-title{font-family:'Cormorant Garamond',serif;font-size:clamp(56px,11vw,100px);font-weight:300;letter-spacing:8px;line-height:1;color:var(--deep)}
+    .hero-subtitle{font-family:'Cormorant Garamond',serif;font-size:18px;font-style:italic;font-weight:300;color:var(--earth);letter-spacing:2px;margin-top:8px}
+    .hero-sci{font-size:11px;font-weight:200;letter-spacing:5px;color:var(--sage);margin-top:6px}
+
+    .hero-photos{position:relative;z-index:10;display:grid;grid-template-columns:1fr 1fr;gap:2px;max-width:900px;margin:40px auto 0;opacity:0;animation:fadeUp .9s ease .35s forwards}
+    .hero-photos img{width:100%;height:380px;object-fit:cover;object-position:center;display:block;background:var(--parchment)}
+    .photo-caption{text-align:center;font-family:'Cormorant Garamond',serif;font-size:12px;font-style:italic;color:var(--sage);letter-spacing:1px;padding:10px 0 0;max-width:900px;margin:0 auto;position:relative;z-index:10;opacity:0;animation:fadeUp .9s ease .5s forwards}
+
+    .divider{display:flex;align-items:center;justify-content:center;gap:16px;margin:50px auto;max-width:600px;opacity:0;animation:fadeUp .9s ease .55s forwards;position:relative;z-index:10}
+    .divider-line{height:1px;width:120px;background:linear-gradient(to right,transparent,var(--sage))}
+    .divider-line:last-child{background:linear-gradient(to left,transparent,var(--sage))}
+    .divider-leaf{color:var(--rust);font-size:18px}
+
+    .content{position:relative;z-index:10;max-width:860px;margin:0 auto;padding:0 30px 80px}
+    .intro-text{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:300;line-height:1.75;color:var(--ink);text-align:center;max-width:700px;margin:0 auto 60px;opacity:0;animation:fadeUp .9s ease .6s forwards}
+    .intro-text em{color:var(--rust);font-style:italic}
+
+    .section{margin-bottom:60px;opacity:0;animation:fadeUp .9s ease forwards}
+    .section:nth-child(1){animation-delay:.65s}.section:nth-child(2){animation-delay:.75s}
+    .section:nth-child(3){animation-delay:.85s}.section:nth-child(4){animation-delay:.95s}
+    .section:nth-child(5){animation-delay:1.05s}.section:nth-child(6){animation-delay:1.15s}
+    .section:nth-child(7){animation-delay:1.25s}
+
+    .section-header{display:flex;align-items:center;gap:14px;margin-bottom:20px}
+    .section-num{font-family:'Cormorant Garamond',serif;font-size:11px;letter-spacing:4px;color:var(--gold)}
+    .section-title{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:400;color:var(--deep);letter-spacing:1px}
+    .section-rule{height:1px;flex:1;background:linear-gradient(to right,var(--gold),transparent)}
+    .section-body{font-size:13px;font-weight:300;line-height:1.9;color:var(--ink);margin-bottom:24px}
+
+    .data-table{width:100%;border-collapse:collapse;margin:16px 0 8px;font-size:12px}
+    .data-table thead tr{background:var(--deep);color:var(--gold);font-size:10px;letter-spacing:3px;text-transform:uppercase}
+    .data-table thead th{padding:12px 14px;text-align:left;font-weight:400}
+    .data-table tbody tr:nth-child(even){background:var(--parchment)}
+    .data-table tbody tr:nth-child(odd){background:var(--cream)}
+    .data-table tbody tr{transition:background .2s}
+    .data-table tbody tr:hover{background:#e8d8b8}
+    .data-table tbody td{padding:10px 14px;color:var(--ink);border-bottom:1px solid rgba(139,69,19,.08)}
+    .data-table tbody td:first-child{font-weight:400;color:var(--deep);width:28%}
+
+    .dosha-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:12px}
+    .dosha-table thead tr{background:var(--rust);color:var(--cream)}
+    .dosha-table thead th{padding:12px 14px;text-align:left;font-weight:400;letter-spacing:2px;font-size:10px;text-transform:uppercase}
+    .dosha-table tbody tr:nth-child(even){background:var(--parchment)}
+    .dosha-table tbody tr:nth-child(odd){background:var(--cream)}
+    .dosha-table tbody td{padding:11px 14px;color:var(--ink);border-bottom:1px solid rgba(139,69,19,.08)}
+    .dosha-table tbody td:first-child{font-weight:400;color:var(--rust);width:18%}
+    .dosha-table tbody td:nth-child(2){color:var(--earth);width:20%}
+
+    .consume-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:12px}
+    .consume-table thead tr{background:var(--ochre);color:var(--cream)}
+    .consume-table thead th{padding:12px 14px;text-align:left;font-weight:400;letter-spacing:2px;font-size:10px;text-transform:uppercase}
+    .consume-table tbody tr:nth-child(even){background:var(--parchment)}
+    .consume-table tbody tr:nth-child(odd){background:var(--cream)}
+    .consume-table tbody td{padding:11px 14px;color:var(--ink);border-bottom:1px solid rgba(139,69,19,.08)}
+    .consume-table tbody td:first-child{font-weight:400;color:var(--ochre);width:22%}
+
+    .nutrition-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(139,69,19,.12);border:1px solid rgba(139,69,19,.12);margin:20px 0}
+    .nutrition-cell{background:var(--cream);padding:22px 16px;text-align:center;transition:background .3s}
+    .nutrition-cell:hover{background:var(--parchment)}
+    .nutrition-num{font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:300;color:var(--rust);line-height:1;margin-bottom:4px}
+    .nutrition-unit{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);font-weight:300}
+    .nutrition-label{font-size:11px;font-weight:300;color:var(--ink);margin-top:5px}
+
+    /* Tradition strip — Ayurveda / Unani / Siddha / Folk */
+    .tradition-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(139,69,19,.12);border:1px solid rgba(139,69,19,.12);margin:20px 0}
+    .trad-cell{background:var(--cream);padding:20px 14px;text-align:center;transition:background .3s;position:relative;overflow:hidden}
+    .trad-cell:hover{background:var(--parchment)}
+    .trad-cell::after{content:'';position:absolute;top:0;left:0;width:100%;height:3px}
+    .trad-cell:nth-child(1)::after{background:var(--rust)}
+    .trad-cell:nth-child(2)::after{background:var(--ochre)}
+    .trad-cell:nth-child(3)::after{background:var(--sage)}
+    .trad-cell:nth-child(4)::after{background:var(--forest)}
+    .trad-system{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--sage);margin-bottom:6px;font-weight:300}
+    .trad-name{font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:600;color:var(--deep);margin-bottom:5px}
+    .trad-use{font-size:11px;font-weight:300;line-height:1.6;color:var(--ink);opacity:.8}
+
+    .benefits-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:rgba(139,69,19,.12);border:1px solid rgba(139,69,19,.12);margin:8px 0}
+    .benefit-card{background:var(--cream);padding:24px 22px;transition:background .3s;position:relative;overflow:hidden}
+    .benefit-card:hover{background:#ead8b8}
+    .benefit-card::before{content:'';position:absolute;bottom:0;left:0;width:0;height:2px;background:var(--gold);transition:width .4s}
+    .benefit-card:hover::before{width:100%}
+    .benefit-title{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:600;color:var(--rust);margin-bottom:8px}
+    .benefit-desc{font-size:11.5px;font-weight:300;line-height:1.75;color:var(--ink);opacity:.85}
+
+    .precaution-list{list-style:none;margin:8px 0}
+    .precaution-list li{display:flex;gap:12px;align-items:flex-start;padding:10px 14px;font-size:12px;font-weight:300;line-height:1.7;color:var(--ink);border-bottom:1px solid rgba(139,69,19,.08)}
+    .precaution-list li:last-child{border-bottom:none}
+    .precaution-list li::before{content:'▸';color:var(--gold);flex-shrink:0;margin-top:1px}
+
+    .sources{border-top:1px solid rgba(139,69,19,.15);padding-top:24px;margin-top:20px}
+    .sources-title{font-size:10px;letter-spacing:4px;text-transform:uppercase;color:var(--sage);margin-bottom:12px;font-weight:300}
+    .sources ul{list-style:none}
+    .sources ul li{font-family:'Cormorant Garamond',serif;font-size:13px;font-style:italic;color:var(--earth);padding:5px 0;border-bottom:1px solid rgba(139,69,19,.06)}
+    .sources ul li::before{content:'· ';color:var(--sage)}
+
+    footer{position:relative;z-index:10;text-align:center;padding:24px 20px 44px;border-top:1px solid rgba(139,69,19,.12);max-width:860px;margin:0 auto}
+    footer p{font-size:11px;letter-spacing:4px;text-transform:uppercase;color:var(--sage);font-weight:300}
+
+    @keyframes fadeUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
+    @media(max-width:700px){
+      .hero-photos{grid-template-columns:1fr}.hero-photos img{height:260px}
+      .benefits-grid{grid-template-columns:1fr}
+      .nutrition-bar,.tradition-strip{grid-template-columns:1fr 1fr}
+      .content{padding:0 18px 60px}
+      #modal-topbar{padding:0 16px 0 20px}
+      #modal-topbar span{font-size:9px;letter-spacing:3px}
+    }
+  </style>
+</head>
+<body>
+
+<button id="open3D">View in 3D</button>
+<div id="viewerModal">
+  <div id="modal-topbar"><span>3D Model — Akarkara / Pellitory</span><button id="close3D">✕</button></div>
+  <model-viewer src="akarkara3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+</div>
+
+<div class="bg-circle bg-circle-1"></div>
+<div class="bg-circle bg-circle-2"></div>
+
+<!-- Botanical SVG — Anacyclus daisy flower + taproot -->
+<svg class="botanical-svg botanical-tl" viewBox="0 0 280 310" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- taproot -->
+  <path d="M140 200 Q 138 240 134 295" stroke="#8b4513" stroke-width="2.2" fill="none"/>
+  <path d="M138 230 Q 125 238 116 248" stroke="#8b4513" stroke-width="1.2" fill="none"/>
+  <path d="M136 258 Q 122 264 110 272" stroke="#8b4513" stroke-width="1" fill="none"/>
+  <!-- stem -->
+  <path d="M140 200 Q 141 170 140 130" stroke="#5c3d1e" stroke-width="1.5" fill="none"/>
+  <!-- leaves -->
+  <path d="M140 168 Q 118 155 106 148" stroke="#5c3d1e" stroke-width="1.1" fill="none"/>
+  <ellipse cx="103" cy="147" rx="14" ry="6" fill="#a07848" transform="rotate(-15 103 147)" opacity=".85"/>
+  <path d="M140 148 Q 162 138 172 132" stroke="#5c3d1e" stroke-width="1.1" fill="none"/>
+  <ellipse cx="175" cy="131" rx="14" ry="6" fill="#5c3d1e" transform="rotate(18 175 131)" opacity=".8"/>
+  <!-- daisy flower head -->
+  <circle cx="140" cy="115" r="14" fill="#c8880c" opacity=".7"/>
+  <circle cx="140" cy="115" r="8" fill="#8b4513" opacity=".9"/>
+  <!-- ray florets -->
+  <ellipse cx="140" cy="95" rx="5" ry="11" fill="#f7f1e8" opacity=".9"/>
+  <ellipse cx="140" cy="95" rx="5" ry="11" fill="#f7f1e8" opacity=".9" transform="rotate(30 140 115)"/>
+  <ellipse cx="140" cy="95" rx="5" ry="11" fill="#f7f1e8" opacity=".9" transform="rotate(60 140 115)"/>
+  <ellipse cx="140" cy="95" rx="5" ry="11" fill="#f7f1e8" opacity=".9" transform="rotate(90 140 115)"/>
+  <ellipse cx="140" cy="95" rx="5" ry="11" fill="#f7f1e8" opacity=".9" transform="rotate(120 140 115)"/>
+  <ellipse cx="140" cy="95" rx="5" ry="11" fill="#f7f1e8" opacity=".9" transform="rotate(150 140 115)"/>
+  <ellipse cx="140" cy="95" rx="5" ry="11" fill="#f7f1e8" opacity=".9" transform="rotate(180 140 115)"/>
+  <ellipse cx="140" cy="95" rx="5" ry="11" fill="#f7f1e8" opacity=".9" transform="rotate(210 140 115)"/>
+  <ellipse cx="140" cy="95" rx="5" ry="11" fill="#f7f1e8" opacity=".9" transform="rotate(240 140 115)"/>
+  <ellipse cx="140" cy="95" rx="5" ry="11" fill="#f7f1e8" opacity=".9" transform="rotate(270 140 115)"/>
+  <ellipse cx="140" cy="95" rx="5" ry="11" fill="#f7f1e8" opacity=".9" transform="rotate(300 140 115)"/>
+  <ellipse cx="140" cy="95" rx="5" ry="11" fill="#f7f1e8" opacity=".9" transform="rotate(330 140 115)"/>
+</svg>
+<svg class="botanical-svg botanical-br" viewBox="0 0 280 310" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M140 200 Q 138 240 134 295" stroke="#8b4513" stroke-width="2.2" fill="none"/>
+  <path d="M140 200 Q 141 170 140 130" stroke="#5c3d1e" stroke-width="1.5" fill="none"/>
+  <circle cx="140" cy="115" r="14" fill="#c8880c" opacity=".7"/>
+  <circle cx="140" cy="115" r="8" fill="#8b4513" opacity=".9"/>
+  <ellipse cx="140" cy="95" rx="5" ry="11" fill="#f7f1e8" opacity=".85"/>
+  <ellipse cx="140" cy="95" rx="5" ry="11" fill="#f7f1e8" opacity=".85" transform="rotate(45 140 115)"/>
+  <ellipse cx="140" cy="95" rx="5" ry="11" fill="#f7f1e8" opacity=".85" transform="rotate(90 140 115)"/>
+  <ellipse cx="140" cy="95" rx="5" ry="11" fill="#f7f1e8" opacity=".85" transform="rotate(135 140 115)"/>
+  <ellipse cx="140" cy="95" rx="5" ry="11" fill="#f7f1e8" opacity=".85" transform="rotate(180 140 115)"/>
+  <ellipse cx="140" cy="95" rx="5" ry="11" fill="#f7f1e8" opacity=".85" transform="rotate(225 140 115)"/>
+  <ellipse cx="140" cy="95" rx="5" ry="11" fill="#f7f1e8" opacity=".85" transform="rotate(270 140 115)"/>
+  <ellipse cx="140" cy="95" rx="5" ry="11" fill="#f7f1e8" opacity=".85" transform="rotate(315 140 115)"/>
+</svg>
+
+<div class="hero">
+  <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+  <div class="logo-rule"><span></span><div class="logo-ornament">✦</div><span></span></div>
+  <div class="hero-title">Akarkara</div>
+  <div class="hero-subtitle">Pellitory Root — The Tingling Root of Vitality</div>
+  <div class="hero-sci">Anacyclus pyrethrum (L.) DC. &nbsp;·&nbsp; Fam. Asteraceae</div>
+</div>
+
+<div class="hero-photos">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/4/4b/Anacyclus_pyrethrum_-_K%C3%B6hler%E2%80%93s_Medizinal-Pflanzen-011.jpg" alt="Anacyclus pyrethrum daisy flowers with white ray florets and yellow disc"
+    onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+  <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/1/19/The_American_Flora._Vol._1%2C_1855_-_pl._25_Rosa_canina%2C_Anacyclus_pyrethrum_%286021777617%29.jpg/1280px-The_American_Flora._Vol._1%2C_1855_-_pl._25_Rosa_canina%2C_Anacyclus_pyrethrum_%286021777617%29.jpg" alt="Dried Akarkara roots showing characteristic taproot used in Ayurvedic medicine"
+    onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+</div>
+<p class="photo-caption">Fig. 1 — Anacyclus pyrethrum in bloom: white ray florets with distinctive wine-red reverse, yellow disc centre &nbsp;·&nbsp; Fig. 2 — Dried Akarkara taproot — the primary drug, producing an immediate tingling-burning sensation on the tongue</p>
+
+<div class="divider">
+  <div class="divider-line"></div>
+  <div class="divider-leaf">❧</div>
+  <div class="divider-line"></div>
+</div>
+
+<div class="content">
+  <p class="intro-text">Place a fragment of Akarkara root on the tongue and its identity is unmistakable — an intensely pungent, tingling, almost electric sensation spreads through the mouth, stimulating salivation and setting nerves alight. This singular property — rooted in its alkylamide chemistry — defines <em>Anacyclus pyrethrum</em> as one of Ayurveda's foremost <em>Vajikara</em> (vitalising) and <em>Medhya</em> (mind-strengthening) herbs, prized equally in Unani, Siddha, and European herbal traditions for over two millennia.</p>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">01</span><h2 class="section-title">Botanical Profile</h2><div class="section-rule"></div></div>
+    <p class="section-body">Akarkara (<em>Anacyclus pyrethrum</em>) is a perennial, somewhat prostrate herb of the Asteraceae (daisy) family, native to North Africa — particularly the Atlas Mountains of Morocco and Algeria — and the arid regions of the Mediterranean and Arabian Peninsula. In India, it is naturalised in the north-western drylands and cultivated in Rajasthan, Uttar Pradesh, and the foothills of Kashmir. The plant grows in spreading rosettes of feathery, deeply pinnatisect leaves, rarely exceeding 30 cm in height, with flower heads borne singly on branching stems.</p>
+    <p class="section-body">The flower heads are immediately recognisable as daisy-like: white ray florets with a striking <em>wine-red or deep purple reverse</em> — a diagnostic character that distinguishes Akarkara from similar species — surrounding a convex yellow disc of tubular florets. The root is the medicinal crown jewel: a thick, fleshy taproot, cylindrical to fusiform, 10–20 cm long, greyish-brown outside with a whitish interior, bearing a pungent aromatic odour and producing that characteristic immediate tongue-tingling sensation that Ayurvedic texts describe as its most reliable marker of authenticity and potency.</p>
+    <table class="data-table">
+      <thead><tr><th>PROPERTY</th><th>Detail</th></tr></thead>
+      <tbody>
+        <tr><td>Family</td><td>Asteraceae (Compositae)</td></tr>
+        <tr><td>Botanical Name</td><td>Anacyclus pyrethrum (L.) DC.</td></tr>
+        <tr><td>Synonym</td><td>Anthemis pyrethrum L., Pyrethrum officinarum Moench</td></tr>
+        <tr><td>Sanskrit Names</td><td>Akallaka, Akarakarabha, Akarkara, Shulaghni, Ugragandha</td></tr>
+        <tr><td>Hindi Names</td><td>Akarkara, Akar Kara, Akalkara</td></tr>
+        <tr><td>Unani Name</td><td>Aqarqarha (primary Unani drug)</td></tr>
+        <tr><td>Regional Names</td><td>Akarakarabha (Mar), Akkirakaram (Tel/Tam), Akkirakaaram (Mal)</td></tr>
+        <tr><td>English Names</td><td>Pellitory Root, Spanish Chamomile, Mount Atlas Daisy, Roman Pellitory</td></tr>
+        <tr><td>Plant Type</td><td>Perennial prostrate herb (15–30 cm)</td></tr>
+        <tr><td>Medicinal Part</td><td>Root (primary); flowers and leaves (secondary)</td></tr>
+        <tr><td>Diagnostic Character</td><td>Intense tingling-burning sensation on contact with tongue</td></tr>
+        <tr><td>Flower Character</td><td>White ray florets with wine-red/purple reverse; yellow disc</td></tr>
+        <tr><td>Origin</td><td>North Africa (Atlas Mtns), Mediterranean; cultivated in India</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">02</span><h2 class="section-title">Cross-Traditional Significance</h2><div class="section-rule"></div></div>
+    <p class="section-body">Few herbs straddle as many healing traditions as Akarkara. Its root has been documented in Ayurveda, Unani (as <em>Aqarqarha</em>, one of its cornerstone drugs), Siddha medicine, and Western herbal traditions dating back to Dioscorides and Galen. Each tradition has independently identified overlapping applications — primarily oral health, neural stimulation, aphrodisia, and pain relief — reflecting a convergence of empirical observation across millennia and continents.</p>
+    <div class="tradition-strip">
+      <div class="trad-cell">
+        <div class="trad-system">Ayurveda</div>
+        <div class="trad-name">Akarakarabha</div>
+        <div class="trad-use">Vajikara (vitalising), Medhya (nootropic), Vata-Kapha shamaka. Used in Rasayana preparations, epilepsy, hemiplegia, oral disorders, and rheumatism.</div>
+      </div>
+      <div class="trad-cell">
+        <div class="trad-system">Unani</div>
+        <div class="trad-name">Aqarqarha</div>
+        <div class="trad-use">One of Unani's most important drugs. Muharrik-e-Asab (nerve stimulant), Muqawwi-e-Bah (aphrodisiac), Mujaffif (desiccant). Used in facial paralysis, cold temperament, male sexual disorders.</div>
+      </div>
+      <div class="trad-cell">
+        <div class="trad-system">Siddha</div>
+        <div class="trad-name">Akkirakaram</div>
+        <div class="trad-use">Nervine tonic, aphrodisiac, used in Vatha (Vata) disorders, dental pain, epilepsy, and paralysis. Incorporated in polyherbal Siddha formulations for neurological conditions.</div>
+      </div>
+      <div class="trad-cell">
+        <div class="trad-system">Western Herbal</div>
+        <div class="trad-name">Pellitory Root</div>
+        <div class="trad-use">Dioscorides used it for toothache and throat conditions. European herbal traditions prescribed it for paralysis, facial neuralgia, and as a sialagogue. Listed in British and European pharmacopoeias historically.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">03</span><h2 class="section-title">Phytochemistry</h2><div class="section-rule"></div></div>
+    <p class="section-body">The pharmacological uniqueness of Akarkara root resides in its <em>alkylamide</em> content — a class of nitrogen-containing compounds rare in the plant kingdom but found in high concentration in the Anacyclus root. The principal alkylamides — <em>pellitorine</em>, <em>anacycline</em>, <em>hydroxy-α-sanshool</em>, and <em>neopellitorine</em> — are directly responsible for the characteristic tongue-numbing, tingling sensation and are the primary agents behind the herb's nervine stimulant, sialagogue, anti-epileptic, and aphrodisiac effects.</p>
+    <p class="section-body">Beyond alkylamides, the root contains a complex mixture of sesquiterpene lactones, inulin (a prebiotic fructan comprising up to 50% of root dry weight), pyrethrin-related compounds, essential oil rich in α-terpinene and camphor, and a range of flavonoids, phenolic acids, and tannins. The aerial parts contain luteolin glycosides and apigenin, contributing anti-inflammatory activity to the flower and leaf fractions.</p>
+    <div class="nutrition-bar">
+      <div class="nutrition-cell">
+        <div class="nutrition-num">~50%</div>
+        <div class="nutrition-unit">inulin</div>
+        <div class="nutrition-label">Root dry weight</div>
+      </div>
+      <div class="nutrition-cell">
+        <div class="nutrition-num">0.5%</div>
+        <div class="nutrition-unit">volatile oil</div>
+        <div class="nutrition-label">In dried root</div>
+      </div>
+      <div class="nutrition-cell">
+        <div class="nutrition-num">4+</div>
+        <div class="nutrition-unit">alkylamides</div>
+        <div class="nutrition-label">Key bioactive class</div>
+      </div>
+      <div class="nutrition-cell">
+        <div class="nutrition-num">2000+</div>
+        <div class="nutrition-unit">years</div>
+        <div class="nutrition-label">Of documented use</div>
+      </div>
+    </div>
+    <table class="data-table">
+      <thead><tr><th>Compound</th><th>Category</th><th>Primary Action</th></tr></thead>
+      <tbody>
+        <tr><td>Pellitorine</td><td>Alkylamide (isobutylamide)</td><td>Sialagogue, TRPV1 agonist (tingling sensation), antifungal, insecticidal, nerve stimulant</td></tr>
+        <tr><td>Anacycline</td><td>Alkylamide (diene)</td><td>Anti-epileptic, nervine stimulant, aphrodisiac — primary pharmacological alkylamide</td></tr>
+        <tr><td>Hydroxy-α-sanshool</td><td>Alkylamide</td><td>Sensory nerve activator; accounts for oral tingling and salivation reflex</td></tr>
+        <tr><td>Neopellitorine A &amp; B</td><td>Alkylamides</td><td>Antimicrobial, insecticidal, nerve-sensitising</td></tr>
+        <tr><td>Inulin</td><td>Polysaccharide (fructan)</td><td>Prebiotic; immunomodulatory; bulk carrier in root; hepatoprotective</td></tr>
+        <tr><td>α-Terpinene &amp; Camphor</td><td>Monoterpenes (EO)</td><td>Antimicrobial, rubefacient, analgesic (topical)</td></tr>
+        <tr><td>Sesquiterpene Lactones</td><td>Sesquiterpenes</td><td>Anti-inflammatory, cytotoxic, allergen potential</td></tr>
+        <tr><td>Luteolin &amp; Apigenin</td><td>Flavones (aerial parts)</td><td>Anti-inflammatory, neuroprotective, antioxidant</td></tr>
+        <tr><td>Pyrethrin-related compounds</td><td>Esters</td><td>Insecticidal, neurotoxic to insects; mild irritant</td></tr>
+        <tr><td>Tannins &amp; Phenolic acids</td><td>Polyphenols</td><td>Astringent, antimicrobial, antioxidant; support wound healing</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">04</span><h2 class="section-title">Ayurvedic Significance</h2><div class="section-rule"></div></div>
+    <p class="section-body">Akarkara holds a distinguished position in classical Ayurvedic texts primarily as a <em>Vajikara</em> (sexual vitality-promoting) and <em>Medhya</em> (intellect-enhancing) Rasayana drug. Charaka Samhita mentions it in the context of <em>Vatarakta</em> and neurological disorders. Sushruta Samhita references it in oral disease management — particularly for dental pain, facial oedema, and speech disorders. Ashtanga Hridayam describes its use in compound preparations for epilepsy (<em>Apasmara</em>), hemiplegia (<em>Ardita</em>), and facial palsy.</p>
+    <p class="section-body">The classical shloka — <em>"Akarakarabham tikshnam ushnam vatakaphapranut, jihvashotha mukhashoola shoolaghnam ruchikaarakam"</em> — establishes its sharp (tikshna) and hot (ushna) properties, its Vata-Kapha pacifying action, and its specific role in tongue swelling (<em>jihvashotha</em>), oral pain (<em>mukhashoola</em>), general colic pain (<em>shoola</em>), and appetite stimulation (<em>ruchi</em>). Its classical designation as <em>Shulaghni</em> — destroyer of pain — captures its analgesic character with poetic economy.</p>
+    <table class="dosha-table">
+      <thead><tr><th>Dosha</th><th>Effect</th><th>Mechanism &amp; Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Vata ↓</td><td>Strongly pacifying</td><td>Ushna (hot) virya and tikshna (sharp) guna directly counter Vata's cold-dry-obstructive character. Principal application: Vata-origin neurological disorders — hemiplegia, facial palsy, speech disorders, sciatica, and epilepsy. Nervine stimulant action activates underactive Vata-stagnated neural pathways.</td></tr>
+        <tr><td>Pitta ↑</td><td>Aggravating</td><td>Strongly ushna virya and katu rasa significantly increase Pitta. Contraindicated in Pitta-dominant conditions: hyperacidity, gastric ulcer, inflammatory bowel, epistaxis, and fever. Use with Pitta-pacifying co-herbs (Shatavari, Yashtimadhu) when treating Vata conditions in Pitta constitutions.</td></tr>
+        <tr><td>Kapha ↓</td><td>Strongly pacifying</td><td>Tikshna, laghu, and ushna properties powerfully clear Kapha accumulation. Used in Kapha-origin lethargy, sluggish digestion, excessive salivation disorders, chronic cold, and obesity-related Kapha conditions.</td></tr>
+      </tbody>
+    </table>
+    <p class="section-body"><strong>Rasa:</strong> Katu (pungent), Tikta (bitter) &nbsp;·&nbsp; <strong>Guna:</strong> Laghu (light), Tikshna (sharp), Ruksha (dry) &nbsp;·&nbsp; <strong>Virya:</strong> Ushna (hot) — among the most intensely hot of Ayurvedic drugs &nbsp;·&nbsp; <strong>Vipaka:</strong> Katu (pungent) &nbsp;·&nbsp; <strong>Karma:</strong> Vata-Kaphaghna, Vajikara, Medhya, Deepana, Shoolaghna, Sialogogue, Brinhana (in Rasayana context)</p>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">05</span><h2 class="section-title">Key Health Benefits</h2><div class="section-rule"></div></div>
+    <p class="section-body">Modern pharmacological investigations of <em>Anacyclus pyrethrum</em> have confirmed and mechanistically explained a substantial proportion of its classical applications, with particularly strong evidence for aphrodisiac, nootropic, anti-epileptic, analgesic, and antimicrobial activities.</p>
+    <div class="benefits-grid">
+      <div class="benefit-card">
+        <div class="benefit-title">Oral Health &amp; Dental Analgesic</div>
+        <div class="benefit-desc">The most immediate and universally recognised application across all traditions. Direct root contact numbs oral pain via TRPV1 receptor activation and subsequent desensitisation. Root powder is incorporated into classical dental tooth powders (<em>danta manjan</em>), Unani oral preparations, and modern herbal toothpastes. Antibacterial alkylamides inhibit dental cariogenic bacteria including Streptococcus mutans.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Aphrodisiac &amp; Male Vitality (Vajikara)</div>
+        <div class="benefit-desc">Anacyclus pyrethrum is one of Ayurveda's premier Vajikara drugs. Animal studies show significant increases in mounting frequency, penile erection index, and testosterone levels with root extract administration. Alkylamides stimulate gonadotropin release and enhance nitric oxide pathways. Widely used in classical formulations for erectile dysfunction, premature ejaculation, and low libido — both in Ayurveda and Unani.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Nervine Stimulant &amp; Neurological Support</div>
+        <div class="benefit-desc">Classical Ayurvedic and Unani texts consistently use Akarkara for hemiplegia, facial palsy, speech disorders, and nerve weakness. Alkylamides activate sensory nerve pathways via TRPV1 and TRPA1 channels; studies confirm increased nerve conduction velocity and neuromuscular transmission with root extracts. Used in compound preparations for motor neuron recovery post-stroke and in Bell's palsy.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Cognitive Enhancement (Medhya)</div>
+        <div class="benefit-desc">Animal model studies demonstrate significant improvement in learning and memory retention with Anacyclus pyrethrum root extract — attributed to cholinesterase inhibition (increasing acetylcholine availability) and antioxidant neuroprotection. Its Medhya (intellect-promoting) classification in Ayurveda places it alongside Brahmi and Shankhapushpi as a nootropic Rasayana herb. Relevant to age-associated cognitive decline and Alzheimer's research.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Anti-epileptic &amp; Anticonvulsant</div>
+        <div class="benefit-desc">Anacycline, the primary alkylamide, has demonstrated significant anticonvulsant activity in maximal electroshock (MES) and pentylenetetrazol (PTZ) seizure models in animals, comparable to phenytoin in some studies. The classical Ashtanga Hridayam formulation of Akarkara in Apasmara (epilepsy) treatment has thus been substantially validated by modern pharmacology.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Adaptogenic &amp; Anti-stress</div>
+        <div class="benefit-desc">Root extracts significantly reduce corticosterone levels in stress-exposed animals, improve adrenal responsiveness, and normalise stress-induced behavioural changes. Its classical Rasayana designation in Ayurveda — indicating general vitalising and rejuvenating properties — is supported by evidence of HPA axis modulation, comparable in mechanism to Ashwagandha, though with a more stimulatory rather than sedative quality.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Antimicrobial &amp; Antifungal</div>
+        <div class="benefit-desc">Root extracts and isolated alkylamides (particularly pellitorine and neopellitorine) exhibit potent activity against dermatophytes, Candida albicans, Aspergillus, Staphylococcus aureus, and E. coli. The essential oil shows broad-spectrum antimicrobial activity. Classical use in skin infections, oral candidiasis, and dental caries is well-supported by in vitro evidence.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Sialagogue &amp; Speech Support</div>
+        <div class="benefit-desc">One of Ayurveda's most valued sialagogues (salivation stimulants). TRPV1 activation by alkylamides triggers the salivary reflex arc, stimulating parotid and submandibular gland secretion. Used in xerostomia (dry mouth), Sjögren's-like conditions, stammering, and speech difficulty — particularly where Vata-type dryness of oral mucosa impairs fluent speech, a classical Ayurvedic indication for Akarkara in children with speech delay.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">06</span><h2 class="section-title">How to Use Akarkara</h2><div class="section-rule"></div></div>
+    <p class="section-body">Akarkara root is used primarily in powdered form, in compound Ayurvedic formulations, in medicated oils, and as a topical application. Given its intense potency — it is among the hottest and most stimulating herbs in the Ayurvedic pharmacopoeia — doses are small and typically taken with balancing carriers (milk, ghee, honey). Internal use must always be supervised by a qualified practitioner, and never self-administered beyond the dental/topical applications described below.</p>
+    <table class="consume-table">
+      <thead><tr><th>Form</th><th>Preparation</th><th>Dosage</th><th>Best Use</th></tr></thead>
+      <tbody>
+        <tr><td>Root Powder (Churna)</td><td>Fine powder of dried root; with milk, ghee, or honey</td><td>500 mg–1 g, twice daily</td><td>Nervine tonic, aphrodisiac, anti-epileptic (supervised)</td></tr>
+        <tr><td>Root Decoction (Kwatha)</td><td>Boil 3–5 g root in 400 ml water; reduce to 100 ml</td><td>20–30 ml twice daily</td><td>Rheumatism, facial palsy, hemiplegia</td></tr>
+        <tr><td>Medicated Milk (Kshirapaka)</td><td>Simmer root powder in milk; strain</td><td>100–150 ml once daily</td><td>Vajikara (aphrodisiac), cognitive support, Rasayana use</td></tr>
+        <tr><td>Tooth Powder (Manjan)</td><td>Mix root powder with rock salt, neem powder; apply to gums</td><td>Use 2× daily</td><td>Dental pain, gum disease, oral infections</td></tr>
+        <tr><td>Root Piece (Direct)</td><td>Small piece of dried root held in mouth</td><td>Pea-sized, briefly</td><td>Immediate toothache relief, salivation stimulation</td></tr>
+        <tr><td>Medicated Oil (Taila)</td><td>Root infused in sesame oil; classical preparation</td><td>Topical, massage</td><td>Facial palsy, neuralgia, hemiplegia, joint pain</td></tr>
+        <tr><td>Nasya (Errhine)</td><td>Diluted root oil instilled in nostrils</td><td>2–4 drops per nostril</td><td>Headache, sinusitis, facial nerve palsy (supervised)</td></tr>
+        <tr><td>Compound Formulations</td><td>Brahmi Vati, Akarkara Churna compounds, Unani Ma'jun</td><td>Per physician direction</td><td>Epilepsy, male sexual disorders, cognitive decline</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">07</span><h2 class="section-title">Safety &amp; Precautions</h2><div class="section-rule"></div></div>
+    <p class="section-body">Akarkara is a powerful herb with a narrow therapeutic window. Its intensely hot, stimulating character means that adverse effects from overuse are more likely than with gentler herbs — primarily gastrointestinal irritation and Pitta aggravation. Classical texts consistently emphasise small doses, balancing carriers, and time-limited courses. Long-term high-dose use without supervision is never appropriate.</p>
+    <ul class="precaution-list">
+      <li><strong>Pregnancy &amp; breastfeeding:</strong> Strictly contraindicated. Akarkara is a powerful uterine stimulant and emmenagogue. Even moderate internal doses during pregnancy carry significant risk of uterine contractions and miscarriage. Avoid all internal preparations. Topical dental use in small amounts is likely safe but should still be discussed with a practitioner.</li>
+      <li><strong>Pitta constitutions &amp; disorders:</strong> The most important Ayurvedic contraindication. Avoid in hyperacidity, peptic/duodenal ulcer, gastroesophageal reflux, epistaxis, haemorrhagic conditions, high fever, inflammatory skin conditions, and in individuals with strongly Pitta-dominant prakriti. If used in Pitta-Vata conditions, always combine with Pitta-balancing herbs and ghee.</li>
+      <li><strong>Epilepsy — paradox of use:</strong> Classical texts use Akarkara for epilepsy, and animal studies validate anticonvulsant activity. However, its powerful neural stimulation means it must only be used under specialist supervision in epilepsy — unsupervised high doses could potentially provoke rather than prevent seizures in susceptible individuals.</li>
+      <li><strong>Children:</strong> Small doses in tooth powder for dental pain or speech stimulation have a long traditional history in children. However, internal therapeutic doses require specialist paediatric Ayurvedic supervision. The intense stimulant properties make self-medication in children risky.</li>
+      <li><strong>Allergic reaction:</strong> Anacyclus belongs to the Asteraceae family, which contains many known allergens. Individuals allergic to chamomile, ragweed, marigold, or related Asteraceae plants should avoid Akarkara or use with caution. Sesquiterpene lactones in the root can cause contact dermatitis.</li>
+      <li><strong>Gastric irritation:</strong> Even at therapeutic doses, some individuals experience gastric burning, nausea, or diarrhoea. Always take with milk, ghee, or after a light meal. Reduce dose if gastrointestinal symptoms appear.</li>
+      <li><strong>Drug interactions:</strong> Theoretical interactions with hormone therapies (testosterone, gonadotropins), anticonvulsant medications, and cholinesterase inhibitors. Inform your physician of Akarkara use if on any neurological or hormonal medications.</li>
+      <li><strong>Pyrethrin sensitivity:</strong> The root contains pyrethrin-related compounds (mild relative of the insecticidal pyrethrins). Those with known pyrethrin sensitivity should avoid Akarkara preparations. Not to be confused with pyrethroid insecticides, but related structural chemistry.</li>
+    </ul>
+  </div>
+
+  <div class="sources">
+    <div class="sources-title">References &amp; Sources</div>
+    <ul>
+      <li>Ali N et al. — "Anacyclus pyrethrum: A Review of its Ethnobotany, Phytochemistry and Pharmacological Activities" — Journal of Pharmacy Research, 2013</li>
+      <li>Sharma V, Thakur M &amp; Dixit VK — "A comparative study of ethanolic extracts of Anacyclus pyrethrum for aphrodisiac activity" — Journal of Complementary and Integrative Medicine, 2012</li>
+      <li>Bendjeddou D, Lalaoui K &amp; Satta D — "Immunostimulating activity of the hot water-soluble polysaccharide extracts of Anacyclus pyrethrum" — Journal of Ethnopharmacology, 2003</li>
+      <li>Pahuja M et al. — "Anticonvulsant activity of Anacyclus pyrethrum root extract in mice" — Pharmaceutical Biology, 2012</li>
+      <li>Howes MJR &amp; Perry E — "The role of phytochemicals in the treatment and prevention of dementia" — Drugs &amp; Aging, 2011 (Anacyclus reference)</li>
+      <li>Rahman AU et al. — "Pellitorine and related alkamides from Anacyclus pyrethrum" — Phytochemistry, 1991</li>
+      <li>Majeed M et al. — "Standardised extract of Anacyclus pyrethrum on testosterone and sexual behaviour" — Asian Pacific Journal of Reproduction, 2015</li>
+      <li>Al-Snafi AE — "The pharmacological importance of Anacyclus pyrethrum — A review" — Asian Journal of Pharmaceutical Science &amp; Technology, 2015</li>
+      <li>Charaka Samhita — Sutrasthana (Vata-Kapha disorders); Chikitsasthana (Ardita, Apasmara)</li>
+      <li>Sushruta Samhita — Mukha Roga (oral disease) chapter references to Akarakarabha</li>
+      <li>Ashtanga Hridayam — Vata Vyadhi Chikitsa; Apasmara Chikitsa compound preparations</li>
+      <li>API (Ayurvedic Pharmacopoeia of India) — Monograph on Akarakarabha (Anacyclus pyrethrum)</li>
+      <li>Priyavrat Sharma — Dravyaguna Vigyana — Akarkara monograph; classical properties and formulations</li>
+    </ul>
+  </div>
+</div>
+
+<footer>
+  <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a qualified practitioner before therapeutic use</p>
+</footer>
+
+<script>
+  const open3D=document.getElementById('open3D'),close3D=document.getElementById('close3D'),modal=document.getElementById('viewerModal');
+  function openModal(){
+    var _aud = document.getElementById('akarkaraAudio'); if(_aud){ _aud.currentTime=0; var playPromise = _aud.play(); if (playPromise !== undefined) { playPromise.catch(function(e){ console.log(e); }); } }
+modal.style.display='flex';document.body.style.overflow='hidden';history.pushState({modal:'akarkara3d'},'','#3d')}
+  function closeModal(){
+    var _aud = document.getElementById('akarkaraAudio'); if(_aud){ _aud.pause(); }
+modal.style.display='none';document.body.style.overflow='';if(window.location.hash==='#3d')history.replaceState(null,'',window.location.pathname)}
+  open3D.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();openModal()});
+  close3D.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();closeModal()});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&modal.style.display==='flex')closeModal()});
+  window.addEventListener('popstate',()=>{if(modal.style.display==='flex'){modal.style.display='none';document.body.style.overflow=''}});
+</script>
+
+  <audio id="akarkaraAudio" src="akarkara_benefits.mp3" loop preload="auto"></audio>
+</body>
+</html>

@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Makoy | Swastha</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+  <style>
+    #open3D {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      padding: 10px 18px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: var(--forest);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      z-index: 1000;
+      transition: .3s;
+    }
+    #open3D:hover {
+      background: var(--gold);
+      color: var(--deep);
+    }
+    #viewerModal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+    }
+    #modal-topbar {
+      flex-shrink: 0;
+      height: 58px;
+      background: #111111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px 0 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      z-index: 99999;
+    }
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 4.5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.72);
+      user-select: none;
+    }
+    #close3D {
+      width: 38px;
+      height: 38px;
+      font-size: 15px;
+      font-weight: 300;
+      background: transparent;
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background .2s, color .2s, transform .22s;
+      outline: none;
+      flex-shrink: 0;
+    }
+    #close3D:hover {
+      background: #ffffff;
+      color: #111111;
+      border-color: #ffffff;
+      transform: rotate(90deg);
+    }
+    #viewerModal model-viewer {
+      flex: 1;
+      width: 100%;
+      display: block;
+      background: #ffffff;
+    }
+
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+    * { margin:0; padding:0; box-sizing:border-box }
+    html { scroll-behavior:smooth }
+    body { font-family:'Jost',sans-serif; background:var(--cream); color:var(--ink); min-height:100vh; overflow-x:hidden; position:relative }
+    body::before { content:''; position:fixed; inset:0; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E"); opacity:.03; pointer-events:none; z-index:100 }
+
+    .bg-circle { position:fixed; border-radius:50%; pointer-events:none; z-index:0 }
+    .bg-circle-1 { width:700px; height:700px; background:radial-gradient(circle,rgba(74,26,107,.09) 0%,transparent 70%); top:-200px; right:-150px }
+    .bg-circle-2 { width:500px; height:500px; background:radial-gradient(circle,rgba(45,90,39,.08) 0%,transparent 70%); bottom:-100px; left:-100px }
+
+    .botanical-svg { position:fixed; pointer-events:none; z-index:1; opacity:.09 }
+    .botanical-tl { top:-20px; left:-20px; width:260px }
+    .botanical-br { bottom:-20px; right:-20px; width:220px; transform:rotate(180deg) }
+
+    .hero { position:relative; z-index:10; padding:54px 40px 0; text-align:center; opacity:0; animation:fadeUp .9s ease .1s forwards }
+    .back-link { display:inline-flex; align-items:center; gap:8px; font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--sage); text-decoration:none; margin-bottom:36px; transition:color .3s }
+    .back-link:hover { color:var(--gold) }
+    .logo-rule { display:flex; align-items:center; justify-content:center; gap:20px; margin-bottom:14px }
+    .logo-rule span { display:block; height:1px; width:70px; background:linear-gradient(to right,transparent,var(--gold)) }
+    .logo-rule span:last-child { background:linear-gradient(to left,transparent,var(--gold)) }
+    .logo-ornament { font-size:13px; color:var(--gold) }
+    .hero-title { font-family:'Cormorant Garamond',serif; font-size:clamp(64px,12vw,110px); font-weight:300; letter-spacing:8px; line-height:1; color:var(--deep) }
+    .hero-subtitle { font-family:'Cormorant Garamond',serif; font-size:18px; font-style:italic; font-weight:300; color:var(--earth); letter-spacing:2px; margin-top:8px }
+    .hero-sci { font-size:11px; font-weight:200; letter-spacing:5px; color:var(--sage); margin-top:6px }
+
+    .hero-photos { position:relative; z-index:10; display:grid; grid-template-columns:1fr 1fr; gap:2px; max-width:900px; margin:40px auto 0; opacity:0; animation:fadeUp .9s ease .35s forwards }
+    .hero-photos img { width:100%; height:380px; object-fit:cover; object-position:center; display:block; background:var(--parchment) }
+    .photo-caption { text-align:center; font-family:'Cormorant Garamond',serif; font-size:12px; font-style:italic; color:var(--sage); letter-spacing:1px; padding:10px 0 0; max-width:900px; margin:0 auto; position:relative; z-index:10; opacity:0; animation:fadeUp .9s ease .5s forwards }
+
+    .divider { display:flex; align-items:center; justify-content:center; gap:16px; margin:50px auto; max-width:600px; opacity:0; animation:fadeUp .9s ease .55s forwards; position:relative; z-index:10 }
+    .divider-line { height:1px; width:120px; background:linear-gradient(to right,transparent,var(--sage)) }
+    .divider-line:last-child { background:linear-gradient(to left,transparent,var(--sage)) }
+    .divider-leaf { color:var(--berry); font-size:18px }
+
+    .content { position:relative; z-index:10; max-width:860px; margin:0 auto; padding:0 30px 80px }
+    .intro-text { font-family:'Cormorant Garamond',serif; font-size:20px; font-weight:300; line-height:1.75; color:var(--ink); text-align:center; max-width:700px; margin:0 auto 60px; opacity:0; animation:fadeUp .9s ease .6s forwards }
+    .intro-text em { color:var(--berry); font-style:italic }
+
+    .section { margin-bottom:60px; opacity:0; animation:fadeUp .9s ease forwards }
+    .section:nth-child(1){animation-delay:.65s}.section:nth-child(2){animation-delay:.75s}.section:nth-child(3){animation-delay:.85s}.section:nth-child(4){animation-delay:.95s}.section:nth-child(5){animation-delay:1.05s}.section:nth-child(6){animation-delay:1.15s}.section:nth-child(7){animation-delay:1.25s}
+
+    .section-header { display:flex; align-items:center; gap:14px; margin-bottom:20px }
+    .section-num { font-family:'Cormorant Garamond',serif; font-size:11px; letter-spacing:4px; color:var(--gold) }
+    .section-title { font-family:'Cormorant Garamond',serif; font-size:28px; font-weight:400; color:var(--deep); letter-spacing:1px }
+    .section-rule { height:1px; flex:1; background:linear-gradient(to right,var(--gold),transparent) }
+    .section-body { font-size:13px; font-weight:300; line-height:1.9; color:var(--ink); margin-bottom:24px }
+
+    .data-table { width:100%; border-collapse:collapse; margin:16px 0 8px; font-size:12px }
+    .data-table thead tr { background:var(--deep); color:var(--gold); font-size:10px; letter-spacing:3px; text-transform:uppercase }
+    .data-table thead th { padding:12px 14px; text-align:left; font-weight:400 }
+    .data-table tbody tr:nth-child(even){ background:var(--parchment) }
+    .data-table tbody tr:nth-child(odd){ background:var(--cream) }
+    .data-table tbody tr { transition:background .2s }
+    .data-table tbody tr:hover { background:#ddd8cc }
+    .data-table tbody td { padding:10px 14px; color:var(--ink); border-bottom:1px solid rgba(74,55,40,.08) }
+    .data-table tbody td:first-child { font-weight:400; color:var(--deep); width:28% }
+
+    .dosha-table { width:100%; border-collapse:collapse; margin:16px 0; font-size:12px }
+    .dosha-table thead tr { background:var(--berry); color:var(--cream) }
+    .dosha-table thead th { padding:12px 14px; text-align:left; font-weight:400; letter-spacing:2px; font-size:10px; text-transform:uppercase }
+    .dosha-table tbody tr:nth-child(even){ background:var(--parchment) }
+    .dosha-table tbody tr:nth-child(odd){ background:var(--cream) }
+    .dosha-table tbody td { padding:11px 14px; color:var(--ink); border-bottom:1px solid rgba(74,55,40,.08) }
+    .dosha-table tbody td:first-child { font-weight:400; color:var(--berry); width:18% }
+    .dosha-table tbody td:nth-child(2){ color:var(--earth); width:20% }
+
+    .consume-table { width:100%; border-collapse:collapse; margin:16px 0; font-size:12px }
+    .consume-table thead tr { background:var(--leaf); color:var(--cream) }
+    .consume-table thead th { padding:12px 14px; text-align:left; font-weight:400; letter-spacing:2px; font-size:10px; text-transform:uppercase }
+    .consume-table tbody tr:nth-child(even){ background:var(--parchment) }
+    .consume-table tbody tr:nth-child(odd){ background:var(--cream) }
+    .consume-table tbody td { padding:11px 14px; color:var(--ink); border-bottom:1px solid rgba(74,55,40,.08) }
+    .consume-table tbody td:first-child { font-weight:400; color:var(--leaf); width:22% }
+
+    .benefits-grid { display:grid; grid-template-columns:1fr 1fr; gap:1px; background:rgba(74,26,107,.12); border:1px solid rgba(74,26,107,.12); margin:8px 0 }
+    .benefit-card { background:var(--cream); padding:24px 22px; transition:background .3s; position:relative; overflow:hidden }
+    .benefit-card:hover { background:#ede6e0 }
+    .benefit-card::before { content:''; position:absolute; bottom:0; left:0; width:0; height:2px; background:var(--berry); transition:width .4s }
+    .benefit-card:hover::before { width:100% }
+    .benefit-title { font-family:'Cormorant Garamond',serif; font-size:16px; font-weight:600; color:var(--berry); margin-bottom:8px }
+    .benefit-desc { font-size:11.5px; font-weight:300; line-height:1.75; color:var(--ink); opacity:.85 }
+
+    .precaution-list { list-style:none; margin:8px 0 }
+    .precaution-list li { display:flex; gap:12px; align-items:flex-start; padding:10px 14px; font-size:12px; font-weight:300; line-height:1.7; color:var(--ink); border-bottom:1px solid rgba(74,55,40,.08) }
+    .precaution-list li:last-child { border-bottom:none }
+    .precaution-list li::before { content:'▸'; color:var(--gold); flex-shrink:0; margin-top:1px }
+
+    .nutrition-bar { display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:rgba(74,26,107,.12); border:1px solid rgba(74,26,107,.12); margin:20px 0 }
+    .nutrition-cell { background:var(--cream); padding:22px 16px; text-align:center; transition:background .3s }
+    .nutrition-cell:hover { background:var(--parchment) }
+    .nutrition-num { font-family:'Cormorant Garamond',serif; font-size:36px; font-weight:300; color:var(--berry); line-height:1; margin-bottom:4px }
+    .nutrition-unit { font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--gold); font-weight:300 }
+    .nutrition-label { font-size:11px; font-weight:300; color:var(--ink); margin-top:5px }
+
+    .sources { border-top:1px solid rgba(74,55,40,.15); padding-top:24px; margin-top:20px }
+    .sources-title { font-size:10px; letter-spacing:4px; text-transform:uppercase; color:var(--sage); margin-bottom:12px; font-weight:300 }
+    .sources ul { list-style:none }
+    .sources ul li { font-family:'Cormorant Garamond',serif; font-size:13px; font-style:italic; color:var(--earth); padding:5px 0; border-bottom:1px solid rgba(74,55,40,.06) }
+    .sources ul li::before { content:'· '; color:var(--sage) }
+
+    footer { position:relative; z-index:10; text-align:center; padding:24px 20px 44px; border-top:1px solid rgba(74,55,40,.12); max-width:860px; margin:0 auto }
+    footer p { font-size:11px; letter-spacing:4px; text-transform:uppercase; color:var(--sage); font-weight:300 }
+
+    @keyframes fadeUp { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:translateY(0)} }
+    @media(max-width:700px){
+      .hero-photos{grid-template-columns:1fr}.hero-photos img{height:260px}
+      .benefits-grid{grid-template-columns:1fr}
+      .nutrition-bar{grid-template-columns:1fr 1fr}
+      .content{padding:0 18px 60px}
+    }
+  </style>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+</head>
+<body>
+  <button type="button" id="open3D">View in 3D</button>
+
+
+  <div class="bg-circle bg-circle-1"></div>
+  <div class="bg-circle bg-circle-2"></div>
+
+  <!-- Botanical SVG decorations -->
+  <svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#4a1a6b" stroke-width="1.5" fill="none"/>
+    <circle cx="90" cy="210" r="8" fill="#4a1a6b" opacity="0.7"/>
+    <circle cx="130" cy="175" r="10" fill="#2d5a27" opacity="0.6"/>
+    <circle cx="170" cy="135" r="7" fill="#4a1a6b" opacity="0.8"/>
+    <circle cx="210" cy="95" r="9" fill="#b8860b" opacity="0.5"/>
+    <ellipse cx="115" cy="195" rx="20" ry="10" fill="#2d5a27" transform="rotate(-30 115 195)"/>
+    <ellipse cx="155" cy="155" rx="18" ry="9" fill="#4a1a6b" transform="rotate(-45 155 155)"/>
+    <ellipse cx="195" cy="115" rx="16" ry="8" fill="#2d5a27" transform="rotate(-60 195 115)"/>
+  </svg>
+  <svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#4a1a6b" stroke-width="1.5" fill="none"/>
+    <circle cx="90" cy="210" r="8" fill="#4a1a6b" opacity="0.7"/>
+    <circle cx="130" cy="175" r="10" fill="#2d5a27" opacity="0.6"/>
+    <circle cx="170" cy="135" r="7" fill="#4a1a6b" opacity="0.8"/>
+    <ellipse cx="115" cy="195" rx="20" ry="10" fill="#2d5a27" transform="rotate(-30 115 195)"/>
+  </svg>
+
+  <div class="hero">
+    <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+    <div class="logo-rule"><span></span><div class="logo-ornament">✦</div><span></span></div>
+    <div class="hero-title">Makoy</div>
+    <div class="hero-subtitle">Black Nightshade — Bearer of the Midnight Berry</div>
+    <div class="hero-sci">Solanum nigrum L. &nbsp;·&nbsp; Solanaceae</div>
+  </div>
+
+  <div class="hero-photos">
+    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9a/Fruits_of_black_nightshade_%28Solanum_nigrum%29.jpg/1280px-Fruits_of_black_nightshade_%28Solanum_nigrum%29.jpg" alt="Makoy black berries in clusters on Solanum nigrum plant" onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/9/93/Solanum_nigrum.jpeg" alt="White star-shaped flowers of Solanum nigrum" onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+  </div>
+  <p class="photo-caption">Fig. 1 — Lustrous black berries of Makoy ripening in characteristic nodding clusters &nbsp;·&nbsp; Fig. 2 — Delicate white star-shaped flowers with prominent yellow anthers</p>
+
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-leaf">❧</div>
+    <div class="divider-line"></div>
+  </div>
+
+  <div class="content">
+    <p class="intro-text">Known in Sanskrit as <em>Kakamachi</em> — "the crow's berry" — Makoy has occupied a place of deep reverence in Ayurvedic medicine since the time of Charaka and Sushruta, who extolled its unparalleled action on the liver (<em>yakrit</em>), spleen (<em>pliha</em>), and urinary system. A plant at once celebrated and feared, its potent alkaloids demand both respect and careful dosing.</p>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">01</span><h2 class="section-title">Botanical Profile</h2><div class="section-rule"></div></div>
+      <p class="section-body">Makoy (<em>Solanum nigrum</em> L.) is a widely distributed annual herbaceous plant of the Solanaceae family — kin to tomato, potato, and eggplant — found across tropical, subtropical, and temperate regions worldwide. It grows erect, branching freely to 30–90 cm in height, with wavy-toothed ovate leaves and characteristic white star-shaped flowers borne in lateral umbellate cymes of 4–8 blossoms, each with five reflexed petals and a prominent cone of yellow anthers.</p>
+      <p class="section-body">The berries — small, globose, 6–8 mm in diameter — ripen from green through orange to lustrous black in drooping clusters, resembling diminutive grapes. The plant thrives in disturbed ground, cultivated fields, roadsides, and waste places from sea level to 2,400 m altitude, flowering year-round in tropical India. All parts contain solanaceous alkaloids, with berries being edible when fully ripe (cooked) in many cultures, and toxic when consumed raw or unripe.</p>
+      <table class="data-table">
+        <thead><tr><th>PROPERTY</th><th>Detail</th></tr></thead>
+        <tbody>
+          <tr><td>Family</td><td>Solanaceae (Nightshade family)</td></tr>
+          <tr><td>Botanical Name</td><td>Solanum nigrum L.</td></tr>
+          <tr><td>Sanskrit Names</td><td>Kakamachi, Kakmachi, Swarna-ksheeri, Dhwanksha-machi, Bahuphala</td></tr>
+          <tr><td>Common Names</td><td>Black Nightshade, Makoy, Garden Nightshade, Wonderberry</td></tr>
+          <tr><td>Regional Names</td><td>Manathakkali (Tam), Kamanchi (Tel), Manithakkali (Mal), Mako (Hindi/Urdu)</td></tr>
+          <tr><td>Origin</td><td>Eurasia; now pantropical/pan-temperate weed</td></tr>
+          <tr><td>Plant Type</td><td>Erect annual herb (30–90 cm)</td></tr>
+          <tr><td>Flowering Season</td><td>Year-round in tropical India; spring–autumn in temperate zones</td></tr>
+          <tr><td>Medicinal Parts</td><td>Whole plant, leaves, berries (ripe), roots, seeds</td></tr>
+          <tr><td>Taste Profile</td><td>Tikta (bitter), Katu (pungent), Madhura (sweet — ripe berry)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">02</span><h2 class="section-title">Phytochemistry &amp; Composition</h2><div class="section-rule"></div></div>
+      <p class="section-body">Solanum nigrum is one of the most phytochemically investigated Solanaceous herbs. Its diverse secondary metabolite profile — steroidal glycoalkaloids, saponins, polyphenols, flavonoids, and polysaccharides — underpins a remarkably broad pharmacological spectrum. The principal alkaloids, solanine and solamargine, are steroidal glycoalkaloids concentrated in the unripe berries and green aerial parts; ripe black berries have substantially lower alkaloid content.</p>
+      <p class="section-body">The plant's polysaccharides and glycoproteins have attracted particular attention for their immunomodulatory and hepatoprotective activities, with several clinical and experimental studies corroborating the classical Ayurvedic reputation of Kakamachi as the foremost liver tonic of the Indian pharmacopoeia.</p>
+      <div class="nutrition-bar">
+        <div class="nutrition-cell"><div class="nutrition-num">60+</div><div class="nutrition-unit">compounds</div><div class="nutrition-label">Identified phytochemicals</div></div>
+        <div class="nutrition-cell"><div class="nutrition-num">3.4%</div><div class="nutrition-unit">alkaloids</div><div class="nutrition-label">Total in green parts</div></div>
+        <div class="nutrition-cell"><div class="nutrition-num">28</div><div class="nutrition-unit">flavonoids</div><div class="nutrition-label">Reported in leaves</div></div>
+        <div class="nutrition-cell"><div class="nutrition-num">↑Fe</div><div class="nutrition-unit">mineral</div><div class="nutrition-label">Iron-rich leaves</div></div>
+      </div>
+      <table class="data-table">
+        <thead><tr><th>Compound</th><th>Category</th><th>Primary Action</th></tr></thead>
+        <tbody>
+          <tr><td>Solanine &amp; Solamargine</td><td>Steroidal glycoalkaloids</td><td>Anticancer, antifungal; toxic in excess</td></tr>
+          <tr><td>Solasonine &amp; Solamarine</td><td>Steroidal alkaloids</td><td>Antimicrobial, anti-inflammatory</td></tr>
+          <tr><td>Diosgenin</td><td>Steroidal sapogenin</td><td>Anti-inflammatory, anti-arthritic precursor</td></tr>
+          <tr><td>Quercetin &amp; Kaempferol</td><td>Flavonoids</td><td>Antioxidant, hepatoprotective, anti-allergic</td></tr>
+          <tr><td>Chlorogenic &amp; Caffeic Acids</td><td>Phenolic acids</td><td>Antioxidant, anti-inflammatory, antimicrobial</td></tr>
+          <tr><td>Petuniosides A–G</td><td>Steroidal saponins</td><td>Hepatoprotective, antitumour</td></tr>
+          <tr><td>Solanigrosides</td><td>Glycosides</td><td>Analgesic, anti-inflammatory</td></tr>
+          <tr><td>β-Sitosterol &amp; Stigmasterol</td><td>Phytosterols</td><td>Cholesterol-lowering, immunomodulatory</td></tr>
+          <tr><td>Polysaccharides (SN-C, SN-D)</td><td>Polysaccharides</td><td>Immunostimulant, antitumour</td></tr>
+          <tr><td>Vitamin C, Iron, Calcium</td><td>Micronutrients</td><td>Nutritive; leaves eaten as pot-herb across South Asia &amp; Africa</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">03</span><h2 class="section-title">Ayurvedic Significance</h2><div class="section-rule"></div></div>
+      <p class="section-body">Kakamachi is cited in Charaka Samhita's <em>Jwara Chikitsa</em> (fever management) and Sushruta Samhita's <em>Dravyasamgraha</em>. The Ashtanga Hridayam places it foremost among herbs in <em>Panchakola</em> formulations and liver tonics. Bhavaprakasha Nighantu catalogues it in <em>Guduchyadi Varga</em>, praising its bitterness as a purifying force on the blood and liver.</p>
+      <p class="section-body">The classical shloka — <em>"Kakamachi tikta laghu ushna pittakaphapaha, shothajwaravranashodhana yakritpliha cha nasyate"</em> — establishes its taste as bitter, quality as light, potency as hot, and therapeutic scope as encompassing fever, inflammation, wound purification, and diseases of the liver and spleen.</p>
+      <table class="dosha-table">
+        <thead><tr><th>Dosha</th><th>Effect</th><th>Mechanism &amp; Notes</th></tr></thead>
+        <tbody>
+          <tr><td>Vata ↓</td><td>Pacifying</td><td>Ushna virya relieves Vata-type pain, arthralgia, and neuralgic conditions; root decoction used in paralytic conditions in classical formulations</td></tr>
+          <tr><td>Pitta ↓</td><td>Pacifying</td><td>Tikta (bitter) rasa cools Pitta via liver detoxification; reduces jaundice, hepatitis, and inflammatory Pitta disorders — a rare herb that pacifies both Vata and Pitta</td></tr>
+          <tr><td>Kapha ↓</td><td>Pacifying</td><td>Laghu (light) and tikshna (sharp) qualities dry excess Kapha; used in oedema, respiratory congestion, and chronic mucus accumulation</td></tr>
+        </tbody>
+      </table>
+      <p class="section-body"><strong>Rasa:</strong> Tikta (bitter), Katu (pungent), Madhura (slightly sweet) &nbsp;·&nbsp; <strong>Guna:</strong> Laghu (light), Ruksha (dry) &nbsp;·&nbsp; <strong>Virya:</strong> Ushna (hot) &nbsp;·&nbsp; <strong>Vipaka:</strong> Katu &nbsp;·&nbsp; <strong>Karma:</strong> Tridosha shamaka (primarily Vata-Pitta)</p>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">04</span><h2 class="section-title">Key Health Benefits</h2><div class="section-rule"></div></div>
+      <p class="section-body">Modern research has positioned Makoy among the most pharmacologically versatile Solanaceous herbs — with validated hepatoprotective, anti-inflammatory, anticancer, diuretic, analgesic, and antimicrobial activities backed by a growing body of clinical and experimental evidence.</p>
+      <div class="benefits-grid">
+        <div class="benefit-card">
+          <div class="benefit-title">Hepatoprotective — Liver Tonic</div>
+          <div class="benefit-desc">The crown jewel of Makoy's therapeutic profile. Multiple studies confirm that leaf extracts significantly protect against CCl₄- and paracetamol-induced hepatotoxicity, reducing serum AST, ALT, ALP, and bilirubin. The proprietary formulation Liv.52 (Himalaya) prominently features Kakamachi as a core ingredient — one of the most widely prescribed liver tonics globally.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Anti-inflammatory &amp; Analgesic</div>
+          <div class="benefit-desc">Ethanolic and aqueous leaf extracts produce significant dose-dependent inhibition of carrageenan-induced paw edema in animal models. The saponins and steroidal alkaloids inhibit COX-2 and pro-inflammatory cytokine pathways, providing relief in arthritis, gout, and inflammatory skin conditions.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Anticancer Potential</div>
+          <div class="benefit-desc">Solamargine and solanine have demonstrated selective cytotoxicity against cancer cell lines including HeLa (cervical), A549 (lung), MCF-7 (breast), and HepG2 (hepatic). Polysaccharide fractions enhance NK cell and macrophage activity. Research remains at in vitro and in vivo stages — not yet clinically validated as therapy.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Diuretic &amp; Kidney Support</div>
+          <div class="benefit-desc">Classical indication for dysuria, urinary calculi, and nephritis. Whole plant decoction increases urine output and reduces renal inflammatory markers. Used in combination with Punarnava and Gokshura in classical formulations for urinary tract disorders and fluid retention.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Antipyretic &amp; Anti-infective</div>
+          <div class="benefit-desc">A primary classical use — leaf decoction and berry juice used in remittent and intermittent fevers. Extract inhibits growth of Staphylococcus aureus, E. coli, Klebsiella, Salmonella typhi, and Candida albicans. Traditional role as a broad-spectrum anti-infective herb in folk traditions across India and Africa.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Skin Diseases &amp; Wound Healing</div>
+          <div class="benefit-desc">Leaf paste is a traditional treatment for psoriasis, eczema, scabies, and chronic skin ulcers. Anti-inflammatory and antimicrobial alkaloids reduce infection and accelerate granulation tissue formation. Juice mixed with sesame oil is a classical preparation for soothing inflammatory skin conditions and burns.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Digestive &amp; Gastric Protection</div>
+          <div class="benefit-desc">Ripe berry juice and leaf decoction are used traditionally in dyspepsia, colitis, IBS, and dysentery. Gastroprotective activity has been confirmed against ethanol-induced gastric ulcers in animal models, with mechanism attributed to flavonoid-mediated reduction of mucosal oxidative stress.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Nutritive — Leafy Vegetable</div>
+          <div class="benefit-desc">Across South India, West Africa, and Southeast Asia, tender leaves of Makoy are cooked as a highly nutritious pot-herb rich in iron, calcium, vitamin C, and protein. Cooking deactivates much of the alkaloid content. Known as <em>Manathakkali keerai</em> in Tamil Nadu, it is a staple remedy for mouth ulcers when consumed as a stir-fry with coconut.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">05</span><h2 class="section-title">How to Use Makoy</h2><div class="section-rule"></div></div>
+      <p class="section-body">Makoy is used fresh, dried, as juice, decoction, oil infusion, and as a cooked vegetable. The critical distinction across all preparations is between <strong>ripe berries</strong> (safer, edible when cooked), <strong>unripe green berries</strong> (alkaloid-rich, potentially toxic), and <strong>leaves/roots</strong> (safe when prepared correctly at classical doses). All internal medicinal use should be under qualified Ayurvedic guidance.</p>
+      <table class="consume-table">
+        <thead><tr><th>Form</th><th>Preparation</th><th>Dosage</th><th>Best Use</th></tr></thead>
+        <tbody>
+          <tr><td>Swarasa (Fresh Juice)</td><td>Pound fresh leaves; strain juice</td><td>10–15 ml twice daily</td><td>Liver disorders, fever, jaundice</td></tr>
+          <tr><td>Kwatha (Decoction)</td><td>Boil whole plant in water; reduce to ¼</td><td>30–40 ml twice daily</td><td>Skin diseases, oedema, urinary issues</td></tr>
+          <tr><td>Ripe Berry Juice</td><td>Crush ripe black berries; strain</td><td>5–10 ml, once daily</td><td>Mouth ulcers, throat inflammation</td></tr>
+          <tr><td>Leaf Powder (Churna)</td><td>Dried leaf powder with honey</td><td>1–3 g, physician-directed</td><td>Chronic liver conditions, arthritis</td></tr>
+          <tr><td>Keerai (Cooked Leaves)</td><td>Sauté tender leaves with coconut</td><td>As a regular vegetable</td><td>Iron deficiency, mouth ulcers, immunity</td></tr>
+          <tr><td>Taila (Oil Infusion)</td><td>Leaves simmered in sesame oil</td><td>Apply externally as needed</td><td>Eczema, psoriasis, skin inflammation</td></tr>
+          <tr><td>Leaf Paste (Topical)</td><td>Ground fresh leaves</td><td>Apply to affected area</td><td>Wounds, burns, scabies, joint swelling</td></tr>
+          <tr><td>Liv.52 / Classical Ghrita</td><td>Commercial / classical formulation</td><td>Per physician / label direction</td><td>Hepatitis, alcoholic liver disease, cirrhosis</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">06</span><h2 class="section-title">Safety &amp; Precautions</h2><div class="section-rule"></div></div>
+      <p class="section-body">Makoy's safety profile is nuanced. Ripe berries and cooked leaves have a long history of safe dietary use across many cultures. However, the plant's steroidal glycoalkaloids — particularly concentrated in the unripe berries and raw aerial parts — are genuinely toxic in excess, causing gastrointestinal distress, neurological symptoms, and in severe cases, cardiac arrhythmia. The therapeutic window is respected in classical Ayurveda through careful dosing and processing.</p>
+      <ul class="precaution-list">
+        <li><strong>Unripe berries:</strong> Strictly avoid. Green and orange-stage berries contain the highest solanine concentrations and are a significant poisoning risk, especially for children who may be attracted by their appearance.</li>
+        <li><strong>Pregnancy:</strong> Contraindicated for internal medicinal use. The plant has uterine-stimulating alkaloids that may pose risk. Cooked leaves as a routine vegetable in modest quantity may be acceptable — consult practitioner.</li>
+        <li><strong>Children:</strong> Medicinal doses are not appropriate for children without specialist supervision. Berry ingestion by children should be treated as a poisoning event — seek emergency care.</li>
+        <li><strong>Overdosage symptoms:</strong> Nausea, vomiting, diarrhoea, burning of mouth/throat, dilated pupils, tachycardia, confusion, and drowsiness. Seek immediate medical attention if suspected solanine toxicity.</li>
+        <li><strong>Drug interactions:</strong> May potentiate anticholinergic drugs, sedatives, and antihypertensive medications. Avoid combining with other hepatotoxic herbs or medications without physician oversight.</li>
+        <li><strong>Pitta conditions:</strong> Despite Pitta-pacifying classical action, its Ushna virya may aggravate acute hyperacidity or active peptic ulcer — use cautiously in such individuals.</li>
+        <li><strong>Prolonged use:</strong> Extended internal use beyond 4–6 weeks warrants monitoring. Alkaloid accumulation over time is a theoretical concern; periodic breaks are advisable.</li>
+        <li><strong>Confusable species:</strong> Do not confuse with Solanum americanum (American black nightshade) or Solanum lycocarpum — only S. nigrum is the classical Kakamachi of Ayurvedic texts. Proper botanical identification is essential.</li>
+      </ul>
+    </div>
+
+    <div class="sources">
+      <div class="sources-title">References &amp; Sources</div>
+      <ul>
+        <li>Charaka Samhita — Jwara Chikitsa &amp; Dravyaguna references to Kakamachi</li>
+        <li>Bhavaprakasha Nighantu — Guduchyadi Varga; Ashtanga Hridayam — Panchakola Varga</li>
+        <li>Nawaz A et al. — "Solanum nigrum: A review of its traditional uses, phytochemistry and pharmacology" — Journal of Ethnopharmacology, 2021</li>
+        <li>Yadav JP et al. — "Hepatoprotective activity of Solanum nigrum leaf extract against paracetamol-induced liver damage in rats" — Asian Pacific Journal of Tropical Biomedicine, 2011</li>
+        <li>Hasan SM et al. — "Analgesic and anti-inflammatory activities of Solanum nigrum" — Phytotherapy Research, 2009</li>
+        <li>Lee JH et al. — "Solamargine and solanine induce apoptosis in cancer cell lines" — Cancer Letters, multiple studies, 2004–2018</li>
+        <li>Jainu M &amp; Devi CSS — "Gastroprotective action of Solanum nigrum on experimental ulcer models" — Journal of Medicinal Food, 2006</li>
+        <li>Jain R et al. — "Ethnomedicinal, phytochemical and pharmacological review of Solanum nigrum" — International Journal of Pharmaceutical Sciences Review and Research, 2011</li>
+        <li>Priyavrat Sharma — Dravyaguna Vigyana Vol. II — classical properties and formulations of Kakamachi</li>
+        <li>Kala CP — "Ethnobotany and ethnopharmacology of Solanum nigrum" — Indian Journal of Traditional Knowledge, 2009</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer>
+    <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a qualified practitioner before therapeutic use</p>
+  </footer>
+
+  <div id="viewerModal">
+    <div id="modal-topbar">
+      <span>3D Model — Makoy</span>
+      <button type="button" id="close3D">✕</button>
+    </div>
+    <model-viewer src="makoy3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+  </div>
+  <script>
+    (function() {
+      var open3D = document.getElementById('open3D');
+      var close3D = document.getElementById('close3D');
+      var modal = document.getElementById('viewerModal');
+      if (!open3D || !close3D || !modal) return;
+      function openModal() {
+        
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+      function closeModal() {
+        
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+      open3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); openModal();
+      });
+      close3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); closeModal();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+      });
+    })();
+  </script>
+
+</body>
+</html>

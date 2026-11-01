@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lawsonia / Henna | Swastha</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+  <style>
+    #open3D {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      padding: 10px 18px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: var(--forest);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      z-index: 1000;
+      transition: .3s;
+    }
+    #open3D:hover {
+      background: var(--gold);
+      color: var(--deep);
+    }
+    #viewerModal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+    }
+    #modal-topbar {
+      flex-shrink: 0;
+      height: 58px;
+      background: #111111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px 0 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      z-index: 99999;
+    }
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 4.5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.72);
+      user-select: none;
+    }
+    #close3D {
+      width: 38px;
+      height: 38px;
+      font-size: 15px;
+      font-weight: 300;
+      background: transparent;
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background .2s, color .2s, transform .22s;
+      outline: none;
+      flex-shrink: 0;
+    }
+    #close3D:hover {
+      background: #ffffff;
+      color: #111111;
+      border-color: #ffffff;
+      transform: rotate(90deg);
+    }
+    #viewerModal model-viewer {
+      flex: 1;
+      width: 100%;
+      display: block;
+      background: #ffffff;
+    }
+
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+    * { margin:0; padding:0; box-sizing:border-box }
+    html { scroll-behavior:smooth }
+    body { font-family:'Jost',sans-serif; background:var(--cream); color:var(--ink); min-height:100vh; overflow-x:hidden; position:relative }
+    body::before { content:''; position:fixed; inset:0; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E"); opacity:.035; pointer-events:none; z-index:100 }
+
+    /* mehndi pattern corners */
+    .mehndi-corner { position:fixed; pointer-events:none; z-index:1; opacity:.13; width:200px; height:200px }
+    .mehndi-tl { top:0; left:0 }
+    .mehndi-br { bottom:0; right:0; transform:rotate(180deg) }
+    .mehndi-tr { top:0; right:0; transform:scaleX(-1) }
+
+    .bg-circle { position:fixed; border-radius:50%; pointer-events:none; z-index:0 }
+    .bg-circle-1 { width:700px; height:700px; background:radial-gradient(circle, rgba(169,80,20,.09) 0%, transparent 70%); top:-200px; right:-150px }
+    .bg-circle-2 { width:500px; height:500px; background:radial-gradient(circle, rgba(201,124,42,.07) 0%, transparent 70%); bottom:-100px; left:-100px }
+
+    .hero { position:relative; z-index:10; padding:54px 40px 0; text-align:center; opacity:0; animation:fadeUp .9s ease .1s forwards }
+    .back-link { display:inline-flex; align-items:center; gap:8px; font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--sage); text-decoration:none; margin-bottom:36px; transition:color .3s }
+    .back-link:hover { color:var(--gold) }
+    .logo-rule { display:flex; align-items:center; justify-content:center; gap:20px; margin-bottom:14px }
+    .logo-rule span { display:block; height:1px; width:70px; background:linear-gradient(to right, transparent, var(--gold)) }
+    .logo-rule span:last-child { background:linear-gradient(to left, transparent, var(--gold)) }
+    .logo-ornament { font-size:13px; color:var(--gold) }
+    .hero-title { font-family:'Cormorant Garamond',serif; font-size:clamp(56px,11vw,104px); font-weight:300; letter-spacing:8px; line-height:1; color:var(--deep) }
+    .hero-subtitle { font-family:'Cormorant Garamond',serif; font-size:18px; font-style:italic; font-weight:300; color:var(--earth); letter-spacing:2px; margin-top:8px }
+    .hero-sci { font-size:11px; font-weight:200; letter-spacing:5px; color:var(--sage); margin-top:6px }
+
+    .hero-photos { position:relative; z-index:10; display:grid; grid-template-columns:1fr 1fr; gap:2px; max-width:900px; margin:40px auto 0; opacity:0; animation:fadeUp .9s ease .35s forwards }
+    .hero-photos img { width:100%; height:380px; object-fit:cover; object-position:center; display:block; background:var(--parchment) }
+    .photo-caption { text-align:center; font-family:'Cormorant Garamond',serif; font-size:12px; font-style:italic; color:var(--sage); letter-spacing:1px; padding:10px 0 0; max-width:900px; margin:0 auto; position:relative; z-index:10; opacity:0; animation:fadeUp .9s ease .5s forwards }
+
+    .divider { display:flex; align-items:center; justify-content:center; gap:16px; margin:50px auto; max-width:600px; opacity:0; animation:fadeUp .9s ease .55s forwards; position:relative; z-index:10 }
+    .divider-line { height:1px; width:120px; background:linear-gradient(to right, transparent, var(--sage)) }
+    .divider-line:last-child { background:linear-gradient(to left, transparent, var(--sage)) }
+    .divider-leaf { color:var(--gold); font-size:18px }
+
+    .content { position:relative; z-index:10; max-width:860px; margin:0 auto; padding:0 30px 80px }
+    .intro-text { font-family:'Cormorant Garamond',serif; font-size:20px; font-weight:300; line-height:1.75; color:var(--ink); text-align:center; max-width:700px; margin:0 auto 60px; opacity:0; animation:fadeUp .9s ease .6s forwards }
+    .intro-text em { color:var(--earth); font-style:italic }
+
+    .section { margin-bottom:60px; opacity:0; animation:fadeUp .9s ease forwards }
+    .section:nth-child(1){animation-delay:.65s}.section:nth-child(2){animation-delay:.75s}.section:nth-child(3){animation-delay:.85s}.section:nth-child(4){animation-delay:.95s}.section:nth-child(5){animation-delay:1.05s}.section:nth-child(6){animation-delay:1.15s}.section:nth-child(7){animation-delay:1.25s}
+
+    .section-header { display:flex; align-items:center; gap:14px; margin-bottom:20px }
+    .section-num { font-family:'Cormorant Garamond',serif; font-size:11px; letter-spacing:4px; color:var(--gold) }
+    .section-title { font-family:'Cormorant Garamond',serif; font-size:28px; font-weight:400; color:var(--deep); letter-spacing:1px }
+    .section-rule { height:1px; flex:1; background:linear-gradient(to right, var(--gold), transparent) }
+    .section-body { font-size:13px; font-weight:300; line-height:1.9; color:var(--ink); margin-bottom:24px }
+
+    .data-table { width:100%; border-collapse:collapse; margin:16px 0 8px; font-size:12px }
+    .data-table thead tr { background:var(--deep); color:var(--gold); font-size:10px; letter-spacing:3px; text-transform:uppercase }
+    .data-table thead th { padding:12px 14px; text-align:left; font-weight:400 }
+    .data-table tbody tr:nth-child(even) { background:var(--parchment) }
+    .data-table tbody tr:nth-child(odd) { background:var(--cream) }
+    .data-table tbody tr { transition:background .2s }
+    .data-table tbody tr:hover { background:#e8d4b8 }
+    .data-table tbody td { padding:10px 14px; color:var(--ink); border-bottom:1px solid rgba(122,59,30,.08) }
+    .data-table tbody td:first-child { font-weight:400; color:var(--deep); width:28% }
+
+    .dosha-table { width:100%; border-collapse:collapse; margin:16px 0; font-size:12px }
+    .dosha-table thead tr { background:var(--earth); color:var(--cream) }
+    .dosha-table thead th { padding:12px 14px; text-align:left; font-weight:400; letter-spacing:2px; font-size:10px; text-transform:uppercase }
+    .dosha-table tbody tr:nth-child(even) { background:var(--parchment) }
+    .dosha-table tbody tr:nth-child(odd) { background:var(--cream) }
+    .dosha-table tbody td { padding:11px 14px; color:var(--ink); border-bottom:1px solid rgba(122,59,30,.08) }
+    .dosha-table tbody td:first-child { font-weight:400; color:var(--earth); width:18% }
+    .dosha-table tbody td:nth-child(2) { color:var(--rust); width:20% }
+
+    .consume-table { width:100%; border-collapse:collapse; margin:16px 0; font-size:12px }
+    .consume-table thead tr { background:var(--rust); color:var(--cream) }
+    .consume-table thead th { padding:12px 14px; text-align:left; font-weight:400; letter-spacing:2px; font-size:10px; text-transform:uppercase }
+    .consume-table tbody tr:nth-child(even) { background:var(--parchment) }
+    .consume-table tbody tr:nth-child(odd) { background:var(--cream) }
+    .consume-table tbody td { padding:11px 14px; color:var(--ink); border-bottom:1px solid rgba(122,59,30,.08) }
+    .consume-table tbody td:first-child { font-weight:400; color:var(--earth); width:22% }
+
+    .benefits-grid { display:grid; grid-template-columns:1fr 1fr; gap:1px; background:rgba(122,59,30,.12); border:1px solid rgba(122,59,30,.12); margin:8px 0 }
+    .benefit-card { background:var(--cream); padding:24px 22px; transition:background .3s; position:relative; overflow:hidden }
+    .benefit-card:hover { background:#ede0c5 }
+    .benefit-card::before { content:''; position:absolute; bottom:0; left:0; width:0; height:2px; background:var(--gold); transition:width .4s }
+    .benefit-card:hover::before { width:100% }
+    .benefit-title { font-family:'Cormorant Garamond',serif; font-size:16px; font-weight:600; color:var(--earth); margin-bottom:8px }
+    .benefit-desc { font-size:11.5px; font-weight:300; line-height:1.75; color:var(--ink); opacity:.85 }
+
+    .precaution-list { list-style:none; margin:8px 0 }
+    .precaution-list li { display:flex; gap:12px; align-items:flex-start; padding:10px 14px; font-size:12px; font-weight:300; line-height:1.7; color:var(--ink); border-bottom:1px solid rgba(122,59,30,.08) }
+    .precaution-list li:last-child { border-bottom:none }
+    .precaution-list li::before { content:'▸'; color:var(--gold); flex-shrink:0; margin-top:1px }
+
+    .nutrition-bar { display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:rgba(122,59,30,.12); border:1px solid rgba(122,59,30,.12); margin:20px 0 }
+    .nutrition-cell { background:var(--cream); padding:22px 16px; text-align:center; transition:background .3s }
+    .nutrition-cell:hover { background:var(--parchment) }
+    .nutrition-num { font-family:'Cormorant Garamond',serif; font-size:36px; font-weight:300; color:var(--earth); line-height:1; margin-bottom:4px }
+    .nutrition-unit { font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--gold); font-weight:300 }
+    .nutrition-label { font-size:11px; font-weight:300; color:var(--ink); margin-top:5px }
+
+    .sources { border-top:1px solid rgba(122,59,30,.15); padding-top:24px; margin-top:20px }
+    .sources-title { font-size:10px; letter-spacing:4px; text-transform:uppercase; color:var(--sage); margin-bottom:12px; font-weight:300 }
+    .sources ul { list-style:none }
+    .sources ul li { font-family:'Cormorant Garamond',serif; font-size:13px; font-style:italic; color:var(--earth); padding:5px 0; border-bottom:1px solid rgba(122,59,30,.06) }
+    .sources ul li::before { content:'· '; color:var(--sage) }
+
+    footer { position:relative; z-index:10; text-align:center; padding:24px 20px 44px; border-top:1px solid rgba(122,59,30,.12); max-width:860px; margin:0 auto }
+    footer p { font-size:11px; letter-spacing:4px; text-transform:uppercase; color:var(--sage); font-weight:300 }
+
+    @keyframes fadeUp { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:translateY(0)} }
+
+    @media(max-width:700px){
+      .hero-photos{grid-template-columns:1fr}.hero-photos img{height:260px}
+      .benefits-grid{grid-template-columns:1fr}.nutrition-bar{grid-template-columns:1fr 1fr}
+      .content{padding:0 18px 60px}
+    }
+  </style>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+</head>
+<body>
+  <button type="button" id="open3D">View in 3D</button>
+
+
+<!-- Mehndi-inspired corner ornaments -->
+<svg class="mehndi-corner mehndi-tl" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M10 10 Q60 10 90 50 Q120 90 160 100 Q120 110 90 150 Q60 190 10 190" stroke="#7a3b1e" stroke-width="1.2" fill="none"/>
+  <circle cx="10" cy="10" r="4" fill="#7a3b1e"/>
+  <circle cx="90" cy="50" r="6" fill="#c97c2a" opacity=".7"/>
+  <circle cx="90" cy="150" r="6" fill="#c97c2a" opacity=".7"/>
+  <ellipse cx="55" cy="30" rx="14" ry="7" fill="#7a3b1e" opacity=".5" transform="rotate(30 55 30)"/>
+  <ellipse cx="55" cy="170" rx="14" ry="7" fill="#7a3b1e" opacity=".5" transform="rotate(-30 55 170)"/>
+  <circle cx="140" cy="100" r="5" fill="#7a3b1e" opacity=".6"/>
+  <path d="M80 75 Q100 100 80 125" stroke="#c97c2a" stroke-width="1" fill="none" opacity=".6"/>
+  <path d="M30 50 Q50 60 40 80" stroke="#7a3b1e" stroke-width="1" fill="none" opacity=".5"/>
+  <path d="M30 150 Q50 140 40 120" stroke="#7a3b1e" stroke-width="1" fill="none" opacity=".5"/>
+</svg>
+<svg class="mehndi-corner mehndi-br" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M10 10 Q60 10 90 50 Q120 90 160 100 Q120 110 90 150 Q60 190 10 190" stroke="#7a3b1e" stroke-width="1.2" fill="none"/>
+  <circle cx="10" cy="10" r="4" fill="#7a3b1e"/>
+  <circle cx="90" cy="50" r="6" fill="#c97c2a" opacity=".7"/>
+  <circle cx="90" cy="150" r="6" fill="#c97c2a" opacity=".7"/>
+  <ellipse cx="55" cy="30" rx="14" ry="7" fill="#7a3b1e" opacity=".5" transform="rotate(30 55 30)"/>
+  <ellipse cx="55" cy="170" rx="14" ry="7" fill="#7a3b1e" opacity=".5" transform="rotate(-30 55 170)"/>
+  <circle cx="140" cy="100" r="5" fill="#7a3b1e" opacity=".6"/>
+</svg>
+<svg class="mehndi-corner mehndi-tr" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M10 10 Q60 10 90 50 Q120 90 160 100 Q120 110 90 150 Q60 190 10 190" stroke="#7a3b1e" stroke-width="1.2" fill="none"/>
+  <circle cx="10" cy="10" r="4" fill="#7a3b1e"/>
+  <circle cx="90" cy="50" r="6" fill="#c97c2a" opacity=".7"/>
+  <ellipse cx="55" cy="30" rx="14" ry="7" fill="#7a3b1e" opacity=".5" transform="rotate(30 55 30)"/>
+</svg>
+
+<div class="bg-circle bg-circle-1"></div>
+<div class="bg-circle bg-circle-2"></div>
+
+<div class="hero">
+  <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+  <div class="logo-rule"><span></span><div class="logo-ornament">✦</div><span></span></div>
+  <div class="hero-title">Lawsonia</div>
+  <div class="hero-subtitle">Henna — The Blesséd Dye Plant of the Orient</div>
+  <div class="hero-sci">Lawsonia inermis L. &nbsp;·&nbsp; Lythraceae</div>
+</div>
+
+<div class="hero-photos">
+  <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/5/55/Lawsonia_inermis_%283709419835%29.jpg/1280px-Lawsonia_inermis_%283709419835%29.jpg" alt="Henna flowers — small white fragrant clusters" onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+  <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ac/Lawsonia_inermis_henna_Egyptian_privet_Vijayanrajapuram_01.jpg/1280px-Lawsonia_inermis_henna_Egyptian_privet_Vijayanrajapuram_01.jpg" alt="Fresh henna leaves and paste on skin" onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+</div>
+<p class="photo-caption">Fig. 1 — Tiny, fragrant white to pale-rose flowers of Lawsonia inermis in terminal panicles &nbsp;·&nbsp; Fig. 2 — Freshly prepared leaf paste yielding its characteristic red-orange dye on skin</p>
+
+<div class="divider">
+  <div class="divider-line"></div>
+  <div class="divider-leaf">❧</div>
+  <div class="divider-line"></div>
+</div>
+
+<div class="content">
+  <p class="intro-text">Known in Sanskrit as <em>Madayantika</em> and in Arabic as <em>Al-Hinna</em>, Lawsonia inermis is perhaps the world's oldest recorded cosmetic plant — used for over 9,000 years across Egypt, Persia, the Indian subcontinent, and North Africa for body art, hair colouring, and medicinal therapy. Yet behind its celebrated crimson stain lies a sophisticated pharmacopoeia: a plant revered in Unani, Ayurveda, and folk traditions as an anti-inflammatory, antifungal, analgesic, and wound-healing agent of considerable power.</p>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">01</span><h2 class="section-title">Botanical Profile</h2><div class="section-rule"></div></div>
+    <p class="section-body">Lawsonia inermis is a glabrous, much-branched shrub or small tree of the Lythraceae family, typically reaching 1.8–7.5 m in height, with slender, quadrangular branches that may bear terminal spines in older specimens — though the species epithet <em>inermis</em> means "without thorns," referring to the cultivated forms. Native to the semi-arid zones of North Africa, the Middle East, and South Asia, it thrives in hot, dry climates with well-drained soils.</p>
+    <p class="section-body">The leaves are opposite, subsessile, elliptic to broadly lanceolate (2–3 cm long), glaucous-green, and contain the primary active pigment <em>lawsone</em> (2-hydroxy-1,4-naphthoquinone) within vacuoles that rupture upon grinding — releasing the dye. Flowers are borne in large terminal panicles: small (5 mm), four-petalled, white to rose-pink, and remarkably fragrant, used in South Asian perfumery. The fruit is a dry capsule containing numerous angular seeds. Flowering peaks between April and September.</p>
+    <table class="data-table">
+      <thead><tr><th>Property</th><th>Detail</th></tr></thead>
+      <tbody>
+        <tr><td>Family</td><td>Lythraceae</td></tr>
+        <tr><td>Botanical Name</td><td>Lawsonia inermis L.</td></tr>
+        <tr><td>Sanskrit Names</td><td>Madayantika, Mendika, Raktagarbha, Priyadarshana</td></tr>
+        <tr><td>Arabic / Unani</td><td>Al-Hinna, Hinna</td></tr>
+        <tr><td>Common Names</td><td>Henna, Mehndi, Egyptian Privet, Mignonette Tree</td></tr>
+        <tr><td>Regional Names</td><td>Mehndi (Hindi/Urdu), Goranti (Tel), Marudhondhi (Tam), Mailanchi (Mal)</td></tr>
+        <tr><td>Plant Type</td><td>Glabrous shrub / small tree (1.8–7.5 m)</td></tr>
+        <tr><td>Native Range</td><td>N. Africa, Middle East, Indian Subcontinent, SE Asia</td></tr>
+        <tr><td>Flowering Season</td><td>April–September</td></tr>
+        <tr><td>Medicinal Parts</td><td>Leaves (primary), root bark, flowers, seeds</td></tr>
+        <tr><td>Taste Profile</td><td>Kashaya (astringent), Tikta (bitter)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">02</span><h2 class="section-title">Phytochemistry &amp; Active Constituents</h2><div class="section-rule"></div></div>
+    <p class="section-body">The pharmacological richness of Lawsonia is centred on <em>lawsone</em> (2-hydroxy-1,4-naphthoquinone), the signature red-orange naphthoquinone pigment constituting 0.5–1.5% of dry leaf weight. Lawsone is not merely a dye — it is a potent bioactive with antifungal, antimicrobial, antitumour, and UV-blocking properties. The plant further yields a complex array of flavonoids, coumarins, sterols, tannins, alkaloids, and terpenoids across its various parts.</p>
+    <div class="nutrition-bar">
+      <div class="nutrition-cell"><div class="nutrition-num">0.5–1.5</div><div class="nutrition-unit">% leaf wt</div><div class="nutrition-label">Lawsone content</div></div>
+      <div class="nutrition-cell"><div class="nutrition-num">9,000</div><div class="nutrition-unit">years</div><div class="nutrition-label">Recorded use history</div></div>
+      <div class="nutrition-cell"><div class="nutrition-num">400+</div><div class="nutrition-unit">studies</div><div class="nutrition-label">Published pharmacological</div></div>
+      <div class="nutrition-cell"><div class="nutrition-num">45+</div><div class="nutrition-unit">compounds</div><div class="nutrition-label">Isolated from whole plant</div></div>
+    </div>
+    <table class="data-table">
+      <thead><tr><th>Compound</th><th>Category</th><th>Primary Action</th></tr></thead>
+      <tbody>
+        <tr><td>Lawsone (2-OH-1,4-naphthoquinone)</td><td>Naphthoquinone pigment</td><td>Antifungal, antimicrobial, antitumour, UV-filter, dye</td></tr>
+        <tr><td>Luteolin &amp; Apigenin</td><td>Flavonoids</td><td>Anti-inflammatory, antioxidant, antispasmodic</td></tr>
+        <tr><td>Gallic Acid &amp; Ellagic Acid</td><td>Phenolic / tannin acids</td><td>Antioxidant, antimicrobial, astringent, anticancer</td></tr>
+        <tr><td>Isoplumbagin</td><td>Naphthoquinone</td><td>Antimalarial, cytotoxic</td></tr>
+        <tr><td>Laxanthone I &amp; II</td><td>Xanthone derivatives</td><td>Anti-inflammatory, hepatoprotective</td></tr>
+        <tr><td>Hennotannic Acid</td><td>Tannin complex</td><td>Wound-healing, protein precipitation</td></tr>
+        <tr><td>β-Sitosterol &amp; Stigmasterol</td><td>Phytosterols</td><td>Anti-inflammatory, hypolipidemic</td></tr>
+        <tr><td>Coumarin Glycosides</td><td>Coumarins</td><td>Anticoagulant, antispasmodic, antimicrobial</td></tr>
+        <tr><td>Triterpenoids (α-Amyrin)</td><td>Pentacyclic triterpenes</td><td>Anti-arthritic, analgesic</td></tr>
+        <tr><td>Betulinic Acid (bark)</td><td>Lupane-type triterpene</td><td>Antiviral, anticancer, anti-HIV</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">03</span><h2 class="section-title">Ayurvedic &amp; Unani Significance</h2><div class="section-rule"></div></div>
+    <p class="section-body">In Ayurveda, Lawsonia (Mendika / Madayantika) is described in the Charaka Samhita, Sushruta Samhita, and Ashtanga Hridayam. The leaves are classified as <em>Kashaya</em> (astringent), <em>Tikta</em> (bitter), with <em>Sheeta virya</em> (cooling potency) — making it specifically valuable for pacifying aggravated Pitta and conditions of excess heat. It is used in <em>Jwara</em> (fever), <em>Vrana</em> (wounds), <em>Daha</em> (burning sensations), and <em>Shiro Roga</em> (disorders of the head).</p>
+    <p class="section-body">In Unani medicine (Ilaj-bil-tadbeer), henna holds an even more prominent place — listed in Ibn Sina's <em>Canon of Medicine</em> as a wound-healer, liver tonic, and remedy for alopecia and skin diseases. The Unani system additionally values henna flowers, distilled into an aromatic water (Arq-e-Hinna) used as a nervine tonic and for headaches. The root bark (<em>Ushr-e-Hinna</em>) is used in jaundice, skin eruptions, and urinary disorders.</p>
+    <table class="dosha-table">
+      <thead><tr><th>Dosha</th><th>Effect</th><th>Mechanism &amp; Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Vata ↓</td><td>Mildly pacifying</td><td>Kashaaya rasa slightly grounds Vata; paste application relieves joint pain and neuralgia; not a primary Vata remedy</td></tr>
+        <tr><td>Pitta ↓↓</td><td>Strongly pacifying</td><td>Sheeta virya (cooling) is the hallmark action — reduces burning sensations, skin inflammation, fever, and excess heat; primary application for Pitta imbalances</td></tr>
+        <tr><td>Kapha ↑</td><td>Mildly aggravating</td><td>Cooling, heavy qualities may increase Kapha accumulation with excessive use; generally well-tolerated in balanced doses</td></tr>
+      </tbody>
+    </table>
+    <p class="section-body"><strong>Rasa:</strong> Kashaya (astringent), Tikta (bitter) &nbsp;·&nbsp; <strong>Guna:</strong> Laghu (light), Ruksha (dry) &nbsp;·&nbsp; <strong>Virya:</strong> Sheeta (cold) &nbsp;·&nbsp; <strong>Vipaka:</strong> Katu (pungent) &nbsp;·&nbsp; <strong>Karma:</strong> Pitta-shamaka, Vrana-ropana, Daha-prashamana</p>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">04</span><h2 class="section-title">Key Health Benefits</h2><div class="section-rule"></div></div>
+    <p class="section-body">Lawsonia inermis is one of the most pharmacologically validated medicinal plants of the ethnobotanical world. Hundreds of peer-reviewed studies across multiple decades have substantiated its antifungal, antimicrobial, anti-inflammatory, analgesic, hepatoprotective, and wound-healing activities — lending scientific credence to millennia of traditional use.</p>
+    <div class="benefits-grid">
+      <div class="benefit-card">
+        <div class="benefit-title">Antifungal &amp; Antimicrobial</div>
+        <div class="benefit-desc">Lawsone and hennotannic acid demonstrate potent activity against dermatophytes including Trichophyton, Microsporum, and Candida species. Leaf extract inhibits E. coli, S. aureus, Salmonella, and Klebsiella. Topical application is well-validated for tinea, ringworm, and skin fungal infections.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Wound Healing &amp; Antiseptic</div>
+        <div class="benefit-desc">Classical <em>Vrana-ropana</em> (wound healing) action is backed by controlled animal studies showing accelerated wound closure, collagen deposition, and epithelialisation with henna paste application. Hennotannic acid precipitates surface proteins, forming a protective film over raw tissue.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Anti-inflammatory &amp; Analgesic</div>
+        <div class="benefit-desc">Luteolin, gallic acid, and triterpenoids from leaf extract significantly inhibit prostaglandin synthesis and COX pathways. Application to inflamed joints, burns, and headache (on soles or forehead) is a classical Unani practice validated by animal pain models showing comparable efficacy to standard analgesics.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Hair &amp; Scalp Care</div>
+        <div class="benefit-desc">Lawsone binds keratinous protein in hair shafts via Michael addition, imparting colour while simultaneously strengthening the cortex. Henna conditions the scalp, reduces dandruff through antifungal action against Malassezia, and is classically used for premature greying, hair loss, and heat-related scalp inflammation.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Antipyretic &amp; Cooling</div>
+        <div class="benefit-desc">Sheeta virya (cold potency) underpins the traditional practice of applying henna paste to palms and soles during high fever to draw out heat — a practice validated by studies showing reduced rectal temperature in animal models. Aqueous leaf extract also demonstrates direct antipyretic activity via hypothalamic pathways.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Hepatoprotective</div>
+        <div class="benefit-desc">Laxanthone I &amp; II, ellagic acid, and gallic acid exert significant protection against hepatotoxin-induced liver damage in animal studies. Ethanolic extract reduces elevated liver enzymes (ALT, AST, ALP) and malondialdehyde in paracetamol- and CCl₄-induced hepatotoxicity models.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Antimalarial</div>
+        <div class="benefit-desc">Isoplumbagin and lawsone have demonstrated in vitro activity against Plasmodium falciparum. The mechanism involves disruption of the parasite's electron transport chain. Traditional use of henna in malaria-endemic regions of Africa and South Asia as a fever remedy may partly relate to this activity.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Anticancer Potential</div>
+        <div class="benefit-desc">Betulinic acid (root bark), lawsone, and ellagic acid show cytotoxic activity against multiple cancer cell lines including HeLa, MCF-7, and HepG2 in vitro. Mechanism involves apoptosis induction and cell-cycle arrest. Research is promising but human clinical trials remain limited.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">05</span><h2 class="section-title">How to Use Lawsonia / Henna</h2><div class="section-rule"></div></div>
+    <p class="section-body">Henna is primarily used externally; internal use in Ayurveda and Unani is restricted to decoctions and formulations of root bark or leaf — always in supervised, time-limited courses. The iconic mehndi paste combines dried leaf powder with acidic liquids (lemon juice, tea, tamarind) and essential oils to release and fix lawsone onto skin. Internally, the decoction of root bark is used for liver support and urinary complaints.</p>
+    <table class="consume-table">
+      <thead><tr><th>Form</th><th>Preparation</th><th>Dosage</th><th>Best Use</th></tr></thead>
+      <tbody>
+        <tr><td>Mehndi Paste (Topical)</td><td>Leaf powder + lemon juice + essential oil; rest 8–12 hrs</td><td>Apply, leave 2–8 hrs</td><td>Body art, hair colour, skin cooling</td></tr>
+        <tr><td>Fresh Leaf Paste (Topical)</td><td>Grind fresh leaves with water or rose water</td><td>Apply 1–2 hrs, 1–2× wkly</td><td>Wounds, burns, headache, foot cooling</td></tr>
+        <tr><td>Hair Mask</td><td>Leaf powder + yoghurt + amla powder; mix to paste</td><td>Apply 1–2 hrs; rinse</td><td>Hair conditioning, dandruff, greying</td></tr>
+        <tr><td>Root Bark Decoction</td><td>10 g root bark in 200 ml water; reduce by half</td><td>30–40 ml twice daily</td><td>Jaundice, dysuria, skin eruptions</td></tr>
+        <tr><td>Leaf Decoction</td><td>10–15 g leaves in 250 ml water; simmer 15 min</td><td>30 ml twice daily</td><td>Fever, diarrhea (astringent), burning</td></tr>
+        <tr><td>Flower Distillate (Arq)</td><td>Steam distillation of fresh flowers (Unani)</td><td>20–30 ml with water</td><td>Headache, nervine tonic, insomnia</td></tr>
+        <tr><td>Seed Paste (Topical)</td><td>Ground seeds with water or milk</td><td>Apply as needed</td><td>Alopecia, scalp disorders</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">06</span><h2 class="section-title">Safety, Cautions &amp; Black Henna Warning</h2><div class="section-rule"></div></div>
+    <p class="section-body">Natural henna (pure Lawsonia paste) has an excellent safety profile for topical use in most adults. However, several significant safety concerns must be understood — especially regarding adulterated commercial products and internal consumption.</p>
+    <ul class="precaution-list">
+      <li><strong>⚠ Black Henna (PPD) — Critical Warning:</strong> Commercial "black henna" and many salon products contain para-phenylenediamine (PPD), a potent contact allergen with no relation to Lawsonia. PPD can cause severe allergic contact dermatitis, blistering, scarring, and systemic sensitisation. Always verify natural, PPD-free henna before use.</li>
+      <li><strong>G6PD Deficiency:</strong> Lawsone can induce haemolytic anaemia in individuals with glucose-6-phosphate dehydrogenase (G6PD) deficiency — a serious and potentially life-threatening complication. Henna should not be applied to neonates or those with known G6PD deficiency.</li>
+      <li><strong>Internal Use — Caution:</strong> Internal preparations of root bark should be used only under qualified supervision and for limited durations. High internal doses of lawsone and related naphthoquinones can be nephrotoxic and hepatotoxic.</li>
+      <li><strong>Pregnancy:</strong> While topical use is generally considered safe, internal preparations (decoctions) should be avoided in pregnancy. Henna has historically been used as an emmenagogue (to stimulate menstruation) at medicinal doses.</li>
+      <li><strong>Skin Sensitivity Test:</strong> Before full application, always perform a 24-hour patch test on the inner forearm — even with natural henna — to rule out individual sensitivity or cross-reactions.</li>
+      <li><strong>Open Wounds:</strong> Avoid applying henna paste to open wounds, abraded skin, or infected areas without qualified guidance — the dye penetrates disrupted tissue and may cause staining of underlying structures.</li>
+      <li><strong>Eye Contact:</strong> Keep all henna preparations away from eyes. Corneal staining from accidental contact has been reported in rare cases.</li>
+      <li><strong>Drug Interactions:</strong> Coumarins in henna may theoretically potentiate anticoagulant drugs (warfarin). Patients on blood thinners should exercise caution with internal henna preparations.</li>
+    </ul>
+  </div>
+
+  <div class="sources">
+    <div class="sources-title">References &amp; Sources</div>
+    <ul>
+      <li>Rahmoun N et al. — "Phytochemical screening and antimicrobial activity of henna (Lawsonia inermis)" — Der Pharmacia Lettre, 2013</li>
+      <li>Chaudhary G et al. — "Lawsonia inermis: A Review on Its Ethnobotany, Phytochemistry and Pharmacology" — International Journal of Pharmaceutical Sciences and Research, 2010</li>
+      <li>Sharma KK et al. — "Antifungal activity of Lawsonia inermis" — Journal of Ethnopharmacology, 1990</li>
+      <li>Ali BH et al. — "Some phytochemical, pharmacological and toxicological properties of henna (Lawsonia inermis): A review" — Phytomedicine, 2003</li>
+      <li>Habbal OA et al. — "Antimicrobial activity of Lawsonia inermis Linn. (henna)" — Journal of Applied Sciences, 2007</li>
+      <li>El-Ghamry HA et al. — "Wound healing activity of Lawsonia inermis in rats" — Journal of Medical Sciences, 2012</li>
+      <li>Ibn Sina (Avicenna) — Al-Qanun fi'l-Tibb (The Canon of Medicine) — Hinna chapter on wounds, fever and liver</li>
+      <li>Charaka Samhita — Kalpa Sthana; Sushruta Samhita — Sutrasthana (Mendika references)</li>
+      <li>Dey AC — "Krishnachura, Henna, Lawsonia" — Indian Medicinal Plants, 1980</li>
+      <li>Priyavrat Sharma — Dravyaguna Vigyana — Classical properties of Madayantika</li>
+    </ul>
+  </div>
+</div>
+
+<footer>
+  <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a qualified practitioner before therapeutic use</p>
+</footer>
+
+
+  <div id="viewerModal">
+    <div id="modal-topbar">
+      <span>3D Model — Lawsonia</span>
+      <button type="button" id="close3D">✕</button>
+    </div>
+    <model-viewer src="lawsonia3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+  </div>
+  <script>
+    (function() {
+      var open3D = document.getElementById('open3D');
+      var close3D = document.getElementById('close3D');
+      var modal = document.getElementById('viewerModal');
+      if (!open3D || !close3D || !modal) return;
+      function openModal() {
+        
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+      function closeModal() {
+        
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+      open3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); openModal();
+      });
+      close3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); closeModal();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+      });
+    })();
+  </script>
+
+</body>
+</html>

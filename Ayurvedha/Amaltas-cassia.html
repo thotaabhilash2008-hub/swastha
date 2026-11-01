@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Amaltas | Swastha</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+  <style>
+    #open3D {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      padding: 10px 18px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: var(--forest);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      z-index: 1000;
+      transition: .3s;
+    }
+    #open3D:hover {
+      background: var(--gold);
+      color: var(--deep);
+    }
+    #viewerModal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+    }
+    #modal-topbar {
+      flex-shrink: 0;
+      height: 58px;
+      background: #111111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px 0 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      z-index: 99999;
+    }
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 4.5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.72);
+      user-select: none;
+    }
+    #close3D {
+      width: 38px;
+      height: 38px;
+      font-size: 15px;
+      font-weight: 300;
+      background: transparent;
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background .2s, color .2s, transform .22s;
+      outline: none;
+      flex-shrink: 0;
+    }
+    #close3D:hover {
+      background: #ffffff;
+      color: #111111;
+      border-color: #ffffff;
+      transform: rotate(90deg);
+    }
+    #viewerModal model-viewer {
+      flex: 1;
+      width: 100%;
+      display: block;
+      background: #ffffff;
+    }
+
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+    * { margin: 0; padding: 0; box-sizing: border-box }
+    html { scroll-behavior: smooth }
+    body {
+      font-family: 'Jost', sans-serif;
+      background: var(--cream);
+      color: var(--ink);
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity: .03;
+      pointer-events: none;
+      z-index: 100;
+    }
+    .bg-circle { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0 }
+    .bg-circle-1 {
+      width: 700px; height: 700px;
+      background: radial-gradient(circle, rgba(212,168,42,.09) 0%, transparent 70%);
+      top: -200px; right: -150px;
+    }
+    .bg-circle-2 {
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(74,124,47,.08) 0%, transparent 70%);
+      bottom: -100px; left: -100px;
+    }
+    .botanical-svg { position: fixed; pointer-events: none; z-index: 1; opacity: .09 }
+    .botanical-tl { top: -20px; left: -20px; width: 280px }
+    .botanical-br { bottom: -20px; right: -20px; width: 240px; transform: rotate(180deg) }
+
+    /* ── HERO ── */
+    .hero {
+      position: relative; z-index: 10;
+      padding: 54px 40px 0;
+      text-align: center;
+      opacity: 0; animation: fadeUp .9s ease .1s forwards;
+    }
+    .back-link {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+      color: var(--sage); text-decoration: none; margin-bottom: 36px;
+      transition: color .3s;
+    }
+    .back-link:hover { color: var(--gold) }
+    .logo-rule { display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 14px }
+    .logo-rule span { display: block; height: 1px; width: 70px; background: linear-gradient(to right, transparent, var(--gold)) }
+    .logo-rule span:last-child { background: linear-gradient(to left, transparent, var(--gold)) }
+    .logo-ornament { font-size: 13px; color: var(--gold) }
+    .hero-number {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 11px; letter-spacing: 6px; color: var(--amber);
+      text-transform: uppercase; margin-bottom: 10px;
+    }
+    .hero-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(58px, 11vw, 104px);
+      font-weight: 300; letter-spacing: 6px; line-height: 1;
+      color: var(--deep);
+    }
+    .hero-subtitle {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 18px; font-style: italic; font-weight: 300;
+      color: var(--earth); letter-spacing: 2px; margin-top: 8px;
+    }
+    .hero-sci {
+      font-size: 11px; font-weight: 200; letter-spacing: 5px;
+      color: var(--sage); margin-top: 6px;
+    }
+    .hero-badge {
+      display: inline-block;
+      margin-top: 16px;
+      padding: 5px 18px;
+      border: 1px solid var(--gold);
+      font-size: 10px; letter-spacing: 3px; text-transform: uppercase;
+      color: var(--earth); font-weight: 300;
+    }
+
+    /* ── PHOTOS ── */
+    .hero-photos {
+      position: relative; z-index: 10;
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 2px; max-width: 900px;
+      margin: 40px auto 0;
+      opacity: 0; animation: fadeUp .9s ease .35s forwards;
+    }
+    .hero-photos img {
+      width: 100%; height: 380px;
+      object-fit: cover; object-position: center;
+      display: block; background: var(--parchment);
+    }
+    .photo-caption {
+      text-align: center;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 12px; font-style: italic; color: var(--sage);
+      letter-spacing: 1px; padding: 10px 0 0;
+      max-width: 900px; margin: 0 auto;
+      position: relative; z-index: 10;
+      opacity: 0; animation: fadeUp .9s ease .5s forwards;
+    }
+
+    /* ── DIVIDER ── */
+    .divider {
+      display: flex; align-items: center; justify-content: center;
+      gap: 16px; margin: 50px auto; max-width: 600px;
+      opacity: 0; animation: fadeUp .9s ease .55s forwards;
+      position: relative; z-index: 10;
+    }
+    .divider-line { height: 1px; width: 120px; background: linear-gradient(to right, transparent, var(--sage)) }
+    .divider-line:last-child { background: linear-gradient(to left, transparent, var(--sage)) }
+    .divider-leaf { color: var(--forest); font-size: 18px }
+
+    /* ── CONTENT ── */
+    .content {
+      position: relative; z-index: 10;
+      max-width: 860px; margin: 0 auto;
+      padding: 0 30px 80px;
+    }
+    .intro-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 20px; font-weight: 300; line-height: 1.75;
+      color: var(--ink); text-align: center;
+      max-width: 700px; margin: 0 auto 60px;
+      opacity: 0; animation: fadeUp .9s ease .6s forwards;
+    }
+    .intro-text em { color: var(--forest); font-style: italic }
+
+    /* ── SECTIONS ── */
+    .section { margin-bottom: 60px; opacity: 0; animation: fadeUp .9s ease forwards }
+    .section:nth-child(1) { animation-delay: .65s }
+    .section:nth-child(2) { animation-delay: .75s }
+    .section:nth-child(3) { animation-delay: .85s }
+    .section:nth-child(4) { animation-delay: .95s }
+    .section:nth-child(5) { animation-delay: 1.05s }
+    .section:nth-child(6) { animation-delay: 1.15s }
+    .section:nth-child(7) { animation-delay: 1.25s }
+    .section-header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px }
+    .section-num { font-family: 'Cormorant Garamond', serif; font-size: 11px; letter-spacing: 4px; color: var(--gold) }
+    .section-title { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 400; color: var(--deep); letter-spacing: 1px }
+    .section-rule { height: 1px; flex: 1; background: linear-gradient(to right, var(--gold), transparent) }
+    .section-body { font-size: 13px; font-weight: 300; line-height: 1.9; color: var(--ink); margin-bottom: 24px }
+    .section-body strong { color: var(--deep); font-weight: 400 }
+
+    /* ── TABLES ── */
+    .data-table { width: 100%; border-collapse: collapse; margin: 16px 0 8px; font-size: 12px }
+    .data-table thead tr { background: var(--deep); color: var(--gold); font-size: 10px; letter-spacing: 3px; text-transform: uppercase }
+    .data-table thead th { padding: 12px 14px; text-align: left; font-weight: 400 }
+    .data-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .data-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .data-table tbody tr { transition: background .2s }
+    .data-table tbody tr:hover { background: #e8d8a0 }
+    .data-table tbody td { padding: 10px 14px; color: var(--ink); border-bottom: 1px solid rgba(122,92,30,.08) }
+    .data-table tbody td:first-child { font-weight: 400; color: var(--deep); width: 28% }
+
+    .dosha-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .dosha-table thead tr { background: var(--forest); color: var(--cream) }
+    .dosha-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .dosha-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .dosha-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .dosha-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(122,92,30,.08) }
+    .dosha-table tbody td:first-child { font-weight: 400; color: var(--forest); width: 18% }
+    .dosha-table tbody td:nth-child(2) { color: var(--earth); width: 20% }
+
+    .consume-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .consume-table thead tr { background: var(--earth); color: var(--cream) }
+    .consume-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .consume-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .consume-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .consume-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(122,92,30,.08) }
+    .consume-table tbody td:first-child { font-weight: 400; color: var(--earth); width: 22% }
+
+    /* ── STATS BAR ── */
+    .nutrition-bar {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 1px; background: rgba(122,92,30,.12);
+      border: 1px solid rgba(122,92,30,.12); margin: 20px 0;
+    }
+    .nutrition-cell { background: var(--cream); padding: 22px 16px; text-align: center; transition: background .3s }
+    .nutrition-cell:hover { background: var(--parchment) }
+    .nutrition-num { font-family: 'Cormorant Garamond', serif; font-size: 36px; font-weight: 300; color: var(--forest); line-height: 1; margin-bottom: 4px }
+    .nutrition-unit { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); font-weight: 300 }
+    .nutrition-label { font-size: 11px; font-weight: 300; color: var(--ink); margin-top: 5px }
+
+    /* ── BENEFITS GRID ── */
+    .benefits-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 1px; background: rgba(122,92,30,.12);
+      border: 1px solid rgba(122,92,30,.12); margin: 8px 0;
+    }
+    .benefit-card {
+      background: var(--cream); padding: 24px 22px;
+      transition: background .3s; position: relative; overflow: hidden;
+    }
+    .benefit-card:hover { background: #eed8a0 }
+    .benefit-card::before {
+      content: ''; position: absolute; bottom: 0; left: 0;
+      width: 0; height: 2px; background: var(--gold); transition: width .4s;
+    }
+    .benefit-card:hover::before { width: 100% }
+    .benefit-title { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 600; color: var(--forest); margin-bottom: 8px }
+    .benefit-desc { font-size: 11.5px; font-weight: 300; line-height: 1.75; color: var(--ink); opacity: .85 }
+
+    /* ── PRECAUTIONS ── */
+    .precaution-list { list-style: none; margin: 8px 0 }
+    .precaution-list li {
+      display: flex; gap: 12px; align-items: flex-start;
+      padding: 10px 14px; font-size: 12px; font-weight: 300; line-height: 1.7;
+      color: var(--ink); border-bottom: 1px solid rgba(122,92,30,.08);
+    }
+    .precaution-list li:last-child { border-bottom: none }
+    .precaution-list li::before { content: '▸'; color: var(--gold); flex-shrink: 0; margin-top: 1px }
+
+    /* ── SOURCES ── */
+    .sources { border-top: 1px solid rgba(122,92,30,.15); padding-top: 24px; margin-top: 20px }
+    .sources-title { font-size: 10px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); margin-bottom: 12px; font-weight: 300 }
+    .sources ul { list-style: none }
+    .sources ul li { font-family: 'Cormorant Garamond', serif; font-size: 13px; font-style: italic; color: var(--earth); padding: 5px 0; border-bottom: 1px solid rgba(122,92,30,.06) }
+    .sources ul li::before { content: '· '; color: var(--sage) }
+
+    footer {
+      position: relative; z-index: 10; text-align: center;
+      padding: 24px 20px 44px;
+      border-top: 1px solid rgba(122,92,30,.12);
+      max-width: 860px; margin: 0 auto;
+    }
+    footer p { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); font-weight: 300 }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(28px) }
+      to   { opacity: 1; transform: translateY(0) }
+    }
+    @media(max-width:700px) {
+      .hero-photos { grid-template-columns: 1fr }
+      .hero-photos img { height: 260px }
+      .benefits-grid { grid-template-columns: 1fr }
+      .nutrition-bar { grid-template-columns: 1fr 1fr }
+      .content { padding: 0 18px 60px }
+    }
+  </style>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+</head>
+<body>
+  <button type="button" id="open3D">View in 3D</button>
+
+
+  <div class="bg-circle bg-circle-1"></div>
+  <div class="bg-circle bg-circle-2"></div>
+
+  <!-- Botanical corner SVGs -->
+  <svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 290 Q 70 200 120 140 Q 180 80 260 20" stroke="#4a7c2f" stroke-width="1.5" fill="none"/>
+    <ellipse cx="80" cy="220" rx="22" ry="10" fill="#d4a82a" transform="rotate(-25 80 220)" opacity=".8"/>
+    <ellipse cx="115" cy="185" rx="20" ry="9"  fill="#4a7c2f" transform="rotate(-40 115 185)" opacity=".7"/>
+    <ellipse cx="150" cy="148" rx="18" ry="8"  fill="#d4a82a" transform="rotate(-55 150 148)" opacity=".8"/>
+    <ellipse cx="185" cy="112" rx="16" ry="7"  fill="#4a7c2f" transform="rotate(-68 185 112)" opacity=".7"/>
+    <circle cx="82" cy="218" r="6" fill="#d4a82a" opacity=".6"/>
+    <circle cx="152" cy="146" r="5" fill="#8aaa5e" opacity=".7"/>
+    <circle cx="220" cy="78"  r="7" fill="#d4a82a" opacity=".5"/>
+  </svg>
+  <svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 290 Q 70 200 120 140 Q 180 80 260 20" stroke="#4a7c2f" stroke-width="1.5" fill="none"/>
+    <ellipse cx="80" cy="220" rx="22" ry="10" fill="#d4a82a" transform="rotate(-25 80 220)" opacity=".8"/>
+    <ellipse cx="115" cy="185" rx="20" ry="9"  fill="#4a7c2f" transform="rotate(-40 115 185)" opacity=".7"/>
+    <ellipse cx="150" cy="148" rx="18" ry="8"  fill="#d4a82a" transform="rotate(-55 150 148)" opacity=".8"/>
+  </svg>
+
+  <!-- HERO -->
+  <div class="hero">
+    <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+    <div class="logo-rule">
+      <span></span><div class="logo-ornament">✦</div><span></span>
+    </div>
+    <div class="hero-number">15 · Aragvadha Varga</div>
+    <div class="hero-title">Amaltas</div>
+    <div class="hero-subtitle">Purging Cassia — The Golden Shower Tree</div>
+    <div class="hero-sci">Cassia fistula L. &nbsp;·&nbsp; Fabaceae</div>
+    <div class="hero-badge">National Tree of Thailand · Mentioned in Charaka Samhita</div>
+  </div>
+
+  <div class="hero-photos">
+    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4a/%28Cassia_fistula%29_flowers_at_IG_Zoo_park_03.jpg/1280px-%28Cassia_fistula%29_flowers_at_IG_Zoo_park_03.jpg" alt="Amaltas golden shower cascading yellow flower racemes"
+      onerror="this.src='';this.style.minHeight='380px';this.style.background='linear-gradient(160deg,#ede0c0,#c9a84c22)';">
+    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6c/Cassia_fistula_Blanco1.120.png/1280px-Cassia_fistula_Blanco1.120.png" alt="Amaltas long dark cylindrical seed pods on tree"
+      onerror="this.src='';this.style.minHeight='380px';this.style.background='linear-gradient(160deg,#c9a84c22,#ede0c0)';">
+  </div>
+  <p class="photo-caption">Fig. 1 — Cascading golden racemes of <em>Cassia fistula</em> in full bloom &nbsp;·&nbsp; Fig. 2 — Long, dark cylindrical pods containing the prized medicinal pulp</p>
+
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-leaf">❧</div>
+    <div class="divider-line"></div>
+  </div>
+
+  <div class="content">
+    <p class="intro-text">
+      Called <em>Aragvadha</em> in Sanskrit — "disease killer" — this magnificent deciduous tree graces Indian roadsides and temple gardens with cascading curtains of gold each spring. Known to Charaka as the safest and most reliable of all <em>Virechana</em> (purgative) herbs, its black pulp-filled pods have been prescribed for constipation, fevers, and skin disease for over two millennia — gentle enough for children and the elderly yet potent enough to feature in classical <em>panchakarma</em> protocols.
+    </p>
+
+    <!-- SECTION 01 -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">01</span>
+        <h2 class="section-title">Botanical Profile</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Amaltas (<em>Cassia fistula</em> L.) is a medium to large deciduous tree of the Fabaceae family, typically growing 10–20 metres tall with a spreading crown and smooth, grey-brown bark that becomes fissured with age. Native to the Indian subcontinent and Southeast Asia, it is now cultivated in tropical and subtropical regions worldwide for both its ornamental beauty and medicinal value.</p>
+      <p class="section-body">The leaves are pinnately compound, with 4–8 pairs of ovate-oblong leaflets, each 7–12 cm long and bright green, turning yellow before falling. From April to June — before or alongside new foliage — the tree erupts in spectacular pendulous racemes 30–50 cm long, each densely crowded with bright golden-yellow five-petalled flowers, giving rise to its universal common names: Golden Shower and Indian Laburnum. The fruit is its most famous feature: a long, cylindrical, indehiscent pod 30–60 cm in length and about 2 cm in diameter, dark chocolate-brown to black when ripe, with numerous seeds separated by sweet, dark, sticky pulp — the primary medicinal part.</p>
+      <table class="data-table">
+        <thead><tr><th>Property</th><th>Detail</th></tr></thead>
+        <tbody>
+          <tr><td>Family</td><td>Fabaceae / Caesalpiniaceae (Aragvadha Kula)</td></tr>
+          <tr><td>Botanical Name</td><td>Cassia fistula L.</td></tr>
+          <tr><td>Sanskrit Names</td><td>Aragvadha, Chaturangula, Kritamala, Nrpadruma, Rajataru, Suvarnaka, Shamapaka, Arevata</td></tr>
+          <tr><td>Common Names</td><td>Golden Shower Tree, Indian Laburnum, Purging Cassia</td></tr>
+          <tr><td>Regional Names</td><td>Amaltas (Hindi/Urdu), Konnai (Tam), Rela (Tel), Kani Konna (Mal), Bahava (Mar), Sonalu (Ben)</td></tr>
+          <tr><td>Origin</td><td>Indian Subcontinent, Southeast Asia; naturalised worldwide tropics</td></tr>
+          <tr><td>Plant Type</td><td>Deciduous tree, 10–20 m tall</td></tr>
+          <tr><td>Flowering Season</td><td>April–June (dry season peak)</td></tr>
+          <tr><td>Medicinal Parts</td><td>Fruit pulp (primary), leaves, bark, root bark, flowers, seeds</td></tr>
+          <tr><td>Taste Profile</td><td>Madhura (sweet), Tikta (bitter)</td></tr>
+          <tr><td>Cultural Distinction</td><td>National tree of Thailand; state flower of Kerala (Kani Konna)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- SECTION 02 -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">02</span>
+        <h2 class="section-title">Phytochemical Composition</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">The phytochemistry of <em>Cassia fistula</em> is exceptionally rich and well-documented, reflecting centuries of traditional use validated by modern analysis. The fruit pulp — the most medicinally active part — owes its potent but gentle laxative action chiefly to anthraquinone glycosides, particularly rhein, sennoside, and fistulin. The bark and heartwood are rich in tannins and catechins, the flowers in flavonoids, and the leaves in anthraquinones and reducing sugars.</p>
+      <div class="nutrition-bar">
+        <div class="nutrition-cell">
+          <div class="nutrition-num">60cm</div>
+          <div class="nutrition-unit">pod length</div>
+          <div class="nutrition-label">Maximum fruit size</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">~50</div>
+          <div class="nutrition-unit">compounds</div>
+          <div class="nutrition-label">Identified phytochemicals</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">6</div>
+          <div class="nutrition-unit">anthraquinones</div>
+          <div class="nutrition-label">In fruit pulp & leaves</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">2000+</div>
+          <div class="nutrition-unit">years</div>
+          <div class="nutrition-label">Documented medicinal use</div>
+        </div>
+      </div>
+      <table class="data-table">
+        <thead><tr><th>Compound</th><th>Category</th><th>Primary Action</th></tr></thead>
+        <tbody>
+          <tr><td>Rhein &amp; Fistulin</td><td>Anthraquinone glycosides</td><td>Stimulant laxative; increases intestinal peristalsis; antibacterial</td></tr>
+          <tr><td>Sennoside A &amp; B</td><td>Dianthrone glycosides</td><td>Gentle purgative; acts on large intestine without irritation at normal doses</td></tr>
+          <tr><td>Emodin</td><td>Hydroxyanthraquinone</td><td>Antifungal, antibacterial, anti-inflammatory, antitumour</td></tr>
+          <tr><td>Aloe-emodin</td><td>Anthraquinone</td><td>Hepatoprotective, antiviral, antiproliferative</td></tr>
+          <tr><td>Kaempferol &amp; Quercetin</td><td>Flavonoids</td><td>Antioxidant, anti-inflammatory, cardioprotective</td></tr>
+          <tr><td>Luteolin</td><td>Flavone</td><td>Anti-inflammatory, antipyretic, antispasmodic</td></tr>
+          <tr><td>Gallic Acid &amp; Ellagic Acid</td><td>Phenolic acids</td><td>Antioxidant, antimicrobial, astringent; wound healing</td></tr>
+          <tr><td>Leucoanthocyanidin &amp; Catechin</td><td>Proanthocyanidins</td><td>Astringent, antidiarrheal (bark); anti-inflammatory</td></tr>
+          <tr><td>β-Sitosterol &amp; Lupeol</td><td>Phytosterols / Triterpenes</td><td>Hypolipidemic, hepatoprotective, anti-inflammatory</td></tr>
+          <tr><td>Tannins (hydrolysable)</td><td>Polyphenols</td><td>Antimicrobial, astringent; activity in skin and wound preparations</td></tr>
+          <tr><td>Oxyanthracene derivatives</td><td>Anthraquinone aglycones</td><td>Broad antimicrobial spectrum including dermatophytes</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- SECTION 03 -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">03</span>
+        <h2 class="section-title">Ayurvedic Significance</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Aragvadha holds a position of singular honour in Ayurvedic therapeutics as the foremost safe purgative — described by Charaka as <em>"mriduvirechaka"</em> (gentle laxative) and specifically prescribed for those too weak for stronger purgation: the elderly, children, pregnant women (cautiously, in small doses), and convalescents. It leads the <em>Aragvadhadi Gana</em> — a classical group of 20 herbs sharing purgative and anti-inflammatory properties — mentioned in Charaka Samhita, Ashtanga Hridayam, and Sushruta Samhita.</p>
+      <p class="section-body">Classical shloka — <em>"Aragvadho mriduh shlakshno guru sheeto vishapaham, kushthaghno krimighno medo medaghno jwarahara param"</em> — proclaims it gentle, smooth, heavy, cold in potency, antitoxic, antifungal (for skin diseases), anti-parasitic, anti-obesity, and supreme among fever remedies. The fruit pulp features in <em>Aragvadhadi Kashaya</em>, <em>Vilwadi Lehyam</em>, and numerous classical compound formulations for skin disorders and constipation.</p>
+      <table class="dosha-table">
+        <thead><tr><th>Dosha</th><th>Effect</th><th>Mechanism &amp; Notes</th></tr></thead>
+        <tbody>
+          <tr><td>Vata ↓</td><td>Pacifying</td><td>Guru (heavy), snigdha (unctuous), madhura (sweet) qualities lubricate and downward-move apana vata; relieves constipation, bloating, and dry bowel conditions without the dryness of harsh purgatives</td></tr>
+          <tr><td>Pitta ↓</td><td>Strongly pacifying</td><td>Sheeta virya (cold potency) and madhura vipaka make it ideal for Pitta-associated conditions: inflammatory skin disease, burning sensations, fever, and jaundice; chief indication is Pitta virechana in panchakarma</td></tr>
+          <tr><td>Kapha ↑</td><td>Mildly aggravating</td><td>Guru (heavy) and snigdha (unctuous) qualities may mildly increase Kapha with prolonged use; use cautiously in those with obesity, diabetes, or Kapha-dominant constitution</td></tr>
+        </tbody>
+      </table>
+      <p class="section-body"><strong>Rasa:</strong> Madhura (sweet), Tikta (bitter) &nbsp;·&nbsp; <strong>Guna:</strong> Guru (heavy), Snigdha (unctuous), Mridu (soft) &nbsp;·&nbsp; <strong>Virya:</strong> Sheeta (cold) &nbsp;·&nbsp; <strong>Vipaka:</strong> Madhura (sweet) &nbsp;·&nbsp; <strong>Karma:</strong> Tridosha shamaka (especially Pitta-Vata); Virechana, Kusthaghna, Jwarahara, Krimighna</p>
+    </div>
+
+    <!-- SECTION 04 -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">04</span>
+        <h2 class="section-title">Key Health Benefits</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Modern pharmacological research has extensively validated the traditional applications of <em>Cassia fistula</em> — confirming its laxative, antimicrobial, antifungal, hepatoprotective, antipyretic, and anti-inflammatory activities through <em>in vitro</em>, <em>in vivo</em>, and clinical studies across multiple global research centres.</p>
+      <div class="benefits-grid">
+        <div class="benefit-card">
+          <div class="benefit-title">Gentle Laxative &amp; Bowel Regulator</div>
+          <div class="benefit-desc">The fruit pulp is Ayurveda's premier safe purgative — suitable for the elderly and children. Anthraquinone glycosides (rhein, fistulin, sennoside) stimulate peristalsis of the large intestine and retain water in the colon, easing evacuation without griping, cramping, or electrolyte loss seen with harsher laxatives.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Skin Disease &amp; Antifungal</div>
+          <div class="benefit-desc">Classically categorised as <em>Kusthaghna</em> (destroyer of skin diseases), leaf and bark extracts show strong activity against dermatophytes including <em>Trichophyton</em> and <em>Microsporum</em>. Used in ringworm, eczema, psoriasis, and chronic inflammatory skin conditions both orally and topically via leaf paste.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Antipyretic &amp; Fever Management</div>
+          <div class="benefit-desc">Described as <em>jwarahara param</em> — supreme among fever remedies — the fruit pulp's sheeta virya (cold potency) is used in high fevers, especially those of Pitta origin. Alcohol extracts of the fruit demonstrate significant antipyretic activity in animal models, validating its use in typhoid fever in folk medicine.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Hepatoprotective &amp; Liver Support</div>
+          <div class="benefit-desc">Multiple studies demonstrate that ethanolic extracts of the root bark significantly protect hepatocytes against CCl₄-induced hepatotoxicity — reducing serum AST, ALT, and ALP levels while restoring liver architecture. Emodin and aloe-emodin appear to be the primary hepatoprotective constituents.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Antimicrobial &amp; Anti-infective</div>
+          <div class="benefit-desc">Broad-spectrum antimicrobial activity has been confirmed against <em>Staphylococcus aureus</em>, <em>E. coli</em>, <em>Salmonella typhi</em>, <em>Klebsiella pneumoniae</em>, and <em>Candida albicans</em>. Oxyanthracene derivatives and gallic acid are the principal active agents. Leaf juice is applied to infected wounds and ulcers across folk traditions.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Anti-inflammatory &amp; Analgesic</div>
+          <div class="benefit-desc">Methanolic extract of the leaf significantly inhibits carrageenan-induced paw oedema and acetic acid-induced writhing in rodent models — attributed to flavonoids (kaempferol, luteolin) and phytosterols. Classical application: bark decoction for inflammatory joint pain and rheumatic conditions.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Anti-diabetic Potential</div>
+          <div class="benefit-desc">Ethanolic leaf and pod extracts show dose-dependent blood glucose reduction in streptozotocin-induced diabetic rats, comparable in some studies to glibenclamide. The mechanism appears to involve both insulin secretagogue activity and α-glucosidase inhibition. Human clinical data is still emerging.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Antioxidant &amp; Immunomodulatory</div>
+          <div class="benefit-desc">High phenolic and flavonoid content confers strong free-radical scavenging activity across DPPH, ABTS, and FRAP assays. The flower extract is particularly rich in antioxidants. Immunostimulant activity has been demonstrated in macrophage activation assays, supporting its classical use in debilitating fevers and chronic infections.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 05 -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">05</span>
+        <h2 class="section-title">Classical Formulations</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Aragvadha / Amaltas features as a primary ingredient in numerous classical Ayurvedic compound preparations, spanning both internal medicines and external applications for skin and wound care.</p>
+      <table class="data-table">
+        <thead><tr><th>Formulation</th><th>Type</th><th>Primary Indication</th></tr></thead>
+        <tbody>
+          <tr><td>Aragvadhadi Kashaya</td><td>Decoction (kwatha)</td><td>Skin diseases, fever, inflammatory conditions — flagship classical formulation named after this herb</td></tr>
+          <tr><td>Vilwadi Lehyam</td><td>Confection (avaleha)</td><td>Chronic constipation, abdominal colic, irritable bowel</td></tr>
+          <tr><td>Ashtanga Hridayam Virechana</td><td>Purgative preparation</td><td>Panchakarma virechana (medicated purgation) for Pitta disorders</td></tr>
+          <tr><td>Aragvadha Ghrita</td><td>Medicated ghee</td><td>Kustha (skin diseases), fever with dry constitution, paediatric applications</td></tr>
+          <tr><td>Triphala + Aragvadha Yoga</td><td>Compound powder / decoction</td><td>Chronic constipation, haemorrhoids, sluggish liver</td></tr>
+          <tr><td>Konnai Flower Infusion (folk)</td><td>Cold infusion / tisane</td><td>Burning micturition, skin rashes, mild fever — Kerala tradition</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- SECTION 06 -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">06</span>
+        <h2 class="section-title">How to Consume Amaltas</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">The fruit pulp is the safest and most commonly used part for internal medicine. Unlike harsh anthraquinone laxatives, the pulp of Amaltas is gentle enough for children and the elderly when used at appropriate doses. External preparations using leaves and bark are widely used in folk medicine without significant safety concerns.</p>
+      <table class="consume-table">
+        <thead><tr><th>Form</th><th>Preparation</th><th>Dosage</th><th>Best Use</th></tr></thead>
+        <tbody>
+          <tr><td>Fruit Pulp (direct)</td><td>Scoop dark sticky pulp from ripe pods; mix with warm water or honey</td><td>5–15 g at bedtime</td><td>Constipation, bowel regularity</td></tr>
+          <tr><td>Pulp Decoction (Kwatha)</td><td>Boil pulp in water; reduce to half; strain</td><td>30–50 ml once daily</td><td>Constipation, mild fever, skin disorders</td></tr>
+          <tr><td>Aragvadhadi Kashaya</td><td>Classical compound decoction (physician-formulated)</td><td>40–60 ml twice daily</td><td>Skin diseases, chronic fever, inflammation</td></tr>
+          <tr><td>Flower Infusion (Hima)</td><td>Steep flowers in cold water overnight; strain</td><td>20–30 ml once daily</td><td>Burning sensations, mild Pitta conditions</td></tr>
+          <tr><td>Leaf Paste (Topical)</td><td>Grind fresh leaves into paste with water</td><td>Apply twice daily</td><td>Ringworm, eczema, fungal skin infections, wound</td></tr>
+          <tr><td>Bark Decoction (Topical)</td><td>Boil bark in water; cool; use as wash</td><td>Wash 2× daily</td><td>Infected skin ulcers, inflammatory rashes</td></tr>
+          <tr><td>Root Bark Decoction</td><td>Boil root bark; take internally under supervision</td><td>Physician-directed</td><td>Hepatoprotection, rheumatic conditions</td></tr>
+          <tr><td>Virechana Therapy</td><td>Classical panchakarma preparation with physician</td><td>Per panchakarma protocol</td><td>Pitta virechana in detoxification programmes</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- SECTION 07 -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">07</span>
+        <h2 class="section-title">Safety &amp; Precautions</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Amaltas fruit pulp has an excellent safety profile for short-term laxative use — regarded by Charaka as the safest purgative available. However, like all stimulant anthraquinone laxatives, it carries specific contraindications and must not be used habitually for long periods without medical supervision.</p>
+      <ul class="precaution-list">
+        <li><strong>Pregnancy:</strong> Use with extreme caution and only under physician supervision. Small doses of fruit pulp are used in classical Ayurveda for pregnancy-related constipation, but stimulant laxative action could theoretically increase uterine contractility — avoid in first trimester.</li>
+        <li><strong>Active diarrhea or dysentery:</strong> Strictly contraindicated during acute diarrhea, bloody stool, or intestinal inflammation — anthraquinones will aggravate the condition.</li>
+        <li><strong>Inflammatory bowel disease:</strong> Crohn's disease and ulcerative colitis are contraindications for any anthraquinone laxative, including Amaltas fruit pulp.</li>
+        <li><strong>Habitual / long-term laxative use:</strong> Daily use beyond 4 weeks may cause laxative dependency, pseudomelanosis coli (harmless mucosal darkening), and electrolyte imbalances — particularly potassium loss — increasing risk in cardiac patients on digoxin or diuretics.</li>
+        <li><strong>Renal conditions:</strong> Chronic kidney disease patients should use with caution; anthraquinone metabolites are renally excreted and may accumulate.</li>
+        <li><strong>Drug interactions:</strong> May potentiate cardiac glycosides (digoxin) and antiarrhythmic drugs by aggravating hypokalaemia. Allow a 2-hour gap with oral medications, as laxative action may reduce absorption.</li>
+        <li><strong>Seeds:</strong> The seeds of <em>Cassia fistula</em> are not used therapeutically and may be mildly toxic — do not consume raw seeds. The fruit pulp (not the seeds) is the medicinal part.</li>
+        <li><strong>Kapha constitution &amp; obesity:</strong> Guru (heavy) and snigdha (unctuous) properties may aggravate Kapha — use in shorter courses in those with Kapha-dominant constitution or metabolic syndrome.</li>
+        <li><strong>Children's dosage:</strong> Suitable for children at reduced doses (1–5 g pulp based on age and weight) but should be supervised — one of the rare Ayurvedic laxatives considered safe for paediatric use.</li>
+      </ul>
+    </div>
+
+    <div class="sources">
+      <div class="sources-title">References &amp; Sources</div>
+      <ul>
+        <li>Bhalodia NR &amp; Shukla VJ — "Antibacterial and Antifungal Activities from Leaf Extracts of Cassia fistula" — Journal of Advanced Pharmaceutical Technology &amp; Research, 2011</li>
+        <li>Duraipandiyan V et al. — "Antimicrobial activity of some ethnomedicinal plants used by Paliyar tribe from Tamil Nadu" — BMC Complementary and Alternative Medicine, 2006</li>
+        <li>Ilaiyaraja N &amp; Khanum F — "Antioxidant activity of Cassia fistula" — Journal of Herbal Medicine and Toxicology, 2011</li>
+        <li>Luximon-Ramma A et al. — "Antioxidant activities of phenolic, proanthocyanidin and flavonoid components in extracts of Cassia fistula" — Journal of Agricultural and Food Chemistry, 2002</li>
+        <li>Pradeep Kumar et al. — "Hepatoprotective activity of Cassia fistula Linn. root extract" — Indian Journal of Pharmacology, 2008</li>
+        <li>Mukherjee PK — "Quality Control of Herbal Drugs" — anthraquinone analysis of Cassia fistula fruit pulp, 2002</li>
+        <li>Charaka Samhita, Kalpasthana — Aragvadhadi Gana; Vimana Sthana — Mriduvirechana classification</li>
+        <li>Ashtanga Hridayam, Sutrasthana — Aragvadhadi Kashaya formulation; Chikitsa Sthana — virechana protocols</li>
+        <li>Bhavaprakasha Nighantu — Haritakyadi Varga, Aragvadha entry</li>
+        <li>Dravyaguna Vigyana (Priyavrat Sharma) — Classical properties and indications of Aragvadha</li>
+        <li>Hidangmayum R &amp; Khumbongmayum AD — "Cassia species in Indian traditional medicine" — Asian Pacific Journal of Tropical Biomedicine, 2014</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer>
+    <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a qualified practitioner before therapeutic use</p>
+  </footer>
+
+  <div id="viewerModal">
+    <div id="modal-topbar">
+      <span>3D Model — Amaltas</span>
+      <button type="button" id="close3D">✕</button>
+    </div>
+    <model-viewer src="amaltas3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+  </div>
+  <script>
+    (function() {
+      var open3D = document.getElementById('open3D');
+      var close3D = document.getElementById('close3D');
+      var modal = document.getElementById('viewerModal');
+      if (!open3D || !close3D || !modal) return;
+      function openModal() {
+        
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+      function closeModal() {
+        
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+      open3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); openModal();
+      });
+      close3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); closeModal();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+      });
+    })();
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign In — Swastha Herbal Garden</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root {
+  --bg-primary: #07170F;
+  --bg-secondary: #103B28;
+  --botanical: #47734C;
+  --gold: #C8A45D;
+  --gold-warm: #E5C783;
+  --ivory: #F5F0E4;
+  --sage: #C7C9B9;
+  --error: #e06c6c;
+
+  /* Preserved aliases */
+  --cream: #07170F;
+  --parchment: #103B28;
+  --earth: #E5C783;
+  --forest: #47734C;
+  --deep: #F5F0E4;
+  --ink: #F5F0E4;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Jost', sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--ivory);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 20%, rgba(16, 59, 40, 0.5) 0%, rgba(7, 23, 15, 0.92) 85%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  opacity: 0.04;
+  pointer-events: none;
+  z-index: 100;
+}
+
+.bg-circle { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0; }
+.bg-circle-1 { width: 750px; height: 750px; background: radial-gradient(circle, rgba(71,115,76,0.18) 0%, transparent 70%); top: -200px; right: -200px; }
+.bg-circle-2 { width: 550px; height: 550px; background: radial-gradient(circle, rgba(200,164,93,0.1) 0%, transparent 70%); bottom: -150px; left: -150px; }
+
+.botanical-svg { position: fixed; pointer-events: none; z-index: 1; opacity: 0.16; }
+.botanical-svg path { stroke: var(--botanical) !important; }
+.botanical-svg ellipse { fill: var(--botanical) !important; }
+.botanical-svg circle { fill: var(--gold) !important; }
+.botanical-tl { top: -20px; left: -20px; width: 280px; }
+.botanical-br { bottom: -20px; right: -20px; width: 240px; transform: rotate(180deg); }
+
+/* ── CARD ── */
+.login-card {
+  position: relative; z-index: 10;
+  width: 100%; max-width: 460px;
+  margin: 40px 20px;
+  background: rgba(16, 59, 40, 0.55);
+  border: 1px solid rgba(200, 164, 93, 0.3);
+  border-radius: 4px;
+  padding: 56px 52px 52px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6), 0 0 25px rgba(200, 164, 93, 0.08);
+  opacity: 0;
+  animation: fadeUp 0.9s ease 0.1s forwards;
+}
+
+.login-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 30% 0%, rgba(200,164,93,0.08), transparent 60%);
+  pointer-events: none;
+}
+
+/* ── HEADER ── */
+.back-link {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 10px; letter-spacing: 3px; text-transform: uppercase;
+  color: var(--sage); text-decoration: none; margin-bottom: 38px;
+  transition: color 0.3s; display: block;
+}
+.back-link:hover { color: var(--gold-warm); }
+
+.logo-rule { display: flex; align-items: center; gap: 16px; margin-bottom: 14px; }
+.logo-rule span { display: block; height: 1px; flex: 1; background: linear-gradient(to right, transparent, var(--gold)); }
+.logo-rule span:last-child { background: linear-gradient(to left, transparent, var(--gold)); }
+.logo-ornament { font-size: 12px; color: var(--gold-warm); }
+
+.card-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 36px; font-weight: 300; letter-spacing: 3px;
+  color: var(--ivory); text-align: center; margin-bottom: 6px;
+  text-shadow: 0 2px 14px rgba(0,0,0,0.4);
+}
+.card-subtitle {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 14px; font-style: italic; font-weight: 300;
+  color: var(--gold-warm); text-align: center; letter-spacing: 1px;
+  margin-bottom: 40px;
+}
+
+/* ── TABS ── */
+.tabs {
+  display: flex; border-bottom: 1px solid rgba(200, 164, 93, 0.2);
+  margin-bottom: 34px;
+}
+.tab {
+  flex: 1; text-align: center; padding: 12px;
+  font-size: 10px; letter-spacing: 3.5px; text-transform: uppercase;
+  font-weight: 300; color: var(--sage); cursor: pointer;
+  border-bottom: 2px solid transparent; margin-bottom: -1px;
+  transition: color 0.3s, border-color 0.3s;
+}
+.tab.active { color: var(--gold-warm); font-weight: 400; border-bottom-color: var(--gold); }
+.tab:hover:not(.active) { color: var(--ivory); }
+
+/* ── FORM ── */
+.form-group { margin-bottom: 22px; position: relative; }
+.form-label {
+  display: block; font-size: 9px; letter-spacing: 3.5px;
+  text-transform: uppercase; color: var(--gold-warm); margin-bottom: 8px;
+  font-weight: 400;
+}
+.form-input {
+  width: 100%; background: rgba(7, 23, 15, 0.7);
+  border: 1px solid rgba(200, 164, 93, 0.3);
+  padding: 13px 16px; font-family: 'Jost', sans-serif;
+  font-size: 13px; font-weight: 300; color: var(--ivory);
+  outline: none; transition: border-color 0.3s, background 0.3s, box-shadow 0.3s;
+  border-radius: 2px; -webkit-appearance: none;
+}
+.form-input:focus {
+  border-color: var(--gold-warm);
+  background: rgba(7, 23, 15, 0.95);
+  box-shadow: 0 0 12px rgba(200, 164, 93, 0.2);
+}
+.form-input::placeholder { color: rgba(199, 201, 185, 0.4); font-style: italic; }
+
+.password-wrap { position: relative; }
+.toggle-pw {
+  position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+  background: none; border: none; cursor: pointer;
+  font-size: 11px; letter-spacing: 1px; color: var(--sage);
+  font-family: 'Jost', sans-serif; font-weight: 300; padding: 0;
+  transition: color 0.3s;
+}
+.toggle-pw:hover { color: var(--gold-warm); }
+
+/* ── SUBMIT BTN ── */
+.btn-submit {
+  width: 100%; background: var(--gold); color: #07170F;
+  border: 1px solid var(--gold); font-family: 'Jost', sans-serif;
+  font-size: 10px; font-weight: 400; letter-spacing: 4px;
+  text-transform: uppercase; padding: 16px; cursor: pointer;
+  border-radius: 2px;
+  transition: all 0.3s;
+  position: relative; overflow: hidden; margin-top: 6px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
+}
+.btn-submit:hover { background: var(--gold-warm); border-color: var(--gold-warm); color: #07170F; letter-spacing: 5px; box-shadow: 0 4px 22px rgba(200,164,93,0.35); }
+.btn-submit:disabled { opacity: 0.6; cursor: not-allowed; letter-spacing: 4px; }
+.btn-submit .btn-text { transition: opacity 0.3s; }
+.btn-submit.loading .btn-text { opacity: 0; }
+.btn-loader {
+  position: absolute; inset: 0; display: flex;
+  align-items: center; justify-content: center;
+  opacity: 0; transition: opacity 0.3s;
+}
+.btn-submit.loading .btn-loader { opacity: 1; }
+.btn-loader span {
+  display: inline-block; width: 5px; height: 5px; background: #07170F;
+  border-radius: 50%; margin: 0 3px; animation: blink 1.2s infinite;
+}
+.btn-loader span:nth-child(2) { animation-delay: 0.2s; }
+.btn-loader span:nth-child(3) { animation-delay: 0.4s; }
+
+/* ── DIVIDER ── */
+.form-divider {
+  display: flex; align-items: center; gap: 14px;
+  margin: 28px 0; color: var(--sage);
+  font-size: 10px; letter-spacing: 3px; text-transform: uppercase;
+}
+.form-divider::before, .form-divider::after {
+  content: ''; flex: 1; height: 1px;
+  background: rgba(200, 164, 93, 0.2);
+}
+
+/* ── MESSAGES ── */
+.msg {
+  padding: 12px 16px; margin-bottom: 22px;
+  font-size: 11px; letter-spacing: 1px; line-height: 1.5;
+  border-radius: 2px;
+  display: none;
+}
+.msg.error { border: 1px solid rgba(224, 108, 108, 0.45); color: var(--error); background: rgba(224, 108, 108, 0.1); }
+.msg.success { border: 1px solid rgba(200, 164, 93, 0.45); color: var(--gold-warm); background: rgba(16, 59, 40, 0.45); }
+.msg.visible { display: block; }
+
+/* ── FORGOT ── */
+.forgot-link {
+  display: block; text-align: right;
+  font-size: 10px; letter-spacing: 2px; color: var(--sage);
+  text-decoration: none; margin-top: -14px; margin-bottom: 22px;
+  transition: color 0.3s; text-transform: uppercase;
+}
+.forgot-link:hover { color: var(--gold-warm); }
+
+/* ── FOOTER NOTE ── */
+.card-footer {
+  margin-top: 28px; text-align: center;
+  font-size: 10px; letter-spacing: 2px; color: var(--sage);
+  text-transform: uppercase;
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes blink { 0%, 80%, 100% { opacity: 0; } 40% { opacity: 1; } }
+
+@media (max-width: 500px) {
+  .login-card { padding: 44px 28px 40px; }
+}
+</style>
+</head>
+<body>
+
+<div class="bg-circle bg-circle-1"></div>
+<div class="bg-circle bg-circle-2"></div>
+
+<svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M10 290 Q 80 200 150 150 Q 200 110 260 20" stroke="#2a5c3f" stroke-width="1.5" fill="none"/>
+  <ellipse cx="150" cy="150" rx="28" ry="16" fill="#2a5c3f" transform="rotate(-40 150 150)"/>
+  <ellipse cx="200" cy="105" rx="22" ry="13" fill="#7a9e7e" transform="rotate(-55 200 105)"/>
+  <ellipse cx="100" cy="200" rx="20" ry="11" fill="#2a5c3f" transform="rotate(-20 100 200)"/>
+  <ellipse cx="250" cy="55" rx="18" ry="10" fill="#c9a84c" transform="rotate(-65 250 55)"/>
+</svg>
+<svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M10 290 Q 80 200 150 150 Q 200 110 260 20" stroke="#2a5c3f" stroke-width="1.5" fill="none"/>
+  <ellipse cx="150" cy="150" rx="28" ry="16" fill="#2a5c3f" transform="rotate(-40 150 150)"/>
+  <ellipse cx="200" cy="105" rx="22" ry="13" fill="#7a9e7e" transform="rotate(-55 200 105)"/>
+  <ellipse cx="100" cy="200" rx="20" ry="11" fill="#2a5c3f" transform="rotate(-20 100 200)"/>
+</svg>
+
+<div class="login-card">
+  <a href="index.html" class="back-link">← Return to the Garden</a>
+
+  <div class="logo-rule">
+    <span></span><div class="logo-ornament">✦</div><span></span>
+  </div>
+
+  <h1 class="card-title">Swastha</h1>
+  <p class="card-subtitle">Your herbal sanctuary awaits</p>
+
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('signin')">Sign In</div>
+    <div class="tab" onclick="switchTab('signup')">Create Account</div>
+  </div>
+
+  <div id="msgBox" class="msg"></div>
+
+  <!-- SIGN IN FORM -->
+  <form id="signinForm" onsubmit="handleSignIn(event)">
+    <div class="form-group">
+      <label class="form-label" for="si-email">Email</label>
+      <input class="form-input" type="email" id="si-email" placeholder="your@email.com" required autocomplete="email">
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="si-pass">Password</label>
+      <div class="password-wrap">
+        <input class="form-input" type="password" id="si-pass" placeholder="Your password" required autocomplete="current-password" style="padding-right:60px">
+        <button type="button" class="toggle-pw" onclick="togglePassword('si-pass', this)">Show</button>
+      </div>
+    </div>
+    <a href="#" class="forgot-link" onclick="handleForgot(event)">Forgot password?</a>
+    <button class="btn-submit" type="submit" id="signinBtn">
+      <span class="btn-text">Enter the Garden</span>
+      <div class="btn-loader"><span></span><span></span><span></span></div>
+    </button>
+  </form>
+
+  <!-- SIGN UP FORM (hidden initially) -->
+  <form id="signupForm" style="display:none" onsubmit="handleSignUp(event)">
+    <div class="form-group">
+      <label class="form-label" for="su-name">Full Name</label>
+      <input class="form-input" type="text" id="su-name" placeholder="Your name" required autocomplete="name">
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="su-email">Email</label>
+      <input class="form-input" type="email" id="su-email" placeholder="your@email.com" required autocomplete="email">
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="su-pass">Password</label>
+      <div class="password-wrap">
+        <input class="form-input" type="password" id="su-pass" placeholder="Min. 8 characters" required minlength="8" autocomplete="new-password" style="padding-right:60px">
+        <button type="button" class="toggle-pw" onclick="togglePassword('su-pass', this)">Show</button>
+      </div>
+    </div>
+    <button class="btn-submit" type="submit" id="signupBtn">
+      <span class="btn-text">Begin Your Journey</span>
+      <div class="btn-loader"><span></span><span></span><span></span></div>
+    </button>
+  </form>
+
+  <div class="card-footer">
+    ✦ &nbsp; Swastha · AYUSH Educational Platform
+  </div>
+</div>
+
+<script>
+// ── SUPABASE CONFIG ──────────────────────────────────────────────
+// Replace these with your actual Supabase project credentials
+const SUPABASE_URL      = 'https://yypvhggcauxhyeljjumh.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_tc95USCUy5sCeQfaZD1L_Q_DmzBFMZK';
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// ── CHECK IF ALREADY LOGGED IN ───────────────────────────────────
+(async () => {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) {
+    // Already logged in — go straight to bookmarks
+    window.location.href = 'bookmarks.html';
+  }
+})();
+
+// ── TAB SWITCHING ────────────────────────────────────────────────
+function switchTab(tab) {
+  clearMsg();
+  document.querySelectorAll('.tab').forEach((t, i) => {
+    t.classList.toggle('active', (i === 0 && tab === 'signin') || (i === 1 && tab === 'signup'));
+  });
+  document.getElementById('signinForm').style.display = tab === 'signin' ? 'block' : 'none';
+  document.getElementById('signupForm').style.display = tab === 'signup' ? 'block' : 'none';
+}
+
+// ── PASSWORD TOGGLE ──────────────────────────────────────────────
+function togglePassword(inputId, btn) {
+  const input = document.getElementById(inputId);
+  const isHidden = input.type === 'password';
+  input.type = isHidden ? 'text' : 'password';
+  btn.textContent = isHidden ? 'Hide' : 'Show';
+}
+
+// ── MESSAGES ────────────────────────────────────────────────────
+function showMsg(text, type = 'error') {
+  const box = document.getElementById('msgBox');
+  box.textContent = text;
+  box.className = `msg ${type} visible`;
+}
+function clearMsg() {
+  const box = document.getElementById('msgBox');
+  box.className = 'msg';
+}
+
+// ── LOADING STATE ────────────────────────────────────────────────
+function setLoading(btnId, loading) {
+  const btn = document.getElementById(btnId);
+  btn.disabled = loading;
+  btn.classList.toggle('loading', loading);
+}
+
+// ── SIGN IN ──────────────────────────────────────────────────────
+async function handleSignIn(e) {
+  e.preventDefault();
+  clearMsg();
+  setLoading('signinBtn', true);
+
+  const email = document.getElementById('si-email').value.trim();
+  const password = document.getElementById('si-pass').value;
+
+  const { data, error } = await sb.auth.signInWithPassword({ email, password });
+
+  if (error) {
+    setLoading('signinBtn', false);
+    const msg = error.message.includes('Invalid login') 
+      ? 'Incorrect email or password. Please try again.'
+      : error.message;
+    showMsg(msg, 'error');
+    return;
+  }
+
+  // Save any pending bookmark from before login
+  const pending = sessionStorage.getItem('pendingBookmark');
+  if (pending && data.user) {
+    await savePendingBookmark(data.user.id, pending);
+    sessionStorage.removeItem('pendingBookmark');
+  }
+
+  window.location.href = 'bookmarks.html';
+}
+
+// ── SIGN UP ──────────────────────────────────────────────────────
+async function handleSignUp(e) {
+  e.preventDefault();
+  clearMsg();
+  setLoading('signupBtn', true);
+
+  const name = document.getElementById('su-name').value.trim();
+  const email = document.getElementById('su-email').value.trim();
+  const password = document.getElementById('su-pass').value;
+
+  const { data, error } = await sb.auth.signUp({
+    email, password,
+    options: { data: { full_name: name } }
+  });
+
+  if (error) {
+    setLoading('signupBtn', false);
+    showMsg(error.message, 'error');
+    return;
+  }
+
+  if (data.session) {
+    // Logged in immediately — email confirmation is off
+    const pending = sessionStorage.getItem('pendingBookmark');
+    if (pending && data.user) {
+      await savePendingBookmark(data.user.id, pending);
+      sessionStorage.removeItem('pendingBookmark');
+    }
+    window.location.href = 'bookmarks.html';
+    return;
+  }
+
+  // No session — email confirmation still required
+  setLoading('signupBtn', false);
+  showMsg('✦ Account created! Check your email to confirm, then sign in.', 'success');
+  setTimeout(() => switchTab('signin'), 3000);
+}
+
+// ── SAVE PENDING BOOKMARK ────────────────────────────────────────
+async function savePendingBookmark(userId, plantKey) {
+  await sb.from('bookmarks').upsert(
+    { user_id: userId, plant_key: plantKey },
+    { onConflict: 'user_id,plant_key' }
+  );
+}
+
+// ── FORGOT PASSWORD ──────────────────────────────────────────────
+async function handleForgot(e) {
+  e.preventDefault();
+  const email = document.getElementById('si-email').value.trim();
+  if (!email) {
+    showMsg('Enter your email above first, then click Forgot password.', 'error');
+    return;
+  }
+  const { error } = await sb.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.origin + '/login.html'
+  });
+  if (error) {
+    showMsg(error.message, 'error');
+  } else {
+    showMsg('✦ Password reset email sent. Check your inbox.', 'success');
+  }
+}
+</script>
+</body>
+</html>

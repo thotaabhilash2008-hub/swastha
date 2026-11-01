@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bhringraj — False Daisy | Swastha</title>
+
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+
+<!-- 3D Model Viewer Script -->
+<link rel="preload" href="bhringraj3d.glb" as="fetch" crossorigin="anonymous">
+<script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+
+<style>
+:root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Jost', sans-serif;
+  background-color: var(--cream);
+  color: var(--ink);
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+}
+
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  opacity: 0.035; pointer-events: none; z-index: 100;
+}
+
+#open3D {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      padding: 10px 20px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: linear-gradient(135deg, #103B28, #184c34);
+      color: #F5F0E4;
+      border: 1px solid rgba(200, 164, 93, 0.4);
+      border-radius: 999px;
+      cursor: pointer;
+      z-index: 1000;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    #open3D:hover {
+      background: linear-gradient(135deg, #C8A45D, #E5C783);
+      color: #07170F;
+      border-color: #E5C783;
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(200, 164, 93, 0.35);
+    }
+    #viewerModal {
+      position: fixed;
+      inset: 0;
+      z-index: 9000;
+      display: none;
+      flex-direction: column;
+      background: rgba(7, 23, 15, 0.96);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+    #viewerModal.is-open {
+      display: flex !important;
+    }
+    #modal-topbar {
+      flex-shrink: 0;
+      height: 60px;
+      background: #07170F;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 32px;
+      border-bottom: 1px solid rgba(200, 164, 93, 0.2);
+      z-index: 99999;
+    }
+    #modal-topbar span {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 16px;
+      font-weight: 500;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #E5C783;
+      user-select: none;
+    }
+    #close3D {
+      width: 38px;
+      height: 38px;
+      background: rgba(255, 255, 255, 0.06);
+      color: #F5F0E4;
+      border: 1px solid rgba(200, 164, 93, 0.35);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      font-size: 16px;
+      font-weight: 300;
+      transition: all 0.25s ease;
+      outline: none;
+      flex-shrink: 0;
+    }
+    #close3D:hover {
+      background: #C8A45D;
+      color: #07170F;
+      border-color: #E5C783;
+      transform: rotate(90deg);
+    }
+    .modal-viewer-wrap {
+      flex: 1;
+      width: 100%;
+      height: calc(100% - 60px);
+      position: relative;
+      background: #07170F;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    #viewerModal model-viewer {
+      width: 100%;
+      height: 100%;
+      display: block;
+      background: #07170F;
+      --poster-color: transparent;
+    }
+    .model-loading-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(7, 23, 15, 0.88);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      z-index: 40;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.4s ease, visibility 0.4s ease;
+      pointer-events: none;
+    }
+    .model-loading-overlay.is-hidden {
+      opacity: 0;
+      visibility: hidden;
+    }
+    .model-loading-card {
+      text-align: center;
+      padding: 30px 36px;
+      background: rgba(16, 59, 40, 0.7);
+      border: 1px solid rgba(200, 164, 93, 0.3);
+      border-radius: 16px;
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.6);
+      max-width: 360px;
+      width: 88%;
+    }
+    .model-loading-spinner {
+      font-size: 26px;
+      color: #E5C783;
+      display: inline-block;
+      animation: pulseRotate 2s infinite linear;
+      margin-bottom: 12px;
+    }
+    @keyframes pulseRotate {
+      0% { transform: rotate(0deg) scale(0.9); opacity: 0.7; }
+      50% { transform: rotate(180deg) scale(1.15); opacity: 1; }
+      100% { transform: rotate(360deg) scale(0.9); opacity: 0.7; }
+    }
+    .model-loading-title {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 21px;
+      font-weight: 500;
+      color: #E5C783;
+      letter-spacing: 1px;
+      margin-bottom: 6px;
+    }
+    .model-loading-sub {
+      font-size: 11px;
+      color: #C7C9B9;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+    .model-progress-bar-wrap {
+      width: 100%;
+      height: 5px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 999px;
+      overflow: hidden;
+      border: 1px solid rgba(200, 164, 93, 0.2);
+    }
+    .model-progress-bar {
+      width: 15%;
+      height: 100%;
+      background: linear-gradient(90deg, #C8A45D, #E5C783);
+      border-radius: 999px;
+      transition: width 0.25s ease;
+    }
+
+.bg-circle { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0; }
+.bg-circle-1 { width: 700px; height: 700px; background: radial-gradient(circle, rgba(42,92,63,0.1) 0%, transparent 70%); top: -200px; right: -150px; }
+.bg-circle-2 { width: 500px; height: 500px; background: radial-gradient(circle, rgba(201,168,76,0.08) 0%, transparent 70%); bottom: -100px; left: -100px; }
+
+.botanical-svg { position: fixed; pointer-events: none; z-index: 1; opacity: 0.1; }
+.botanical-tl { top: -20px; left: -20px; width: 260px; }
+.botanical-br { bottom: -20px; right: -20px; width: 220px; transform: rotate(180deg); }
+
+.hero {
+  position: relative; z-index: 10;
+  padding: 54px 40px 0;
+  text-align: center;
+  opacity: 0;
+  animation: fadeUp 0.9s ease 0.1s forwards;
+}
+.back-link {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+  color: var(--sage); text-decoration: none; margin-bottom: 36px;
+  transition: color 0.3s;
+}
+.back-link:hover { color: var(--gold); }
+.logo-rule { display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 14px; }
+.logo-rule span { display: block; height: 1px; width: 70px; background: linear-gradient(to right, transparent, var(--gold)); }
+.logo-rule span:last-child { background: linear-gradient(to left, transparent, var(--gold)); }
+.logo-ornament { font-size: 13px; color: var(--gold); }
+.hero-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(64px, 12vw, 110px);
+  font-weight: 300; letter-spacing: 8px; line-height: 1;
+  color: var(--deep);
+}
+.hero-subtitle {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 18px; font-style: italic; font-weight: 300;
+  color: var(--earth); letter-spacing: 2px; margin-top: 8px;
+}
+.hero-sci {
+  font-size: 11px; font-weight: 200; letter-spacing: 5px;
+  color: var(--sage); margin-top: 6px;
+}
+
+.hero-photos {
+  position: relative; z-index: 10;
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 2px; max-width: 900px; margin: 40px auto 0;
+  opacity: 0; animation: fadeUp 0.9s ease 0.35s forwards;
+}
+.hero-photos img {
+  width: 100%; height: 380px;
+  object-fit: cover; object-position: center; display: block;
+  background: var(--parchment);
+}
+.hero-photos img:first-child { object-position: center 40%; }
+.photo-caption {
+  text-align: center; font-family: 'Cormorant Garamond', serif;
+  font-size: 12px; font-style: italic; color: var(--sage);
+  letter-spacing: 1px; padding: 10px 0 0;
+  max-width: 900px; margin: 0 auto;
+  position: relative; z-index: 10;
+  opacity: 0; animation: fadeUp 0.9s ease 0.5s forwards;
+}
+
+.divider {
+  display: flex; align-items: center; justify-content: center;
+  gap: 16px; margin: 50px auto 50px;
+  max-width: 600px;
+  opacity: 0; animation: fadeUp 0.9s ease 0.55s forwards;
+  position: relative; z-index: 10;
+}
+.divider-line { height: 1px; width: 120px; background: linear-gradient(to right, transparent, var(--sage)); }
+.divider-line:last-child { background: linear-gradient(to left, transparent, var(--sage)); }
+.divider-leaf { color: var(--forest); font-size: 18px; }
+
+.content {
+  position: relative; z-index: 10;
+  max-width: 860px; margin: 0 auto;
+  padding: 0 30px 80px;
+}
+.intro-text {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 20px; font-weight: 300; line-height: 1.75;
+  color: var(--ink); text-align: center;
+  max-width: 700px; margin: 0 auto 60px;
+  opacity: 0; animation: fadeUp 0.9s ease 0.6s forwards;
+}
+.intro-text em { color: var(--forest); font-style: italic; }
+
+.section {
+  margin-bottom: 60px;
+  opacity: 0; animation: fadeUp 0.9s ease forwards;
+}
+.section:nth-child(1) { animation-delay: 0.65s; }
+.section:nth-child(2) { animation-delay: 0.75s; }
+.section:nth-child(3) { animation-delay: 0.85s; }
+.section:nth-child(4) { animation-delay: 0.95s; }
+.section:nth-child(5) { animation-delay: 1.05s; }
+.section:nth-child(6) { animation-delay: 1.15s; }
+.section:nth-child(7) { animation-delay: 1.25s; }
+
+.section-header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
+.section-num { font-family: 'Cormorant Garamond', serif; font-size: 11px; letter-spacing: 4px; color: var(--gold); font-weight: 400; }
+.section-title { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 400; color: var(--deep); letter-spacing: 1px; }
+.section-rule { height: 1px; flex: 1; background: linear-gradient(to right, var(--gold), transparent); }
+.section-body { font-size: 13px; font-weight: 300; line-height: 1.9; color: var(--ink); margin-bottom: 24px; }
+
+.data-table { width: 100%; border-collapse: collapse; margin: 16px 0 8px; font-size: 12px; }
+.data-table thead tr { background: var(--deep); color: var(--gold); font-size: 10px; letter-spacing: 3px; text-transform: uppercase; }
+.data-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; }
+.data-table tbody tr:nth-child(even) { background: var(--parchment); }
+.data-table tbody tr:nth-child(odd) { background: var(--cream); }
+.data-table tbody tr { transition: background 0.2s; }
+.data-table tbody tr:hover { background: rgba(200, 164, 93, 0.15); }
+.data-table tbody td { padding: 10px 14px; color: var(--ink); border-bottom: 1px solid rgba(107,79,45,0.08); }
+.data-table tbody td:first-child { font-weight: 400; color: var(--deep); width: 28%; }
+
+.dosha-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px; }
+.dosha-table thead tr { background: var(--forest); color: var(--cream); }
+.dosha-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase; }
+.dosha-table tbody tr:nth-child(even) { background: var(--parchment); }
+.dosha-table tbody tr:nth-child(odd) { background: var(--cream); }
+.dosha-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(107,79,45,0.08); }
+.dosha-table tbody td:first-child { font-weight: 400; color: var(--forest); width: 18%; }
+.dosha-table tbody td:nth-child(2) { color: var(--earth); width: 20%; }
+
+.consume-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px; }
+.consume-table thead tr { background: var(--earth); color: var(--cream); }
+.consume-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase; }
+.consume-table tbody tr:nth-child(even) { background: var(--parchment); }
+.consume-table tbody tr:nth-child(odd) { background: var(--cream); }
+.consume-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(107,79,45,0.08); }
+.consume-table tbody td:first-child { font-weight: 400; color: var(--earth); width: 22%; }
+
+.benefits-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 1px; background: rgba(107,79,45,0.12);
+  border: 1px solid rgba(107,79,45,0.12);
+  margin: 8px 0;
+}
+.benefit-card {
+  background: var(--cream); padding: 24px 22px;
+  transition: background 0.3s; position: relative; overflow: hidden;
+}
+.benefit-card:hover { background: #ede4ce; }
+.benefit-card::before {
+  content: ''; position: absolute;
+  bottom: 0; left: 0; width: 0; height: 2px;
+  background: var(--gold); transition: width 0.4s;
+}
+.benefit-card:hover::before { width: 100%; }
+.benefit-title { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 600; color: var(--forest); margin-bottom: 8px; letter-spacing: 0.5px; }
+.benefit-desc { font-size: 11.5px; font-weight: 300; line-height: 1.75; color: var(--ink); opacity: 0.85; }
+
+.precaution-list { list-style: none; margin: 8px 0; }
+.precaution-list li {
+  display: flex; gap: 12px; align-items: flex-start;
+  padding: 10px 14px; font-size: 12px; font-weight: 300;
+  line-height: 1.7; color: var(--ink);
+  border-bottom: 1px solid rgba(107,79,45,0.08);
+}
+.precaution-list li:last-child { border-bottom: none; }
+.precaution-list li::before { content: '▸'; color: var(--gold); flex-shrink: 0; margin-top: 1px; }
+
+.sources { border-top: 1px solid rgba(107,79,45,0.15); padding-top: 24px; margin-top: 20px; }
+.sources-title { font-size: 10px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); margin-bottom: 12px; font-weight: 300; }
+.sources ul { list-style: none; }
+.sources ul li { font-family: 'Cormorant Garamond', serif; font-size: 13px; font-style: italic; color: var(--earth); padding: 5px 0; border-bottom: 1px solid rgba(107,79,45,0.06); }
+.sources ul li::before { content: '· '; color: var(--sage); }
+
+.nutrition-bar {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 1px; background: rgba(107,79,45,0.12);
+  border: 1px solid rgba(107,79,45,0.12); margin: 20px 0;
+}
+.nutrition-cell { background: var(--cream); padding: 22px 16px; text-align: center; transition: background 0.3s; }
+.nutrition-cell:hover { background: var(--parchment); }
+.nutrition-num { font-family: 'Cormorant Garamond', serif; font-size: 36px; font-weight: 300; color: var(--forest); line-height: 1; margin-bottom: 4px; }
+.nutrition-unit { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); font-weight: 300; }
+.nutrition-label { font-size: 11px; font-weight: 300; color: var(--ink); margin-top: 5px; letter-spacing: 0.5px; }
+
+footer {
+  position: relative; z-index: 10; text-align: center;
+  padding: 24px 20px 44px;
+  border-top: 1px solid rgba(107,79,45,0.12);
+  max-width: 860px; margin: 0 auto;
+}
+footer p { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); font-weight: 300; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 700px) {
+  .hero-photos { grid-template-columns: 1fr; }
+  .hero-photos img { height: 260px; }
+  .benefits-grid { grid-template-columns: 1fr; }
+  .nutrition-bar { grid-template-columns: 1fr 1fr; }
+  .content { padding: 0 18px 60px; }
+}
+</style>
+</head>
+<body>
+
+<button type="button" id="open3D">View in 3D</button>
+
+<div class="bg-circle bg-circle-1"></div>
+<div class="bg-circle bg-circle-2"></div>
+
+<svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#2a5c3f" stroke-width="1.5" fill="none"/>
+  <circle cx="90" cy="210" r="6" fill="#2a5c3f" opacity="0.7"/>
+  <circle cx="130" cy="175" r="8" fill="#ffffff" stroke="#2a5c3f" stroke-width="1" opacity="0.8"/>
+  <circle cx="170" cy="135" r="6" fill="#ffffff" stroke="#7a9e7e" stroke-width="1" opacity="0.8"/>
+  <circle cx="210" cy="95" r="7" fill="#ffffff" stroke="#c9a84c" stroke-width="1" opacity="0.6"/>
+  <ellipse cx="115" cy="195" rx="20" ry="10" fill="#7a9e7e" transform="rotate(-30 115 195)"/>
+  <ellipse cx="155" cy="155" rx="18" ry="9" fill="#2a5c3f" transform="rotate(-45 155 155)"/>
+  <ellipse cx="195" cy="115" rx="16" ry="8" fill="#7a9e7e" transform="rotate(-60 195 115)"/>
+</svg>
+<svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#2a5c3f" stroke-width="1.5" fill="none"/>
+  <circle cx="90" cy="210" r="6" fill="#ffffff" stroke="#2a5c3f" stroke-width="1" opacity="0.7"/>
+  <circle cx="130" cy="175" r="8" fill="#ffffff" stroke="#7a9e7e" stroke-width="1" opacity="0.6"/>
+  <ellipse cx="115" cy="195" rx="20" ry="10" fill="#7a9e7e" transform="rotate(-30 115 195)"/>
+</svg>
+
+<!-- HERO -->
+<div class="hero">
+  <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+  <div class="logo-rule">
+    <span></span><div class="logo-ornament">✦</div><span></span>
+  </div>
+  <div class="hero-title">Bhringraj</div>
+  <div class="hero-subtitle">False Daisy — The King of Hair</div>
+  <div class="hero-sci">Eclipta prostrata &nbsp;·&nbsp; Eclipta alba</div>
+</div>
+
+<!--
+  ✅ IMAGE FIX: Using lh3.googleusercontent.com/d/FILE_ID format.
+  Fig. 1 → ID: 1CgzZkKjTarT5qFVe6ZIBzGR0unfGmaSm
+  Fig. 2 → ID: 1ScisA8g6gxHcBY7b8ZhS4Wf-ujKR2Gzg
+  IMPORTANT: Both images must be shared as "Anyone with the link can view" in Google Drive.
+-->
+<div class="hero-photos">
+  <img
+    src="https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1c/Leaves_-_Bhringraj_Plant_-_Eclipta_prostrata.jpg/1280px-Leaves_-_Bhringraj_Plant_-_Eclipta_prostrata.jpg"
+    alt="Bhringraj plant with white daisy flowers"
+    onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';"
+  >
+  <img
+    src="https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9a/Starr_030807-0168_Eclipta_prostrata.jpg/1280px-Starr_030807-0168_Eclipta_prostrata.jpg"
+    alt="Bhringraj leaves and flowering branches"
+    onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';"
+  >
+</div>
+<p class="photo-caption">Fig. 1 — Bhringraj in bloom, showing its characteristic white daisy-like flowers &nbsp;·&nbsp; Fig. 2 — Close view of the lanceolate leaves and flower heads</p>
+
+<!-- DIVIDER -->
+<div class="divider">
+  <div class="divider-line"></div>
+  <div class="divider-leaf">❧</div>
+  <div class="divider-line"></div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="content">
+
+  <p class="intro-text">
+    Revered in Ayurveda as <em>Keshraj</em> — the sovereign of hair — Bhringraj is far more than a celebrated scalp tonic. Its Sanskrit name, meaning <em>"ruler of bees,"</em> captures the plant's radiant vitality; a creeping herb that quietly tends liver, mind, and body with the same quiet authority it exercises over its luminous white blossoms.
+  </p>
+
+  <!-- 01 · BOTANICAL PROFILE -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">01</span>
+      <h2 class="section-title">Botanical Profile</h2>
+      <div class="section-rule"></div>
+    </div>
+    <p class="section-body">
+      Bhringraj (<em>Eclipta prostrata</em>, syn. <em>Eclipta alba</em>) is a low-growing annual herb of the Asteraceae (sunflower) family, widely found across tropical and subtropical regions of India, Southeast Asia, China, and South America. The plant reaches 30–60 cm in height, branching freely from the base and capable of rooting at the nodes wherever its trailing stems touch moist ground. Stems are green to purplish and finely hairy. Leaves are opposite, oblong-lanceolate, 4–10 cm long with a rough, almost sandpaper-like texture from their covering of stiff hairs.
+    </p>
+    <p class="section-body">
+      The plant's most distinctive feature is its small, solitary, white flower heads — 6–8 mm in diameter — borne on slender stalks arising from the leaf axils. These delicate, daisy-like blooms give the plant its English name: <em>False Daisy</em>. In classical texts, Bhringraj is listed among the foremost <em>Rasayana</em> herbs — rejuvenating agents that slow aging and restore the body's vitality. Though commonly considered a weed by farmers, it is carefully cultivated for medicinal use throughout India. The two botanical varieties, <em>E. prostrata</em> and <em>E. alba</em>, are so genetically similar that the scientific community largely treats them as a single species.
+    </p>
+
+    <table class="data-table">
+      <thead><tr><th>PROPERTY</th><th>Detail</th></tr></thead>
+      <tbody>
+        <tr><td>Family</td><td>Asteraceae (Compositae)</td></tr>
+        <tr><td>Botanical Name</td><td>Eclipta prostrata / Eclipta alba</td></tr>
+        <tr><td>Sanskrit Names</td><td>Bhringraj, Keshraj, Markav, Bhringaraj, Tekarajah</td></tr>
+        <tr><td>Common Names</td><td>Bhringraj, False Daisy, Bhangra (Hindi)</td></tr>
+        <tr><td>Origin</td><td>India, Southeast Asia, South America; widespread in moist tropics</td></tr>
+        <tr><td>Plant Type</td><td>Annual herb, creeping/erect (30–60 cm)</td></tr>
+        <tr><td>Flowering Season</td><td>Throughout the year in tropical climates</td></tr>
+        <tr><td>Medicinal Parts</td><td>Whole plant (Panchang): leaves, stems, roots, flowers; juice (Svarasa)</td></tr>
+        <tr><td>Taste Profile</td><td>Pungent (katu), bitter (tikta)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 02 · Phytochemical Composition -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">02</span>
+      <h2 class="section-title">Phytochemical Composition</h2>
+      <div class="section-rule"></div>
+    </div>
+    <p class="section-body">
+      Bhringraj's therapeutic power is anchored by a distinctive class of compounds called <em>coumestans</em> — most notably wedelolactone and demethyl wedelolactone — which are unique to this plant and responsible for its pronounced hepatoprotective and anti-inflammatory activity. Research in the 1970s first isolated wedelolactone as the primary driver of liver protection, and subsequent studies have confirmed its ability to inhibit inflammatory enzymes and modulate the immune response at a molecular level.
+    </p>
+    <p class="section-body">
+      Beyond coumestans, the plant contains a rich matrix of alkaloids (ecliptine), triterpene saponins (eclalbasaponins), flavonoids (luteolin, apigenin, kaempferol), sterols (stigmasterol, β-sitosterol), polypeptides, and polyacetylenes. Leaves are notably protein-rich. Wedelolactone's ability to upregulate beta-catenin signalling in dermal papilla cells — a key pathway in the hair growth cycle — provides the molecular basis for the plant's traditional reputation as the foremost herb for hair.
+    </p>
+
+    <div class="nutrition-bar">
+      <div class="nutrition-cell">
+        <div class="nutrition-num">40%</div>
+        <div class="nutrition-unit">reduction</div>
+        <div class="nutrition-label">Liver enzymes (ALT/AST) in trials</div>
+      </div>
+      <div class="nutrition-cell">
+        <div class="nutrition-num">65%</div>
+        <div class="nutrition-unit">participants</div>
+        <div class="nutrition-label">Improved hair density (12 wk trial)</div>
+      </div>
+      <div class="nutrition-cell">
+        <div class="nutrition-num">300+</div>
+        <div class="nutrition-unit">years</div>
+        <div class="nutrition-label">In Charaka Samhita records</div>
+      </div>
+      <div class="nutrition-cell">
+        <div class="nutrition-num">2 of 3</div>
+        <div class="nutrition-unit">Doshas</div>
+        <div class="nutrition-label">Pacified (Vata &amp; Kapha)</div>
+      </div>
+    </div>
+
+    <table class="data-table">
+      <thead><tr><th>Compound</th><th>Category</th><th>Primary Action</th></tr></thead>
+      <tbody>
+        <tr><td>Wedelolactone</td><td>Coumestan</td><td>Hepatoprotective, anti-inflammatory, hair growth (beta-catenin upregulation), antiviral (anti-HCV)</td></tr>
+        <tr><td>Demethyl Wedelolactone</td><td>Coumestan</td><td>Hepatoprotective, synergises with wedelolactone for liver enzyme normalisation</td></tr>
+        <tr><td>Ecliptine</td><td>Alkaloid</td><td>Tonic, nervine; traditional attribution to blackening of hair</td></tr>
+        <tr><td>Luteolin &amp; Apigenin</td><td>Flavonoids</td><td>Anti-inflammatory (COX inhibition), antioxidant, antimicrobial</td></tr>
+        <tr><td>Eclalbasaponins</td><td>Triterpene saponins</td><td>Immunomodulatory, adaptogenic</td></tr>
+        <tr><td>Ursolic &amp; Oleanolic Acids</td><td>Triterpenoids</td><td>Anti-inflammatory, anticancer, antidiabetic</td></tr>
+        <tr><td>Stigmasterol &amp; β-Sitosterol</td><td>Phytosterols</td><td>Cholesterol-lowering, anti-inflammatory</td></tr>
+        <tr><td>Kaempferol</td><td>Flavonol</td><td>Antioxidant, scalp anti-inflammatory, cardioprotective</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 03 · Ayurvedic Significance -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">03</span>
+      <h2 class="section-title">Ayurvedic Significance</h2>
+      <div class="section-rule"></div>
+    </div>
+    <p class="section-body">
+      In Ayurveda, Bhringraj is classified as a primary <em>Rasayana</em> herb — a substance that rejuvenates the body at a cellular level, promotes longevity, and sharpens the faculties. The Charaka Samhita names it as a herb that rejuvenates hair, teeth, bones, vision, hearing, and memory simultaneously. Its Sanskrit epithet <em>Keshraj</em> (king of hair) reflects its centuries-long primacy as the foundational herb in virtually every Ayurvedic hair oil formulation.
+    </p>
+    <p class="section-body">
+      In its Ayurvedic pharmacology, Bhringraj possesses a pungent, bitter taste with hot potency (<em>ushna virya</em>), making it warming and penetrating in action. This hot potency distinguishes it from cooling herbs like Amla, and is what drives its efficacy in pacifying Vata and Kapha doshas. When combined with sesame oil — itself warming — for topical application, the synergy amplifies its penetration into the scalp and liver channel. Rajnighantu classifies it under <em>moolakadi gana</em> and describes it as beneficial for skin, teeth, and eyesight, as well as useful against worm infestations, cough, asthma, and anaemia.
+    </p>
+
+    <table class="dosha-table">
+      <thead><tr><th>Dosha</th><th>Effect</th><th>Mechanism &amp; Notes</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Vata ↓</td>
+          <td>Pacifying</td>
+          <td>Hot potency (ushna virya) counters Vata's coldness and dryness; oil preparations especially effective for Vata-type hair loss and joint dryness</td>
+        </tr>
+        <tr>
+          <td>Pitta →</td>
+          <td>Neutral / mild aggravation</td>
+          <td>The herb's warming, pungent quality may mildly aggravate Pitta in excess; best balanced with cooling herbs like Amalaki in Pitta-dominant constitutions</td>
+        </tr>
+        <tr>
+          <td>Kapha ↓</td>
+          <td>Pacifying</td>
+          <td>Bitter and drying qualities reduce Kapha accumulation; useful for mucus-related cough and sluggish digestion; use with warm water</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 04 · Key Health Benefits -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">04</span>
+      <h2 class="section-title">Key Health Benefits</h2>
+      <div class="section-rule"></div>
+    </div>
+    <p class="section-body">
+      Bhringraj's therapeutic scope extends well beyond its celebrated role in hair care. Preclinical research — and a growing body of clinical evidence — validates its action across hepatic, neurological, immunological, and dermatological domains.
+    </p>
+
+    <div class="benefits-grid">
+      <div class="benefit-card">
+        <div class="benefit-title">Hair Growth &amp; Scalp Health</div>
+        <div class="benefit-desc">Wedelolactone directly activates beta-catenin signalling in dermal papilla cells — the pathway governing the anagen (growth) phase of the hair cycle. Clinical trials confirm improved hair density, reduced fall, prevention of premature greying, and healthier follicles with both topical oil and internal powder use. The most widely used ingredient in classical Ayurvedic hair oils including Bhringaraj Tail, Neelibhringadi Oil, and Mahabhringraj Oil.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Liver Protection &amp; Detoxification</div>
+        <div class="benefit-desc">Wedelolactone and eclalbasaponins demonstrate significant hepatoprotective activity, reducing liver enzymes ALT and AST by approximately 40% in chemically-induced hepatotoxicity models. Traditionally prescribed for jaundice, liver enlargement (hepatomegaly), spleen disorders, and chronic liver disease. The Ayurvedic Pharmacopoeia of India officially classifies Bhringraj as a hepatoprotective plant.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Anti-inflammatory</div>
+        <div class="benefit-desc">Luteolin and apigenin inhibit COX enzymes and reduce pro-inflammatory cytokine production. Wedelolactone specifically suppresses NF-κB signalling — a central inflammatory pathway implicated in both acute and chronic inflammatory conditions. This makes Bhringraj applicable across arthritis, skin inflammation, and systemic inflammatory states.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Mind &amp; Nervous System</div>
+        <div class="benefit-desc">Bhringraj's cooling action on the mind (counterintuitively, despite its hot bodily potency) calms mental hyperactivity, alleviates tension, and supports deep, restful sleep. Traditionally used as a nootropic — sharpening memory, improving concentration, and reducing stress. Modern studies confirm neuroprotective properties and reduced anxiety-related behaviour in animal models.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Skin &amp; Wound Healing</div>
+        <div class="benefit-desc">Strong antimicrobial and anti-inflammatory properties make Bhringraj effective against skin infections, eczema, boils, and chronic ulcers. Leaf paste applied topically accelerates wound closure by promoting collagen deposition. Its blood-purifying action (rakta shodhaka) addresses the systemic root of skin eruptions and pigmentation disorders.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Immune Modulation</div>
+        <div class="benefit-desc">Animal models demonstrate increased macrophage activity and upregulation of innate immune cytokines following Bhringraj extract administration. Wedelolactone and luteolin show synergistic antiviral activity against Hepatitis C virus (HCV) replicase — an area of ongoing pharmaceutical interest. Used in combination formulas for chronic fever and infection in classical Ayurveda.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Digestive &amp; Respiratory Support</div>
+        <div class="benefit-desc">Classified as <em>pachana</em> (digestive stimulant) in Ayurveda; improves agni, reduces abdominal bloating, and addresses haemorrhoids and intestinal parasites. Leaf juice mixed with honey is a traditional remedy for bronchitis, asthma, and wet cough — utilising the mild expectorant properties of its coumestan compounds.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Anti-diabetic &amp; Bone Health</div>
+        <div class="benefit-desc">Leaf suspension reduces blood glucose in diabetic animal models, with effects linked to improved pancreatic islet antioxidant enzyme activity. Research into Ecliptae herba (Chinese TCM use) demonstrates anti-osteoporotic effects — promoting osteoblast proliferation and bone mineralisation, corroborating the classical Ayurvedic claim that Bhringraj strengthens teeth and bones.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 06 · How To Consume -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">06</span>
+      <h2 class="section-title">How to Consume Bhringraj</h2>
+      <div class="section-rule"></div>
+    </div>
+    <p class="section-body">
+      Bhringraj is available fresh in tropical regions throughout the year and in dried, powdered, oil, and extract forms elsewhere. The whole plant (Panchang) is used medicinally — the fresh leaf juice (Svarasa) being the most potent preparation in Ayurvedic tradition. Oil preparations are both topical hair tonics and vehicles for internal absorption. Morning consumption on an empty stomach is the classical recommendation for maximum digestive and liver benefit.
+    </p>
+
+    <table class="consume-table">
+      <thead><tr><th>Form</th><th>Preparation</th><th>Dosage</th><th>Best Time</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Fresh Leaf Juice (Svarasa)</td>
+          <td>Extract juice from fresh leaves; take directly or dilute in warm water</td>
+          <td>10–20 ml once daily</td>
+          <td>Morning, empty stomach</td>
+        </tr>
+        <tr>
+          <td>Bhringraj Powder (Churna)</td>
+          <td>Mix ½–1 tsp in warm water; with honey for hair/liver; with warm milk at night for sleep</td>
+          <td>1–3 g twice daily</td>
+          <td>After meals</td>
+        </tr>
+        <tr>
+          <td>Bhringraj Oil (Topical)</td>
+          <td>Massage into scalp; Neelibhringadi or Mahabhringraj Oil are classical formulations</td>
+          <td>Apply 2–3× weekly</td>
+          <td>Evening; leave 1–2 hours or overnight</td>
+        </tr>
+        <tr>
+          <td>Bhringraj Capsule / Extract</td>
+          <td>Standardised Eclipta prostrata extract capsule</td>
+          <td>500–1000 mg daily</td>
+          <td>With food</td>
+        </tr>
+        <tr>
+          <td>Bhringraj Siddha Triphala</td>
+          <td>Triphala soaked in Bhringraj juice, dried, powdered; ½ tsp with warm water</td>
+          <td>3–5 g at bedtime</td>
+          <td>Before sleep</td>
+        </tr>
+        <tr>
+          <td>Decoction (Kwath)</td>
+          <td>Boil 10–15 g dried herb in 300 ml water; reduce to 100 ml; strain and drink</td>
+          <td>50–100 ml twice daily</td>
+          <td>Before meals</td>
+        </tr>
+        <tr>
+          <td>Leaf Paste (Topical)</td>
+          <td>Grind fresh leaves to paste; apply to scalp, wounds, or skin</td>
+          <td>Apply as needed</td>
+          <td>Evening; leave 30 min</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 07 · PRECAUTIONS -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">07</span>
+      <h2 class="section-title">Safety &amp; Precautions</h2>
+      <div class="section-rule"></div>
+    </div>
+    <p class="section-body">
+      Bhringraj is considered safe and well-tolerated when used at recommended doses. Topical use as hair oil carries virtually no risk. Cautions below apply primarily to medicinal doses of internal preparations and concentrated extracts.
+    </p>
+
+    <ul class="precaution-list">
+      <li><strong>Pregnancy:</strong> Internal use of medicinal doses should be avoided. The herb has historically been noted in some texts for emmenagogue properties (stimulating uterine activity). Consult a qualified practitioner before any therapeutic use during pregnancy.</li>
+      <li><strong>Pitta constitution:</strong> Despite being classified as Vata- and Kapha-pacifying, Bhringraj's hot potency may aggravate a strongly Pitta-dominant constitution when taken in high doses internally. Combine with cooling herbs such as Amalaki or Shatavari in such cases.</li>
+      <li><strong>Leaf-contact dermatitis:</strong> The stiff hairs on the leaves can cause mild skin irritation in sensitive individuals when handling fresh plant material. Use gloves when processing fresh herb.</li>
+      <li><strong>Antidiabetic medications:</strong> Documented blood-glucose-lowering activity may potentiate insulin and oral antidiabetic drugs. Monitor blood glucose if combining both.</li>
+      <li><strong>Anticoagulants:</strong> Mild haemostatic (rakta-stambhana) properties in Ayurvedic classification — paradoxically, high doses of extract could theoretically interact with anticoagulant medications. Monitor if combining with warfarin or similar drugs.</li>
+      <li><strong>Long-term high-dose use:</strong> Continuous use for more than 3 months at high medicinal doses may begin to increase Pitta in some constitutions due to hot potency. Periodic breaks (one week per month) are advisable for extended therapeutic courses.</li>
+      <li><strong>Liver disease — consult first:</strong> While Bhringraj is hepatoprotective, individuals with diagnosed liver disease should consult a physician before taking concentrated extracts, as dosage management is critical in impaired liver function.</li>
+    </ul>
+  </div>
+
+  <!-- SOURCES -->
+  <div class="sources">
+    <div class="sources-title">References &amp; Sources</div>
+    <ul>
+      <li>Sanyal R et al. — "Eclipta prostrata (L.) L.: Traditional Use, Phytochemistry, and Pharmacology" — Springer, 2022</li>
+      <li>Puri HS — "Rasayana: Ayurvedic herbs for longevity and rejuvenation" — Taylor &amp; Francis, 2003</li>
+      <li>Sharma R, Gupta A — "Phytochemistry and Therapeutic Applications of Eclipta alba: A Review" — Journal of Ethnopharmacology, 2019</li>
+      <li>Kumar S, Yadav M — "Bhringraj (Eclipta alba): A Potential Herb for Liver and Hair Health" — International Journal of Herbal Medicine, 2021</li>
+      <li>PMC Review — "Ethnopharmacological Significance of Eclipta alba" — PMC4897414, 2016</li>
+      <li>ScienceDirect Review — "A review on traditional uses, phytochemistry and pharmacology of Eclipta prostrata" — 2019</li>
+      <li>Ayurvedic Pharmacopoeia of India (API), Government of India — Official hepatoprotective classification</li>
+      <li>Charaka Samhita, Chikitsasthana — Keshraj Rasayana references</li>
+    </ul>
+  </div>
+
+</div><!-- /content -->
+
+<footer>
+  <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a qualified practitioner before therapeutic use</p>
+</footer>
+
+<!-- JS: modal logic -->
+<script>
+  (function() {
+    window.addEventListener('DOMContentLoaded', function() {
+      var open3D  = document.getElementById('open3D');
+      var close3D = document.getElementById('close3D');
+      var modal   = document.getElementById('viewerModal');
+
+      function openModal(e) {
+        var _aud = document.getElementById('bhringrajAudio'); if(_aud){ _aud.currentTime=0; var playPromise = _aud.play(); if (playPromise !== undefined) { playPromise.catch(function(e){ console.log(e); }); } }
+
+        if (e) { e.preventDefault(); e.stopPropagation(); }
+        modal.classList.add('is-open');
+        document.body.style.overflow = 'hidden';
+      }
+
+      function closeModal(e) {
+        var _aud = document.getElementById('bhringrajAudio'); if(_aud){ _aud.pause(); }
+
+        if (e) { e.preventDefault(); e.stopPropagation(); }
+        modal.classList.remove('is-open');
+        document.body.style.overflow = '';
+      }
+
+      open3D.addEventListener('click',  openModal,  false);
+      close3D.addEventListener('click', closeModal, false);
+
+      modal.addEventListener('click', function(e) {
+        if (e.target === modal) closeModal(e);
+      }, false);
+
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && modal.classList.contains('is-open')) closeModal();
+      });
+    });
+  })();
+</script>
+
+<!-- MODAL -->
+<div id="viewerModal">
+  <div class="modal-topbar">
+    <span class="modal-topbar-label">3D Model — Bhringraj</span>
+    <button type="button" id="close3D">✕</button>
+  </div>
+  <div class="modal-viewer-wrap">
+    <model-viewer
+      src="bhringraj3d.glb"
+      auto-rotate
+      camera-controls
+      shadow-intensity="1"
+      exposure="1">
+    </model-viewer>
+  </div>
+</div>
+
+
+<audio id="bhringrajAudio" src="bhringraj_benefits.mp3" loop preload="auto"></audio>
+</body>
+</html>

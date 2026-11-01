@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alfalfa | Swastha</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+  <style>
+    #open3D {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      padding: 10px 18px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: var(--forest);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      z-index: 1000;
+      transition: .3s;
+    }
+    #open3D:hover {
+      background: var(--gold);
+      color: var(--deep);
+    }
+    #viewerModal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+    }
+    #modal-topbar {
+      flex-shrink: 0;
+      height: 58px;
+      background: #111111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px 0 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      z-index: 99999;
+    }
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 4.5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.72);
+      user-select: none;
+    }
+    #close3D {
+      width: 38px;
+      height: 38px;
+      font-size: 15px;
+      font-weight: 300;
+      background: transparent;
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background .2s, color .2s, transform .22s;
+      outline: none;
+      flex-shrink: 0;
+    }
+    #close3D:hover {
+      background: #ffffff;
+      color: #111111;
+      border-color: #ffffff;
+      transform: rotate(90deg);
+    }
+    #viewerModal model-viewer {
+      flex: 1;
+      width: 100%;
+      display: block;
+      background: #ffffff;
+    }
+
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+    * { margin:0; padding:0; box-sizing:border-box }
+    html { scroll-behavior:smooth }
+    body { font-family:'Jost',sans-serif; background:var(--cream); color:var(--ink); min-height:100vh; overflow-x:hidden; position:relative }
+    body::before { content:''; position:fixed; inset:0; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E"); opacity:.03; pointer-events:none; z-index:100 }
+
+    .bg-circle { position:fixed; border-radius:50%; pointer-events:none; z-index:0 }
+    .bg-circle-1 { width:700px; height:700px; background:radial-gradient(circle, rgba(45,74,40,.1) 0%, transparent 70%); top:-200px; right:-150px }
+    .bg-circle-2 { width:500px; height:500px; background:radial-gradient(circle, rgba(168,184,76,.09) 0%, transparent 70%); bottom:-100px; left:-100px }
+
+    .botanical-svg { position:fixed; pointer-events:none; z-index:1; opacity:.09 }
+    .botanical-tl { top:-20px; left:-20px; width:280px }
+    .botanical-br { bottom:-20px; right:-20px; width:230px; transform:rotate(180deg) }
+
+    .hero { position:relative; z-index:10; padding:54px 40px 0; text-align:center; opacity:0; animation:fadeUp .9s ease .1s forwards }
+    .back-link { display:inline-flex; align-items:center; gap:8px; font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--sage); text-decoration:none; margin-bottom:36px; transition:color .3s }
+    .back-link:hover { color:var(--gold) }
+    .logo-rule { display:flex; align-items:center; justify-content:center; gap:20px; margin-bottom:14px }
+    .logo-rule span { display:block; height:1px; width:70px; background:linear-gradient(to right, transparent, var(--gold)) }
+    .logo-rule span:last-child { background:linear-gradient(to left, transparent, var(--gold)) }
+    .logo-ornament { font-size:13px; color:var(--gold) }
+    .hero-number { font-family:'Cormorant Garamond',serif; font-size:12px; letter-spacing:6px; color:var(--sage); margin-bottom:6px; font-weight:300 }
+    .hero-title { font-family:'Cormorant Garamond',serif; font-size:clamp(56px,11vw,105px); font-weight:300; letter-spacing:8px; line-height:1; color:var(--deep) }
+    .hero-subtitle { font-family:'Cormorant Garamond',serif; font-size:18px; font-style:italic; font-weight:300; color:var(--earth); letter-spacing:2px; margin-top:8px }
+    .hero-sci { font-size:11px; font-weight:200; letter-spacing:5px; color:var(--sage); margin-top:6px }
+
+    .hero-photos { position:relative; z-index:10; display:grid; grid-template-columns:1fr 1fr; gap:2px; max-width:900px; margin:40px auto 0; opacity:0; animation:fadeUp .9s ease .35s forwards }
+    .hero-photos img { width:100%; height:380px; object-fit:cover; object-position:center; display:block; background:var(--parchment) }
+
+    .photo-caption { text-align:center; font-family:'Cormorant Garamond',serif; font-size:12px; font-style:italic; color:var(--sage); letter-spacing:1px; padding:10px 0 0; max-width:900px; margin:0 auto; position:relative; z-index:10; opacity:0; animation:fadeUp .9s ease .5s forwards }
+
+    .divider { display:flex; align-items:center; justify-content:center; gap:16px; margin:50px auto; max-width:600px; opacity:0; animation:fadeUp .9s ease .55s forwards; position:relative; z-index:10 }
+    .divider-line { height:1px; width:120px; background:linear-gradient(to right, transparent, var(--sage)) }
+    .divider-line:last-child { background:linear-gradient(to left, transparent, var(--sage)) }
+    .divider-leaf { color:var(--forest); font-size:18px }
+
+    .content { position:relative; z-index:10; max-width:860px; margin:0 auto; padding:0 30px 80px }
+    .intro-text { font-family:'Cormorant Garamond',serif; font-size:20px; font-weight:300; line-height:1.75; color:var(--ink); text-align:center; max-width:700px; margin:0 auto 60px; opacity:0; animation:fadeUp .9s ease .6s forwards }
+    .intro-text em { color:var(--forest); font-style:italic }
+
+    .section { margin-bottom:60px; opacity:0; animation:fadeUp .9s ease forwards }
+    .section:nth-child(1) { animation-delay:.65s }
+    .section:nth-child(2) { animation-delay:.75s }
+    .section:nth-child(3) { animation-delay:.85s }
+    .section:nth-child(4) { animation-delay:.95s }
+    .section:nth-child(5) { animation-delay:1.05s }
+    .section:nth-child(6) { animation-delay:1.15s }
+    .section:nth-child(7) { animation-delay:1.25s }
+
+    .section-header { display:flex; align-items:center; gap:14px; margin-bottom:20px }
+    .section-num { font-family:'Cormorant Garamond',serif; font-size:11px; letter-spacing:4px; color:var(--gold) }
+    .section-title { font-family:'Cormorant Garamond',serif; font-size:28px; font-weight:400; color:var(--deep); letter-spacing:1px }
+    .section-rule { height:1px; flex:1; background:linear-gradient(to right, var(--gold), transparent) }
+    .section-body { font-size:13px; font-weight:300; line-height:1.9; color:var(--ink); margin-bottom:24px }
+
+    .data-table { width:100%; border-collapse:collapse; margin:16px 0 8px; font-size:12px }
+    .data-table thead tr { background:var(--deep); color:var(--gold); font-size:10px; letter-spacing:3px; text-transform:uppercase }
+    .data-table thead th { padding:12px 14px; text-align:left; font-weight:400 }
+    .data-table tbody tr:nth-child(even) { background:var(--parchment) }
+    .data-table tbody tr:nth-child(odd) { background:var(--cream) }
+    .data-table tbody tr { transition:background .2s }
+    .data-table tbody tr:hover { background:#dce4ce }
+    .data-table tbody td { padding:10px 14px; color:var(--ink); border-bottom:1px solid rgba(74,103,65,.08) }
+    .data-table tbody td:first-child { font-weight:400; color:var(--deep); width:28% }
+
+    .dosha-table { width:100%; border-collapse:collapse; margin:16px 0; font-size:12px }
+    .dosha-table thead tr { background:var(--forest); color:var(--cream) }
+    .dosha-table thead th { padding:12px 14px; text-align:left; font-weight:400; letter-spacing:2px; font-size:10px; text-transform:uppercase }
+    .dosha-table tbody tr:nth-child(even) { background:var(--parchment) }
+    .dosha-table tbody tr:nth-child(odd) { background:var(--cream) }
+    .dosha-table tbody td { padding:11px 14px; color:var(--ink); border-bottom:1px solid rgba(74,103,65,.08) }
+    .dosha-table tbody td:first-child { font-weight:400; color:var(--forest); width:18% }
+    .dosha-table tbody td:nth-child(2) { color:var(--earth); width:20% }
+
+    .consume-table { width:100%; border-collapse:collapse; margin:16px 0; font-size:12px }
+    .consume-table thead tr { background:var(--earth); color:var(--cream) }
+    .consume-table thead th { padding:12px 14px; text-align:left; font-weight:400; letter-spacing:2px; font-size:10px; text-transform:uppercase }
+    .consume-table tbody tr:nth-child(even) { background:var(--parchment) }
+    .consume-table tbody tr:nth-child(odd) { background:var(--cream) }
+    .consume-table tbody td { padding:11px 14px; color:var(--ink); border-bottom:1px solid rgba(74,103,65,.08) }
+    .consume-table tbody td:first-child { font-weight:400; color:var(--earth); width:22% }
+
+    .benefits-grid { display:grid; grid-template-columns:1fr 1fr; gap:1px; background:rgba(74,103,65,.12); border:1px solid rgba(74,103,65,.12); margin:8px 0 }
+    .benefit-card { background:var(--cream); padding:24px 22px; transition:background .3s; position:relative; overflow:hidden }
+    .benefit-card:hover { background:#dce4cc }
+    .benefit-card::before { content:''; position:absolute; bottom:0; left:0; width:0; height:2px; background:var(--gold); transition:width .4s }
+    .benefit-card:hover::before { width:100% }
+    .benefit-title { font-family:'Cormorant Garamond',serif; font-size:16px; font-weight:600; color:var(--forest); margin-bottom:8px }
+    .benefit-desc { font-size:11.5px; font-weight:300; line-height:1.75; color:var(--ink); opacity:.85 }
+
+    .precaution-list { list-style:none; margin:8px 0 }
+    .precaution-list li { display:flex; gap:12px; align-items:flex-start; padding:10px 14px; font-size:12px; font-weight:300; line-height:1.7; color:var(--ink); border-bottom:1px solid rgba(74,103,65,.08) }
+    .precaution-list li:last-child { border-bottom:none }
+    .precaution-list li::before { content:'▸'; color:var(--gold); flex-shrink:0; margin-top:1px }
+
+    .nutrition-bar { display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:rgba(74,103,65,.12); border:1px solid rgba(74,103,65,.12); margin:20px 0 }
+    .nutrition-cell { background:var(--cream); padding:22px 16px; text-align:center; transition:background .3s }
+    .nutrition-cell:hover { background:var(--parchment) }
+    .nutrition-num { font-family:'Cormorant Garamond',serif; font-size:36px; font-weight:300; color:var(--forest); line-height:1; margin-bottom:4px }
+    .nutrition-unit { font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--gold); font-weight:300 }
+    .nutrition-label { font-size:11px; font-weight:300; color:var(--ink); margin-top:5px }
+
+    .sources { border-top:1px solid rgba(74,103,65,.15); padding-top:24px; margin-top:20px }
+    .sources-title { font-size:10px; letter-spacing:4px; text-transform:uppercase; color:var(--sage); margin-bottom:12px; font-weight:300 }
+    .sources ul { list-style:none }
+    .sources ul li { font-family:'Cormorant Garamond',serif; font-size:13px; font-style:italic; color:var(--earth); padding:5px 0; border-bottom:1px solid rgba(74,103,65,.06) }
+    .sources ul li::before { content:'· '; color:var(--sage) }
+
+    footer { position:relative; z-index:10; text-align:center; padding:24px 20px 44px; border-top:1px solid rgba(74,103,65,.12); max-width:860px; margin:0 auto }
+    footer p { font-size:11px; letter-spacing:4px; text-transform:uppercase; color:var(--sage); font-weight:300 }
+
+    @keyframes fadeUp { from { opacity:0; transform:translateY(28px) } to { opacity:1; transform:translateY(0) } }
+
+    @media(max-width:700px) {
+      .hero-photos { grid-template-columns:1fr }
+      .hero-photos img { height:260px }
+      .benefits-grid { grid-template-columns:1fr }
+      .nutrition-bar { grid-template-columns:1fr 1fr }
+      .content { padding:0 18px 60px }
+    }
+  </style>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+</head>
+<body>
+  <button type="button" id="open3D">View in 3D</button>
+
+
+  <div class="bg-circle bg-circle-1"></div>
+  <div class="bg-circle bg-circle-2"></div>
+
+  <!-- Botanical SVG: alfalfa-inspired trifoliate leaves -->
+  <svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M20 280 Q 70 220 110 170 Q 155 115 230 40" stroke="#2d4a28" stroke-width="1.4" fill="none"/>
+    <!-- trifoliate leaflets along stem -->
+    <ellipse cx="80" cy="218" rx="14" ry="8" fill="#2d4a28" opacity="0.65" transform="rotate(-25 80 218)"/>
+    <ellipse cx="68" cy="225" rx="12" ry="7" fill="#7a9470" opacity="0.55" transform="rotate(-60 68 225)"/>
+    <ellipse cx="92" cy="210" rx="12" ry="7" fill="#7a9470" opacity="0.55" transform="rotate(10 92 210)"/>
+    <ellipse cx="118" cy="172" rx="14" ry="8" fill="#2d4a28" opacity="0.65" transform="rotate(-40 118 172)"/>
+    <ellipse cx="106" cy="180" rx="12" ry="7" fill="#7a9470" opacity="0.5" transform="rotate(-75 106 180)"/>
+    <ellipse cx="130" cy="164" rx="12" ry="7" fill="#7a9470" opacity="0.5" transform="rotate(-5 130 164)"/>
+    <ellipse cx="162" cy="120" rx="13" ry="7" fill="#2d4a28" opacity="0.6" transform="rotate(-50 162 120)"/>
+    <ellipse cx="150" cy="128" rx="11" ry="6" fill="#7a9470" opacity="0.45" transform="rotate(-85 150 128)"/>
+    <!-- small purple flower hints -->
+    <circle cx="85" cy="215" r="3" fill="#a8b84c" opacity="0.6"/>
+    <circle cx="123" cy="169" r="3" fill="#a8b84c" opacity="0.6"/>
+  </svg>
+  <svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M20 280 Q 70 220 110 170 Q 155 115 230 40" stroke="#2d4a28" stroke-width="1.4" fill="none"/>
+    <ellipse cx="80" cy="218" rx="14" ry="8" fill="#2d4a28" opacity="0.65" transform="rotate(-25 80 218)"/>
+    <ellipse cx="68" cy="225" rx="12" ry="7" fill="#7a9470" opacity="0.55" transform="rotate(-60 68 225)"/>
+    <ellipse cx="92" cy="210" rx="12" ry="7" fill="#7a9470" opacity="0.55" transform="rotate(10 92 210)"/>
+    <ellipse cx="118" cy="172" rx="14" ry="8" fill="#2d4a28" opacity="0.65" transform="rotate(-40 118 172)"/>
+    <ellipse cx="106" cy="180" rx="12" ry="7" fill="#7a9470" opacity="0.5" transform="rotate(-75 106 180)"/>
+  </svg>
+
+  <div class="hero">
+    <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+    <div class="logo-rule"><span></span><div class="logo-ornament">✦</div><span></span></div>
+    <div class="hero-number">Entry No. 12</div>
+    <div class="hero-title">Alfalfa</div>
+    <div class="hero-subtitle">Lucerne — The Father of All Foods</div>
+    <div class="hero-sci">Medicago sativa L. &nbsp;·&nbsp; Leguminosae (Fabaceae) &nbsp;·&nbsp; Rijka / Lasunghas</div>
+  </div>
+
+  <div class="hero-photos">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/e/eb/75_Medicago_sativa_L.jpg" alt="Alfalfa plant in full purple bloom in a field" onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/7/78/Medicago_sativa_-_harilik_lutsern_Keilas.jpg/1280px-Medicago_sativa_-_harilik_lutsern_Keilas.jpg" alt="Fresh alfalfa sprouts — pale green tangle of young shoots" onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+  </div>
+  <p class="photo-caption">Fig. 1 — Medicago sativa in full violet bloom, its deep taproot anchoring it metres below the soil &nbsp;·&nbsp; Fig. 2 — Fresh alfalfa sprouts, among the most nutrient-dense of all germinated seeds</p>
+
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-leaf">❧</div>
+    <div class="divider-line"></div>
+  </div>
+
+  <div class="content">
+    <p class="intro-text">The Arabs called it <em>al-fac-facah</em> — "the father of all foods" — a name that has echoed across 6,000 years of agricultural history. From Persian cavalry fodder to Roman legume to modern superfood, Alfalfa's extraordinary taproot — plunging up to 15 metres into the earth — draws up an unmatched wealth of minerals, vitamins, and phytonutrients that few plants on earth can rival. It is simultaneously one of the world's oldest cultivated crops and one of its most versatile healing herbs.</p>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">01</span><h2 class="section-title">Botanical Profile</h2><div class="section-rule"></div></div>
+      <p class="section-body">Medicago sativa is a perennial flowering legume of the Fabaceae family, native to Central Asia and the Caucasus region, cultivated globally for at least 6,000 years — making it one of humanity's oldest intentionally grown plants. It grows 30–90 cm tall with an erect to semi-erect branching habit, trifoliate leaves (three oblong, toothed leaflets), and produces dense racemes of small, vivid violet-to-purple pea-like flowers. The fruit is a spirally coiled pod (2–3 turns) containing 2–8 kidney-shaped seeds.</p>
+      <p class="section-body">Alfalfa's most remarkable feature is its taproot system — the primary root descends up to 4–15 metres into the soil, far deeper than almost any herbaceous plant. This allows it to access subsoil water and minerals unavailable to shallow-rooted plants, and explains its extraordinary mineral density. As a legume, it fixes atmospheric nitrogen through symbiosis with <em>Sinorhizobium meliloti</em> bacteria in root nodules, enriching soil fertility wherever it grows. In India, it is cultivated primarily in Punjab, Rajasthan, Haryana, Uttar Pradesh, and Himachal Pradesh.</p>
+      <table class="data-table">
+        <thead><tr><th>Property</th><th>Detail</th></tr></thead>
+        <tbody>
+          <tr><td>Family</td><td>Fabaceae (Leguminosae) / Papilionoideae</td></tr>
+          <tr><td>Botanical Name</td><td>Medicago sativa L.</td></tr>
+          <tr><td>Sanskrit / Ayurvedic</td><td>Lasunghas, Rijka, Vilayati Gawuth</td></tr>
+          <tr><td>Common Names</td><td>Alfalfa, Lucerne, Buffalo Herb, Purple Medic</td></tr>
+          <tr><td>Regional Names</td><td>Lasunghas (Hindi/Punjabi), Lusan (Urdu), Alfalfa (English)</td></tr>
+          <tr><td>Origin</td><td>Central Asia (Iran / Caucasus region); cultivated globally</td></tr>
+          <tr><td>Plant Type</td><td>Perennial leguminous herb (30–90 cm; lifespan 4–8 years per crop)</td></tr>
+          <tr><td>Taproot Depth</td><td>4–15 metres (among the deepest of all herbaceous plants)</td></tr>
+          <tr><td>Medicinal Parts</td><td>Leaves, sprouts, seeds, aerial parts; roots (traditional)</td></tr>
+          <tr><td>Taste Profile</td><td>Madhura (sweet), slight Kashaya (astringent) in seeds</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">02</span><h2 class="section-title">Phytochemistry &amp; Nutritional Composition</h2><div class="section-rule"></div></div>
+      <p class="section-body">Alfalfa's extraordinary deep taproot is not merely structural — it functions as a mineral concentrating organ, accumulating calcium, magnesium, phosphorus, potassium, iron, zinc, copper, and trace elements at concentrations several times higher than most surface-rooted vegetables. The dried herb and sprouts provide exceptional vitamin K1 content (among the highest in any common food), along with vitamins C, B-complex, E, and beta-carotene (pro-vitamin A).</p>
+      <p class="section-body">The phytochemical profile is dominated by isoflavones — primarily formononetin, biochanin A, daidzein, and genistein — which confer significant hormonal modulating properties. The saponin fraction (medicagenic acid, soyasaponins) is responsible for its cholesterol-binding activity. Chlorophyll content in fresh alfalfa is among the highest of any plant, rivalling wheatgrass.</p>
+      <div class="nutrition-bar">
+        <div class="nutrition-cell"><div class="nutrition-num">8</div><div class="nutrition-unit">vitamins</div><div class="nutrition-label">A, C, E, K, B1–B6, B12</div></div>
+        <div class="nutrition-cell"><div class="nutrition-num">15m</div><div class="nutrition-unit">deep roots</div><div class="nutrition-label">Mineral-concentrating taproot</div></div>
+        <div class="nutrition-cell"><div class="nutrition-num">30%</div><div class="nutrition-unit">protein</div><div class="nutrition-label">Dried leaf content</div></div>
+        <div class="nutrition-cell"><div class="nutrition-num">4</div><div class="nutrition-unit">isoflavones</div><div class="nutrition-label">Formononetin, Biochanin A + 2</div></div>
+      </div>
+      <table class="data-table">
+        <thead><tr><th>Compound</th><th>Category</th><th>Primary Action</th></tr></thead>
+        <tbody>
+          <tr><td>Formononetin &amp; Biochanin A</td><td>Isoflavones (phytoestrogens)</td><td>Estrogenic modulation, bone density support, anti-menopausal</td></tr>
+          <tr><td>Daidzein &amp; Genistein</td><td>Isoflavones</td><td>Cardioprotective, anticancer, antioxidant, phytoestrogenic</td></tr>
+          <tr><td>Medicagenic Acid</td><td>Triterpenoid saponin</td><td>Cholesterol-binding, antifungal, haemolytic at high dose</td></tr>
+          <tr><td>Soyasaponins I–V</td><td>Saponins</td><td>Hypolipidemic, immunomodulatory, anti-inflammatory</td></tr>
+          <tr><td>Vitamin K1 (Phylloquinone)</td><td>Fat-soluble vitamin</td><td>Blood coagulation, bone mineralisation, vascular health</td></tr>
+          <tr><td>Chlorophyll a &amp; b</td><td>Porphyrin pigments</td><td>Antioxidant, detoxifying, wound-healing, deodorising</td></tr>
+          <tr><td>L-Canavanine</td><td>Non-protein amino acid</td><td>Antiviral, antiparasitic; pro-inflammatory at excess (see precautions)</td></tr>
+          <tr><td>β-Carotene &amp; Xanthophylls</td><td>Carotenoids</td><td>Pro-vitamin A, antioxidant, eye protection</td></tr>
+          <tr><td>Coumestrol</td><td>Coumestan phytoestrogen</td><td>Potent phytoestrogenic activity; bone &amp; reproductive modulation</td></tr>
+          <tr><td>Calcium, Magnesium, Iron, Zinc</td><td>Minerals (from deep taproot)</td><td>Bone density, enzymatic cofactors, haematopoiesis</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">03</span><h2 class="section-title">Ayurvedic &amp; Traditional Significance</h2><div class="section-rule"></div></div>
+      <p class="section-body">Alfalfa is not among the classical Ayurvedic dravyas of the primary Nighantus — it arrived in the Indian subcontinent through Persian and Arab trade routes and Mughal-era agricultural exchange. However, later Ayurvedic commentators and the Unani tradition (where it is known as <em>Isfist</em> or <em>Rijka</em>) have incorporated it extensively. In Unani medicine, alfalfa is classified as a <em>Muqawwi</em> (general tonic), <em>Mudirr-e-bol</em> (diuretic), and <em>Musakkin</em> (sedative-analgesic). Contemporary Ayurvedic practitioners classify it as a Tridosha-pacifying food-herb, particularly valued for its Brimhana (nourishing), Balya (strength-giving), and Raktashodhana (blood-purifying) properties.</p>
+      <p class="section-body">In Chinese medicine (where it is known as <em>Mu Su</em>), alfalfa leaf clears heat, drains dampness, and is used for urinary problems and kidney stones. Native American traditions used root preparations for jaundice, and the Cherokee and Iroquois used it for gastrointestinal complaints — a cross-cultural convergence on its digestive and detoxifying properties.</p>
+      <table class="dosha-table">
+        <thead><tr><th>Dosha</th><th>Effect</th><th>Mechanism &amp; Notes</th></tr></thead>
+        <tbody>
+          <tr><td>Vata ↓</td><td>Pacifying</td><td>Madhura rasa and high mineral content nourish Vata tissues; chlorophyll and protein content support Asthi (bone) and Mamsa (muscle) dhatus — key Vata-governed tissues prone to depletion</td></tr>
+          <tr><td>Pitta ↓</td><td>Pacifying</td><td>Cooling properties of fresh sprouts and leaves, high chlorophyll content, and bitter secondary notes reduce Pitta heat; useful in hyperacidity, skin conditions, and inflammatory Pitta states</td></tr>
+          <tr><td>Kapha ↓</td><td>Mildly pacifying</td><td>Light (Laghu) quality of sprouts and diuretic action help reduce Kapha accumulation; the isoflavones support healthy lipid metabolism; avoid excess in established Kapha obesity</td></tr>
+        </tbody>
+      </table>
+      <p class="section-body"><strong>Rasa:</strong> Madhura (sweet), Tikta (bitter, secondary) &nbsp;·&nbsp; <strong>Guna:</strong> Laghu (light), Ruksha (slightly dry in seeds) &nbsp;·&nbsp; <strong>Virya:</strong> Sheeta (cooling, fresh herb) / Ushna (slightly warming, seeds) &nbsp;·&nbsp; <strong>Karma:</strong> Tridoshahara, Brimhana, Raktashodhana, Mutrakrit</p>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">04</span><h2 class="section-title">Key Health Benefits</h2><div class="section-rule"></div></div>
+      <p class="section-body">Alfalfa's therapeutic breadth is a direct consequence of its unmatched phytonutrient density. Modern research has validated its traditional uses in cholesterol management, hormonal balance, bone health, blood sugar regulation, and detoxification — while uncovering novel applications in gut health and anti-inflammatory medicine.</p>
+      <div class="benefits-grid">
+        <div class="benefit-card">
+          <div class="benefit-title">Cholesterol &amp; Cardiovascular Health</div>
+          <div class="benefit-desc">Alfalfa saponins (medicagenic acid, soyasaponins) bind bile acids and dietary cholesterol in the intestine, reducing their reabsorption. Multiple animal studies and early human trials demonstrate significant reductions in total and LDL cholesterol. Its isoflavones additionally improve endothelial function and reduce oxidative LDL modification.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Hormonal Balance &amp; Menopause Support</div>
+          <div class="benefit-desc">Alfalfa contains among the highest concentrations of phytoestrogens of any common herb — formononetin, coumestrol, and genistein bind oestrogen receptors with selective agonist activity. Studies in post-menopausal women show reduction in hot flashes, night sweats, and vaginal dryness with alfalfa supplementation, without the risks of synthetic HRT.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Bone Density &amp; Vitamin K</div>
+          <div class="benefit-desc">Alfalfa is one of the richest plant sources of Vitamin K1 — essential for osteocalcin carboxylation and bone mineralisation. Combined with its deep-root calcium, magnesium, and phosphorus content, it supports bone density in a uniquely synergistic way. Its phytoestrogens additionally slow the bone resorption that accelerates post-menopause.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Blood Sugar Regulation</div>
+          <div class="benefit-desc">Animal studies consistently demonstrate significant hypoglycemic activity of alfalfa leaf extracts — attributed to coumestrol and saponins that improve peripheral insulin sensitivity and reduce glucose absorption. Seed extracts have shown alpha-glucosidase inhibitory activity comparable to pharmaceutical agents. Human clinical data is growing but still limited.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Detoxification &amp; Liver Support</div>
+          <div class="benefit-desc">Chlorophyll, the dominant pigment in alfalfa, acts as a natural detoxifying agent — binding aflatoxins, heterocyclic amines, and polycyclic aromatic hydrocarbons in the gut. Saponins support bile production and liver function. Traditional use for jaundice and liver conditions aligns with chlorophyll's demonstrated hepatoprotective activity in animal models.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Diuretic &amp; Kidney Support</div>
+          <div class="benefit-desc">Alfalfa leaf tea is a classical diuretic across multiple folk traditions — flushing excess uric acid, supporting kidney stone dissolution, and reducing edema. Its alkalising effect on urine helps prevent uric acid and oxalate crystal formation. Chinese and Unani traditions both used it specifically for urinary gravel and renal calculi.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Nutritional Richness &amp; Anaemia</div>
+          <div class="benefit-desc">Dried alfalfa leaf provides ~30% protein, high chlorophyll (which structurally resembles haemoglobin), iron, folate, and vitamin B12 traces — making it a classical treatment for iron-deficiency anaemia, nutritional deficiency, and general debility. The vitamin C in fresh sprouts enhances non-haem iron absorption, completing the anti-anaemia mechanism.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Anti-inflammatory &amp; Arthritic Conditions</div>
+          <div class="benefit-desc">Alfalfa's isoflavones and saponins inhibit multiple pro-inflammatory pathways including COX-2, NF-κB, and TNF-α. Traditional use for rheumatoid arthritis, gout, and joint inflammation has been supported by in vitro and animal studies. Its alkalising effect and uric acid-flushing diuretic action make it particularly valuable in gouty arthritis.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">05</span><h2 class="section-title">How to Consume Alfalfa</h2><div class="section-rule"></div></div>
+      <p class="section-body">Alfalfa is one of the most versatile medicinal herbs in terms of available forms — consumed fresh as sprouts (the most bioavailable form), dried as tea or powder, pressed as juice, or taken as standardised extracts. Sprouts are easily home-grown from seeds in 4–6 days, making this among the most accessible of all medicinal herbs. Seeds require caution — see precautions.</p>
+      <table class="consume-table">
+        <thead><tr><th>Form</th><th>Preparation</th><th>Dosage</th><th>Best Use</th></tr></thead>
+        <tbody>
+          <tr><td>Fresh Sprouts</td><td>Germinate seeds in jar with water for 4–6 days; rinse twice daily</td><td>1–2 cups daily</td><td>General nutrition, digestion, anaemia, daily supplement</td></tr>
+          <tr><td>Leaf Tea (Infusion)</td><td>Steep 1–2 tsp dried alfalfa leaf in hot water for 10–15 min; strain</td><td>1–3 cups daily</td><td>Diuretic, kidney stones, uric acid, cholesterol</td></tr>
+          <tr><td>Fresh Juice</td><td>Blend fresh leaves or sprouts; strain; combine with ginger or lemon</td><td>30–60 ml daily</td><td>Detox, liver support, chlorophyll therapy</td></tr>
+          <tr><td>Dried Leaf Powder</td><td>Shade-dried powder; mix with warm water, juice, or smoothie</td><td>3–5 g daily</td><td>Nutritional supplement, bone health, hormonal balance</td></tr>
+          <tr><td>Alfalfa Tablets / Capsules</td><td>Standardised supplement (500–1000 mg dried herb)</td><td>2–3 tablets with meals</td><td>Cholesterol, menopause, arthritis — physician-directed</td></tr>
+          <tr><td>Tincture (1:5)</td><td>Hydroethanolic extract</td><td>2–4 ml, 3× daily</td><td>Concentrated therapeutic use — practitioner supervised</td></tr>
+          <tr><td>Seed Sprouts (caution)</td><td>Sprout from seeds; eat after full germination only</td><td>Small amounts; avoid in autoimmune conditions</td><td>See precautions — L-canavanine in ungerminated seeds</td></tr>
+          <tr><td>In Food</td><td>Add fresh sprouts to salads, sandwiches, wraps, and soups</td><td>Ad libitum (as desired)</td><td>Daily nutritional enrichment; best raw to preserve enzymes</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">06</span><h2 class="section-title">Safety &amp; Precautions</h2><div class="section-rule"></div></div>
+      <p class="section-body">Alfalfa sprouts and dried herb are among the safest herbal foods when used at culinary and moderate therapeutic doses. However, several specific populations and conditions require particular caution — primarily related to its potent phytoestrogenic activity, L-canavanine content, and Vitamin K levels.</p>
+      <ul class="precaution-list">
+        <li><strong>Autoimmune diseases (SLE / Lupus):</strong> Alfalfa seeds and sprouts contain L-canavanine — a non-protein amino acid that can trigger or worsen systemic lupus erythematosus (SLE) and may exacerbate other autoimmune conditions. Individuals with autoimmune disorders should avoid alfalfa seeds and large amounts of sprouts entirely.</li>
+        <li><strong>Hormone-sensitive conditions:</strong> Due to its potent phytoestrogen content (formononetin, coumestrol, genistein), alfalfa may stimulate oestrogen-sensitive cancers (breast, uterine, ovarian). Those with hormone-receptor-positive cancers or at high risk should avoid therapeutic doses — culinary amounts of sprouts are generally considered safe.</li>
+        <li><strong>Anticoagulant medications (Warfarin):</strong> Alfalfa is exceptionally high in Vitamin K1, which directly antagonises warfarin's anticoagulant action. Individuals on warfarin or other blood thinners must consume consistent, limited amounts and monitor INR closely. Do not begin therapeutic doses without physician guidance.</li>
+        <li><strong>Pregnancy:</strong> Therapeutic doses (supplements, concentrated tinctures) are not recommended during pregnancy due to uterine-stimulating potential of its phytoestrogens and saponins. Culinary amounts of sprouts are generally considered safe; consult a practitioner.</li>
+        <li><strong>Sprout microbial safety:</strong> Raw alfalfa sprouts have been associated with E. coli and Salmonella outbreaks due to seed contamination and warm, moist germination conditions. Purchase from reputable sources; immunocompromised individuals, pregnant women, children, and the elderly should prefer lightly steamed sprouts.</li>
+        <li><strong>Saponin haemolysis:</strong> Large doses of alfalfa saponins can cause mild haemolytic anaemia in sensitive individuals. Therapeutic supplement doses should be physician-directed; routine food amounts pose no risk.</li>
+        <li><strong>Thyroid function:</strong> Isoflavones at high doses may mildly interfere with thyroid peroxidase and iodine uptake. Those with hypothyroidism taking levothyroxine should avoid large supplement doses and take any alfalfa preparation well away from thyroid medication timing.</li>
+        <li><strong>Immunosuppressant medications:</strong> Alfalfa has demonstrated immunomodulatory activity. Individuals on cyclosporine, azathioprine, or other immunosuppressants should use caution and consult their physician before therapeutic supplementation.</li>
+      </ul>
+    </div>
+
+    <div class="sources">
+      <div class="sources-title">References &amp; Sources</div>
+      <ul>
+        <li>Bora KS &amp; Sharma A — "Phytochemical and pharmacological potential of Medicago sativa: A review" — Pharmaceutical Biology, 2011</li>
+        <li>Bown D — "Encyclopedia of Herbs and Their Uses" — DK Publishing, 1995 — Medicago sativa entry</li>
+        <li>Havsteen BH — "The biochemistry and medical significance of the flavonoids" — Pharmacology &amp; Therapeutics, 2002</li>
+        <li>Duhan A et al. — "Bioactive potential of alfalfa (Medicago sativa L.) leaves: nutritional composition, phytochemicals, and antioxidants" — International Journal of Food Properties, 2017</li>
+        <li>Story JA — "Alfalfa saponins and cholesterol interactions" — The American Journal of Clinical Nutrition, 1984</li>
+        <li>Malinow MR et al. — "Systemic lupus erythematosus-like syndrome in monkeys fed alfalfa sprouts: role of non-protein amino acid L-canavanine" — Science, 1982</li>
+        <li>National Center for Complementary and Integrative Health (NCCIH) — Alfalfa fact sheet, 2023</li>
+        <li>Mebrahtu T &amp; Andebrhan T — "Variability in isoflavone composition in Medicago sativa germplasm collections" — Industrial Crops and Products, 2009</li>
+        <li>Unani Pharmacopoeia of India — Isfist (Medicago sativa) monograph — Ministry of AYUSH, India</li>
+        <li>Chinese Materia Medica (Zhonghua Bencao) — Mu Su entry</li>
+        <li>Moghadam MS et al. — "Anti-diabetic activity of alfalfa seed extract" — Asian Pacific Journal of Tropical Medicine, 2013</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer>
+    <p>Swastha Herbal Garden &nbsp;·&nbsp; Entry 12 of the Series &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a qualified practitioner before therapeutic use</p>
+  </footer>
+
+  <div id="viewerModal">
+    <div id="modal-topbar">
+      <span>3D Model — Alfalfa</span>
+      <button type="button" id="close3D">✕</button>
+    </div>
+    <model-viewer src="alfalfa3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+  </div>
+  <script>
+    (function() {
+      var open3D = document.getElementById('open3D');
+      var close3D = document.getElementById('close3D');
+      var modal = document.getElementById('viewerModal');
+      if (!open3D || !close3D || !modal) return;
+      function openModal() {
+        
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+      function closeModal() {
+        
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+      open3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); openModal();
+      });
+      close3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); closeModal();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+      });
+    })();
+  </script>
+
+</body>
+</html>

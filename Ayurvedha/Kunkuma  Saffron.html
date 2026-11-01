@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kunkuma | Swastha</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+    * { margin:0; padding:0; box-sizing:border-box }
+    html { scroll-behavior:smooth }
+    body {
+      font-family:'Jost',sans-serif;
+      background:var(--cream);
+      color:var(--ink);
+      min-height:100vh;
+      overflow-x:hidden;
+      position:relative;
+    }
+    body::before {
+      content:'';
+      position:fixed;
+      inset:0;
+      background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity:.03;
+      pointer-events:none;
+      z-index:100;
+    }
+
+    /* Saffron-toned background blobs */
+    .bg-circle { position:fixed; border-radius:50%; pointer-events:none; z-index:0 }
+    .bg-circle-1 { width:700px; height:700px; background:radial-gradient(circle,rgba(232,118,26,.09) 0%,transparent 70%); top:-200px; right:-150px }
+    .bg-circle-2 { width:500px; height:500px; background:radial-gradient(circle,rgba(212,160,23,.07) 0%,transparent 70%); bottom:-100px; left:-100px }
+
+    /* Botanical SVG corners */
+    .botanical-svg { position:fixed; pointer-events:none; z-index:1; opacity:.08 }
+    .botanical-tl { top:-20px; left:-20px; width:260px }
+    .botanical-br { bottom:-20px; right:-20px; width:220px; transform:rotate(180deg) }
+
+    /* 3D button */
+    #open3D {
+      position:fixed; top:25px; right:30px;
+      padding:10px 18px; font-size:11px; letter-spacing:2px; text-transform:uppercase;
+      background:var(--forest); color:#fff; border:none; cursor:pointer; z-index:1000; transition:.3s;
+    }
+    #open3D:hover { background:var(--forest); color:var(--deep) }
+
+    /* Modal */
+    #viewerModal { position:fixed; inset:0; z-index:2000; display:none; flex-direction:column }
+    #modal-topbar {
+      flex-shrink:0; height:58px; background:#1a0a02;
+      display:flex; align-items:center; justify-content:space-between;
+      padding:0 28px 0 32px; border-bottom:1px solid rgba(255,255,255,.07); z-index:99999;
+    }
+    #modal-topbar span { font-family:'Jost',sans-serif; font-size:11px; font-weight:300; letter-spacing:4.5px; text-transform:uppercase; color:rgba(255,255,255,.72); user-select:none }
+    #close3D {
+      width:38px; height:38px; font-size:15px; font-weight:300;
+      background:transparent; color:#fff; border:1.5px solid rgba(255,255,255,.7);
+      border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center;
+      transition:background .2s,color .2s,transform .22s; outline:none;
+    }
+    #close3D:hover { background:#fff; color:#1a0a02; transform:rotate(90deg) }
+    #viewerModal model-viewer { flex:1; width:100%; display:block; background:#fff }
+
+    /* Hero */
+    .hero { position:relative; z-index:10; padding:54px 40px 0; text-align:center; opacity:0; animation:fadeUp .9s ease .1s forwards }
+    .back-link { display:inline-flex; align-items:center; gap:8px; font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--sage); text-decoration:none; margin-bottom:36px; transition:color .3s }
+    .back-link:hover { color:var(--gold) }
+    .logo-rule { display:flex; align-items:center; justify-content:center; gap:20px; margin-bottom:14px }
+    .logo-rule span { display:block; height:1px; width:70px; background:linear-gradient(to right,transparent,var(--gold)) }
+    .logo-rule span:last-child { background:linear-gradient(to left,transparent,var(--gold)) }
+    .logo-ornament { font-size:13px; color:var(--gold) }
+    .hero-title { font-family:'Cormorant Garamond',serif; font-size:clamp(64px,12vw,110px); font-weight:300; letter-spacing:8px; line-height:1; color:var(--deep) }
+    .hero-subtitle { font-family:'Cormorant Garamond',serif; font-size:18px; font-style:italic; font-weight:300; color:var(--earth); letter-spacing:2px; margin-top:8px }
+    .hero-sci { font-size:11px; font-weight:200; letter-spacing:5px; color:var(--sage); margin-top:6px }
+
+    /* Hero photos */
+    .hero-photos { position:relative; z-index:10; display:grid; grid-template-columns:1fr 1fr; gap:2px; max-width:900px; margin:40px auto 0; opacity:0; animation:fadeUp .9s ease .35s forwards }
+    .hero-photos img { width:100%; height:380px; object-fit:cover; object-position:center; display:block; background:var(--parchment) }
+    .photo-caption { text-align:center; font-family:'Cormorant Garamond',serif; font-size:12px; font-style:italic; color:var(--sage); letter-spacing:1px; padding:10px 0 0; max-width:900px; margin:0 auto; position:relative; z-index:10; opacity:0; animation:fadeUp .9s ease .5s forwards }
+
+    /* Divider */
+    .divider { display:flex; align-items:center; justify-content:center; gap:16px; margin:50px auto; max-width:600px; opacity:0; animation:fadeUp .9s ease .55s forwards; position:relative; z-index:10 }
+    .divider-line { height:1px; width:120px; background:linear-gradient(to right,transparent,var(--sage)) }
+    .divider-line:last-child { background:linear-gradient(to left,transparent,var(--sage)) }
+    .divider-leaf { color:var(--saffron); font-size:18px }
+
+    /* Content */
+    .content { position:relative; z-index:10; max-width:860px; margin:0 auto; padding:0 30px 80px }
+    .intro-text { font-family:'Cormorant Garamond',serif; font-size:20px; font-weight:300; line-height:1.75; color:var(--ink); text-align:center; max-width:700px; margin:0 auto 60px; opacity:0; animation:fadeUp .9s ease .6s forwards }
+    .intro-text em { color:var(--saffron); font-style:italic }
+
+    /* Sections */
+    .section { margin-bottom:60px; opacity:0; animation:fadeUp .9s ease forwards }
+    .section:nth-child(1){animation-delay:.65s}.section:nth-child(2){animation-delay:.75s}.section:nth-child(3){animation-delay:.85s}.section:nth-child(4){animation-delay:.95s}.section:nth-child(5){animation-delay:1.05s}.section:nth-child(6){animation-delay:1.15s}.section:nth-child(7){animation-delay:1.25s}
+
+    .section-header { display:flex; align-items:center; gap:14px; margin-bottom:20px }
+    .section-num { font-family:'Cormorant Garamond',serif; font-size:11px; letter-spacing:4px; color:var(--gold) }
+    .section-title { font-family:'Cormorant Garamond',serif; font-size:28px; font-weight:400; color:var(--deep); letter-spacing:1px }
+    .section-rule { height:1px; flex:1; background:linear-gradient(to right,var(--saffron),transparent) }
+    .section-body { font-size:13px; font-weight:300; line-height:1.9; color:var(--ink); margin-bottom:24px }
+
+    /* Tables */
+    .data-table { width:100%; border-collapse:collapse; margin:16px 0 8px; font-size:12px }
+    .data-table thead tr { background:var(--deep); color:var(--gold); font-size:10px; letter-spacing:3px; text-transform:uppercase }
+    .data-table thead th { padding:12px 14px; text-align:left; font-weight:400 }
+    .data-table tbody tr:nth-child(even){ background:var(--parchment) }
+    .data-table tbody tr:nth-child(odd){ background:var(--cream) }
+    .data-table tbody tr:hover{ background:#f0ddb8 }
+    .data-table tbody td { padding:10px 14px; color:var(--ink); border-bottom:1px solid rgba(139,58,15,.08) }
+    .data-table tbody td:first-child { font-weight:400; color:var(--deep); width:28% }
+
+    .dosha-table { width:100%; border-collapse:collapse; margin:16px 0; font-size:12px }
+    .dosha-table thead tr { background:var(--earth); color:var(--cream) }
+    .dosha-table thead th { padding:12px 14px; text-align:left; font-weight:400; letter-spacing:2px; font-size:10px; text-transform:uppercase }
+    .dosha-table tbody tr:nth-child(even){ background:var(--parchment) }
+    .dosha-table tbody tr:nth-child(odd){ background:var(--cream) }
+    .dosha-table tbody td { padding:11px 14px; color:var(--ink); border-bottom:1px solid rgba(139,58,15,.08) }
+    .dosha-table tbody td:first-child { font-weight:400; color:var(--saffron); width:18% }
+    .dosha-table tbody td:nth-child(2){ color:var(--earth); width:20% }
+
+    .consume-table { width:100%; border-collapse:collapse; margin:16px 0; font-size:12px }
+    .consume-table thead tr { background:var(--earth); color:var(--cream) }
+    .consume-table thead th { padding:12px 14px; text-align:left; font-weight:400; letter-spacing:2px; font-size:10px; text-transform:uppercase }
+    .consume-table tbody tr:nth-child(even){ background:var(--parchment) }
+    .consume-table tbody tr:nth-child(odd){ background:var(--cream) }
+    .consume-table tbody td { padding:11px 14px; color:var(--ink); border-bottom:1px solid rgba(139,58,15,.08) }
+    .consume-table tbody td:first-child { font-weight:400; color:var(--earth); width:22% }
+
+    /* Benefits grid */
+    .benefits-grid { display:grid; grid-template-columns:1fr 1fr; gap:1px; background:rgba(139,58,15,.12); border:1px solid rgba(139,58,15,.12); margin:8px 0 }
+    .benefit-card { background:var(--cream); padding:24px 22px; transition:background .3s; position:relative; overflow:hidden }
+    .benefit-card:hover { background:#f5e5c8 }
+    .benefit-card::before { content:''; position:absolute; bottom:0; left:0; width:0; height:2px; background:var(--saffron); transition:width .4s }
+    .benefit-card:hover::before { width:100% }
+    .benefit-title { font-family:'Cormorant Garamond',serif; font-size:16px; font-weight:600; color:var(--earth); margin-bottom:8px }
+    .benefit-desc { font-size:11.5px; font-weight:300; line-height:1.75; color:var(--ink); opacity:.85 }
+
+    /* Precautions */
+    .precaution-list { list-style:none; margin:8px 0 }
+    .precaution-list li { display:flex; gap:12px; align-items:flex-start; padding:10px 14px; font-size:12px; font-weight:300; line-height:1.7; color:var(--ink); border-bottom:1px solid rgba(139,58,15,.08) }
+    .precaution-list li:last-child { border-bottom:none }
+    .precaution-list li::before { content:'▸'; color:var(--saffron); flex-shrink:0; margin-top:1px }
+
+    /* Nutrition bar */
+    .nutrition-bar { display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:rgba(139,58,15,.12); border:1px solid rgba(139,58,15,.12); margin:20px 0 }
+    .nutrition-cell { background:var(--cream); padding:22px 16px; text-align:center; transition:background .3s }
+    .nutrition-cell:hover { background:var(--parchment) }
+    .nutrition-num { font-family:'Cormorant Garamond',serif; font-size:36px; font-weight:300; color:var(--saffron); line-height:1; margin-bottom:4px }
+    .nutrition-unit { font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--gold); font-weight:300 }
+    .nutrition-label { font-size:11px; font-weight:300; color:var(--ink); margin-top:5px }
+
+    /* Sources */
+    .sources { border-top:1px solid rgba(139,58,15,.15); padding-top:24px; margin-top:20px }
+    .sources-title { font-size:10px; letter-spacing:4px; text-transform:uppercase; color:var(--sage); margin-bottom:12px; font-weight:300 }
+    .sources ul { list-style:none }
+    .sources ul li { font-family:'Cormorant Garamond',serif; font-size:13px; font-style:italic; color:var(--earth); padding:5px 0; border-bottom:1px solid rgba(139,58,15,.06) }
+    .sources ul li::before { content:'· '; color:var(--sage) }
+
+    footer { position:relative; z-index:10; text-align:center; padding:24px 20px 44px; border-top:1px solid rgba(139,58,15,.12); max-width:860px; margin:0 auto }
+    footer p { font-size:11px; letter-spacing:4px; text-transform:uppercase; color:var(--sage); font-weight:300 }
+
+    @keyframes fadeUp { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:translateY(0)} }
+
+    @media(max-width:700px){
+      .hero-photos{grid-template-columns:1fr}
+      .hero-photos img{height:260px}
+      .benefits-grid{grid-template-columns:1fr}
+      .nutrition-bar{grid-template-columns:1fr 1fr}
+      .content{padding:0 18px 60px}
+    }
+  </style>
+</head>
+<body>
+
+<button id="open3D">View in 3D</button>
+<div id="viewerModal">
+  <div id="modal-topbar">
+    <span>3D Model — Kunkuma / Saffron</span>
+    <button id="close3D">✕</button>
+  </div>
+  <model-viewer src="kunkuma3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+</div>
+
+<div class="bg-circle bg-circle-1"></div>
+<div class="bg-circle bg-circle-2"></div>
+
+<!-- Saffron-style botanical SVG corners -->
+<svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#e8761a" stroke-width="1.5" fill="none"/>
+  <circle cx="90" cy="210" r="8" fill="#e8761a" opacity="0.7"/>
+  <circle cx="130" cy="175" r="10" fill="#d4a017" opacity="0.6"/>
+  <circle cx="170" cy="135" r="7" fill="#e8761a" opacity="0.8"/>
+  <ellipse cx="115" cy="195" rx="20" ry="10" fill="#d4a017" transform="rotate(-30 115 195)"/>
+  <ellipse cx="155" cy="155" rx="18" ry="9" fill="#e8761a" transform="rotate(-45 155 155)"/>
+  <ellipse cx="195" cy="115" rx="16" ry="8" fill="#d4a017" transform="rotate(-60 195 115)"/>
+</svg>
+<svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#e8761a" stroke-width="1.5" fill="none"/>
+  <circle cx="90" cy="210" r="8" fill="#e8761a" opacity="0.7"/>
+  <circle cx="130" cy="175" r="10" fill="#d4a017" opacity="0.6"/>
+  <ellipse cx="115" cy="195" rx="20" ry="10" fill="#d4a017" transform="rotate(-30 115 195)"/>
+</svg>
+
+<div class="hero">
+  <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+  <div class="logo-rule"><span></span><div class="logo-ornament">✦</div><span></span></div>
+  <div class="hero-title">Kunkuma</div>
+  <div class="hero-subtitle">The Red Gold of the World — Saffron</div>
+  <div class="hero-sci">Crocus sativus L. &nbsp;·&nbsp; Iridaceae</div>
+</div>
+
+<div class="hero-photos">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/9/96/Saffran_crocus_sativus_moist.jpg" alt="Saffron crocus purple flowers in bloom" onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/5/5c/Crocus_sativus2.jpg" alt="Saffron stigmas drying on a surface" onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+</div>
+<p class="photo-caption">Fig. 1 — Delicate violet blooms of Crocus sativus opening at dawn in Kashmir &nbsp;·&nbsp; Fig. 2 — Freshly harvested crimson stigmas — the precious threads of Kunkuma</p>
+
+<div class="divider">
+  <div class="divider-line"></div>
+  <div class="divider-leaf">❧</div>
+  <div class="divider-line"></div>
+</div>
+
+<div class="content">
+  <p class="intro-text">Revered across five millennia as <em>Kunkuma</em> in Sanskrit, <em>Za'faran</em> in Arabic, and simply "Red Gold" across the world, saffron is the most expensive spice on Earth — harvested as the hand-plucked crimson stigmas of <em>Crocus sativus</em>. Classical Ayurveda praises it as a <em>Varnya</em> (complexion-enhancing), <em>Hridya</em> (cardiac tonic), and supreme <em>Medhya</em> (intellect-promoting) herb whose golden colour has graced royal kitchens, sacred temples, and healing preparations alike.</p>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">01</span><h2 class="section-title">Botanical Profile</h2><div class="section-rule"></div></div>
+    <p class="section-body">Crocus sativus is a sterile, autumn-flowering perennial corm belonging to the Iridaceae family. It grows 10–30 cm tall with grass-like, narrow leaves bearing a white, papery central stripe. The flower — pale to deep violet with dark purple veins — bears three vivid crimson stigmas, each 25–30 mm long, which are the commercially harvested saffron threads. A single flower yields just three stigmas; it takes approximately 75,000 flowers to produce 450 g of dry saffron, explaining its extraordinary price.</p>
+    <p class="section-body">The plant is a triploid sterile hybrid — it cannot reproduce sexually and must be propagated entirely through vegetative corm division, rendering it fully dependent on human cultivation. The world's finest saffron originates from Kashmir (India), Iran's Khorasan province, and Spain's La Mancha region. Kashmir Kesar — grown at 1,600–1,800 m altitude in the Karewa plateau near Pampore — is considered the world's premium quality, with ISO grade A1.</p>
+    <table class="data-table">
+      <thead><tr><th>PROPERTY</th><th>Detail</th></tr></thead>
+      <tbody>
+        <tr><td>Family</td><td>Iridaceae</td></tr>
+        <tr><td>Botanical Name</td><td>Crocus sativus L.</td></tr>
+        <tr><td>Sanskrit Names</td><td>Kunkuma, Agniśikha, Vahlīka, Ghṛtakarṇī, Rudhira, Pītana, Śoṇita</td></tr>
+        <tr><td>Common Names</td><td>Saffron, Kashmir Kesar, Zafran, Safran</td></tr>
+        <tr><td>Regional Names</td><td>Kesar (Hin/Pun), Kungumapoo (Tam), Kumkumapuvvu (Tel), Kunkumappoo (Mal)</td></tr>
+        <tr><td>Origin</td><td>Likely Southwest Asia; cultivated in Kashmir, Iran, Spain, Morocco</td></tr>
+        <tr><td>Plant Type</td><td>Sterile perennial corm (10–30 cm); propagated by corm division</td></tr>
+        <tr><td>Flowering Season</td><td>October–November (harvested at dawn before full bloom)</td></tr>
+        <tr><td>Medicinal Parts</td><td>Dried stigmas (primary); corm, petals (secondary)</td></tr>
+        <tr><td>Taste Profile</td><td>Tikta (bitter), Katu (pungent), Madhura (sweet in vipaka)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">02</span><h2 class="section-title">Phytochemistry Composition</h2><div class="section-rule"></div></div>
+    <p class="section-body">Saffron's extraordinary colour, aroma, and therapeutic power arise from three primary bioactive compounds unique to <em>Crocus sativus</em>: <em>crocin</em> (responsible for golden-red colour), <em>picrocrocin</em> (responsible for bitter taste), and <em>safranal</em> — the volatile aldehyde released upon drying that gives saffron its unmistakable honey-hay fragrance. Together these three compounds are used to grade saffron quality under ISO 3632 standards. Beyond these, saffron contains over 150 volatile and aroma-yielding compounds, carotenoids, flavonoids, vitamins, and minerals.</p>
+    <div class="nutrition-bar">
+      <div class="nutrition-cell"><div class="nutrition-num">150+</div><div class="nutrition-unit">compounds</div><div class="nutrition-label">Volatile & aroma-bearing</div></div>
+      <div class="nutrition-cell"><div class="nutrition-num">28%</div><div class="nutrition-unit">crocin</div><div class="nutrition-label">By dry weight (grade A)</div></div>
+      <div class="nutrition-cell"><div class="nutrition-num">75,000</div><div class="nutrition-unit">flowers</div><div class="nutrition-label">Per 450 g dry saffron</div></div>
+      <div class="nutrition-cell"><div class="nutrition-num">3</div><div class="nutrition-unit">stigmas</div><div class="nutrition-label">Per flower, harvested by hand</div></div>
+    </div>
+    <table class="data-table">
+      <thead><tr><th>Compound</th><th>Category</th><th>Primary Action</th></tr></thead>
+      <tbody>
+        <tr><td>Crocin & Crocetin</td><td>Carotenoid glycosides</td><td>Antioxidant, neuroprotective, antidepressant, anti-cancer; responsible for golden colour</td></tr>
+        <tr><td>Safranal</td><td>Monoterpene aldehyde</td><td>Anxiolytic, anticonvulsant, antidepressant; gives saffron its aroma</td></tr>
+        <tr><td>Picrocrocin</td><td>Monoterpene glycoside</td><td>Bitter tonic, digestive stimulant; precursor to safranal on drying</td></tr>
+        <tr><td>Kaempferol & Quercetin</td><td>Flavonoids</td><td>Anti-inflammatory, antioxidant, anti-allergic, cardioprotective</td></tr>
+        <tr><td>Dimethyl Crocetin</td><td>Apocarotenoid ester</td><td>Cytotoxic to cancer cells, antitumour activity</td></tr>
+        <tr><td>Riboflavin (B2) & Thiamine (B1)</td><td>B Vitamins</td><td>Neurological support, energy metabolism, skin health</td></tr>
+        <tr><td>Manganese & Iron</td><td>Minerals</td><td>Antioxidant enzyme cofactors, haemoglobin synthesis</td></tr>
+        <tr><td>Zeaxanthin & Lycopene</td><td>Carotenoids</td><td>Ocular protection, antioxidant, anti-cancer support</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">03</span><h2 class="section-title">Ayurvedic Significance</h2><div class="section-rule"></div></div>
+    <p class="section-body">Kunkuma is extolled in virtually every major Ayurvedic text — Charaka Samhita, Sushruta Samhita, Ashtanga Hridayam, Bhavaprakasha Nighantu, and the Dhanvantari Nighantu. It is placed in the <em>Karpuradi Varga</em> (group of aromatic substances) and is one of the most celebrated <em>Varnya dravyas</em> — herbs that purify and enhance skin complexion. Its properties as a <em>Hridya</em> (cardiac tonic), <em>Medhya</em> (brain tonic), <em>Vedanasthapana</em> (analgesic), and <em>Shothahara</em> (anti-inflammatory) are well-documented across classical literature.</p>
+    <p class="section-body">Classical verse — <em>"Kunkumam tikta-madhuram hima-virya-laghu-priyam, varnyam hridyam vishaghnam cha tridosha-shamakam param"</em> — describes saffron as bitter-sweet, cooling, light, complexion-enhancing, cardiac-tonic, antipoison, and the supreme balancer of all three doshas in appropriate doses.</p>
+    <table class="dosha-table">
+      <thead><tr><th>Dosha</th><th>Effect</th><th>Mechanism &amp; Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Vata ↓</td><td>Pacifying</td><td>Balya (strengthening) and Medhya actions calm Vata-related anxiety, insomnia, and neurological depletion; promotes grounding and mental clarity</td></tr>
+        <tr><td>Pitta ↓</td><td>Pacifying</td><td>Hima virya (cooling potency) cools excess Pitta despite its pungent notes — used in skin disorders, inflammation, and eye conditions; one of few herbs cooling to Pitta yet digestive-stimulating</td></tr>
+        <tr><td>Kapha ↓</td><td>Pacifying</td><td>Laghu (light), Tikshna (penetrating), and aromatic qualities clear Kapha congestion; used in respiratory mucus, sluggish digestion, and lymphatic congestion</td></tr>
+      </tbody>
+    </table>
+    <p class="section-body"><strong>Rasa:</strong> Tikta (bitter), Katu (pungent), Madhura (sweet) &nbsp;·&nbsp; <strong>Guna:</strong> Laghu (light), Snigdha (unctuous) &nbsp;·&nbsp; <strong>Virya:</strong> Hima (cooling) &nbsp;·&nbsp; <strong>Vipaka:</strong> Katu (pungent) &nbsp;·&nbsp; <strong>Karma:</strong> Tridosha shamaka (in proper dose)</p>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">04</span><h2 class="section-title">Key Health Benefits</h2><div class="section-rule"></div></div>
+    <p class="section-body">Saffron is one of the most extensively researched medicinal spices, with hundreds of peer-reviewed studies corroborating its antidepressant, neuroprotective, antioxidant, anti-cancer, and cardioprotective effects. Its bioactive compounds — particularly crocin, crocetin, and safranal — act on multiple pharmacological targets simultaneously.</p>
+    <div class="benefits-grid">
+      <div class="benefit-card">
+        <div class="benefit-title">Antidepressant &amp; Mood Elevation</div>
+        <div class="benefit-desc">Multiple RCTs demonstrate saffron (30 mg/day) to be as effective as fluoxetine and imipramine in treating mild-to-moderate depression with significantly fewer side effects. Safranal and crocin modulate serotonin, dopamine, and norepinephrine reuptake — making it nature's most evidence-backed mood herb.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Neuroprotection &amp; Memory</div>
+        <div class="benefit-desc">Crocin inhibits acetylcholinesterase and prevents amyloid-beta aggregation — the pathological hallmark of Alzheimer's disease. Clinical trials show saffron 30 mg/day comparable to donepezil for mild-to-moderate Alzheimer's with better tolerability. A classical Medhya herb now validated by neuroscience.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Ocular Health &amp; Retina Protection</div>
+        <div class="benefit-desc">Australian and Italian RCTs show saffron supplementation significantly improves retinal function in age-related macular degeneration (AMD), the leading cause of vision loss in older adults. Crocin and zeaxanthin protect photoreceptors from oxidative damage and light-induced stress.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Skin Radiance (Varnya)</div>
+        <div class="benefit-desc">Classically the supreme Varnya (complexion-brightening) herb, saffron inhibits melanin synthesis, reduces UV-induced pigmentation, and has antibacterial activity against acne-causing organisms. Traditional saffron-milk face preparations have been validated for reducing hyperpigmentation and improving skin luminosity.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Antioxidant &amp; Anti-cancer</div>
+        <div class="benefit-desc">Crocin and crocetin exhibit selective cytotoxicity against cancer cell lines (breast, liver, colorectal, leukaemia) while sparing healthy cells — a property rare among natural compounds. Antioxidant capacity is among the highest of all culinary spices, significantly exceeding turmeric and cardamom per gram.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Cardioprotective &amp; Hypolipidemic</div>
+        <div class="benefit-desc">Crocetin improves blood viscosity, inhibits platelet aggregation, reduces LDL oxidation, and lowers blood pressure by relaxing vascular smooth muscle. Hridya (heart-tonic) — a classical classification — is now supported by animal and preliminary human data showing protection against ischaemia-reperfusion injury.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">PMS &amp; Menstrual Support</div>
+        <div class="benefit-desc">Saffron 30 mg/day significantly reduced PMS symptoms — irritability, depression, fatigue, and cravings — in double-blind clinical trials. Classical Ayurveda uses Kunkuma as an emmenagogue and uterine tonic, prescribed in dysmenorrhea formulations including Kumkumadi Taila and Pushyanuga Churna.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Digestive &amp; Appetite Stimulation</div>
+        <div class="benefit-desc">Picrocrocin stimulates digestive secretions and bile flow, improving appetite and fat digestion. Carminative and antispasmodic properties relieve flatulence, colic, and IBS-type cramping. Classical texts use Kunkuma in Deepana (digestive kindling) formulations for Agni-deficiency conditions.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">05</span><h2 class="section-title">How to Consume Kunkuma</h2><div class="section-rule"></div></div>
+    <p class="section-body">Saffron must be used in tiny quantities — its bioactive compounds are potent at very low doses (1–3 strands per serving; 30 mg dried stigma = approximately 20–25 threads). Always soak saffron in warm liquid before use to release its crocins fully. It pairs exceptionally with milk, ghee, and honey — all of which enhance bioavailability of its fat-soluble carotenoids.</p>
+    <table class="consume-table">
+      <thead><tr><th>Form</th><th>Preparation</th><th>Dosage</th><th>Best Use</th></tr></thead>
+      <tbody>
+        <tr><td>Kesar Doodh (Saffron Milk)</td><td>Soak 5–8 threads in 1 tsp warm milk 15 min; add to warm milk with cardamom</td><td>1 cup nightly</td><td>Sleep, mood, skin, pregnancy support</td></tr>
+        <tr><td>Saffron Water</td><td>Soak 5–6 threads in 2 tbsp warm water for 20 minutes</td><td>Drink on empty stomach</td><td>Digestion, antioxidant, general wellness</td></tr>
+        <tr><td>Kumkumadi Taila (Classical)</td><td>Medicated oil per classical formula (topical)</td><td>2–3 drops; facial massage</td><td>Skin brightening, pigmentation, wrinkles</td></tr>
+        <tr><td>Kesar Ghee</td><td>Dissolve 5–8 threads in warm A2 ghee</td><td>½ tsp with warm milk daily</td><td>Brain tonic, pregnancy, joint support</td></tr>
+        <tr><td>Saffron + Honey</td><td>10 threads powdered; mix with raw honey</td><td>½ tsp daily (not for infants)</td><td>Immunity, cough, antioxidant boost</td></tr>
+        <tr><td>Nasal Drop (Nasya)</td><td>Kesar-infused ghee or sesame oil</td><td>2 drops per nostril</td><td>Headache, sinusitis, Medhya (brain tonic)</td></tr>
+        <tr><td>Culinary (Biryani, Kheer)</td><td>Soak 8–10 threads in warm water/milk; add while cooking</td><td>8–10 threads per dish</td><td>Flavour, colour, gentle daily intake</td></tr>
+        <tr><td>Saffron Supplement</td><td>Standardised extract capsule (safranal + crocin)</td><td>30 mg/day (clinical dose)</td><td>Depression, PMS, Alzheimer's (physician supervised)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">06</span><h2 class="section-title">Safety &amp; Precautions</h2><div class="section-rule"></div></div>
+    <p class="section-body">Saffron is exceptionally safe at culinary and traditional doses (1–30 mg/day of dried stigma). Toxicity begins only at doses above 5 g (approximately 3,500–4,000 threads) — far beyond any culinary or therapeutic use. However, specific populations require careful attention.</p>
+    <ul class="precaution-list">
+      <li><strong>Pregnancy:</strong> Culinary doses (5–10 threads in food) are safe and traditionally beneficial. Medicinal or supplemental doses (30+ mg/day) are contraindicated — saffron's emmenagogue action stimulates uterine contractions and may increase miscarriage risk.</li>
+      <li><strong>Bipolar disorder:</strong> Avoid supplemental doses without physician supervision — saffron's serotonergic and dopaminergic activity may trigger manic episodes in susceptible individuals.</li>
+      <li><strong>Blood pressure medications:</strong> Crocetin lowers blood pressure — concurrent use with antihypertensives may cause hypotension; monitor BP and adjust medications with practitioner guidance.</li>
+      <li><strong>Anticoagulants:</strong> Saffron inhibits platelet aggregation; avoid high doses alongside warfarin, aspirin, or other blood thinners without medical supervision.</li>
+      <li><strong>Allergic reactions:</strong> Rare contact allergy to saffron has been reported, typically in harvesters; occupational asthma and rhinitis in those with prolonged inhalation exposure.</li>
+      <li><strong>Adulteration warning:</strong> Saffron is the world's most adulterated spice — safflower petals, paprika, and synthetic colouring are common adulterants. Purchase ISO 3632-certified Kashmir or Iranian saffron from verified sources; genuine saffron colours water slowly and tastes faintly bitter.</li>
+      <li><strong>Excessive dose (> 5g):</strong> Theoretical toxicity at very high doses includes nausea, vomiting, diarrhoea, and uterine bleeding — but this is virtually impossible at normal culinary or therapeutic use.</li>
+      <li><strong>Drug interactions:</strong> May potentiate SSRIs and MAOIs — avoid combining supplemental saffron with antidepressant medications without physician guidance.</li>
+    </ul>
+  </div>
+
+  <div class="sources">
+    <div class="sources-title">References &amp; Sources</div>
+    <ul>
+      <li>Hausenblas HA et al. — "Saffron (Crocus sativus L.) and major depressive illness: a meta-analysis of randomized clinical trials" — Journal of Integrative Medicine, 2013</li>
+      <li>Akhondzadeh S et al. — "Saffron in the treatment of patients with mild to moderate Alzheimer's disease" — Journal of Clinical Pharmacy &amp; Therapeutics, 2010</li>
+      <li>Maccarone R et al. — "Saffron supplementation maintains morphology and function after exposure of the retina to damaging light" — Investigative Ophthalmology, 2008</li>
+      <li>Agha-Hosseini M et al. — "Crocus sativus L. in the treatment of premenstrual syndrome" — British Journal of Obstetrics &amp; Gynaecology, 2008</li>
+      <li>Bhavaprakasha Nighantu — Karpuradi Varga; Charaka Samhita — Varnya Gana references</li>
+      <li>Dhanvantari Nighantu &amp; Ashtanga Hridayam — Classical properties of Kunkuma</li>
+      <li>Priyavrat Sharma — Dravyaguna Vigyana — Kunkuma chapter</li>
+      <li>Bathaie SZ &amp; Mousavi SZ — "New Applications and Mechanisms of Action of Saffron and its Important Ingredients" — Critical Reviews in Food Science &amp; Nutrition, 2010</li>
+      <li>ISO 3632 — Saffron grading standard (Part 1 &amp; 2) — International Organization for Standardization</li>
+    </ul>
+  </div>
+</div>
+
+<footer>
+  <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a qualified practitioner before therapeutic use</p>
+</footer>
+
+<script>
+  const open3D = document.getElementById('open3D');
+  const close3D = document.getElementById('close3D');
+  const modal = document.getElementById('viewerModal');
+  open3D.addEventListener('click', e => { e.preventDefault(); modal.style.display='flex'; document.body.style.overflow='hidden'; });
+  close3D.addEventListener('click', e => { e.preventDefault(); modal.style.display='none'; document.body.style.overflow=''; });
+  document.addEventListener('keydown', e => { if(e.key==='Escape' && modal.style.display==='flex'){ modal.style.display='none'; document.body.style.overflow=''; }});
+</script>
+
+  <audio id="kunkumaAudio" src="kunkuma_benefits.mp3" loop preload="auto"></audio>
+</body>
+</html>

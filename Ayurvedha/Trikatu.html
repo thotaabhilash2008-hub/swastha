@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trikatu | Swastha</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+  <style>
+    #open3D {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      padding: 10px 18px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: var(--forest);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      z-index: 1000;
+      transition: .3s;
+    }
+    #open3D:hover {
+      background: var(--gold);
+      color: var(--deep);
+    }
+    #viewerModal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+    }
+    #modal-topbar {
+      flex-shrink: 0;
+      height: 58px;
+      background: #111111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px 0 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      z-index: 99999;
+    }
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 4.5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.72);
+      user-select: none;
+    }
+    #close3D {
+      width: 38px;
+      height: 38px;
+      font-size: 15px;
+      font-weight: 300;
+      background: transparent;
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background .2s, color .2s, transform .22s;
+      outline: none;
+      flex-shrink: 0;
+    }
+    #close3D:hover {
+      background: #ffffff;
+      color: #111111;
+      border-color: #ffffff;
+      transform: rotate(90deg);
+    }
+    #viewerModal model-viewer {
+      flex: 1;
+      width: 100%;
+      display: block;
+      background: #ffffff;
+    }
+
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+    * { margin: 0; padding: 0; box-sizing: border-box }
+    html { scroll-behavior: smooth }
+    body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--ink); min-height: 100vh; overflow-x: hidden; position: relative }
+    body::before { content: ''; position: fixed; inset: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E"); opacity: .035; pointer-events: none; z-index: 100 }
+
+    .bg-circle { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0 }
+    .bg-circle-1 { width: 700px; height: 700px; background: radial-gradient(circle, rgba(139,37,0,.09) 0%, transparent 70%); top: -200px; right: -150px }
+    .bg-circle-2 { width: 500px; height: 500px; background: radial-gradient(circle, rgba(212,130,42,.08) 0%, transparent 70%); bottom: -100px; left: -100px }
+
+    .botanical-svg { position: fixed; pointer-events: none; z-index: 1; opacity: .08 }
+    .botanical-tl { top: -20px; left: -20px; width: 260px }
+    .botanical-br { bottom: -20px; right: -20px; width: 220px; transform: rotate(180deg) }
+
+    .hero { position: relative; z-index: 10; padding: 54px 40px 0; text-align: center; opacity: 0; animation: fadeUp .9s ease .1s forwards }
+    .back-link { display: inline-flex; align-items: center; gap: 8px; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--sage); text-decoration: none; margin-bottom: 36px; transition: color .3s }
+    .back-link:hover { color: var(--gold) }
+    .logo-rule { display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 14px }
+    .logo-rule span { display: block; height: 1px; width: 70px; background: linear-gradient(to right, transparent, var(--gold)) }
+    .logo-rule span:last-child { background: linear-gradient(to left, transparent, var(--gold)) }
+    .logo-ornament { font-size: 13px; color: var(--gold) }
+    .hero-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(64px, 12vw, 110px); font-weight: 300; letter-spacing: 8px; line-height: 1; color: var(--deep) }
+    .hero-subtitle { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-style: italic; font-weight: 300; color: var(--earth); letter-spacing: 2px; margin-top: 8px }
+    .hero-sci { font-size: 11px; font-weight: 200; letter-spacing: 5px; color: var(--sage); margin-top: 6px }
+
+    /* Three-ingredient visual */
+    .trio-visual { position: relative; z-index: 10; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 2px; max-width: 900px; margin: 40px auto 0; opacity: 0; animation: fadeUp .9s ease .35s forwards }
+    .trio-card { position: relative; overflow: hidden }
+    .trio-card img { width: 100%; height: 340px; object-fit: cover; display: block; background: var(--parchment); filter: saturate(1.1) }
+    .trio-label { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(44,26,14,.82)); padding: 28px 16px 14px; text-align: center }
+    .trio-label-name { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 400; color: #fff; letter-spacing: 2px }
+    .trio-label-sci { font-size: 10px; letter-spacing: 2px; color: rgba(255,255,255,.6); font-style: italic; margin-top: 2px }
+
+    .photo-caption { text-align: center; font-family: 'Cormorant Garamond', serif; font-size: 12px; font-style: italic; color: var(--sage); letter-spacing: 1px; padding: 10px 0 0; max-width: 900px; margin: 0 auto; position: relative; z-index: 10; opacity: 0; animation: fadeUp .9s ease .5s forwards }
+
+    .divider { display: flex; align-items: center; justify-content: center; gap: 16px; margin: 50px auto; max-width: 600px; opacity: 0; animation: fadeUp .9s ease .55s forwards; position: relative; z-index: 10 }
+    .divider-line { height: 1px; width: 120px; background: linear-gradient(to right, transparent, var(--sage)) }
+    .divider-line:last-child { background: linear-gradient(to left, transparent, var(--sage)) }
+    .divider-leaf { color: var(--forest); font-size: 18px }
+
+    .content { position: relative; z-index: 10; max-width: 860px; margin: 0 auto; padding: 0 30px 80px }
+    .intro-text { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 300; line-height: 1.75; color: var(--ink); text-align: center; max-width: 700px; margin: 0 auto 60px; opacity: 0; animation: fadeUp .9s ease .6s forwards }
+    .intro-text em { color: var(--forest); font-style: italic }
+
+    .section { margin-bottom: 60px; opacity: 0; animation: fadeUp .9s ease forwards }
+    .section:nth-child(1) { animation-delay: .65s }
+    .section:nth-child(2) { animation-delay: .75s }
+    .section:nth-child(3) { animation-delay: .85s }
+    .section:nth-child(4) { animation-delay: .95s }
+    .section:nth-child(5) { animation-delay: 1.05s }
+    .section:nth-child(6) { animation-delay: 1.15s }
+    .section:nth-child(7) { animation-delay: 1.25s }
+
+    .section-header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px }
+    .section-num { font-family: 'Cormorant Garamond', serif; font-size: 11px; letter-spacing: 4px; color: var(--gold) }
+    .section-title { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 400; color: var(--deep); letter-spacing: 1px }
+    .section-rule { height: 1px; flex: 1; background: linear-gradient(to right, var(--gold), transparent) }
+    .section-body { font-size: 13px; font-weight: 300; line-height: 1.9; color: var(--ink); margin-bottom: 24px }
+
+    .data-table { width: 100%; border-collapse: collapse; margin: 16px 0 8px; font-size: 12px }
+    .data-table thead tr { background: var(--deep); color: var(--gold); font-size: 10px; letter-spacing: 3px; text-transform: uppercase }
+    .data-table thead th { padding: 12px 14px; text-align: left; font-weight: 400 }
+    .data-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .data-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .data-table tbody tr { transition: background .2s }
+    .data-table tbody tr:hover { background: #e8d8c0 }
+    .data-table tbody td { padding: 10px 14px; color: var(--ink); border-bottom: 1px solid rgba(122,59,30,.08) }
+    .data-table tbody td:first-child { font-weight: 400; color: var(--deep); width: 28% }
+
+    .dosha-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .dosha-table thead tr { background: var(--forest); color: var(--cream) }
+    .dosha-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .dosha-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .dosha-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .dosha-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(122,59,30,.08) }
+    .dosha-table tbody td:first-child { font-weight: 400; color: var(--forest); width: 18% }
+    .dosha-table tbody td:nth-child(2) { color: var(--earth); width: 20% }
+
+    .consume-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .consume-table thead tr { background: var(--earth); color: var(--cream) }
+    .consume-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .consume-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .consume-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .consume-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(122,59,30,.08) }
+    .consume-table tbody td:first-child { font-weight: 400; color: var(--earth); width: 22% }
+
+    .benefits-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: rgba(122,59,30,.12); border: 1px solid rgba(122,59,30,.12); margin: 8px 0 }
+    .benefit-card { background: var(--cream); padding: 24px 22px; transition: background .3s; position: relative; overflow: hidden }
+    .benefit-card:hover { background: #eddec8 }
+    .benefit-card::before { content: ''; position: absolute; bottom: 0; left: 0; width: 0; height: 2px; background: var(--gold); transition: width .4s }
+    .benefit-card:hover::before { width: 100% }
+    .benefit-title { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 600; color: var(--forest); margin-bottom: 8px }
+    .benefit-desc { font-size: 11.5px; font-weight: 300; line-height: 1.75; color: var(--ink); opacity: .85 }
+
+    .precaution-list { list-style: none; margin: 8px 0 }
+    .precaution-list li { display: flex; gap: 12px; align-items: flex-start; padding: 10px 14px; font-size: 12px; font-weight: 300; line-height: 1.7; color: var(--ink); border-bottom: 1px solid rgba(122,59,30,.08) }
+    .precaution-list li:last-child { border-bottom: none }
+    .precaution-list li::before { content: '▸'; color: var(--gold); flex-shrink: 0; margin-top: 1px }
+
+    .nutrition-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: rgba(122,59,30,.12); border: 1px solid rgba(122,59,30,.12); margin: 20px 0 }
+    .nutrition-cell { background: var(--cream); padding: 22px 16px; text-align: center; transition: background .3s }
+    .nutrition-cell:hover { background: var(--parchment) }
+    .nutrition-num { font-family: 'Cormorant Garamond', serif; font-size: 36px; font-weight: 300; color: var(--forest); line-height: 1; margin-bottom: 4px }
+    .nutrition-unit { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); font-weight: 300 }
+    .nutrition-label { font-size: 11px; font-weight: 300; color: var(--ink); margin-top: 5px }
+
+    .sources { border-top: 1px solid rgba(122,59,30,.15); padding-top: 24px; margin-top: 20px }
+    .sources-title { font-size: 10px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); margin-bottom: 12px; font-weight: 300 }
+    .sources ul { list-style: none }
+    .sources ul li { font-family: 'Cormorant Garamond', serif; font-size: 13px; font-style: italic; color: var(--earth); padding: 5px 0; border-bottom: 1px solid rgba(122,59,30,.06) }
+    .sources ul li::before { content: '· '; color: var(--sage) }
+
+    footer { position: relative; z-index: 10; text-align: center; padding: 24px 20px 44px; border-top: 1px solid rgba(122,59,30,.12); max-width: 860px; margin: 0 auto }
+    footer p { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); font-weight: 300 }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(28px) } to { opacity: 1; transform: translateY(0) } }
+
+    @media(max-width:700px) {
+      .trio-visual { grid-template-columns: 1fr }
+      .trio-card img { height: 220px }
+      .benefits-grid { grid-template-columns: 1fr }
+      .nutrition-bar { grid-template-columns: 1fr 1fr }
+      .content { padding: 0 18px 60px }
+    }
+  </style>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+</head>
+<body>
+  <button type="button" id="open3D">View in 3D</button>
+
+
+  <div class="bg-circle bg-circle-1"></div>
+  <div class="bg-circle bg-circle-2"></div>
+
+  <svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#8b2500" stroke-width="1.5" fill="none"/>
+    <circle cx="90" cy="210" r="8" fill="#8b2500" opacity="0.7"/>
+    <circle cx="130" cy="175" r="10" fill="#d4822a" opacity="0.6"/>
+    <circle cx="170" cy="135" r="7" fill="#8b2500" opacity="0.8"/>
+    <circle cx="210" cy="95" r="9" fill="#d4822a" opacity="0.5"/>
+    <ellipse cx="115" cy="195" rx="20" ry="10" fill="#d4822a" transform="rotate(-30 115 195)"/>
+    <ellipse cx="155" cy="155" rx="18" ry="9" fill="#8b2500" transform="rotate(-45 155 155)"/>
+    <ellipse cx="195" cy="115" rx="16" ry="8" fill="#d4822a" transform="rotate(-60 195 115)"/>
+  </svg>
+  <svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#8b2500" stroke-width="1.5" fill="none"/>
+    <circle cx="90" cy="210" r="8" fill="#8b2500" opacity="0.7"/>
+    <circle cx="130" cy="175" r="10" fill="#d4822a" opacity="0.6"/>
+    <ellipse cx="115" cy="195" rx="20" ry="10" fill="#d4822a" transform="rotate(-30 115 195)"/>
+  </svg>
+
+  <div class="hero">
+    <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+    <div class="logo-rule"><span></span><div class="logo-ornament">✦</div><span></span></div>
+    <div class="hero-title">Trikatu</div>
+    <div class="hero-subtitle">The Three Pungents — Fire of Digestion</div>
+    <div class="hero-sci">Piper nigrum · Piper longum · Zingiber officinale</div>
+  </div>
+
+  <div class="trio-visual">
+    <div class="trio-card">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/f/fd/Piper_nigrum_-_K%C3%B6hler%E2%80%93s_Medizinal-Pflanzen-107.jpg" alt="Black pepper Piper nigrum" onerror="this.src='';this.style.minHeight='340px';this.style.background='#c8b08a';">
+      <div class="trio-label">
+        <div class="trio-label-name">Maricha</div>
+        <div class="trio-label-sci">Piper nigrum</div>
+      </div>
+    </div>
+    <div class="trio-card">
+      <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/0/05/Piper_nigrum_dsc00198.jpg/1280px-Piper_nigrum_dsc00198.jpg" alt="Long pepper Piper longum" onerror="this.src='';this.style.minHeight='340px';this.style.background='#b89070';">
+      <div class="trio-label">
+        <div class="trio-label-name">Pippali</div>
+        <div class="trio-label-sci">Piper longum</div>
+      </div>
+    </div>
+    <div class="trio-card">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/f/fd/Piper_nigrum_-_K%C3%B6hler%E2%80%93s_Medizinal-Pflanzen-107.jpg" alt="Ginger Zingiber officinale" onerror="this.src='';this.style.minHeight='340px';this.style.background='#d4a870';">
+      <div class="trio-label">
+        <div class="trio-label-name">Shunti</div>
+        <div class="trio-label-sci">Zingiber officinale</div>
+      </div>
+    </div>
+  </div>
+  <p class="photo-caption">The sacred triad — Maricha (Black Pepper) · Pippali (Long Pepper) · Shunti (Dry Ginger) — combined in equal measure</p>
+
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-leaf">❧</div>
+    <div class="divider-line"></div>
+  </div>
+
+  <div class="content">
+    <p class="intro-text">Trikatu — literally <em>"three pungents"</em> — is one of Ayurveda's most celebrated classical formulations: black pepper, long pepper, and dry ginger combined in equal parts to form a potent agni-deepana (digestive fire kindler). Mentioned extensively in the Charaka Samhita and Ashtanga Hridayam, Trikatu is the cornerstone of hundreds of classical compound formulations and remains a front-line remedy for sluggish digestion, Kapha disorders, and metabolic imbalance.</p>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">01</span><h2 class="section-title">The Three Ingredients</h2><div class="section-rule"></div></div>
+      <p class="section-body">Trikatu is a balanced triad — each ingredient contributing a distinct pharmacological and energetic character. Combined, they create a formulation more potent than any single component: their combined bioavailability-enhancing effect, heating potency, and Kapha-cutting action make Trikatu a uniquely synergistic classical preparation.</p>
+      <table class="data-table">
+        <thead><tr><th>Ingredient</th><th>Sanskrit</th><th>Key Active</th><th>Primary Action</th></tr></thead>
+        <tbody>
+          <tr><td>Black Pepper</td><td>Maricha</td><td>Piperine (5–9%)</td><td>Bioavailability enhancer, carminative, antioxidant</td></tr>
+          <tr><td>Long Pepper</td><td>Pippali</td><td>Piperine, Piperlongumine</td><td>Deepest rasayana of the three; anti-asthmatic, hepatoprotective</td></tr>
+          <tr><td>Dry Ginger</td><td>Shunti / Nagara</td><td>Gingerols, Shogaols (6-shogaol)</td><td>Anti-nausea, anti-inflammatory, digestive stimulant</td></tr>
+        </tbody>
+      </table>
+      <p class="section-body">Piper longum (Pippali) is considered the most therapeutically potent of the three — the only ingredient classified as a <em>Rasayana</em> (rejuvenative) in its own right. Dry ginger (Shunti) is pharmacologically distinct from fresh ginger (Adraka): drying concentrates shogaols from gingerols, shifting the profile toward stronger anti-inflammatory and digestive activity.</p>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">02</span><h2 class="section-title">Phytochemistry &amp; Key Compounds</h2><div class="section-rule"></div></div>
+      <p class="section-body">The synergistic power of Trikatu arises from a rich intersection of alkaloids, phenylpropanoids, terpenes, and volatile oils. The combined preparation yields over 200 identified phytochemicals, with piperine as the single most studied molecule — responsible for up to 2,000% enhancement in bioavailability of co-administered drugs and nutrients.</p>
+      <div class="nutrition-bar">
+        <div class="nutrition-cell"><div class="nutrition-num">3</div><div class="nutrition-unit">herbs</div><div class="nutrition-label">Equal parts blend</div></div>
+        <div class="nutrition-cell"><div class="nutrition-num">20×</div><div class="nutrition-unit">bioavailability</div><div class="nutrition-label">Piperine enhancement effect</div></div>
+        <div class="nutrition-cell"><div class="nutrition-num">200+</div><div class="nutrition-unit">phytochemicals</div><div class="nutrition-label">Combined formulation</div></div>
+        <div class="nutrition-cell"><div class="nutrition-num">5–9%</div><div class="nutrition-unit">piperine</div><div class="nutrition-label">In black pepper fruit</div></div>
+      </div>
+      <table class="data-table">
+        <thead><tr><th>Compound</th><th>Source</th><th>Pharmacological Action</th></tr></thead>
+        <tbody>
+          <tr><td>Piperine</td><td>Both Pipers</td><td>Bioenhancer, thermogenic, antioxidant, anti-inflammatory, antidepressant</td></tr>
+          <tr><td>Piperlongumine</td><td>Piper longum</td><td>Antitumour, anti-platelet, anti-atherosclerotic</td></tr>
+          <tr><td>Piplartine</td><td>Piper longum</td><td>Anxiolytic, antidepressant, antifungal</td></tr>
+          <tr><td>6-Shogaol</td><td>Dry ginger</td><td>Anti-inflammatory, anti-nausea, neuroprotective, antitumour</td></tr>
+          <tr><td>6-Gingerol</td><td>Dry ginger</td><td>Antioxidant, cardioprotective, analgesic</td></tr>
+          <tr><td>Zingerone</td><td>Dry ginger</td><td>Anti-diarrheal, antiobesity, antidiabetic</td></tr>
+          <tr><td>β-Caryophyllene</td><td>All three</td><td>CB2 agonist, anti-inflammatory, analgesic</td></tr>
+          <tr><td>Sesamin &amp; Chavicine</td><td>Black pepper</td><td>Antioxidant, lipid-lowering</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">03</span><h2 class="section-title">Ayurvedic Significance</h2><div class="section-rule"></div></div>
+      <p class="section-body">Trikatu is mentioned in the Ashtanga Hridayam (Sutrasthana), Charaka Samhita, Sushruta Samhita, and virtually every major Nighantu. It is classified as <em>Agni Deepana</em> (kindling digestive fire), <em>Pachana</em> (digestive), <em>Kaphahara</em> (Kapha-reducing), and <em>Vatahara</em>. It forms the base of major classical compounds including Trikatu Churna, Trikatu Ghrita, Hingvastaka Churna, Chitrakadi Vati, and Lavangadi Vati, among hundreds of others.</p>
+      <p class="section-body">The classical shloka describing Trikatu: <em>"Trikatu kapha-vaataharam deepanam pachana param / Shlesha-marutha-jit shrestham sarva-roga-haram mahat"</em> — Trikatu subdues Kapha and Vata, kindles the digestive fire supremely, and is foremost in eliminating all diseases arising from Kapha and Vayu.</p>
+      <table class="dosha-table">
+        <thead><tr><th>Dosha</th><th>Effect</th><th>Mechanism &amp; Clinical Notes</th></tr></thead>
+        <tbody>
+          <tr><td>Vata ↓</td><td>Pacifying</td><td>Ushna virya (hot potency) mitigates Vata in the digestive tract — particularly useful in Vata-type constipation, intestinal spasm, and neurological coldness; use cautiously in Vata-depletion states</td></tr>
+          <tr><td>Pitta ↑</td><td>Aggravating</td><td>Katu rasa and ushna virya significantly aggravate Pitta — contraindicated in hyperacidity, gastritis, GERD, inflammatory bowel flares, bleeding disorders, and summer seasons for Pitta-dominant types</td></tr>
+          <tr><td>Kapha ↓↓</td><td>Strong reduction</td><td>Primary Kapha dosha — all three herbs are the foremost Kapha-cutting agents in the Materia Medica; indicated in obesity, diabetes, hypothyroid tendency, mucus accumulation, and sluggish metabolism</td></tr>
+        </tbody>
+      </table>
+      <p class="section-body"><strong>Rasa:</strong> Katu (pungent) &nbsp;·&nbsp; <strong>Guna:</strong> Laghu (light), Tikshna (sharp) &nbsp;·&nbsp; <strong>Virya:</strong> Ushna (hot) &nbsp;·&nbsp; <strong>Vipaka:</strong> Katu &nbsp;·&nbsp; <strong>Karma:</strong> Kapha-Vata shamaka, Agni Deepana, Pachana, Rasayana (Pippali component)</p>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">04</span><h2 class="section-title">Key Health Benefits</h2><div class="section-rule"></div></div>
+      <p class="section-body">Modern pharmacological research across all three components — and the combined formulation — validates Trikatu's classical indications with robust <em>in vitro</em>, animal, and growing clinical evidence.</p>
+      <div class="benefits-grid">
+        <div class="benefit-card">
+          <div class="benefit-title">Agni Deepana — Digestive Fire</div>
+          <div class="benefit-desc">Trikatu is Ayurveda's premier digestive stimulant. Piperine increases secretion of digestive enzymes and bile; ginger accelerates gastric emptying and reduces gut transit time; together they powerfully address dyspepsia, bloating, flatulence, and IBS with sluggish digestion (Sama Agni → Vishama Agni).</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Bioavailability Enhancer</div>
+          <div class="benefit-desc">Piperine inhibits P-glycoprotein and CYP3A4 drug metabolism enzymes, dramatically increasing absorption of co-administered nutrients and medicines. Clinical studies show piperine increases curcumin bioavailability by 2,000%, selenium by 30%, beta-carotene by 60%, and Coenzyme Q10 significantly — making Trikatu a master anupana (carrier).</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Respiratory &amp; Anti-Kapha</div>
+          <div class="benefit-desc">A classical front-line remedy for cough, cold, bronchitis, and asthma — particularly mucus-dominant (Kapha) presentations. Pippali's piperlongumine directly bronchodilates; black pepper's oleoresins are mucolytic; ginger's shogaols are anti-inflammatory and antipyretic in respiratory infections.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Metabolic &amp; Weight Management</div>
+          <div class="benefit-desc">Trikatu's thermogenic (heat-generating) action increases basal metabolic rate, stimulates lipase activity, and reduces fat deposition in animal models. Piperine inhibits adipogenesis at the cellular level. Indicated in medoroga (obesity) and in Kapha-dominant metabolic sluggishness in classical and integrative practice.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Anti-inflammatory &amp; Analgesic</div>
+          <div class="benefit-desc">The three herbs collectively inhibit COX-2, TNF-α, IL-6, and NF-κB inflammatory pathways through complementary mechanisms. 6-Shogaol from ginger is particularly powerful for joint inflammation; piperine has demonstrated anti-arthritic activity in rheumatoid arthritis models comparable to methotrexate at lower doses.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Antidiabetic &amp; Lipid-lowering</div>
+          <div class="benefit-desc">Clinical evidence supports Trikatu's role in improving insulin sensitivity, reducing fasting blood glucose, and lowering LDL cholesterol and triglycerides while raising HDL. Mechanisms include alpha-glucosidase inhibition (all three herbs), PPAR-gamma agonism (piperine), and hepatic lipid metabolism improvement (ginger's zingerone).</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Anti-nausea &amp; Gut Motility</div>
+          <div class="benefit-desc">Ginger's 6-gingerol and 6-shogaol are among the best-documented natural anti-emetics — studied in chemotherapy-induced nausea, pregnancy morning sickness, and post-operative nausea in multiple RCTs. Trikatu adds black pepper's carminative action and pippali's gut-healing properties to this foundation.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Antimicrobial &amp; Immunomodulatory</div>
+          <div class="benefit-desc">All three herbs show broad-spectrum antimicrobial activity against respiratory and GI pathogens. Piperine and shogaols both modulate innate immunity — stimulating macrophage activity while suppressing excessive cytokine release. Used classically at first sign of cold or infection as Kapha-clearing fever management.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">05</span><h2 class="section-title">How to Consume Trikatu</h2><div class="section-rule"></div></div>
+      <p class="section-body">Trikatu Churna (the equal-parts powder of all three) is the most common form, typically taken with honey, ghee, or warm water before meals to kindle Agni. Dosing should be calibrated to constitution and condition — Kapha-dominant individuals may tolerate and benefit from higher doses; Pitta-dominant individuals should use minimal doses only as needed with cooling anupanas.</p>
+      <table class="consume-table">
+        <thead><tr><th>Form</th><th>Preparation</th><th>Dosage</th><th>Best Use</th></tr></thead>
+        <tbody>
+          <tr><td>Trikatu Churna</td><td>Equal-parts powder of three herbs</td><td>250–500 mg, 1–2× daily</td><td>Digestive weakness, obesity, cold &amp; cough</td></tr>
+          <tr><td>With Honey (Madhu)</td><td>Churna mixed into raw honey</td><td>250–500 mg before meals</td><td>Kapha disorders, respiratory congestion, mucus</td></tr>
+          <tr><td>With Warm Water</td><td>Churna in lukewarm water</td><td>250–500 mg before meals</td><td>Digestive stimulation, bloating, gas</td></tr>
+          <tr><td>With Ghee</td><td>Churna in warm ghee</td><td>250 mg with ½ tsp ghee</td><td>Vata-Kapha joint conditions; dry constitution</td></tr>
+          <tr><td>Trikatu Tea</td><td>¼ tsp churna decocted in water, strained</td><td>100–150 ml, 1–2× daily</td><td>Seasonal cold, fever management, nausea</td></tr>
+          <tr><td>Trikatu Tablets / Vati</td><td>Classical tablet formulations</td><td>Per label / practitioner direction</td><td>Sustained daily use, travel convenience</td></tr>
+          <tr><td>As Anupana base</td><td>Added to turmeric, Ashwagandha, Triphala formulas</td><td>125–250 mg with principal herb</td><td>To enhance absorption of co-administered herbs</td></tr>
+          <tr><td>Trikatu Ghrita</td><td>Medicated ghee — classical preparation</td><td>Per practitioner direction</td><td>Deep Vata-Kapha conditions, chronic respiratory</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">06</span><h2 class="section-title">Safety &amp; Precautions</h2><div class="section-rule"></div></div>
+      <p class="section-body">Trikatu is generally safe at classical doses for healthy adults, particularly those with Kapha or Kapha-Vata constitution. Its heating, pungent nature makes it unsuitable for Pitta-dominant individuals and contraindicated in several conditions. Piperine's bioenhancer effect also means it can interact with pharmaceutical medications by altering their metabolism and blood levels.</p>
+      <ul class="precaution-list">
+        <li><strong>Pitta conditions:</strong> Strictly avoid or use minimally in hyperacidity, GERD, gastric ulcers, Crohn's disease, active inflammatory bowel disease, epistaxis, and all bleeding disorders — Trikatu strongly aggravates Pitta and can worsen these conditions.</li>
+        <li><strong>Pregnancy:</strong> Avoid therapeutic doses during pregnancy. Pippali and high-dose ginger have historically been used as uterine stimulants; culinary amounts of ginger are generally considered safe in the first trimester only.</li>
+        <li><strong>Drug interactions:</strong> Piperine inhibits CYP3A4 and P-glycoprotein — it can significantly raise blood levels of cyclosporine, tacrolimus, phenytoin, propranolol, rifampicin, and certain chemotherapeutic agents. Inform your physician before combining with any medication.</li>
+        <li><strong>Anticoagulants:</strong> All three herbs have mild anti-platelet activity. Avoid combining with warfarin, heparin, clopidogrel, or aspirin therapy without medical supervision due to additive bleeding risk.</li>
+        <li><strong>Summer &amp; hot climates:</strong> Classical texts advise reducing or suspending Trikatu use in summer (Grishma Ritu) and in hot, arid environments to avoid aggravating Pitta and causing heat-related symptoms.</li>
+        <li><strong>Children under 12:</strong> Not recommended without specialist paediatric Ayurvedic guidance; its heating intensity is generally too strong for young children's constitutions.</li>
+        <li><strong>Kidney disorders:</strong> Use cautiously — its diuretic and thermogenic action can stress the kidneys in those with existing renal compromise or dehydration.</li>
+        <li><strong>Insomnia &amp; anxiety:</strong> Trikatu's stimulating, thermogenic nature can aggravate Vata disturbances in the mind — avoid taking in the evening and reduce or discontinue if it worsens insomnia, palpitations, or anxiety.</li>
+      </ul>
+    </div>
+
+    <div class="sources">
+      <div class="sources-title">References &amp; Sources</div>
+      <ul>
+        <li>Charaka Samhita — Sutrasthana, Chikitsasthana references to Trikatu in Agni Deepana formulations</li>
+        <li>Ashtanga Hridayam (Vagbhata) — Sutrasthana Ch. 15: Trikatu classification and pharmacology</li>
+        <li>Bhavaprakasha Nighantu — Haritakyadi Varga: Trikatu properties and indications</li>
+        <li>Shafiq et al. — "Piperine as a potential anti-inflammatory agent: a critical review" — Journal of Ethnopharmacology, 2021</li>
+        <li>Okumura N et al. — "Piperlongumine inhibits Akt phosphorylation to induce apoptosis" — Phytomedicine, 2016</li>
+        <li>Stanisiere J et al. — "How safe is ginger rhizome for decreasing nausea and vomiting in women during early pregnancy?" — Foods, 2018</li>
+        <li>Stojanovic-Radic Z et al. — "Piperine — a major principle of black pepper: A review of its bioactivity and studies" — Applied Sciences, 2019</li>
+        <li>Prasad S, Aggarwal BB — "Turmeric, the Golden Spice" in Herbal Medicine: Biomolecular and Clinical Aspects — CRC Press, 2011 (piperine-curcumin bioavailability data)</li>
+        <li>Khare CP — Indian Medicinal Plants: An Illustrated Dictionary — Springer, 2007 (individual monographs)</li>
+        <li>Sharma PV — Dravyaguna Vigyana Vol. II — Classical properties of the three herbs and Trikatu compound</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer>
+    <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a qualified practitioner before therapeutic use</p>
+  </footer>
+
+
+  <div id="viewerModal">
+    <div id="modal-topbar">
+      <span>3D Model — Trikatu</span>
+      <button type="button" id="close3D">✕</button>
+    </div>
+    <model-viewer src="trikatu3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+  </div>
+  <script>
+    (function() {
+      var open3D = document.getElementById('open3D');
+      var close3D = document.getElementById('close3D');
+      var modal = document.getElementById('viewerModal');
+      if (!open3D || !close3D || !modal) return;
+      function openModal() {
+        
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+      function closeModal() {
+        
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+      open3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); openModal();
+      });
+      close3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); closeModal();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+      });
+    })();
+  </script>
+
+</body>
+</html>

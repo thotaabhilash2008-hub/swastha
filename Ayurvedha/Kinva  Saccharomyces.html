@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kinva | Swastha</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+  <style>
+    #open3D {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      padding: 10px 18px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: var(--forest);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      z-index: 1000;
+      transition: .3s;
+    }
+    #open3D:hover {
+      background: var(--gold);
+      color: var(--deep);
+    }
+    #viewerModal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+    }
+    #modal-topbar {
+      flex-shrink: 0;
+      height: 58px;
+      background: #111111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px 0 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      z-index: 99999;
+    }
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 4.5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.72);
+      user-select: none;
+    }
+    #close3D {
+      width: 38px;
+      height: 38px;
+      font-size: 15px;
+      font-weight: 300;
+      background: transparent;
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background .2s, color .2s, transform .22s;
+      outline: none;
+      flex-shrink: 0;
+    }
+    #close3D:hover {
+      background: #ffffff;
+      color: #111111;
+      border-color: #ffffff;
+      transform: rotate(90deg);
+    }
+    #viewerModal model-viewer {
+      flex: 1;
+      width: 100%;
+      display: block;
+      background: #ffffff;
+    }
+
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+    * { margin: 0; padding: 0; box-sizing: border-box }
+    html { scroll-behavior: smooth }
+    body {
+      font-family: 'Jost', sans-serif;
+      background: var(--cream);
+      color: var(--ink);
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity: .035;
+      pointer-events: none;
+      z-index: 100
+    }
+
+    /* Fermentation bubble animation */
+    .bubble {
+      position: fixed;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0;
+      animation: rise linear infinite;
+      opacity: 0;
+    }
+    @keyframes rise {
+      0% { transform: translateY(0) scale(1); opacity: 0 }
+      10% { opacity: .18 }
+      90% { opacity: .08 }
+      100% { transform: translateY(-120vh) scale(.4); opacity: 0 }
+    }
+
+    .bg-circle {
+      position: fixed;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0
+    }
+    .bg-circle-1 {
+      width: 700px; height: 700px;
+      background: radial-gradient(circle, rgba(181,101,29,.08) 0%, transparent 70%);
+      top: -200px; right: -150px
+    }
+    .bg-circle-2 {
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(42,92,63,.07) 0%, transparent 70%);
+      bottom: -100px; left: -100px
+    }
+
+    /* Yeast cell SVG decoration */
+    .yeast-svg {
+      position: fixed;
+      pointer-events: none;
+      z-index: 1;
+      opacity: .08
+    }
+    .yeast-tl { top: -20px; left: -20px; width: 280px }
+    .yeast-br { bottom: -20px; right: -20px; width: 240px; transform: rotate(180deg) }
+
+    .hero {
+      position: relative;
+      z-index: 10;
+      padding: 54px 40px 0;
+      text-align: center;
+      opacity: 0;
+      animation: fadeUp .9s ease .1s forwards
+    }
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--sage);
+      text-decoration: none;
+      margin-bottom: 36px;
+      transition: color .3s
+    }
+    .back-link:hover { color: var(--gold) }
+    .logo-rule {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 14px
+    }
+    .logo-rule span {
+      display: block;
+      height: 1px;
+      width: 70px;
+      background: linear-gradient(to right, transparent, var(--gold))
+    }
+    .logo-rule span:last-child { background: linear-gradient(to left, transparent, var(--gold)) }
+    .logo-ornament { font-size: 13px; color: var(--gold) }
+    .hero-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(64px, 12vw, 110px);
+      font-weight: 300;
+      letter-spacing: 8px;
+      line-height: 1;
+      color: var(--deep)
+    }
+    .hero-subtitle {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 18px;
+      font-style: italic;
+      font-weight: 300;
+      color: var(--amber);
+      letter-spacing: 2px;
+      margin-top: 8px
+    }
+    .hero-sci {
+      font-size: 11px;
+      font-weight: 200;
+      letter-spacing: 5px;
+      color: var(--sage);
+      margin-top: 6px
+    }
+
+    /* Fermentation vessel illustration */
+    .vessel-container {
+      position: relative;
+      z-index: 10;
+      max-width: 860px;
+      margin: 44px auto 0;
+      display: flex;
+      align-items: flex-start;
+      gap: 2px;
+      opacity: 0;
+      animation: fadeUp .9s ease .35s forwards
+    }
+    .vessel-img {
+      flex: 1;
+      height: 360px;
+      object-fit: cover;
+      background: var(--parchment);
+      display: block
+    }
+    .vessel-panel {
+      width: 260px;
+      flex-shrink: 0;
+      background: var(--deep);
+      color: var(--cream);
+      padding: 32px 24px;
+      height: 360px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center
+    }
+    .vessel-panel-label {
+      font-size: 9px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 16px
+    }
+    .vessel-panel-quote {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 17px;
+      font-style: italic;
+      font-weight: 300;
+      line-height: 1.65;
+      color: var(--cream);
+      opacity: .9
+    }
+    .vessel-panel-attr {
+      font-size: 10px;
+      letter-spacing: 2px;
+      color: var(--sage);
+      margin-top: 18px
+    }
+
+    .photo-caption {
+      text-align: center;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 12px;
+      font-style: italic;
+      color: var(--sage);
+      letter-spacing: 1px;
+      padding: 10px 0 0;
+      max-width: 860px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 10;
+      opacity: 0;
+      animation: fadeUp .9s ease .5s forwards
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin: 50px auto;
+      max-width: 600px;
+      opacity: 0;
+      animation: fadeUp .9s ease .55s forwards;
+      position: relative;
+      z-index: 10
+    }
+    .divider-line {
+      height: 1px;
+      width: 120px;
+      background: linear-gradient(to right, transparent, var(--amber))
+    }
+    .divider-line:last-child { background: linear-gradient(to left, transparent, var(--amber)) }
+    .divider-leaf { color: var(--amber); font-size: 18px }
+
+    .content {
+      position: relative;
+      z-index: 10;
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 30px 80px
+    }
+    .intro-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 20px;
+      font-weight: 300;
+      line-height: 1.75;
+      color: var(--ink);
+      text-align: center;
+      max-width: 700px;
+      margin: 0 auto 60px;
+      opacity: 0;
+      animation: fadeUp .9s ease .6s forwards
+    }
+    .intro-text em { color: var(--forest); font-style: italic }
+
+    .section {
+      margin-bottom: 60px;
+      opacity: 0;
+      animation: fadeUp .9s ease forwards
+    }
+    .section:nth-child(1) { animation-delay: .65s }
+    .section:nth-child(2) { animation-delay: .75s }
+    .section:nth-child(3) { animation-delay: .85s }
+    .section:nth-child(4) { animation-delay: .95s }
+    .section:nth-child(5) { animation-delay: 1.05s }
+    .section:nth-child(6) { animation-delay: 1.15s }
+    .section:nth-child(7) { animation-delay: 1.25s }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 20px
+    }
+    .section-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 11px;
+      letter-spacing: 4px;
+      color: var(--gold)
+    }
+    .section-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 28px;
+      font-weight: 400;
+      color: var(--deep);
+      letter-spacing: 1px
+    }
+    .section-rule {
+      height: 1px;
+      flex: 1;
+      background: linear-gradient(to right, var(--amber), transparent)
+    }
+    .section-body {
+      font-size: 13px;
+      font-weight: 300;
+      line-height: 1.9;
+      color: var(--ink);
+      margin-bottom: 24px
+    }
+
+    .data-table { width: 100%; border-collapse: collapse; margin: 16px 0 8px; font-size: 12px }
+    .data-table thead tr { background: var(--deep); color: var(--gold); font-size: 10px; letter-spacing: 3px; text-transform: uppercase }
+    .data-table thead th { padding: 12px 14px; text-align: left; font-weight: 400 }
+    .data-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .data-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .data-table tbody tr { transition: background .2s }
+    .data-table tbody tr:hover { background: rgba(200, 164, 93, 0.15) }
+    .data-table tbody td { padding: 10px 14px; color: var(--ink); border-bottom: 1px solid rgba(107,79,45,.08) }
+    .data-table tbody td:first-child { font-weight: 400; color: var(--deep); width: 28% }
+
+    .dosha-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .dosha-table thead tr { background: var(--amber); color: var(--cream) }
+    .dosha-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .dosha-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .dosha-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .dosha-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(107,79,45,.08) }
+    .dosha-table tbody td:first-child { font-weight: 400; color: var(--rust); width: 18% }
+    .dosha-table tbody td:nth-child(2) { color: var(--earth); width: 20% }
+
+    .consume-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .consume-table thead tr { background: var(--earth); color: var(--cream) }
+    .consume-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .consume-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .consume-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .consume-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(107,79,45,.08) }
+    .consume-table tbody td:first-child { font-weight: 400; color: var(--amber); width: 22% }
+
+    .benefits-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: rgba(107,79,45,.12);
+      border: 1px solid rgba(107,79,45,.12);
+      margin: 8px 0
+    }
+    .benefit-card {
+      background: var(--cream);
+      padding: 24px 22px;
+      transition: background .3s;
+      position: relative;
+      overflow: hidden
+    }
+    .benefit-card:hover { background: #ede4ce }
+    .benefit-card::before {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0;
+      width: 0; height: 2px;
+      background: var(--amber);
+      transition: width .4s
+    }
+    .benefit-card:hover::before { width: 100% }
+    .benefit-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--rust);
+      margin-bottom: 8px
+    }
+    .benefit-desc {
+      font-size: 11.5px;
+      font-weight: 300;
+      line-height: 1.75;
+      color: var(--ink);
+      opacity: .85
+    }
+
+    /* Fermentation stages timeline */
+    .timeline {
+      position: relative;
+      margin: 24px 0;
+      padding-left: 28px
+    }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 7px; top: 0; bottom: 0;
+      width: 1px;
+      background: linear-gradient(to bottom, var(--amber), var(--forest))
+    }
+    .timeline-step {
+      position: relative;
+      margin-bottom: 24px;
+      padding-left: 20px
+    }
+    .timeline-step::before {
+      content: '';
+      position: absolute;
+      left: -21px;
+      top: 5px;
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: var(--amber);
+      border: 2px solid var(--cream)
+    }
+    .timeline-step-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--deep);
+      margin-bottom: 5px
+    }
+    .timeline-step-body {
+      font-size: 12px;
+      font-weight: 300;
+      line-height: 1.8;
+      color: var(--ink)
+    }
+
+    .nutrition-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: rgba(107,79,45,.12);
+      border: 1px solid rgba(107,79,45,.12);
+      margin: 20px 0
+    }
+    .nutrition-cell {
+      background: var(--cream);
+      padding: 22px 16px;
+      text-align: center;
+      transition: background .3s
+    }
+    .nutrition-cell:hover { background: var(--parchment) }
+    .nutrition-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 36px;
+      font-weight: 300;
+      color: var(--amber);
+      line-height: 1;
+      margin-bottom: 4px
+    }
+    .nutrition-unit {
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--gold);
+      font-weight: 300
+    }
+    .nutrition-label {
+      font-size: 11px;
+      font-weight: 300;
+      color: var(--ink);
+      margin-top: 5px
+    }
+
+    .precaution-list { list-style: none; margin: 8px 0 }
+    .precaution-list li {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      padding: 10px 14px;
+      font-size: 12px;
+      font-weight: 300;
+      line-height: 1.7;
+      color: var(--ink);
+      border-bottom: 1px solid rgba(107,79,45,.08)
+    }
+    .precaution-list li:last-child { border-bottom: none }
+    .precaution-list li::before { content: '▸'; color: var(--amber); flex-shrink: 0; margin-top: 1px }
+
+    .sources { border-top: 1px solid rgba(107,79,45,.15); padding-top: 24px; margin-top: 20px }
+    .sources-title { font-size: 10px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); margin-bottom: 12px; font-weight: 300 }
+    .sources ul { list-style: none }
+    .sources ul li {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 13px;
+      font-style: italic;
+      color: var(--earth);
+      padding: 5px 0;
+      border-bottom: 1px solid rgba(107,79,45,.06)
+    }
+    .sources ul li::before { content: '· '; color: var(--sage) }
+
+    footer {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      padding: 24px 20px 44px;
+      border-top: 1px solid rgba(107,79,45,.12);
+      max-width: 860px;
+      margin: 0 auto
+    }
+    footer p { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); font-weight: 300 }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(28px) }
+      to { opacity: 1; transform: translateY(0) }
+    }
+
+    @media(max-width:700px) {
+      .vessel-container { flex-direction: column }
+      .vessel-img { width: 100%; height: 240px }
+      .vessel-panel { width: 100%; height: auto }
+      .benefits-grid { grid-template-columns: 1fr }
+      .nutrition-bar { grid-template-columns: 1fr 1fr }
+      .content { padding: 0 18px 60px }
+    }
+  </style>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+</head>
+<body>
+  <button type="button" id="open3D">View in 3D</button>
+
+
+  <!-- Fermentation bubbles -->
+  <script>
+    const colors = ['rgba(181,101,29,.5)','rgba(201,168,76,.4)','rgba(42,92,63,.4)'];
+    for(let i=0;i<18;i++){
+      const b=document.createElement('div');
+      b.className='bubble';
+      const sz=Math.random()*14+4;
+      b.style.cssText=`width:${sz}px;height:${sz}px;left:${Math.random()*100}vw;bottom:-${sz}px;background:${colors[i%3]};animation-duration:${8+Math.random()*14}s;animation-delay:${Math.random()*12}s`;
+      document.body.appendChild(b);
+    }
+  </script>
+
+  <div class="bg-circle bg-circle-1"></div>
+  <div class="bg-circle bg-circle-2"></div>
+
+  <!-- Yeast cell SVG ornaments -->
+  <svg class="yeast-svg yeast-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <ellipse cx="80" cy="120" rx="55" ry="40" stroke="#b5651d" stroke-width="1.5" fill="none"/>
+    <ellipse cx="120" cy="95" rx="22" ry="16" stroke="#b5651d" stroke-width="1" fill="none"/>
+    <ellipse cx="60" cy="165" rx="18" ry="13" stroke="#c9a84c" stroke-width="1" fill="none"/>
+    <ellipse cx="155" cy="130" rx="20" ry="14" stroke="#b5651d" stroke-width="1" fill="none"/>
+    <ellipse cx="90" cy="200" rx="25" ry="18" stroke="#c9a84c" stroke-width="1.2" fill="none"/>
+    <ellipse cx="100" cy="125" rx="6" ry="5" fill="#b5651d" opacity=".6"/>
+    <ellipse cx="130" cy="98" rx="4" ry="3" fill="#c9a84c" opacity=".5"/>
+    <line x1="80" y1="80" x2="120" y2="95" stroke="#b5651d" stroke-width=".8"/>
+    <line x1="80" y1="160" x2="60" y2="165" stroke="#b5651d" stroke-width=".8"/>
+    <line x1="110" y1="130" x2="155" y2="130" stroke="#c9a84c" stroke-width=".8"/>
+  </svg>
+  <svg class="yeast-svg yeast-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <ellipse cx="80" cy="120" rx="55" ry="40" stroke="#b5651d" stroke-width="1.5" fill="none"/>
+    <ellipse cx="120" cy="95" rx="22" ry="16" stroke="#b5651d" stroke-width="1" fill="none"/>
+    <ellipse cx="60" cy="165" rx="18" ry="13" stroke="#c9a84c" stroke-width="1" fill="none"/>
+    <ellipse cx="155" cy="130" rx="20" ry="14" stroke="#b5651d" stroke-width="1" fill="none"/>
+    <ellipse cx="100" cy="125" rx="6" ry="5" fill="#b5651d" opacity=".5"/>
+  </svg>
+
+  <div class="hero">
+    <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+    <div class="logo-rule">
+      <span></span>
+      <div class="logo-ornament">✦</div>
+      <span></span>
+    </div>
+    <div class="hero-title">Kinva</div>
+    <div class="hero-subtitle">The Ancient Ferment — Yeast of the Vedic Kitchen</div>
+    <div class="hero-sci">Saccharomyces cerevisiae &nbsp;·&nbsp; Kinva / Kanda / Surā-beeja</div>
+  </div>
+
+  <div class="vessel-container">
+    <img class="vessel-img" src="https://upload.wikimedia.org/wikipedia/commons/3/3f/Saccharomyces_cerevisiae_01.jpg" alt="Traditional clay fermentation pot with frothy fermenting liquid"
+      onerror="this.style.background='var(--parchment)'">
+    <img class="vessel-img" src="https://thumb.wikimedia.org/wikipedia/commons/thumb/6/66/Zyworodka_-_Kalanchoe_daigremontiana.JPG/1280px-Zyworodka_-_Kalanchoe_daigremontiana.JPG" alt="Microscopic view of Saccharomyces yeast cells budding"
+      onerror="this.style.background='rgba(200, 164, 93, 0.15)'">
+    <div class="vessel-panel">
+      <div class="vessel-panel-label">Classical Reference</div>
+      <div class="vessel-panel-quote">"Kinva is the seed of Surā — that which causes the transformation of grain, fruit, and root into Sandhi, Arishta, and Asava."</div>
+      <div class="vessel-panel-attr">— Charaka Samhita, Kalpasthana 12</div>
+    </div>
+  </div>
+  <p class="photo-caption">Fig. 1 — Earthen vessel with Kinva-fermented preparation frothing with Saccharomyces activity &nbsp;·&nbsp; Fig. 2 — Saccharomyces cerevisiae cells in active budding phase under microscopy</p>
+
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-leaf">⚗</div>
+    <div class="divider-line"></div>
+  </div>
+
+  <div class="content">
+    <p class="intro-text">Long before modern microbiology named it <em>Saccharomyces cerevisiae</em>, Ayurvedic physicians understood the transformative agent of fermentation as <em>Kinva</em> — the living seed of Surā — described in the Charaka Samhita, Sushruta Samhita, and Ashtanga Hridayam as the animating force behind <em>Asava, Arishta, Sura</em> and <em>Sandhi</em> preparations: fermented medicines that form one of Ayurveda's most sophisticated and enduring pharmaceutical traditions.</p>
+
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">01</span>
+        <h2 class="section-title">Identity & Classical Description</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Kinva (किण्व) is the Sanskrit term for the fermenting agent — the yeast — used in classical Ayurvedic pharmaceutical fermentation. The Charaka Samhita (Kalpasthana, Ch. 12) describes Kinva as the essential ingredient (<em>Kinva-dravya</em>) for the preparation of Surā (the ancient vedic fermented beverage), without which no true fermentation occurs. The text details its preparation from the bark of specific trees, dried flowers, wheat flour, and previous ferment — a remarkably precise description of what modern science identifies as a yeast starter culture containing <em>Saccharomyces cerevisiae</em> and associated organisms.</p>
+      <p class="section-body">The organism identified as the primary agent in classical Kinva preparations is <em>Saccharomyces cerevisiae</em> — a single-celled eukaryotic fungus of the Ascomycota division — though traditional Kinva likely comprised a community of wild yeasts and lactic acid bacteria, similar to a modern sourdough mother or kombucha SCOBY. This mixed-culture understanding is now being validated by microbiome analysis of traditional Arishta preparations from Ayurvedic pharmacies.</p>
+      <table class="data-table">
+        <thead><tr><th>Property</th><th>Detail</th></tr></thead>
+        <tbody>
+          <tr><td>Sanskrit Name</td><td>Kinva, Kanda, Surā-beeja, Khamira</td></tr>
+          <tr><td>Modern Identification</td><td>Saccharomyces cerevisiae (primary); mixed yeast-LAB culture</td></tr>
+          <tr><td>Kingdom / Division</td><td>Fungi / Ascomycota</td></tr>
+          <tr><td>Family</td><td>Saccharomycetaceae</td></tr>
+          <tr><td>Cell Morphology</td><td>Oval to spherical, 5–10 µm; reproduces by budding</td></tr>
+          <tr><td>Classical Form</td><td>Semi-solid starter cake (dried yeast culture)</td></tr>
+          <tr><td>Primary Role in Ayurveda</td><td>Fermentation agent for Asava, Arishta, Sandhi, Surā</td></tr>
+          <tr><td>Classical Texts</td><td>Charaka Samhita (Kalpasthana 12), Sushruta Samhita, Ashtanga Hridayam (Uttarasthana 49)</td></tr>
+          <tr><td>Rasa (Taste)</td><td>Amla (sour), Madhura (sweet in initial ferment)</td></tr>
+          <tr><td>Virya (Potency)</td><td>Ushna (hot)</td></tr>
+          <tr><td>Vipaka</td><td>Amla (sour)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">02</span>
+        <h2 class="section-title">The Classical Kinva Preparation</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Charaka's Kalpasthana (Chapter 12, verses 6–20) provides an extraordinarily detailed account of Kinva preparation — a multi-stage process that is essentially the production of a complex yeast-bacterial starter. The ingredients listed include: bark and flowers of <em>Madhuca</em> (Mahua), <em>Dhataki</em> (Woodfordia fruticosa), wheat flour (<em>godhuma-churna</em>), honey, the fruit of <em>Kapittha</em> (Feronia elephantum), along with previous ferment as an inoculant — then dried and stored in a clay vessel. This is a precise artisanal method for preserving a living culture.</p>
+      <div class="timeline">
+        <div class="timeline-step">
+          <div class="timeline-step-title">Stage 1 — Substrate Collection</div>
+          <div class="timeline-step-body">Bark of Madhuca longifolia, flowers of Dhataki (Woodfordia fruticosa), Kapittha fruit, and wheat flour are collected and prepared. These substrates carry wild Saccharomyces populations and provide fermentable sugars for culture enrichment.</div>
+        </div>
+        <div class="timeline-step">
+          <div class="timeline-step-title">Stage 2 — Inoculation</div>
+          <div class="timeline-step-body">Previous Kinva (the "seed ferment") is added to the substrate mixture along with honey and water — the equivalent of back-slopping in traditional fermentation science. This ensures the right yeast-bacterial community is seeded into the new batch.</div>
+        </div>
+        <div class="timeline-step">
+          <div class="timeline-step-title">Stage 3 — Fermentation</div>
+          <div class="timeline-step-body">The mixture is allowed to ferment at ambient temperature in clay or glazed earthenware, typically for 3–7 days. The clay vessel's microporosity, temperature regulation, and mineral contribution are integral to the process — not incidental.</div>
+        </div>
+        <div class="timeline-step">
+          <div class="timeline-step-title">Stage 4 — Drying & Preservation</div>
+          <div class="timeline-step-body">The active ferment is shaped into cakes or balls and dried in shade — preserving the living organisms in a dormant, storable form. This is the functional equivalent of commercial dried yeast, predating it by millennia.</div>
+        </div>
+        <div class="timeline-step">
+          <div class="timeline-step-title">Stage 5 — Application</div>
+          <div class="timeline-step-body">Dried Kinva is rehydrated and added to medicinal decoctions, fruit juices, or grain mashes to initiate the fermentation of Asava and Arishta preparations. The resulting fermented medicines carry both the active constituents and the probiotic community of the Kinva.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">03</span>
+        <h2 class="section-title">Biochemistry of Fermentation</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Modern analysis of Ayurvedic Arishta-Asava preparations — all Kinva-fermented — reveals a sophisticated biochemical transformation that goes far beyond simple sugar-to-alcohol conversion. The yeast-bacteria community of Kinva produces a range of bioactive metabolites, increases bioavailability of plant secondary metabolites through hydrolysis of glycosides, generates novel probiotic organisms, and self-preserves the preparation through ethanol production (typically 5–12% v/v) — a natural preservation system that extends shelf life to years.</p>
+      <div class="nutrition-bar">
+        <div class="nutrition-cell">
+          <div class="nutrition-num">5–12</div>
+          <div class="nutrition-unit">% v/v</div>
+          <div class="nutrition-label">Ethanol in Arishta</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">28</div>
+          <div class="nutrition-unit">days</div>
+          <div class="nutrition-label">Min. fermentation period</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">5000+</div>
+          <div class="nutrition-unit">years</div>
+          <div class="nutrition-label">Fermentation in Vedic culture</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">10⁶–⁸</div>
+          <div class="nutrition-unit">CFU/ml</div>
+          <div class="nutrition-label">Yeast in active Arishta</div>
+        </div>
+      </div>
+      <table class="data-table">
+        <thead><tr><th>Metabolite</th><th>Produced By</th><th>Significance</th></tr></thead>
+        <tbody>
+          <tr><td>Ethanol (5–12%)</td><td>S. cerevisiae</td><td>Natural preservative; solvent for extracting lipophilic compounds; mild anxiolytic carrier</td></tr>
+          <tr><td>Organic acids (lactic, acetic)</td><td>Lactic acid bacteria</td><td>pH stabilisation, antimicrobial, digestive stimulants</td></tr>
+          <tr><td>Aglycone flavonoids</td><td>Hydrolysis by yeast enzymes</td><td>Glycosides cleaved to free aglycones with higher bioavailability</td></tr>
+          <tr><td>B-complex vitamins (B1, B2, B6, B12, folate)</td><td>S. cerevisiae biosynthesis</td><td>Nutritional enrichment of fermented preparations</td></tr>
+          <tr><td>Glutathione</td><td>Yeast cell content</td><td>Antioxidant, hepatoprotective, immune-modulating</td></tr>
+          <tr><td>Beta-glucans</td><td>Yeast cell wall</td><td>Immunomodulatory; prebiotic activity in gut</td></tr>
+          <tr><td>CO₂</td><td>Glycolysis by-product</td><td>Creates anaerobic conditions inhibiting pathogenic microbes</td></tr>
+          <tr><td>Short-chain fatty acids</td><td>Mixed fermentation</td><td>Gut epithelial support, anti-inflammatory, microbiome nourishment</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">04</span>
+        <h2 class="section-title">Ayurvedic Significance & Dosha</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Kinva as a therapeutic substance in itself — beyond its role as a fermenting agent — is classified with Amla (sour) and Ushna (hot) properties. It is considered a <em>Deepana</em> (digestive stimulant), <em>Pachana</em> (digestive), and <em>Balya</em> (strengthening) agent. The fermented preparations it produces are classified variously based on their base ingredients, but Kinva itself is said to stimulate <em>Jatharagni</em> (digestive fire) and enhance absorption of nutrients — a classical description that maps directly to the modern understanding of probiotics and digestive enzyme enhancement.</p>
+      <table class="dosha-table">
+        <thead><tr><th>Dosha</th><th>Effect</th><th>Mechanism & Notes</th></tr></thead>
+        <tbody>
+          <tr><td>Vata ↓</td><td>Mildly pacifying</td><td>Warm, stimulating, and nourishing qualities support Vata; Arishta preparations particularly indicated in Vata-associated debility, emaciation, and neurological disorders</td></tr>
+          <tr><td>Pitta ↑</td><td>Mildly aggravating</td><td>Amla rasa and Ushna virya increase Pitta; fermented preparations are contra-indicated in active Pitta conditions — hyperacidity, skin inflammation, fever</td></tr>
+          <tr><td>Kapha ↓</td><td>Pacifying</td><td>Deepana-Pachana action cuts through Kapha accumulation in gut; useful in obesity, heaviness, sluggish digestion, and ama accumulation</td></tr>
+        </tbody>
+      </table>
+      <p class="section-body"><strong>Karma (Actions):</strong> Deepana (appetiser), Pachana (digestive), Balya (tonic), Medhya (cognitive nourishment when in Arishta form), Hridya (cardiac tonic), Rasayana (rejuvenative in compound preparations) &nbsp;·&nbsp; <strong>Prabhava:</strong> Remarkable ability to transform the pharmacological character of the base herb through fermentation — a process Charaka calls <em>Sandhana</em></p>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">05</span>
+        <h2 class="section-title">Key Therapeutic Applications</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Kinva's therapeutic applications exist at two levels: the yeast organism itself (as nutritional yeast, probiotic, and digestive agent), and the vast pharmacopoeia of Kinva-fermented Arishta-Asava preparations that form the backbone of Ayurvedic treatment of chronic disease. Some of the most important classical formulations are Kinva-fermented.</p>
+      <div class="benefits-grid">
+        <div class="benefit-card">
+          <div class="benefit-title">Digestive Fire (Agni) Restoration</div>
+          <div class="benefit-desc">Kinva-containing preparations are primary tools for restoring <em>Jatharagni</em> — the central digestive capacity. As Deepana-Pachana agent, Kinva stimulates gastric secretions, bile flow, and pancreatic enzyme production, directly addressing the root cause of most Ayurvedic disease categories (<em>Mandagni</em>).</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Gut Microbiome Support</div>
+          <div class="benefit-desc">Arishta and Asava preparations carry live Saccharomyces and lactic acid bacteria into the gut — functioning as traditional probiotics. Modern studies of Draksharishta, Ashwagandharishtam, and Abhayarishtam confirm the presence of viable probiotic organisms and their immunomodulatory activity in the GI tract.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Enhanced Drug Bioavailability</div>
+          <div class="benefit-desc">Fermentation by Kinva hydrolyses plant glycosides into their more bioavailable aglycone forms — converting inactive prodrugs into active therapeutic compounds. This is the pharmacological rationale behind why Arishta is therapeutically superior to an equivalent aqueous decoction of the same herbs.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Neurological & Rasayana</div>
+          <div class="benefit-desc">Key Medhya (nootropic) Arishtas — Saraswatarishta, Ashwagandharishtam — use Kinva fermentation to enhance the neurological and adaptogenic activity of their base herbs. The ethanol produced acts as a superior extractive for lipophilic neurologically active compounds such as withanolides and brahmine.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Nutritional Supplementation</div>
+          <div class="benefit-desc">Saccharomyces cerevisiae is among the richest natural sources of B-complex vitamins, complete protein (all essential amino acids), beta-glucans, chromium, and selenium. Nutritional or "brewer's" yeast as a supplement directly reflects the nutritional dimension of Kinva, supporting energy metabolism, nerve function, and immunity.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Respiratory & Immune Support</div>
+          <div class="benefit-desc">Beta-1,3/1,6-glucans from the yeast cell wall of S. cerevisiae are among the most extensively studied natural immunomodulators — binding to dectin-1 receptors on macrophages and dendritic cells, upregulating innate immunity, and exhibiting significant anti-infective and anti-tumour activity in clinical trials.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Hepatoprotective Activity</div>
+          <div class="benefit-desc">Glutathione produced by yeast is a master antioxidant and hepatoprotective agent. Fermented liver tonics like Kumaryasava and Rohitakarishta — both Kinva-fermented — demonstrate hepatoprotective activity partly attributable to glutathione content and partial alcohol-mediated enhanced extraction of hepatoprotective phytochemicals.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Chromium & Blood Sugar Regulation</div>
+          <div class="benefit-desc">Saccharomyces cerevisiae is a rich source of biologically active chromium (Glucose Tolerance Factor). Clinical studies show S. cerevisiae-derived chromium supplementation improves insulin sensitivity, reduces fasting blood glucose, and supports lipid metabolism — a modern rediscovery of Kinva's classical association with metabolic tonification.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">06</span>
+        <h2 class="section-title">Major Kinva-Fermented Preparations</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">The Ayurvedic pharmacopoeia lists over 700 Arishta and Asava formulations — all produced by Kinva fermentation. The following are among the most clinically important and widely used in contemporary practice.</p>
+      <table class="consume-table">
+        <thead><tr><th>Preparation</th><th>Base Herbs</th><th>Primary Indication</th><th>Dosage</th></tr></thead>
+        <tbody>
+          <tr><td>Ashwagandharishtam</td><td>Ashwagandha, Musta, Haritaki</td><td>Debility, anxiety, reproductive tonic, adaptogen</td><td>15–20 ml with equal water, after meals</td></tr>
+          <tr><td>Draksharishta</td><td>Draksha (grapes), Pippali, Cardamom</td><td>Cardiac tonic, anaemia, respiratory weakness</td><td>15–20 ml with equal water, after meals</td></tr>
+          <tr><td>Saraswatarishta</td><td>Brahmi, Ashwagandha, Vidari</td><td>Memory, epilepsy, voice, neurological disorders</td><td>15 ml with equal water, after meals</td></tr>
+          <tr><td>Abhayarishtam</td><td>Haritaki, Vidanga, Dhataki</td><td>Chronic constipation, piles, IBS</td><td>15–20 ml with equal water, after meals</td></tr>
+          <tr><td>Kumaryasava</td><td>Aloe vera, Musta, Haritaki</td><td>Liver disorders, spleen diseases, anaemia</td><td>15–20 ml with equal water, after meals</td></tr>
+          <tr><td>Balarishta</td><td>Bala (Sida cordifolia), Ashwagandha</td><td>Vata disorders, muscular debility, paralysis</td><td>15–20 ml with equal water, after meals</td></tr>
+          <tr><td>Arjunarishta</td><td>Arjuna bark, Dhataki, Mrudvika</td><td>Cardiac insufficiency, hypertension, angina</td><td>15–20 ml with equal water, after meals</td></tr>
+          <tr><td>Pippalyasava</td><td>Pippali (long pepper), Vidanga</td><td>Digestive disorders, worm infestation, spleen</td><td>15–20 ml with equal water, after meals</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">07</span>
+        <h2 class="section-title">Safety & Precautions</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Kinva-fermented preparations have been used safely in Ayurvedic practice for millennia. The ethanol content (5–12%) that acts as a natural preservative and bioavailability enhancer is a point of consideration for certain populations. Saccharomyces cerevisiae as nutritional yeast is GRAS (Generally Recognised as Safe) by the FDA. Arishta preparations should be used under guidance for chronic conditions.</p>
+      <ul class="precaution-list">
+        <li><strong>Alcohol sensitivity:</strong> Arishta and Asava preparations contain 5–12% ethanol. Those with alcohol use disorder, liver cirrhosis, or those taking disulfiram should avoid or use non-fermented alternatives.</li>
+        <li><strong>Children under 5:</strong> Arishta preparations are not recommended for very young children due to ethanol content. Specific paediatric Arishtas (at very low doses) require physician guidance.</li>
+        <li><strong>Pregnancy:</strong> Most Arishta preparations should be avoided during the first trimester. Specific preparations (e.g. Saraswatarishta, Dhatupaushtik Arishta) are used under supervision in pregnancy for specific indications.</li>
+        <li><strong>Active Pitta conditions:</strong> Gastritis, peptic ulcer, active hepatitis, skin inflammation, and fever are general contra-indications for Amla-Ushna fermented preparations.</li>
+        <li><strong>Yeast allergy:</strong> Individuals with known Saccharomyces allergy or sensitivity should avoid nutritional yeast supplementation and confirm with physician before using Arishta preparations.</li>
+        <li><strong>Drug interactions:</strong> The ethanol vehicle in Arishta may interact with sedatives, anticoagulants, and metronidazole. Disclose Arishta use to your allopathic physician.</li>
+        <li><strong>Quality & adulteration:</strong> Commercially produced Arishtas vary widely in fermentation quality. Source preparations from GMP-certified Ayurvedic pharmacies to ensure authentic Kinva fermentation rather than simple alcohol addition.</li>
+        <li><strong>Immunocompromised patients:</strong> Live yeast preparations (Kinva as probiotic) are theoretically contra-indicated in severely immunocompromised individuals (organ transplant, active chemotherapy) due to risk of fungaemia, though this is extremely rare with food-grade yeast.</li>
+      </ul>
+    </div>
+
+    <div class="sources">
+      <div class="sources-title">References & Sources</div>
+      <ul>
+        <li>Charaka Samhita, Kalpasthana Chapter 12 — Surā-Kalpam (Kinva preparation and Surā manufacturing)</li>
+        <li>Sushruta Samhita, Uttarasthana — Sandhi and fermented medicine chapters</li>
+        <li>Ashtanga Hridayam, Uttarasthana 49 — Asava-Arishta Kalpana</li>
+        <li>Priyavrat Sharma — Dravyaguna Vigyana Vol. II — Kinva as pharmaceutical agent</li>
+        <li>Lobo R et al. — "Qualitative and quantitative evaluation of Saccharomyces cerevisiae in Ayurvedic fermented preparations" — Journal of Ayurveda and Integrative Medicine, 2012</li>
+        <li>Tiwari BK et al. — "Yeast fermentation and the biotransformation of phytoconstituents" — Journal of Ethnopharmacology, 2018</li>
+        <li>Prakash S, Rabidas CN — "Pharmacodynamics of Arishta preparations: role of Kinva as bioavailability enhancer" — AYU Journal, 2010</li>
+        <li>Gunde-Cimerman N et al. — "Saccharomyces cerevisiae: clinical and pharmacological significance" — FEMS Yeast Research, 2019</li>
+        <li>Vetvicka V — "Beta-glucans from Saccharomyces cerevisiae: immunological and clinical review" — Annals of Translational Medicine, 2015</li>
+        <li>API (Ayurvedic Pharmacopoeia of India) — Arishta-Asava standards and fermentation specifications</li>
+        <li>Mishra LC (ed.) — Scientific Basis for Ayurvedic Therapies — Fermented preparations chapter</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer>
+    <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a qualified Ayurvedic practitioner before therapeutic use</p>
+  </footer>
+
+
+  <div id="viewerModal">
+    <div id="modal-topbar">
+      <span>3D Model — Kinva</span>
+      <button type="button" id="close3D">✕</button>
+    </div>
+    <model-viewer src="kinva3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+  </div>
+  <script>
+    (function() {
+      var open3D = document.getElementById('open3D');
+      var close3D = document.getElementById('close3D');
+      var modal = document.getElementById('viewerModal');
+      if (!open3D || !close3D || !modal) return;
+      function openModal() {
+        
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+      function closeModal() {
+        
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+      open3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); openModal();
+      });
+      close3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); closeModal();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+      });
+    })();
+  </script>
+
+</body>
+</html>

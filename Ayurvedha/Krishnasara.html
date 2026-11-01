@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Krishnasara | Swastha</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+  <style>
+    #open3D {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      padding: 10px 18px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: var(--forest);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      z-index: 1000;
+      transition: .3s;
+    }
+    #open3D:hover {
+      background: var(--gold);
+      color: var(--deep);
+    }
+    #viewerModal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+    }
+    #modal-topbar {
+      flex-shrink: 0;
+      height: 58px;
+      background: #111111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px 0 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      z-index: 99999;
+    }
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 4.5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.72);
+      user-select: none;
+    }
+    #close3D {
+      width: 38px;
+      height: 38px;
+      font-size: 15px;
+      font-weight: 300;
+      background: transparent;
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background .2s, color .2s, transform .22s;
+      outline: none;
+      flex-shrink: 0;
+    }
+    #close3D:hover {
+      background: #ffffff;
+      color: #111111;
+      border-color: #ffffff;
+      transform: rotate(90deg);
+    }
+    #viewerModal model-viewer {
+      flex: 1;
+      width: 100%;
+      display: block;
+      background: #ffffff;
+    }
+
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+    * { margin:0; padding:0; box-sizing:border-box }
+    html { scroll-behavior:smooth }
+    body { font-family:'Jost',sans-serif; background:var(--cream); color:var(--ink); min-height:100vh; overflow-x:hidden; position:relative }
+    body::before { content:''; position:fixed; inset:0; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E"); opacity:.035; pointer-events:none; z-index:100 }
+
+    .bg-circle { position:fixed; border-radius:50%; pointer-events:none; z-index:0 }
+    .bg-circle-1 { width:700px; height:700px; background:radial-gradient(circle,rgba(26,74,46,.1) 0%,transparent 70%); top:-200px; right:-150px }
+    .bg-circle-2 { width:500px; height:500px; background:radial-gradient(circle,rgba(184,146,42,.08) 0%,transparent 70%); bottom:-100px; left:-100px }
+
+    /* Blackbuck SVG decoration */
+    .botanical-svg { position:fixed; pointer-events:none; z-index:1; opacity:.07 }
+    .botanical-tl { top:0; left:0; width:280px }
+    .botanical-br { bottom:0; right:0; width:240px; transform:rotate(180deg) }
+
+    .hero { position:relative; z-index:10; padding:54px 40px 0; text-align:center; opacity:0; animation:fadeUp .9s ease .1s forwards }
+    .back-link { display:inline-flex; align-items:center; gap:8px; font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--sage); text-decoration:none; margin-bottom:36px; transition:color .3s }
+    .back-link:hover { color:var(--gold) }
+    .logo-rule { display:flex; align-items:center; justify-content:center; gap:20px; margin-bottom:14px }
+    .logo-rule span { display:block; height:1px; width:70px; background:linear-gradient(to right,transparent,var(--gold)) }
+    .logo-rule span:last-child { background:linear-gradient(to left,transparent,var(--gold)) }
+    .logo-ornament { font-size:13px; color:var(--gold) }
+    .hero-title { font-family:'Cormorant Garamond',serif; font-size:clamp(60px,11vw,106px); font-weight:300; letter-spacing:8px; line-height:1; color:var(--deep) }
+    .hero-subtitle { font-family:'Cormorant Garamond',serif; font-size:18px; font-style:italic; font-weight:300; color:var(--earth); letter-spacing:2px; margin-top:8px }
+    .hero-sci { font-size:11px; font-weight:200; letter-spacing:5px; color:var(--sage); margin-top:6px }
+
+    .hero-photos { position:relative; z-index:10; display:grid; grid-template-columns:1fr 1fr; gap:2px; max-width:900px; margin:40px auto 0; opacity:0; animation:fadeUp .9s ease .35s forwards }
+    .hero-photos img { width:100%; height:380px; object-fit:cover; object-position:center; display:block; background:var(--parchment) }
+    .photo-caption { text-align:center; font-family:'Cormorant Garamond',serif; font-size:12px; font-style:italic; color:var(--sage); letter-spacing:1px; padding:10px 0 0; max-width:900px; margin:0 auto; position:relative; z-index:10; opacity:0; animation:fadeUp .9s ease .5s forwards }
+
+    .divider { display:flex; align-items:center; justify-content:center; gap:16px; margin:50px auto; max-width:600px; opacity:0; animation:fadeUp .9s ease .55s forwards; position:relative; z-index:10 }
+    .divider-line { height:1px; width:120px; background:linear-gradient(to right,transparent,var(--sage)) }
+    .divider-line:last-child { background:linear-gradient(to left,transparent,var(--sage)) }
+    .divider-leaf { color:var(--forest); font-size:18px }
+
+    .content { position:relative; z-index:10; max-width:860px; margin:0 auto; padding:0 30px 80px }
+    .intro-text { font-family:'Cormorant Garamond',serif; font-size:20px; font-weight:300; line-height:1.75; color:var(--ink); text-align:center; max-width:700px; margin:0 auto 60px; opacity:0; animation:fadeUp .9s ease .6s forwards }
+    .intro-text em { color:var(--forest); font-style:italic }
+
+    .section { margin-bottom:60px; opacity:0; animation:fadeUp .9s ease forwards }
+    .section:nth-child(1){animation-delay:.65s}.section:nth-child(2){animation-delay:.75s}.section:nth-child(3){animation-delay:.85s}.section:nth-child(4){animation-delay:.95s}.section:nth-child(5){animation-delay:1.05s}.section:nth-child(6){animation-delay:1.15s}.section:nth-child(7){animation-delay:1.25s}
+
+    .section-header { display:flex; align-items:center; gap:14px; margin-bottom:20px }
+    .section-num { font-family:'Cormorant Garamond',serif; font-size:11px; letter-spacing:4px; color:var(--gold) }
+    .section-title { font-family:'Cormorant Garamond',serif; font-size:28px; font-weight:400; color:var(--deep); letter-spacing:1px }
+    .section-rule { height:1px; flex:1; background:linear-gradient(to right,var(--gold),transparent) }
+    .section-body { font-size:13px; font-weight:300; line-height:1.9; color:var(--ink); margin-bottom:24px }
+
+    .data-table { width:100%; border-collapse:collapse; margin:16px 0 8px; font-size:12px }
+    .data-table thead tr { background:var(--deep); color:var(--gold); font-size:10px; letter-spacing:3px; text-transform:uppercase }
+    .data-table thead th { padding:12px 14px; text-align:left; font-weight:400 }
+    .data-table tbody tr:nth-child(even){background:var(--parchment)}.data-table tbody tr:nth-child(odd){background:var(--cream)}
+    .data-table tbody tr { transition:background .2s }
+    .data-table tbody tr:hover { background:rgba(200, 164, 93, 0.15) }
+    .data-table tbody td { padding:10px 14px; color:var(--ink); border-bottom:1px solid rgba(92,61,30,.08) }
+    .data-table tbody td:first-child { font-weight:400; color:var(--deep); width:28% }
+
+    .dosha-table { width:100%; border-collapse:collapse; margin:16px 0; font-size:12px }
+    .dosha-table thead tr { background:var(--forest); color:var(--cream) }
+    .dosha-table thead th { padding:12px 14px; text-align:left; font-weight:400; letter-spacing:2px; font-size:10px; text-transform:uppercase }
+    .dosha-table tbody tr:nth-child(even){background:var(--parchment)}.dosha-table tbody tr:nth-child(odd){background:var(--cream)}
+    .dosha-table tbody td { padding:11px 14px; color:var(--ink); border-bottom:1px solid rgba(92,61,30,.08) }
+    .dosha-table tbody td:first-child { font-weight:400; color:var(--forest); width:18% }
+    .dosha-table tbody td:nth-child(2) { color:var(--earth); width:20% }
+
+    .consume-table { width:100%; border-collapse:collapse; margin:16px 0; font-size:12px }
+    .consume-table thead tr { background:var(--earth); color:var(--cream) }
+    .consume-table thead th { padding:12px 14px; text-align:left; font-weight:400; letter-spacing:2px; font-size:10px; text-transform:uppercase }
+    .consume-table tbody tr:nth-child(even){background:var(--parchment)}.consume-table tbody tr:nth-child(odd){background:var(--cream)}
+    .consume-table tbody td { padding:11px 14px; color:var(--ink); border-bottom:1px solid rgba(92,61,30,.08) }
+    .consume-table tbody td:first-child { font-weight:400; color:var(--earth); width:22% }
+
+    .benefits-grid { display:grid; grid-template-columns:1fr 1fr; gap:1px; background:rgba(92,61,30,.12); border:1px solid rgba(92,61,30,.12); margin:8px 0 }
+    .benefit-card { background:var(--cream); padding:24px 22px; transition:background .3s; position:relative; overflow:hidden }
+    .benefit-card:hover { background:#ede4ce }
+    .benefit-card::before { content:''; position:absolute; bottom:0; left:0; width:0; height:2px; background:var(--gold); transition:width .4s }
+    .benefit-card:hover::before { width:100% }
+    .benefit-title { font-family:'Cormorant Garamond',serif; font-size:16px; font-weight:600; color:var(--forest); margin-bottom:8px }
+    .benefit-desc { font-size:11.5px; font-weight:300; line-height:1.75; color:var(--ink); opacity:.85 }
+
+    .stats-bar { display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:rgba(92,61,30,.12); border:1px solid rgba(92,61,30,.12); margin:20px 0 }
+    .stat-cell { background:var(--cream); padding:22px 16px; text-align:center; transition:background .3s }
+    .stat-cell:hover { background:var(--parchment) }
+    .stat-num { font-family:'Cormorant Garamond',serif; font-size:36px; font-weight:300; color:var(--forest); line-height:1; margin-bottom:4px }
+    .stat-unit { font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--gold); font-weight:300 }
+    .stat-label { font-size:11px; font-weight:300; color:var(--ink); margin-top:5px }
+
+    .precaution-list { list-style:none; margin:8px 0 }
+    .precaution-list li { display:flex; gap:12px; align-items:flex-start; padding:10px 14px; font-size:12px; font-weight:300; line-height:1.7; color:var(--ink); border-bottom:1px solid rgba(92,61,30,.08) }
+    .precaution-list li:last-child { border-bottom:none }
+    .precaution-list li::before { content:'▸'; color:var(--gold); flex-shrink:0; margin-top:1px }
+
+    .sources { border-top:1px solid rgba(92,61,30,.15); padding-top:24px; margin-top:20px }
+    .sources-title { font-size:10px; letter-spacing:4px; text-transform:uppercase; color:var(--sage); margin-bottom:12px; font-weight:300 }
+    .sources ul { list-style:none }
+    .sources ul li { font-family:'Cormorant Garamond',serif; font-size:13px; font-style:italic; color:var(--earth); padding:5px 0; border-bottom:1px solid rgba(92,61,30,.06) }
+    .sources ul li::before { content:'· '; color:var(--sage) }
+
+    footer { position:relative; z-index:10; text-align:center; padding:24px 20px 44px; border-top:1px solid rgba(92,61,30,.12); max-width:860px; margin:0 auto }
+    footer p { font-size:11px; letter-spacing:4px; text-transform:uppercase; color:var(--sage); font-weight:300 }
+
+    @keyframes fadeUp { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:translateY(0)} }
+    @media(max-width:700px){
+      .hero-photos{grid-template-columns:1fr}.hero-photos img{height:260px}
+      .benefits-grid{grid-template-columns:1fr}.stats-bar{grid-template-columns:1fr 1fr}
+      .content{padding:0 18px 60px}
+    }
+  </style>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+</head>
+<body>
+  <button type="button" id="open3D">View in 3D</button>
+
+
+<div class="bg-circle bg-circle-1"></div>
+<div class="bg-circle bg-circle-2"></div>
+
+<!-- Blackbuck silhouette decoration -->
+<svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Stylised antelope silhouette -->
+  <path d="M60 240 Q80 200 110 190 Q130 185 150 170 Q170 155 180 130 Q190 105 185 80 Q180 60 170 50" stroke="#1a4a2e" stroke-width="2" fill="none"/>
+  <path d="M170 50 Q175 30 165 20 Q160 12 155 18 Q150 25 160 40" stroke="#1a4a2e" stroke-width="1.5" fill="none"/>
+  <path d="M170 50 Q185 35 190 22 Q195 12 188 8 Q180 5 175 15 Q170 28 165 45" stroke="#1a4a2e" stroke-width="1.5" fill="none"/>
+  <ellipse cx="163" cy="55" rx="14" ry="10" fill="#1a4a2e" opacity="0.6"/>
+  <path d="M110 190 Q95 210 80 240 M130 185 Q125 215 120 250" stroke="#1a4a2e" stroke-width="1.5" fill="none"/>
+  <!-- grass/ground -->
+  <path d="M40 260 Q100 255 160 258 Q220 261 270 256" stroke="#6b8f71" stroke-width="1" fill="none"/>
+  <path d="M55 260 Q57 248 59 260 M80 258 Q83 244 85 258 M110 259 Q112 247 114 259" stroke="#6b8f71" stroke-width="1" fill="none"/>
+</svg>
+<svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M60 240 Q80 200 110 190 Q130 185 150 170 Q170 155 180 130 Q190 105 185 80 Q180 60 170 50" stroke="#1a4a2e" stroke-width="2" fill="none"/>
+  <ellipse cx="163" cy="55" rx="14" ry="10" fill="#1a4a2e" opacity="0.5"/>
+  <path d="M110 190 Q95 210 80 240 M130 185 Q125 215 120 250" stroke="#1a4a2e" stroke-width="1.5" fill="none"/>
+  <path d="M40 260 Q100 255 160 258 Q220 261 270 256" stroke="#6b8f71" stroke-width="1" fill="none"/>
+</svg>
+
+<div class="hero">
+  <a href="index.html" class="back-link">← Back to Wildlife Gallery</a>
+  <div class="logo-rule"><span></span><div class="logo-ornament">✦</div><span></span></div>
+  <div class="hero-title">Krishnasara</div>
+  <div class="hero-subtitle">The Blackbuck — Sacred Antelope of India</div>
+  <div class="hero-sci">Antilope cervicapra &nbsp;·&nbsp; Bovidae : Antilopinae</div>
+</div>
+
+<div class="hero-photos">
+  <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/6/62/Blackbuck_Female_Grazing.jpg/1280px-Blackbuck_Female_Grazing.jpg" alt="Male blackbuck with spiralling horns and dark dorsal coat" onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+  <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/1/13/A_male_blackbuck_photographed_at_Blackbuck_Conservation_Area%2C_Bardiya%2C_Nepal.jpg/1280px-A_male_blackbuck_photographed_at_Blackbuck_Conservation_Area%2C_Bardiya%2C_Nepal.jpg" alt="Blackbuck herd grazing on open grassland at golden hour" onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+</div>
+<p class="photo-caption">Fig. 1 — Adult male Krishnasara displaying spiralling horns and striking bicolour coat &nbsp;·&nbsp; Fig. 2 — Mixed herd grazing on open Indian grassland at dusk</p>
+
+<div class="divider">
+  <div class="divider-line"></div>
+  <div class="divider-leaf">❧</div>
+  <div class="divider-line"></div>
+</div>
+
+<div class="content">
+  <p class="intro-text">Revered as the mount of <em>Vayu</em> and <em>Chandra</em>, sacred to Lord Vishnu and enshrined in Vedic lore as <em>Krishnasara</em> — "the dark-spotted one" — the Indian Blackbuck is among the fastest land animals on earth and a keystone species of the vanishing <em>terai</em> and Deccan grasslands. Its survival today is an emblem of India's conservation conscience.</p>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">01</span><h2 class="section-title">Species Profile</h2><div class="section-rule"></div></div>
+    <p class="section-body">The Blackbuck (<em>Antilope cervicapra</em>) is the sole extant member of the genus <em>Antilope</em> and one of the fastest ungulates in the world — capable of reaching 80 km/h in short bursts and sustaining 65 km/h over longer distances. Endemic to the Indian subcontinent, it inhabits open grasslands, scrub forests, and semi-arid plains from the Terai belt to the Deccan plateau and coastal Andhra Pradesh.</p>
+    <p class="section-body">The adult male is unmistakable: a deep chocolate-to-black dorsal coat contrasts sharply with a white underside, white eye-rings, and white inner legs. Only males carry the magnificent spiralling horns — typically 45–70 cm long and making 1–5 turns — used in dominance displays and combat. Females and juveniles are uniformly fawn above, white below. Males deepen in colour with age, and sub-adults undergo gradual darkening from about 1.5 years onward.</p>
+    <table class="data-table">
+      <thead><tr><th>Property</th><th>Detail</th></tr></thead>
+      <tbody>
+        <tr><td>Order / Family</td><td>Artiodactyla / Bovidae (Antilopinae)</td></tr>
+        <tr><td>Scientific Name</td><td>Antilope cervicapra (Linnaeus, 1758)</td></tr>
+        <tr><td>Sanskrit Name</td><td>Krishnasara, Krishnamriga, Eṇa, Kālahariṇa</td></tr>
+        <tr><td>Common Names</td><td>Indian Blackbuck, Blackbuck Antelope</td></tr>
+        <tr><td>Regional Names</td><td>Kalveet / Hirni (Hindi), Irul maan (Tamil), Krishnajiṅka (Telugu), Sariga (Kannada)</td></tr>
+        <tr><td>Body Length</td><td>100–150 cm; shoulder height 60–85 cm</td></tr>
+        <tr><td>Body Weight</td><td>Males 20–57 kg; Females 20–33 kg</td></tr>
+        <tr><td>Horn Length</td><td>45–70 cm (record: 71.2 cm); 1–5 spiral turns</td></tr>
+        <tr><td>Lifespan</td><td>10–15 years (wild); up to 18 years (captivity)</td></tr>
+        <tr><td>Top Speed</td><td>80 km/h (burst); 65 km/h (sustained)</td></tr>
+        <tr><td>IUCN Status</td><td>Least Concern (recovering; formerly Vulnerable)</td></tr>
+        <tr><td>CITES Listing</td><td>Appendix III (India)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">02</span><h2 class="section-title">Distribution &amp; Habitat</h2><div class="section-rule"></div></div>
+    <p class="section-body">Historically Blackbuck ranged across virtually all of the Indian subcontinent. Today, viable populations persist in Rajasthan, Gujarat, Madhya Pradesh, Andhra Pradesh, Telangana, Punjab, and coastal Karnataka — with notable strongholds at Velavadar (Gujarat), Point Calimere (Tamil Nadu), Tal Chhapar (Rajasthan), and Rollapadu (Andhra Pradesh). Small introduced populations exist in the United States (Texas), Argentina, and Nepal.</p>
+    <p class="section-body">The species is a specialist of open country: short-grass plains, thornbush scrub, semi-arid land, and cultivated areas adjacent to grasslands. It avoids dense forest and tall grass where its speed advantage is lost and predator detection is compromised. Access to water is important but Blackbuck can survive in semi-arid zones by metabolising moisture from succulent grasses.</p>
+    <div class="stats-bar">
+      <div class="stat-cell"><div class="stat-num">~50K</div><div class="stat-unit">individuals</div><div class="stat-label">Current India population</div></div>
+      <div class="stat-cell"><div class="stat-num">80</div><div class="stat-unit">km/h</div><div class="stat-label">Peak sprint speed</div></div>
+      <div class="stat-cell"><div class="stat-num">5</div><div class="stat-unit">turns</div><div class="stat-label">Max horn spiral (record)</div></div>
+      <div class="stat-cell"><div class="stat-num">~25</div><div class="stat-unit">sanctuaries</div><div class="stat-label">Protected in India</div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">03</span><h2 class="section-title">Cultural &amp; Sacred Significance</h2><div class="section-rule"></div></div>
+    <p class="section-body">Few animals are as deeply woven into Indian spiritual and royal life as the Krishnasara. In the Rigveda it appears as the mount of Vayu, god of wind — fitting for an animal of extraordinary swiftness. The skin of the Blackbuck (<em>Krishnajinadhara</em>) is considered sacred in Vedic tradition: Brahmin boys receive a Blackbuck skin during the <em>Upanayana</em> (sacred thread ceremony), and it serves as an asana for ascetics and scholars.</p>
+    <p class="section-body">The Bishnoi community of Rajasthan has protected Blackbuck for over 500 years as sacred animals — a tradition that inspired one of India's earliest conservation martyrdoms in 1730, when Amrita Devi and 363 Bishnoi villagers sacrificed their lives to protect trees and wildlife. Even today, Bishnoi villages are living wildlife sanctuaries where Blackbuck graze peacefully alongside human dwellings. The national animal of Pakistan (<em>Chinkara</em>) is a close relative, while in India the Blackbuck appears in Moghul miniatures, temple reliefs, and royal hunting narratives.</p>
+    <table class="data-table">
+      <thead><tr><th>Context</th><th>Significance</th></tr></thead>
+      <tbody>
+        <tr><td>Vedic texts</td><td>Mount of Vayu (Wind god) and Chandra (Moon god); symbol of speed and purity</td></tr>
+        <tr><td>Upanayana</td><td>Krishnajina (blackbuck skin) given to Brahmin initiates as sacred asana</td></tr>
+        <tr><td>Bishnoi community</td><td>Revered as sacred; protected for 500+ years; coexist freely in villages</td></tr>
+        <tr><td>Mughal art</td><td>Featured in royal hunts (<em>shikar</em>) in miniature paintings; emblem of courtly prestige</td></tr>
+        <tr><td>State animal</td><td>State animal of Andhra Pradesh, Punjab, and Haryana</td></tr>
+        <tr><td>Jain tradition</td><td>Associated with Lord Chandraprabha; symbol of non-violence and agility</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">04</span><h2 class="section-title">Behaviour &amp; Ecology</h2><div class="section-rule"></div></div>
+    <p class="section-body">Blackbuck are highly gregarious, forming three types of groups: female herds (5–50 individuals with young), bachelor male groups, and territorial male units. Dominant males establish and actively defend territories of 1–5 hectares using dung middens, preorbital gland secretions, and vigorous pronking — stiff-legged leaping — to signal fitness to females and warn rivals.</p>
+    <p class="section-body">The mating system is a lekking-derived territorial polygyny: females move freely through male territories, choosing mates based on territory quality and male display vigour. Dominant males undergo striking coat darkening during the rut — their black deepens almost to jet — accompanied by intense chasing, sparring, and vocalisation. Fawns are born after a 5–6 month gestation; twins are rare but documented.</p>
+    <div class="benefits-grid">
+      <div class="benefit-card"><div class="benefit-title">Diet &amp; Foraging</div><div class="benefit-desc">Predominantly a grazer, feeding on short grasses (Cenchrus, Dichanthium) and seasonal herbs. Will browse forbs and agricultural crops — a source of human conflict — and shows dietary plasticity in semi-arid zones by selecting succulents for water.</div></div>
+      <div class="benefit-card"><div class="benefit-title">Predators &amp; Vigilance</div><div class="benefit-desc">Primary predators include wolves, Indian leopard, and feral dogs. Cheetah was a co-evolved predator now extinct in India. Blackbuck's extraordinary speed and open-habitat preference are adaptations to cursorial predation; alarm snorts and pronking alert the herd.</div></div>
+      <div class="benefit-card"><div class="benefit-title">Territorial Display</div><div class="benefit-desc">Males scent-mark territories with preorbital gland secretions deposited on grass stems, and maintain dung middens at territory boundaries. Horn size correlates with dominance; sparring matches rarely cause serious injury but establish hierarchy.</div></div>
+      <div class="benefit-card"><div class="benefit-title">Migration &amp; Movement</div><div class="benefit-desc">Historically undertook seasonal migrations of hundreds of kilometres tracking monsoon-driven grass flushes. Modern agriculture, roads, and fencing have fragmented these corridors, confining most populations to isolated patches with serious genetic implications.</div></div>
+      <div class="benefit-card"><div class="benefit-title">Breeding Biology</div><div class="benefit-desc">Breeding is year-round in India with peaks in February–March and August–October. Gestation is 5–6 months; single fawn is hidden in tall grass for 2–3 weeks before joining the herd. Females attain sexual maturity at 8 months; males at 18 months.</div></div>
+      <div class="benefit-card"><div class="benefit-title">Ecosystem Role</div><div class="benefit-desc">As a keystone grazer, Blackbuck shapes grassland structure — maintaining short-grass habitat preferred by the endangered Great Indian Bustard and Lesser Florican. Dung contributes to nutrient cycling, and their grazing patterns influence plant community composition.</div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">05</span><h2 class="section-title">Conservation Status &amp; Threats</h2><div class="section-rule"></div></div>
+    <p class="section-body">Once numbering in the millions across the subcontinent, Blackbuck populations crashed to an estimated 8,000 individuals by the 1960s–70s — driven by rampant hunting (including illegal coursing with trained cheetahs and greyhounds by royalty), massive habitat loss to agriculture, and unregulated pesticide use. The Wildlife Protection Act of 1972 gave them full legal protection; populations have since recovered to approximately 50,000 in India.</p>
+    <p class="section-body">Despite the recovery, threats persist: habitat fragmentation isolates populations; feral and domestic dogs cause significant mortality; farmers retaliate for crop raiding; powerline collisions are a growing hazard; and poaching — though reduced — continues. High-profile poaching cases involving celebrities have brought national attention to the species' vulnerability.</p>
+    <table class="dosha-table">
+      <thead><tr><th>Threat</th><th>Severity</th><th>Conservation Response</th></tr></thead>
+      <tbody>
+        <tr><td>Habitat loss</td><td>Critical</td><td>Grassland notified as Priority Ecosystem; CRZ protections in coastal areas</td></tr>
+        <tr><td>Fragmentation</td><td>High</td><td>Wildlife corridors identified; underpass structures on National Highways</td></tr>
+        <tr><td>Feral dog predation</td><td>High</td><td>Dog sterilisation programmes near sanctuaries; vigilance patrolling</td></tr>
+        <tr><td>Crop raiding &amp; retaliation</td><td>Moderate</td><td>Compensation schemes; community buffer zones</td></tr>
+        <tr><td>Poaching</td><td>Moderate</td><td>WPA 1972 Schedule I protection; Forest Dept. enforcement; celebrity cases</td></tr>
+        <tr><td>Powerline collision</td><td>Moderate</td><td>Line-marking, rerouting studies; insulation pilots in AP &amp; Rajasthan</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">06</span><h2 class="section-title">Key Protected Areas</h2><div class="section-rule"></div></div>
+    <p class="section-body">India maintains a network of sanctuaries specifically designed or significantly managed for Blackbuck conservation. The following are the most important strongholds, collectively hosting the majority of India's wild Blackbuck population.</p>
+    <table class="consume-table">
+      <thead><tr><th>Sanctuary / Reserve</th><th>State</th><th>Est. Population</th><th>Special Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Velavadar NP</td><td>Gujarat</td><td>~4,000</td><td>Largest single population; wolves present as natural predators</td></tr>
+        <tr><td>Tal Chhapar WLS</td><td>Rajasthan</td><td>~2,500</td><td>Adjacent Bishnoi villages; migratory harriers winter here</td></tr>
+        <tr><td>Rollapadu WLS</td><td>Andhra Pradesh</td><td>~1,500</td><td>Critical Great Indian Bustard habitat; shared ecosystem</td></tr>
+        <tr><td>Point Calimere WLS</td><td>Tamil Nadu</td><td>~1,500</td><td>Only southern coastal population; migratory flamingo overlap</td></tr>
+        <tr><td>Ranibennur BR</td><td>Karnataka</td><td>~1,000</td><td>Southernmost significant population; wolf coexistence zone</td></tr>
+        <tr><td>Mayureshwar WLS</td><td>Maharashtra</td><td>~500</td><td>Important for Deccan plateau connectivity</td></tr>
+        <tr><td>Bishnoi villages</td><td>Rajasthan</td><td>~3,000+</td><td>Community-protected; unenclosed, coexisting with humans</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">07</span><h2 class="section-title">Precautions &amp; Visitor Notes</h2><div class="section-rule"></div></div>
+    <p class="section-body">Krishnasara is fully protected under Schedule I of the Wildlife (Protection) Act 1972 — the highest level of protection in Indian law, equivalent to that of the tiger and elephant. Approaching, harassing, feeding, or photographing with flash in ways that startle animals is prohibited and punishable.</p>
+    <ul class="precaution-list">
+      <li><strong>Legal status:</strong> Killing, injuring, trapping, or trading any Blackbuck or its parts (including horns, skin) is a cognisable, non-bailable offence with imprisonment up to 7 years and/or fine.</li>
+      <li><strong>No feeding:</strong> Human food disrupts natural foraging behaviour and attracts animals to roadsides, increasing vehicle collision risk significantly.</li>
+      <li><strong>Vehicle speed:</strong> Maintain under 20 km/h inside sanctuary zones; Blackbuck may sprint across roads unpredictably even as vehicles approach.</li>
+      <li><strong>No flash photography:</strong> Sudden flashes disorient and startle animals, disrupting territorial and feeding behaviour especially during dawn and dusk hours.</li>
+      <li><strong>Quiet approach:</strong> Keep voices low and avoid sudden movements; females with fawns are particularly vulnerable to stress-induced abandonment of young.</li>
+      <li><strong>Dog restriction:</strong> Domestic and pet dogs are strictly prohibited inside or near wildlife zones — feral and domestic dogs are a leading cause of Blackbuck mortality.</li>
+      <li><strong>Bishnoi village visits:</strong> These are living conservation areas — respect community guidelines, do not disturb animals grazing in the village, and seek local permission before photography sessions.</li>
+      <li><strong>Crop conflict areas:</strong> Do not attempt to drive Blackbuck away from agricultural fields yourself; inform local Forest Department — retaliatory killing is a serious conservation risk.</li>
+    </ul>
+  </div>
+
+  <div class="sources">
+    <div class="sources-title">References &amp; Sources</div>
+    <ul>
+      <li>IUCN Red List — Antilope cervicapra assessment — Bro-Jørgensen et al., 2016 &amp; 2020 update</li>
+      <li>Wildlife Institute of India — Status of Blackbuck in India: Population Survey Reports</li>
+      <li>Jhala YV — "The ecology and conservation of wolves in the Bhal region of Gujarat" — WII, 1993</li>
+      <li>Rahmani AR &amp; Islam MZ — "Blackbuck Antilope cervicapra" — ENVIS Centre on Wildlife & Protected Areas, 2019</li>
+      <li>Mitra S — "Sacred Grove and Blackbuck: Bishnoi Conservation Ethics" — Ethnobiology Letters, 2015</li>
+      <li>Ministry of Environment, Forest and Climate Change — Project for Grassland Biodiversity (Blackbuck habitat)</li>
+      <li>Charaka Samhita &amp; Ashtanga Hridayam — References to Krishnasara skin (Krishnajina) in sacred rites</li>
+      <li>Schaller GB — "The Deer and the Tiger" — University of Chicago Press, 1967</li>
+      <li>Wildlife (Protection) Act 1972 — Schedule I, Government of India</li>
+    </ul>
+  </div>
+</div>
+
+<footer>
+  <p>Swastha Wildlife Gallery &nbsp;·&nbsp; All content is for educational purposes only &nbsp;·&nbsp; Report poaching to 1800-419-7771</p>
+</footer>
+
+
+  <div id="viewerModal">
+    <div id="modal-topbar">
+      <span>3D Model — Krishnasara</span>
+      <button type="button" id="close3D">✕</button>
+    </div>
+    <model-viewer src="krishnasara3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+  </div>
+  <script>
+    (function() {
+      var open3D = document.getElementById('open3D');
+      var close3D = document.getElementById('close3D');
+      var modal = document.getElementById('viewerModal');
+      if (!open3D || !close3D || !modal) return;
+      function openModal() {
+        
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+      function closeModal() {
+        
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+      open3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); openModal();
+      });
+      close3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); closeModal();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+      });
+    })();
+  </script>
+
+</body>
+</html>

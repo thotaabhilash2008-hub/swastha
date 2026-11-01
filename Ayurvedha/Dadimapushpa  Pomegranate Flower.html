@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dadimapushpa | Swastha</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+  <style>
+    #open3D {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      padding: 10px 18px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: var(--forest);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      z-index: 1000;
+      transition: .3s;
+    }
+    #open3D:hover {
+      background: var(--gold);
+      color: var(--deep);
+    }
+    #viewerModal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+    }
+    #modal-topbar {
+      flex-shrink: 0;
+      height: 58px;
+      background: #111111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px 0 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      z-index: 99999;
+    }
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 4.5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.72);
+      user-select: none;
+    }
+    #close3D {
+      width: 38px;
+      height: 38px;
+      font-size: 15px;
+      font-weight: 300;
+      background: transparent;
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background .2s, color .2s, transform .22s;
+      outline: none;
+      flex-shrink: 0;
+    }
+    #close3D:hover {
+      background: #ffffff;
+      color: #111111;
+      border-color: #ffffff;
+      transform: rotate(90deg);
+    }
+    #viewerModal model-viewer {
+      flex: 1;
+      width: 100%;
+      display: block;
+      background: #ffffff;
+    }
+
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+    * { margin:0; padding:0; box-sizing:border-box }
+    html { scroll-behavior:smooth }
+    body { font-family:'Jost',sans-serif; background:var(--cream); color:var(--ink); min-height:100vh; overflow-x:hidden; position:relative }
+    body::before { content:''; position:fixed; inset:0; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E"); opacity:.03; pointer-events:none; z-index:100 }
+
+    /* Botanical SVG corners */
+    .botanical-svg { position:fixed; pointer-events:none; z-index:1; opacity:.09 }
+    .botanical-tl { top:-10px; left:-10px; width:280px }
+    .botanical-br { bottom:-10px; right:-10px; width:240px; transform:rotate(180deg) }
+
+    .bg-circle { position:fixed; border-radius:50%; pointer-events:none; z-index:0 }
+    .bg-circle-1 { width:700px; height:700px; background:radial-gradient(circle,rgba(181,54,42,.08) 0%,transparent 70%); top:-200px; right:-150px }
+    .bg-circle-2 { width:500px; height:500px; background:radial-gradient(circle,rgba(201,137,60,.07) 0%,transparent 70%); bottom:-100px; left:-100px }
+
+    .hero { position:relative; z-index:10; padding:54px 40px 0; text-align:center; opacity:0; animation:fadeUp .9s ease .1s forwards }
+    .back-link { display:inline-flex; align-items:center; gap:8px; font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--sage); text-decoration:none; margin-bottom:36px; transition:color .3s }
+    .back-link:hover { color:var(--gold) }
+    .logo-rule { display:flex; align-items:center; justify-content:center; gap:20px; margin-bottom:14px }
+    .logo-rule span { display:block; height:1px; width:70px; background:linear-gradient(to right,transparent,var(--gold)) }
+    .logo-rule span:last-child { background:linear-gradient(to left,transparent,var(--gold)) }
+    .logo-ornament { font-size:13px; color:var(--gold) }
+    .hero-title { font-family:'Cormorant Garamond',serif; font-size:clamp(58px,11vw,104px); font-weight:300; letter-spacing:8px; line-height:1; color:var(--deep) }
+    .hero-subtitle { font-family:'Cormorant Garamond',serif; font-size:18px; font-style:italic; font-weight:300; color:var(--earth); letter-spacing:2px; margin-top:8px }
+    .hero-sci { font-size:11px; font-weight:200; letter-spacing:5px; color:var(--sage); margin-top:6px }
+
+    .hero-photos { position:relative; z-index:10; display:grid; grid-template-columns:1fr 1fr; gap:2px; max-width:900px; margin:40px auto 0; opacity:0; animation:fadeUp .9s ease .35s forwards }
+    .hero-photos img { width:100%; height:380px; object-fit:cover; object-position:center; display:block; background:var(--parchment) }
+    .photo-caption { text-align:center; font-family:'Cormorant Garamond',serif; font-size:12px; font-style:italic; color:var(--sage); letter-spacing:1px; padding:10px 0 0; max-width:900px; margin:0 auto; position:relative; z-index:10; opacity:0; animation:fadeUp .9s ease .5s forwards }
+
+    .divider { display:flex; align-items:center; justify-content:center; gap:16px; margin:50px auto; max-width:600px; opacity:0; animation:fadeUp .9s ease .55s forwards; position:relative; z-index:10 }
+    .divider-line { height:1px; width:120px; background:linear-gradient(to right,transparent,var(--rose)) }
+    .divider-line:last-child { background:linear-gradient(to left,transparent,var(--rose)) }
+    .divider-leaf { color:var(--crimson); font-size:18px }
+
+    .content { position:relative; z-index:10; max-width:860px; margin:0 auto; padding:0 30px 80px }
+    .intro-text { font-family:'Cormorant Garamond',serif; font-size:20px; font-weight:300; line-height:1.75; color:var(--ink); text-align:center; max-width:700px; margin:0 auto 60px; opacity:0; animation:fadeUp .9s ease .6s forwards }
+    .intro-text em { color:var(--crimson); font-style:italic }
+
+    .section { margin-bottom:60px; opacity:0; animation:fadeUp .9s ease forwards }
+    .section:nth-child(1){animation-delay:.65s}.section:nth-child(2){animation-delay:.75s}.section:nth-child(3){animation-delay:.85s}.section:nth-child(4){animation-delay:.95s}.section:nth-child(5){animation-delay:1.05s}.section:nth-child(6){animation-delay:1.15s}.section:nth-child(7){animation-delay:1.25s}
+
+    .section-header { display:flex; align-items:center; gap:14px; margin-bottom:20px }
+    .section-num { font-family:'Cormorant Garamond',serif; font-size:11px; letter-spacing:4px; color:var(--gold) }
+    .section-title { font-family:'Cormorant Garamond',serif; font-size:28px; font-weight:400; color:var(--deep); letter-spacing:1px }
+    .section-rule { height:1px; flex:1; background:linear-gradient(to right,var(--gold),transparent) }
+    .section-body { font-size:13px; font-weight:300; line-height:1.9; color:var(--ink); margin-bottom:24px }
+
+    .data-table { width:100%; border-collapse:collapse; margin:16px 0 8px; font-size:12px }
+    .data-table thead tr { background:var(--deep); color:var(--gold); font-size:10px; letter-spacing:3px; text-transform:uppercase }
+    .data-table thead th { padding:12px 14px; text-align:left; font-weight:400 }
+    .data-table tbody tr:nth-child(even){ background:var(--parchment) }
+    .data-table tbody tr:nth-child(odd){ background:var(--cream) }
+    .data-table tbody tr { transition:background .2s }
+    .data-table tbody tr:hover { background:#f0d8c8 }
+    .data-table tbody td { padding:10px 14px; color:var(--ink); border-bottom:1px solid rgba(122,53,32,.08) }
+    .data-table tbody td:first-child { font-weight:400; color:var(--deep); width:28% }
+
+    .dosha-table { width:100%; border-collapse:collapse; margin:16px 0; font-size:12px }
+    .dosha-table thead tr { background:var(--crimson); color:var(--cream) }
+    .dosha-table thead th { padding:12px 14px; text-align:left; font-weight:400; letter-spacing:2px; font-size:10px; text-transform:uppercase }
+    .dosha-table tbody tr:nth-child(even){ background:var(--parchment) }
+    .dosha-table tbody tr:nth-child(odd){ background:var(--cream) }
+    .dosha-table tbody td { padding:11px 14px; color:var(--ink); border-bottom:1px solid rgba(122,53,32,.08) }
+    .dosha-table tbody td:first-child { font-weight:400; color:var(--crimson); width:18% }
+    .dosha-table tbody td:nth-child(2){ color:var(--earth); width:20% }
+
+    .consume-table { width:100%; border-collapse:collapse; margin:16px 0; font-size:12px }
+    .consume-table thead tr { background:var(--earth); color:var(--cream) }
+    .consume-table thead th { padding:12px 14px; text-align:left; font-weight:400; letter-spacing:2px; font-size:10px; text-transform:uppercase }
+    .consume-table tbody tr:nth-child(even){ background:var(--parchment) }
+    .consume-table tbody tr:nth-child(odd){ background:var(--cream) }
+    .consume-table tbody td { padding:11px 14px; color:var(--ink); border-bottom:1px solid rgba(122,53,32,.08) }
+    .consume-table tbody td:first-child { font-weight:400; color:var(--earth); width:22% }
+
+    .benefits-grid { display:grid; grid-template-columns:1fr 1fr; gap:1px; background:rgba(122,53,32,.12); border:1px solid rgba(122,53,32,.12); margin:8px 0 }
+    .benefit-card { background:var(--cream); padding:24px 22px; transition:background .3s; position:relative; overflow:hidden }
+    .benefit-card:hover { background:#f5e0d0 }
+    .benefit-card::before { content:''; position:absolute; bottom:0; left:0; width:0; height:2px; background:var(--gold); transition:width .4s }
+    .benefit-card:hover::before { width:100% }
+    .benefit-title { font-family:'Cormorant Garamond',serif; font-size:16px; font-weight:600; color:var(--crimson); margin-bottom:8px }
+    .benefit-desc { font-size:11.5px; font-weight:300; line-height:1.75; color:var(--ink); opacity:.85 }
+
+    .nutrition-bar { display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:rgba(122,53,32,.12); border:1px solid rgba(122,53,32,.12); margin:20px 0 }
+    .nutrition-cell { background:var(--cream); padding:22px 16px; text-align:center; transition:background .3s }
+    .nutrition-cell:hover { background:var(--parchment) }
+    .nutrition-num { font-family:'Cormorant Garamond',serif; font-size:36px; font-weight:300; color:var(--crimson); line-height:1; margin-bottom:4px }
+    .nutrition-unit { font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--gold); font-weight:300 }
+    .nutrition-label { font-size:11px; font-weight:300; color:var(--ink); margin-top:5px }
+
+    .precaution-list { list-style:none; margin:8px 0 }
+    .precaution-list li { display:flex; gap:12px; align-items:flex-start; padding:10px 14px; font-size:12px; font-weight:300; line-height:1.7; color:var(--ink); border-bottom:1px solid rgba(122,53,32,.08) }
+    .precaution-list li:last-child { border-bottom:none }
+    .precaution-list li::before { content:'▸'; color:var(--gold); flex-shrink:0; margin-top:1px }
+
+    .sources { border-top:1px solid rgba(122,53,32,.15); padding-top:24px; margin-top:20px }
+    .sources-title { font-size:10px; letter-spacing:4px; text-transform:uppercase; color:var(--sage); margin-bottom:12px; font-weight:300 }
+    .sources ul { list-style:none }
+    .sources ul li { font-family:'Cormorant Garamond',serif; font-size:13px; font-style:italic; color:var(--earth); padding:5px 0; border-bottom:1px solid rgba(122,53,32,.06) }
+    .sources ul li::before { content:'· '; color:var(--sage) }
+
+    footer { position:relative; z-index:10; text-align:center; padding:24px 20px 44px; border-top:1px solid rgba(122,53,32,.12); max-width:860px; margin:0 auto }
+    footer p { font-size:11px; letter-spacing:4px; text-transform:uppercase; color:var(--sage); font-weight:300 }
+
+    @keyframes fadeUp { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:translateY(0)} }
+
+    @media(max-width:700px){
+      .hero-photos{grid-template-columns:1fr}
+      .hero-photos img{height:260px}
+      .benefits-grid{grid-template-columns:1fr}
+      .nutrition-bar{grid-template-columns:1fr 1fr}
+      .content{padding:0 18px 60px}
+    }
+  </style>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+</head>
+<body>
+  <button type="button" id="open3D">View in 3D</button>
+
+
+  <!-- Botanical corner SVGs — pomegranate-inspired -->
+  <svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M20 280 Q 70 200 120 150 Q 170 100 260 20" stroke="#b5362a" stroke-width="1.5" fill="none"/>
+    <!-- pomegranate buds -->
+    <ellipse cx="95" cy="200" rx="13" ry="18" fill="#b5362a" opacity="0.6"/>
+    <path d="M95 182 Q 98 175 95 170 Q 92 175 95 182" fill="#7a3520" opacity="0.7"/>
+    <ellipse cx="140" cy="155" rx="11" ry="15" fill="#d4614a" opacity="0.55"/>
+    <path d="M140 140 Q 143 133 140 128 Q 137 133 140 140" fill="#7a3520" opacity="0.7"/>
+    <ellipse cx="185" cy="112" rx="9" ry="13" fill="#b5362a" opacity="0.5"/>
+    <path d="M185 99 Q 188 92 185 87 Q 182 92 185 99" fill="#7a3520" opacity="0.6"/>
+    <!-- leaves -->
+    <ellipse cx="110" cy="188" rx="18" ry="8" fill="#7a3520" transform="rotate(-35 110 188)" opacity="0.4"/>
+    <ellipse cx="155" cy="143" rx="16" ry="7" fill="#7a3520" transform="rotate(-50 155 143)" opacity="0.4"/>
+  </svg>
+  <svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M20 280 Q 70 200 120 150 Q 170 100 260 20" stroke="#b5362a" stroke-width="1.5" fill="none"/>
+    <ellipse cx="95" cy="200" rx="13" ry="18" fill="#b5362a" opacity="0.6"/>
+    <path d="M95 182 Q 98 175 95 170 Q 92 175 95 182" fill="#7a3520" opacity="0.7"/>
+    <ellipse cx="140" cy="155" rx="11" ry="15" fill="#d4614a" opacity="0.55"/>
+    <ellipse cx="110" cy="188" rx="18" ry="8" fill="#7a3520" transform="rotate(-35 110 188)" opacity="0.4"/>
+  </svg>
+
+  <div class="bg-circle bg-circle-1"></div>
+  <div class="bg-circle bg-circle-2"></div>
+
+  <div class="hero">
+    <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+    <div class="logo-rule"><span></span><div class="logo-ornament">✦</div><span></span></div>
+    <div class="hero-title">Dadimapushpa</div>
+    <div class="hero-subtitle">Pomegranate Flower — The Scarlet Medicine</div>
+    <div class="hero-sci">Punica granatum L. &nbsp;·&nbsp; Punicaceae / Lythraceae</div>
+  </div>
+
+  <div class="hero-photos">
+    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e6/Punica_granatum_004.JPG/1280px-Punica_granatum_004.JPG" alt="Vivid scarlet pomegranate flowers in full bloom"
+      onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/d/db/Illustration_Punica_granatum2.jpg/1280px-Illustration_Punica_granatum2.jpg" alt="Pomegranate flower bud with calyx forming the characteristic crown"
+      onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+  </div>
+  <p class="photo-caption">Fig. 1 — Brilliant scarlet corolla of Dadima in full bloom &nbsp;·&nbsp; Fig. 2 — Flower bud showing the leathery crimson calyx that becomes the fruit crown</p>
+
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-leaf">❧</div>
+    <div class="divider-line"></div>
+  </div>
+
+  <div class="content">
+
+    <p class="intro-text">Known as <em>Dadima</em> in Sanskrit — fruit of the gods — the pomegranate's flame-red flower has been revered across Ayurveda, Unani, and ancient Mediterranean medicine alike. The flower (<em>pushpa</em>) is separately classified as a therapeutic agent in its own right: astringent, haemostatic, anti-inflammatory, and anti-diabetic. Charaka names Dadima among the ten fruits most beneficial to health; Sushruta dedicates entire verses to its properties across all three doshas.</p>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">01</span><h2 class="section-title">Botanical Profile</h2><div class="section-rule"></div></div>
+      <p class="section-body">Punica granatum is a deciduous or semi-evergreen shrub or small tree of the Lythraceae family (formerly Punicaceae), growing 5–10 m tall with a characteristically gnarled, spiny habit. Native to the region from Iran to the Himalayan foothills of northern India, it has been cultivated across the Mediterranean, Middle East, and South Asia for over 4,000 years. The pomegranate is one of the oldest cultivated fruits in human history, appearing in Egyptian tomb paintings, Homeric epics, and the oldest Ayurvedic texts alike.</p>
+      <p class="section-body">The flowers — Dadimapushpa — are striking: 3–5 cm in diameter, brilliant scarlet-orange (rarely white or yellow in cultivars), with 5–8 crinkled, crepe-paper petals arising from a thick, leathery, tubular calyx of 5–8 fleshy sepals. This persistent calyx later forms the iconic "crown" atop the pomegranate fruit. Flowers appear in two waves — March to May and again in August — and are either functionally male (staminate, thin calyx) or hermaphrodite (bell-shaped, thick calyx) on the same tree. Only the hermaphrodite flowers develop into fruit. The bright colour and copious nectar attract sunbirds and bees for pollination.</p>
+      <table class="data-table">
+        <thead><tr><th>PROPERTY</th><th>Detail</th></tr></thead>
+        <tbody>
+          <tr><td>Family</td><td>Lythraceae (formerly Punicaceae)</td></tr>
+          <tr><td>Botanical Name</td><td>Punica granatum L.</td></tr>
+          <tr><td>Sanskrit Names</td><td>Dadima, Dadimba, Raktapushpa, Lohitapushpa, Kuruvinda</td></tr>
+          <tr><td>Common Names</td><td>Pomegranate Flower, Anar Phool, Dalimba Pushpa</td></tr>
+          <tr><td>Regional Names</td><td>Mathalam Poo (Tam), Danimma Puvvu (Tel), Mathalam Pookkal (Mal), Anar Phool (Hindi)</td></tr>
+          <tr><td>Origin</td><td>Iran to N. India; cultivated worldwide for 4,000+ years</td></tr>
+          <tr><td>Plant Type</td><td>Deciduous/semi-evergreen shrub or small tree (5–10 m)</td></tr>
+          <tr><td>Flowering Season</td><td>March–May &amp; August–September</td></tr>
+          <tr><td>Medicinal Parts</td><td>Flowers, flower buds, calyx, bark, rind, seeds, leaves</td></tr>
+          <tr><td>Taste Profile</td><td>Kashaya (astringent), Madhura (sweet), Amla (sour)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">02</span><h2 class="section-title">Phytochemistry &amp; Composition</h2><div class="section-rule"></div></div>
+      <p class="section-body">Pomegranate flowers are among the most phytochemically dense parts of the plant. Unlike the fruit (rich in ellagitannins and anthocyanins), the flower is especially concentrated in gallic acid derivatives, ursolic acid, triterpenoids, and flavonoids — with documented antidiabetic, anti-inflammatory, antioxidant, and antimicrobial potency often exceeding that of the fruit juice or peel in specific assays.</p>
+      <div class="nutrition-bar">
+        <div class="nutrition-cell"><div class="nutrition-num">92%</div><div class="nutrition-unit">inhibition</div><div class="nutrition-label">α-glucosidase (vs acarbose)</div></div>
+        <div class="nutrition-cell"><div class="nutrition-num">40+</div><div class="nutrition-unit">compounds</div><div class="nutrition-label">Identified in flower extract</div></div>
+        <div class="nutrition-cell"><div class="nutrition-num">4,000</div><div class="nutrition-unit">years</div><div class="nutrition-label">Documented medicinal use</div></div>
+        <div class="nutrition-cell"><div class="nutrition-num">3</div><div class="nutrition-unit">doshas</div><div class="nutrition-label">Tridoshic fruit in Ayurveda</div></div>
+      </div>
+      <table class="data-table">
+        <thead><tr><th>Compound</th><th>Category</th><th>Primary Action</th></tr></thead>
+        <tbody>
+          <tr><td>Punicalagin A &amp; B</td><td>Ellagitannins</td><td>Potent antioxidant, anti-inflammatory, antimicrobial</td></tr>
+          <tr><td>Ellagic Acid</td><td>Polyphenol</td><td>Antioxidant, antimutagenic, antitumour, antiviral</td></tr>
+          <tr><td>Gallic Acid</td><td>Phenolic acid</td><td>Astringent, antimicrobial, haemostatic, antidiabetic</td></tr>
+          <tr><td>Ursolic Acid</td><td>Pentacyclic triterpene</td><td>Anti-inflammatory, antidiabetic, hepatoprotective</td></tr>
+          <tr><td>Oleanolic Acid</td><td>Triterpene</td><td>Hepatoprotective, antidiabetic, anti-inflammatory</td></tr>
+          <tr><td>Luteolin &amp; Luteolin-7-glucoside</td><td>Flavones</td><td>Antidiabetic (α-glucosidase inhibition), anti-inflammatory</td></tr>
+          <tr><td>Quercetin &amp; Kaempferol</td><td>Flavonols</td><td>Antioxidant, anti-allergic, cardiovascular protective</td></tr>
+          <tr><td>Pelargonidin Derivatives</td><td>Anthocyanins</td><td>Antioxidant, anti-inflammatory, vasoprotective</td></tr>
+          <tr><td>Maslinic Acid</td><td>Triterpene</td><td>Anti-inflammatory, antiprotozoal, antidiabetic</td></tr>
+          <tr><td>Tannins (Total)</td><td>Polyphenols</td><td>Astringent, anti-diarrheal, haemostatic, wound-healing</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">03</span><h2 class="section-title">Ayurvedic Significance</h2><div class="section-rule"></div></div>
+      <p class="section-body">Dadima holds an exceptional position in Ayurveda as one of the few fruits described as <em>Tridoshahara</em> — beneficial to all three doshas simultaneously — a distinction shared by very few botanicals. Charaka (Chikitsa Sthana) lists Dadima among the ten most health-promoting fruits; Sushruta devotes extensive passages to its properties in <em>Sutrasthana</em>. The flowers specifically are described in <em>Dhanvantari Nighantu</em> and <em>Raja Nighantu</em> as potent astringents, superior for bleeding disorders, and valuable in treating gynaecological conditions and oral diseases.</p>
+      <p class="section-body">The classical shloka from Bhavaprakasha — <em>"Dadimam deepanam ruchyam grahi pittakaphaprashamanm, sarvashodhanaharam lohitasravashosanam"</em> — praises Dadima as a digestive stimulant, appetising, absorptive, and pacifying to Pitta and Kapha; the flower's astringency (<em>kashaya rasa</em>) additionally makes it a primary remedy for <em>raktapitta</em> (haemorrhagic conditions).</p>
+      <table class="dosha-table">
+        <thead><tr><th>Dosha</th><th>Effect</th><th>Mechanism &amp; Notes</th></tr></thead>
+        <tbody>
+          <tr><td>Vata ↓</td><td>Pacifying</td><td>Sweet and sour taste, unctuous seed oil, and deepana (digestive) action relieve Vata-related digestive weakness, bloating, and colonic dryness</td></tr>
+          <tr><td>Pitta ↓</td><td>Strongly pacifying</td><td>Kashaya (astringent) rasa of flower particularly cools and stops Pitta-caused bleeding — raktapitta, menorrhagia, haematuria, and excess gastric acid</td></tr>
+          <tr><td>Kapha ↓</td><td>Pacifying</td><td>Astringent, laghu (light) properties dry excess Kapha; flower infusion used in oral Kapha conditions — gingivitis, stomatitis, and aphthous ulcers</td></tr>
+        </tbody>
+      </table>
+      <p class="section-body"><strong>Rasa:</strong> Kashaya (astringent), Madhura (sweet), Amla (sour) &nbsp;·&nbsp; <strong>Guna:</strong> Laghu (light), Snigdha (unctuous — seed) &nbsp;·&nbsp; <strong>Virya:</strong> Sheeta (cold) &nbsp;·&nbsp; <strong>Vipaka:</strong> Madhura (sweet) &nbsp;·&nbsp; <strong>Karma:</strong> Tridoshahara, Grahi, Deepana, Raktasangrahi</p>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">04</span><h2 class="section-title">Key Health Benefits</h2><div class="section-rule"></div></div>
+      <p class="section-body">Modern pharmacological research on Dadimapushpa has validated and extended classical Ayurvedic indications, with robust evidence emerging from <em>in vitro</em>, <em>in vivo</em>, and preliminary clinical studies — particularly in diabetes management, wound healing, and antimicrobial therapy.</p>
+      <div class="benefits-grid">
+        <div class="benefit-card">
+          <div class="benefit-title">Antidiabetic &amp; Glycaemic Control</div>
+          <div class="benefit-desc">Pomegranate flower is among the most extensively documented botanical agents for type 2 diabetes. Its flavonoids — particularly luteolin-7-glucoside — powerfully inhibit α-glucosidase (rate matching or exceeding acarbose in some studies), slowing post-prandial glucose absorption. Ursolic and oleanolic acids enhance insulin sensitivity and protect pancreatic beta cells.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Haemostatic &amp; Anti-haemorrhagic</div>
+          <div class="benefit-desc">The classical primary indication. Dense tannin content — punicalagins, gallic acid — powerfully constricts blood vessels and promotes coagulation. Used internally for menorrhagia, haematuria, rectal bleeding, haemoptysis, and epistaxis; externally for wound bleeding. Flower calyx decoction is a traditional first-line remedy for uterine bleeding.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Oral Health &amp; Gum Disease</div>
+          <div class="benefit-desc">Flower extract shows exceptional antimicrobial activity against oral pathogens including Streptococcus mutans, S. sanguinis, Candida albicans, and periodontal bacteria. Clinical studies demonstrate significant plaque reduction and gingival inflammation improvement with pomegranate flower mouthwash — comparable to chlorhexidine, without resistance risk.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Anti-inflammatory &amp; Analgesic</div>
+          <div class="benefit-desc">Punicalagins and ellagic acid significantly inhibit COX-2 and pro-inflammatory cytokines (TNF-α, IL-6, IL-1β). Animal studies confirm reduced inflammation scores in arthritis models. Ursolic acid from the flowers matches standard anti-inflammatory drugs at equivalent doses in carrageenan-induced paw oedema models.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Wound Healing</div>
+          <div class="benefit-desc">Flower paste and decoction promote wound closure through multiple mechanisms: tannin-mediated tissue contraction, antimicrobial prevention of secondary infection, and collagen synthesis stimulation. Used classically for burns, ulcers, fistulas (<em>bhagandara</em>), and conjunctivitis — the dried flower powder is applied topically as a styptic and healing agent.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Antioxidant &amp; Hepatoprotective</div>
+          <div class="benefit-desc">DPPH, ABTS, and FRAP assays consistently show flower extract antioxidant capacity exceeds pomegranate juice and seed in several comparative studies. Oleanolic and maslinic acids protect hepatocytes from oxidative and toxic damage. Relevant in liver conditions, alcohol-related hepatic stress, and chronic inflammatory states.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Antimicrobial &amp; Antifungal</div>
+          <div class="benefit-desc">Broad-spectrum activity confirmed against E. coli, Staphylococcus aureus, Salmonella typhi, Klebsiella pneumoniae, and Candida albicans. MIC values for flower extract compare favourably with standard antibiotics in several studies, suggesting synergistic potential with conventional antimicrobials against drug-resistant strains.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Digestive &amp; Appetite Support</div>
+          <div class="benefit-desc">Classical <em>deepana</em> (digestive stimulant) and <em>grahi</em> (absorptive/anti-diarrheal) actions are validated by research — tannins reduce intestinal hypermotility; the flower's bitter-astringent profile stimulates gastric secretion. Used in chronic diarrhoea, dysentery, malabsorption, and anorexia (<em>aruchi</em>) due to loss of digestive fire.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">05</span><h2 class="section-title">How to Use Dadimapushpa</h2><div class="section-rule"></div></div>
+      <p class="section-body">The flower is used both fresh and dried in Ayurveda. Fresh flowers are preferred for acute haemorrhagic conditions and topical applications; dried flower powder and decoctions are used for chronic conditions. The calyx (leathery sepals) can be used separately for stronger astringency. All internal preparations are generally safe at classical doses; the flower is considered among the safest of Ayurvedic botanicals.</p>
+      <table class="consume-table">
+        <thead><tr><th>Form</th><th>Preparation</th><th>Dosage</th><th>Best Use</th></tr></thead>
+        <tbody>
+          <tr><td>Fresh Flower Juice</td><td>Pound fresh flowers; strain</td><td>10–15 ml, 1–2× daily</td><td>Acute bleeding, haematuria</td></tr>
+          <tr><td>Flower Decoction (Kwatha)</td><td>Boil dried flowers in water; reduce to ¼</td><td>30–40 ml twice daily</td><td>Menorrhagia, diarrhoea, diabetes</td></tr>
+          <tr><td>Flower Powder (Churna)</td><td>Dried flower ground fine; with honey</td><td>2–4 g, 1–2× daily</td><td>Bleeding gums, digestive weakness</td></tr>
+          <tr><td>Flower Infusion (Tea)</td><td>Steep 5–7 dried flowers in hot water 10 min</td><td>1 cup, 1–2× daily</td><td>Antidiabetic support, antioxidant</td></tr>
+          <tr><td>Mouthwash / Gargle</td><td>Diluted flower decoction</td><td>Gargle 30 sec, 2–3× daily</td><td>Gingivitis, oral ulcers, stomatitis</td></tr>
+          <tr><td>Flower Paste (Topical)</td><td>Ground fresh or dried flowers with water</td><td>Apply 1–2× daily</td><td>Wounds, burns, skin ulcers</td></tr>
+          <tr><td>Flower Calyx Decoction</td><td>Boil calyces (sepals) separately</td><td>20–30 ml twice daily</td><td>Uterine bleeding, heavy menstruation</td></tr>
+          <tr><td>Medicated Ghee (Sneha)</td><td>Per classical formulation with Dadima pushpa</td><td>Per practitioner direction</td><td>Raktapitta, chronic Pitta disorders</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">06</span><h2 class="section-title">Safety &amp; Precautions</h2><div class="section-rule"></div></div>
+      <p class="section-body">Dadimapushpa is among the safest botanical medicines in Ayurveda — it does not contain pyrrolizidine alkaloids or other inherently toxic phytochemicals, and has been consumed as food-medicine for millennia. Adverse effects are rare and generally mild. The following precautions apply primarily to high-dose therapeutic use:</p>
+      <ul class="precaution-list">
+        <li><strong>Constipation:</strong> Strong astringency — especially of flower calyx decoction at high doses — may cause or worsen constipation. Reduce dose or discontinue if bowel movements slow significantly.</li>
+        <li><strong>Low blood pressure:</strong> Pomegranate constituents have mild antihypertensive activity. Use cautiously in individuals on antihypertensive medications or with naturally low blood pressure.</li>
+        <li><strong>Blood sugar medications:</strong> The significant antidiabetic activity of the flower necessitates monitoring blood glucose levels closely when combined with insulin or oral hypoglycaemics — risk of additive hypoglycaemia.</li>
+        <li><strong>Pregnancy:</strong> Fresh flower juice and calyx preparations that strongly contract the uterus should be avoided in pregnancy, particularly in the first trimester. Moderate culinary use is generally accepted as safe.</li>
+        <li><strong>Drug interactions:</strong> Pomegranate constituents inhibit CYP3A4 and CYP2C9 enzymes — potential interaction with statins, warfarin, and some antiepileptics. Consult a physician before therapeutic use alongside these drugs.</li>
+        <li><strong>Vata-dominant individuals:</strong> Although Dadima is tridoshic, excess use of the astringent flower without unctuous foods may over-dry Vata-type constitutions — pair with sesame oil or ghee if needed.</li>
+        <li><strong>Allergic reactions:</strong> Rare but documented pollen allergy cross-reactions may occur in individuals sensitive to Plantago or Lythraceae pollens.</li>
+      </ul>
+    </div>
+
+    <div class="sources">
+      <div class="sources-title">References &amp; Sources</div>
+      <ul>
+        <li>Akhlaghi M et al. — "Pomegranate flower: A complementary approach in the treatment of type 2 diabetes" — Complementary Therapies in Clinical Practice, 2012</li>
+        <li>Ismail T et al. — "Pomegranate peel and flower: A review of their biological activities" — Journal of Functional Foods, 2012</li>
+        <li>Li Y et al. — "Anti-diabetic activity of Punica granatum flower extract and its constituents in streptozotocin-induced diabetic rats" — Planta Medica, 2005</li>
+        <li>Bhandari PR — "Pomegranate (Punica granatum L). Ancient seeds for modern cure?" — International Journal of Nutrition, Pharmacology, Neurological Diseases, 2012</li>
+        <li>Prashanth D et al. — "Inhibition of Aspergillus flavus by Punica granatum" — Fitoterapia, 2001</li>
+        <li>Jahan R et al. — "Ethnobotanical and phytochemical aspects of Punica granatum flower" — Phytochem & Pharmacogn Rev, 2016</li>
+        <li>Charaka Samhita, Sutrasthana — Dadima listed among Phala Varga, ten most beneficial fruits</li>
+        <li>Sushruta Samhita, Sutrasthana — Properties of Dadima across Tridosha</li>
+        <li>Bhavaprakasha Nighantu — Amadivarga: properties and shloka for Dadima</li>
+        <li>Dhanvantari Nighantu &amp; Raja Nighantu — Dadimapushpa as Raktasangrahi dravya</li>
+        <li>Priyavrat Sharma — Dravyaguna Vigyana, Vol. II — classical properties of Dadima</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer>
+    <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a qualified practitioner before therapeutic use</p>
+  </footer>
+
+
+  <div id="viewerModal">
+    <div id="modal-topbar">
+      <span>3D Model — Dadimapushpa</span>
+      <button type="button" id="close3D">✕</button>
+    </div>
+    <model-viewer src="dadimapushpa3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+  </div>
+  <script>
+    (function() {
+      var open3D = document.getElementById('open3D');
+      var close3D = document.getElementById('close3D');
+      var modal = document.getElementById('viewerModal');
+      if (!open3D || !close3D || !modal) return;
+      function openModal() {
+        
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+      function closeModal() {
+        
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+      open3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); openModal();
+      });
+      close3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); closeModal();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+      });
+    })();
+  </script>
+
+</body>
+</html>

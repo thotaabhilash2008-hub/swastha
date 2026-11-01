@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kauncha | Swastha</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+  <style>
+    #open3D {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      padding: 10px 18px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: var(--forest);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      z-index: 1000;
+      transition: .3s;
+    }
+    #open3D:hover {
+      background: var(--gold);
+      color: var(--deep);
+    }
+    #viewerModal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+    }
+    #modal-topbar {
+      flex-shrink: 0;
+      height: 58px;
+      background: #111111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px 0 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      z-index: 99999;
+    }
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 4.5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.72);
+      user-select: none;
+    }
+    #close3D {
+      width: 38px;
+      height: 38px;
+      font-size: 15px;
+      font-weight: 300;
+      background: transparent;
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background .2s, color .2s, transform .22s;
+      outline: none;
+      flex-shrink: 0;
+    }
+    #close3D:hover {
+      background: #ffffff;
+      color: #111111;
+      border-color: #ffffff;
+      transform: rotate(90deg);
+    }
+    #viewerModal model-viewer {
+      flex: 1;
+      width: 100%;
+      display: block;
+      background: #ffffff;
+    }
+
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+    * { margin: 0; padding: 0; box-sizing: border-box }
+    html { scroll-behavior: smooth }
+    body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--ink); min-height: 100vh; overflow-x: hidden; position: relative }
+    body::before { content: ''; position: fixed; inset: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E"); opacity: .035; pointer-events: none; z-index: 100 }
+
+    .bg-circle { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0 }
+    .bg-circle-1 { width: 700px; height: 700px; background: radial-gradient(circle, rgba(42,92,63,.1) 0%, transparent 70%); top: -200px; right: -150px }
+    .bg-circle-2 { width: 500px; height: 500px; background: radial-gradient(circle, rgba(201,168,76,.08) 0%, transparent 70%); bottom: -100px; left: -100px }
+
+    .botanical-svg { position: fixed; pointer-events: none; z-index: 1; opacity: .1 }
+    .botanical-tl { top: -20px; left: -20px; width: 260px }
+    .botanical-br { bottom: -20px; right: -20px; width: 220px; transform: rotate(180deg) }
+
+    .hero { position: relative; z-index: 10; padding: 54px 40px 0; text-align: center; opacity: 0; animation: fadeUp .9s ease .1s forwards }
+    .back-link { display: inline-flex; align-items: center; gap: 8px; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--sage); text-decoration: none; margin-bottom: 36px; transition: color .3s }
+    .back-link:hover { color: var(--gold) }
+    .logo-rule { display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 14px }
+    .logo-rule span { display: block; height: 1px; width: 70px; background: linear-gradient(to right, transparent, var(--gold)) }
+    .logo-rule span:last-child { background: linear-gradient(to left, transparent, var(--gold)) }
+    .logo-ornament { font-size: 13px; color: var(--gold) }
+    .hero-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(60px, 11vw, 104px); font-weight: 300; letter-spacing: 8px; line-height: 1; color: var(--deep) }
+    .hero-subtitle { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-style: italic; font-weight: 300; color: var(--earth); letter-spacing: 2px; margin-top: 8px }
+    .hero-sci { font-size: 11px; font-weight: 200; letter-spacing: 5px; color: var(--sage); margin-top: 6px }
+
+    .hero-photos { position: relative; z-index: 10; display: grid; grid-template-columns: 1fr 1fr; gap: 2px; max-width: 900px; margin: 40px auto 0; opacity: 0; animation: fadeUp .9s ease .35s forwards }
+    .hero-photos img { width: 100%; height: 380px; object-fit: cover; object-position: center; display: block; background: var(--parchment) }
+    .hero-photos img:first-child { object-position: center 40% }
+    .photo-caption { text-align: center; font-family: 'Cormorant Garamond', serif; font-size: 12px; font-style: italic; color: var(--sage); letter-spacing: 1px; padding: 10px 0 0; max-width: 900px; margin: 0 auto; position: relative; z-index: 10; opacity: 0; animation: fadeUp .9s ease .5s forwards }
+
+    .divider { display: flex; align-items: center; justify-content: center; gap: 16px; margin: 50px auto; max-width: 600px; opacity: 0; animation: fadeUp .9s ease .55s forwards; position: relative; z-index: 10 }
+    .divider-line { height: 1px; width: 120px; background: linear-gradient(to right, transparent, var(--sage)) }
+    .divider-line:last-child { background: linear-gradient(to left, transparent, var(--sage)) }
+    .divider-leaf { color: var(--forest); font-size: 18px }
+
+    .content { position: relative; z-index: 10; max-width: 860px; margin: 0 auto; padding: 0 30px 80px }
+    .intro-text { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 300; line-height: 1.75; color: var(--ink); text-align: center; max-width: 700px; margin: 0 auto 60px; opacity: 0; animation: fadeUp .9s ease .6s forwards }
+    .intro-text em { color: var(--forest); font-style: italic }
+
+    .section { margin-bottom: 60px; opacity: 0; animation: fadeUp .9s ease forwards }
+    .section:nth-child(1) { animation-delay: .65s }
+    .section:nth-child(2) { animation-delay: .75s }
+    .section:nth-child(3) { animation-delay: .85s }
+    .section:nth-child(4) { animation-delay: .95s }
+    .section:nth-child(5) { animation-delay: 1.05s }
+    .section:nth-child(6) { animation-delay: 1.15s }
+    .section:nth-child(7) { animation-delay: 1.25s }
+
+    .section-header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px }
+    .section-num { font-family: 'Cormorant Garamond', serif; font-size: 11px; letter-spacing: 4px; color: var(--gold) }
+    .section-title { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 400; color: var(--deep); letter-spacing: 1px }
+    .section-rule { height: 1px; flex: 1; background: linear-gradient(to right, var(--gold), transparent) }
+    .section-body { font-size: 13px; font-weight: 300; line-height: 1.9; color: var(--ink); margin-bottom: 24px }
+
+    .data-table { width: 100%; border-collapse: collapse; margin: 16px 0 8px; font-size: 12px }
+    .data-table thead tr { background: var(--deep); color: var(--gold); font-size: 10px; letter-spacing: 3px; text-transform: uppercase }
+    .data-table thead th { padding: 12px 14px; text-align: left; font-weight: 400 }
+    .data-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .data-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .data-table tbody tr { transition: background .2s }
+    .data-table tbody tr:hover { background: rgba(200, 164, 93, 0.15) }
+    .data-table tbody td { padding: 10px 14px; color: var(--ink); border-bottom: 1px solid rgba(107,79,45,.08) }
+    .data-table tbody td:first-child { font-weight: 400; color: var(--deep); width: 28% }
+
+    .dosha-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .dosha-table thead tr { background: var(--forest); color: var(--cream) }
+    .dosha-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .dosha-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .dosha-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .dosha-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(107,79,45,.08) }
+    .dosha-table tbody td:first-child { font-weight: 400; color: var(--forest); width: 18% }
+    .dosha-table tbody td:nth-child(2) { color: var(--earth); width: 20% }
+
+    .consume-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .consume-table thead tr { background: var(--earth); color: var(--cream) }
+    .consume-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .consume-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .consume-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .consume-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(107,79,45,.08) }
+    .consume-table tbody td:first-child { font-weight: 400; color: var(--earth); width: 22% }
+
+    .benefits-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: rgba(107,79,45,.12); border: 1px solid rgba(107,79,45,.12); margin: 8px 0 }
+    .benefit-card { background: var(--cream); padding: 24px 22px; transition: background .3s; position: relative; overflow: hidden }
+    .benefit-card:hover { background: #ede4ce }
+    .benefit-card::before { content: ''; position: absolute; bottom: 0; left: 0; width: 0; height: 2px; background: var(--gold); transition: width .4s }
+    .benefit-card:hover::before { width: 100% }
+    .benefit-title { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 600; color: var(--forest); margin-bottom: 8px }
+    .benefit-desc { font-size: 11.5px; font-weight: 300; line-height: 1.75; color: var(--ink); opacity: .85 }
+
+    .precaution-list { list-style: none; margin: 8px 0 }
+    .precaution-list li { display: flex; gap: 12px; align-items: flex-start; padding: 10px 14px; font-size: 12px; font-weight: 300; line-height: 1.7; color: var(--ink); border-bottom: 1px solid rgba(107,79,45,.08) }
+    .precaution-list li:last-child { border-bottom: none }
+    .precaution-list li::before { content: '▸'; color: var(--gold); flex-shrink: 0; margin-top: 1px }
+
+    .nutrition-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: rgba(107,79,45,.12); border: 1px solid rgba(107,79,45,.12); margin: 20px 0 }
+    .nutrition-cell { background: var(--cream); padding: 22px 16px; text-align: center; transition: background .3s }
+    .nutrition-cell:hover { background: var(--parchment) }
+    .nutrition-num { font-family: 'Cormorant Garamond', serif; font-size: 36px; font-weight: 300; color: var(--forest); line-height: 1; margin-bottom: 4px }
+    .nutrition-unit { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); font-weight: 300 }
+    .nutrition-label { font-size: 11px; font-weight: 300; color: var(--ink); margin-top: 5px }
+
+    .sources { border-top: 1px solid rgba(107,79,45,.15); padding-top: 24px; margin-top: 20px }
+    .sources-title { font-size: 10px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); margin-bottom: 12px; font-weight: 300 }
+    .sources ul { list-style: none }
+    .sources ul li { font-family: 'Cormorant Garamond', serif; font-size: 13px; font-style: italic; color: var(--earth); padding: 5px 0; border-bottom: 1px solid rgba(107,79,45,.06) }
+    .sources ul li::before { content: '· '; color: var(--sage) }
+
+    footer { position: relative; z-index: 10; text-align: center; padding: 24px 20px 44px; border-top: 1px solid rgba(107,79,45,.12); max-width: 860px; margin: 0 auto }
+    footer p { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); font-weight: 300 }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(28px) } to { opacity: 1; transform: translateY(0) } }
+
+    @media(max-width:700px) {
+      .hero-photos { grid-template-columns: 1fr }
+      .hero-photos img { height: 260px }
+      .benefits-grid { grid-template-columns: 1fr }
+      .nutrition-bar { grid-template-columns: 1fr 1fr }
+      .content { padding: 0 18px 60px }
+    }
+  </style>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+</head>
+<body>
+  <button type="button" id="open3D">View in 3D</button>
+
+
+<div class="bg-circle bg-circle-1"></div>
+<div class="bg-circle bg-circle-2"></div>
+
+<svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#2a5c3f" stroke-width="1.5" fill="none"/>
+  <circle cx="90" cy="210" r="8" fill="#2a5c3f" opacity="0.7"/>
+  <circle cx="130" cy="175" r="10" fill="#7a9e7e" opacity="0.6"/>
+  <circle cx="170" cy="135" r="7" fill="#2a5c3f" opacity="0.8"/>
+  <circle cx="210" cy="95" r="9" fill="#c9a84c" opacity="0.5"/>
+  <ellipse cx="115" cy="195" rx="20" ry="10" fill="#7a9e7e" transform="rotate(-30 115 195)"/>
+  <ellipse cx="155" cy="155" rx="18" ry="9" fill="#2a5c3f" transform="rotate(-45 155 155)"/>
+  <ellipse cx="195" cy="115" rx="16" ry="8" fill="#7a9e7e" transform="rotate(-60 195 115)"/>
+</svg>
+<svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#2a5c3f" stroke-width="1.5" fill="none"/>
+  <circle cx="90" cy="210" r="8" fill="#2a5c3f" opacity="0.7"/>
+  <circle cx="130" cy="175" r="10" fill="#7a9e7e" opacity="0.6"/>
+  <ellipse cx="115" cy="195" rx="20" ry="10" fill="#7a9e7e" transform="rotate(-30 115 195)"/>
+</svg>
+
+<div class="hero">
+  <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+  <div class="logo-rule"><span></span><div class="logo-ornament">✦</div><span></span></div>
+  <div class="hero-title">Kauncha</div>
+  <div class="hero-subtitle">Kapikachu — The Monkey Itcher — Velvet Bean</div>
+  <div class="hero-sci">Mucuna pruriens (L.) DC. &nbsp;·&nbsp; Fabaceae</div>
+</div>
+
+<div class="hero-photos">
+  <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/4/44/Mucuna_pruriens_flower.jpg/1280px-Mucuna_pruriens_flower.jpg" alt="Kauncha Mucuna pruriens purple flowers hanging in dense clusters" onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+  <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/c/cf/Mucuna_pruriens_monkey_tamarind_04.jpg/1280px-Mucuna_pruriens_monkey_tamarind_04.jpg" alt="Kauncha velvet bean pods covered in irritating urticating hairs" onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+</div>
+<p class="photo-caption">Fig. 1 — Deep purple pendant flower clusters of Kauncha hanging in characteristic drooping racemes &nbsp;·&nbsp; Fig. 2 — Mature velvet bean pods densely coated in urticating (itch-causing) trichomes</p>
+
+<div class="divider">
+  <div class="divider-line"></div>
+  <div class="divider-leaf">❧</div>
+  <div class="divider-line"></div>
+</div>
+
+<div class="content">
+  <p class="intro-text">Known in Sanskrit as <em>Kapikachu</em> — "that which causes itching like a monkey" — and as <em>Atmagupta</em> — "the self-concealed one" — Kauncha is among Ayurveda's most revered <em>Rasayana</em> and <em>Vajikarana</em> herbs, its seeds enshrining one of nature's rarest gifts to neurology: natural L-DOPA, the same molecule modern medicine uses to treat Parkinson's disease, woven into a whole-plant matrix that traditional healers have used for two millennia to restore vitality, strength, and vigour.</p>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">01</span><h2 class="section-title">Botanical Profile</h2><div class="section-rule"></div></div>
+    <p class="section-body">Kauncha (<em>Mucuna pruriens</em>) is a vigorous, climbing annual or short-lived perennial legume of the Fabaceae family, native to tropical and subtropical regions of India, Africa, and the Caribbean. The plant can grow to 15 metres in length, twining aggressively over supporting vegetation with trifoliate leaves bearing ovate to rhomboid leaflets — broadly pointed and softly hairy above, pale and silky beneath.</p>
+    <p class="section-body">Its deep purple to white flowers hang in dense, drooping racemes of up to 30 blossoms, each a classic papilionaceous (butterfly-shaped) Fabaceae flower with a strongly curved keel. The fruit is the plant's most distinctive feature — a thick, leathery pod 4–13 cm long, densely covered with stiff orange-brown urticating trichomes (hairs) that embed in skin on contact, causing intense irritation. The pods contain 4–6 seeds — the primary medicinal part — smooth, ovoid, varying from white or buff to mottled brown-black.</p>
+    <table class="data-table">
+      <thead><tr><th>Property</th><th>Detail</th></tr></thead>
+      <tbody>
+        <tr><td>Family</td><td>Fabaceae (Shimbi Kula / Leguminosae)</td></tr>
+        <tr><td>Botanical Name</td><td>Mucuna pruriens (L.) DC.</td></tr>
+        <tr><td>Sanskrit Names</td><td>Kapikachu, Atmagupta, Markati, Kacchura, Shukashimbi, Kandura, Pravrishayani</td></tr>
+        <tr><td>Common Names</td><td>Velvet Bean, Cowitch, Cowhage, Lacuna Bean, Lyon Bean</td></tr>
+        <tr><td>Regional Names</td><td>Kiwanch (Hindi), Nasugunni (Tel), Poonaikkaali (Tam), Naikuruna (Mal), Khajkuhili (Ben)</td></tr>
+        <tr><td>Origin</td><td>Tropical India, now pantropical — Africa, Caribbean, Southeast Asia</td></tr>
+        <tr><td>Plant Type</td><td>Vigorous annual/perennial climbing legume (up to 15 m)</td></tr>
+        <tr><td>Flowering Season</td><td>August–November (India); pods mature October–January</td></tr>
+        <tr><td>Medicinal Parts</td><td>Seeds (primary), roots, leaves, pod hairs (external)</td></tr>
+        <tr><td>Taste Profile</td><td>Madhura (sweet), Tikta (bitter)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">02</span><h2 class="section-title">Phytochemistry</h2><div class="section-rule"></div></div>
+    <p class="section-body">Kauncha seeds are among the richest natural sources of L-3,4-dihydroxyphenylalanine (L-DOPA) — a direct precursor to dopamine — at concentrations of 4–7% dry weight in wild-type seeds and up to 12.5% in selected varieties. This singular compound defines much of the plant's pharmacological profile, particularly its neuroprotective, reproductive, and anti-Parkinsonian activities. The seed matrix also contains a complex array of alkaloids, flavonoids, phenolics, sterols, and trypsin inhibitors that modulate and broaden the L-DOPA effect.</p>
+    <p class="section-body">The pod hairs (trichomes) contain serotonin (5-hydroxytryptamine) and mucunain, a cysteine protease responsible for the intense itching — a plant defence mechanism that has paradoxically been used in Ayurvedic anthelmintic (deworming) preparations.</p>
+    <div class="nutrition-bar">
+      <div class="nutrition-cell">
+        <div class="nutrition-num">4–7%</div>
+        <div class="nutrition-unit">L-DOPA</div>
+        <div class="nutrition-label">Seed dry weight</div>
+      </div>
+      <div class="nutrition-cell">
+        <div class="nutrition-num">27%</div>
+        <div class="nutrition-unit">Protein</div>
+        <div class="nutrition-label">Seed content</div>
+      </div>
+      <div class="nutrition-cell">
+        <div class="nutrition-num">60+</div>
+        <div class="nutrition-unit">Compounds</div>
+        <div class="nutrition-label">Identified phytochemicals</div>
+      </div>
+      <div class="nutrition-cell">
+        <div class="nutrition-num">40mg</div>
+        <div class="nutrition-unit">Levodopa</div>
+        <div class="nutrition-label">Per gram seed powder (avg)</div>
+      </div>
+    </div>
+    <table class="data-table">
+      <thead><tr><th>Compound</th><th>Category</th><th>Primary Action</th></tr></thead>
+      <tbody>
+        <tr><td>L-DOPA (Levodopa)</td><td>Catecholamine precursor</td><td>Dopamine synthesis; anti-Parkinsonian, neuroregenerative, pro-reproductive</td></tr>
+        <tr><td>5-Hydroxytryptamine (Serotonin)</td><td>Monoamine neurotransmitter</td><td>Mood regulation; anthelmintic (in pod hairs)</td></tr>
+        <tr><td>Mucunine &amp; Mucunadine</td><td>Alkaloids</td><td>CNS activity, adaptogenic modulation</td></tr>
+        <tr><td>Pruriendine &amp; Prurieninine</td><td>β-Carboline alkaloids</td><td>MAO inhibition; antidepressant, neuroprotective</td></tr>
+        <tr><td>Mucunain</td><td>Cysteine protease (pod hairs)</td><td>Anthelmintic — causes urticaria and expels intestinal worms</td></tr>
+        <tr><td>Gallic Acid, Quercetin, Kaempferol</td><td>Phenolics &amp; flavonoids</td><td>Antioxidant, anti-inflammatory, neuroprotective</td></tr>
+        <tr><td>β-Sitosterol &amp; Stigmasterol</td><td>Phytosterols</td><td>Anti-inflammatory, hypolipidemic, androgenic support</td></tr>
+        <tr><td>Lecithin &amp; Glutathione</td><td>Phospholipids &amp; antioxidants</td><td>Neuroprotection, free radical scavenging</td></tr>
+        <tr><td>Trypsin Inhibitors</td><td>Protease inhibitors</td><td>Anti-diabetic potential, modulate digestion</td></tr>
+        <tr><td>Fatty Acids (Oleic, Linoleic)</td><td>Essential fatty acids</td><td>Cardiovascular support, hormone precursors</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">03</span><h2 class="section-title">Ayurvedic Significance</h2><div class="section-rule"></div></div>
+    <p class="section-body">Kauncha holds a central position in two of Ayurveda's most important therapeutic categories: <em>Rasayana</em> (rejuvenation/longevity) and <em>Vajikarana</em> (virilification/aphrodisiac). Charaka Samhita lists Atmagupta among the premier <em>Shukrala</em> (semen-promoting) herbs and includes it in formulations for <em>Vata Vyadhi</em> (neurological disorders). Sushruta includes it in <em>Vidarigandhadi</em> and <em>Kakolyadi</em> groups. Ashtanga Hridayam prescribes its seeds extensively for both neurological conditions and reproductive debility.</p>
+    <p class="section-body">Classical shloka from Bhavaprakasha Nighantu — <em>"Kapikachu balya vrishya madhura snigdha guru / Vataghni shukrala shreshtha kaphapittakara smrita"</em> — describes Kauncha as strength-giving, virilifying, sweet, unctuous, heavy, supreme Vata-pacifier and semen-promoter, with capacity to mildly increase Kapha and Pitta.</p>
+    <table class="dosha-table">
+      <thead><tr><th>Dosha</th><th>Effect</th><th>Mechanism &amp; Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Vata ↓↓</td><td>Strongly pacifying</td><td>Madhura rasa, snigdha (unctuous) and guru (heavy) gunas directly counter Vata dryness and mobility — its primary therapeutic direction; treats tremors, paralysis, neurological degenerations, and joint pain</td></tr>
+        <tr><td>Pitta ↑</td><td>Mildly aggravating</td><td>Its virya is considered ushna (hot) in most texts — use with caution in hyperacidity, bleeding disorders; often combined with ghee or milk to buffer Pitta effect</td></tr>
+        <tr><td>Kapha ↑</td><td>Mildly aggravating</td><td>Heavy, unctuous qualities can increase Kapha in excess — recommended to combine with digestive spices (trikatu) in Kapha-dominant individuals; monitor in obesity or respiratory congestion</td></tr>
+      </tbody>
+    </table>
+    <p class="section-body"><strong>Rasa:</strong> Madhura (sweet), Tikta (bitter) &nbsp;·&nbsp; <strong>Guna:</strong> Guru (heavy), Snigdha (unctuous) &nbsp;·&nbsp; <strong>Virya:</strong> Ushna (hot) &nbsp;·&nbsp; <strong>Vipaka:</strong> Madhura (sweet) &nbsp;·&nbsp; <strong>Karma:</strong> Vatahara, Shukrala, Balya, Rasayana, Vajikarana</p>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">04</span><h2 class="section-title">Key Health Benefits</h2><div class="section-rule"></div></div>
+    <p class="section-body">Modern research has validated Kauncha's ancient reputation across a remarkable breadth of pharmacological activity — particularly its unique position as the richest plant source of L-DOPA, placing it at the intersection of traditional Vajikarana medicine and cutting-edge neuropharmacology.</p>
+    <div class="benefits-grid">
+      <div class="benefit-card">
+        <div class="benefit-title">Neuroprotective &amp; Anti-Parkinsonian</div>
+        <div class="benefit-desc">Kauncha seeds contain 4–7% natural L-DOPA — the same molecule used in conventional Parkinson's treatment. Unlike synthetic levodopa, the whole-seed matrix includes natural inhibitors of peripheral DOPA decarboxylase, potentially improving CNS delivery with reduced side effects. Multiple clinical studies have demonstrated therapeutic equivalence to standard levodopa-carbidopa in mild-to-moderate Parkinson's disease.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Vajikarana — Male Reproductive Tonic</div>
+        <div class="benefit-desc">One of Ayurveda's premier aphrodisiac herbs. Seed powder significantly increases sperm count, motility, and morphology in clinical studies on infertile men. L-DOPA stimulates testosterone synthesis via dopamine-mediated LH secretion; β-sitosterol supports androgenic function. Traditionally combined with milk and ghee in classical Vajikarana formulations.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Adaptogenic &amp; Anti-stress</div>
+        <div class="benefit-desc">Kauncha standardised extract significantly reduced psychological stress scores and cortisol levels in a double-blind clinical trial on infertile men. Dopaminergic modulation via L-DOPA and MAO-inhibiting β-carboline alkaloids (pruriendine, prurieninine) creates a dual adaptogenic effect — buffering the HPA axis while enhancing reward-pathway resilience.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Anabolic &amp; Strength Promoting (<em>Balya</em>)</div>
+        <div class="benefit-desc">Classical categorisation as <em>Balya</em> (strength-giving) is supported by evidence that Kauncha seed powder increases growth hormone (GH) secretion via L-DOPA's stimulation of hypothalamic GH-releasing hormone. Athletes and practitioners use it to support lean muscle, stamina, and recovery — a use validated in human studies showing improved GH levels at 5g doses.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Anti-diabetic &amp; Metabolic Support</div>
+        <div class="benefit-desc">Seed extracts demonstrate significant hypoglycemic activity in both animal models and preliminary human studies, attributed to trypsin inhibitors, L-DOPA (which modulates insulin secretion), and flavonoids. Regular intake improved fasting blood glucose and HbA1c parameters in Type 2 diabetes, with concurrent lipid-lowering effects via phytosterol and fatty acid content.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Anthelmintic (Deworming)</div>
+        <div class="benefit-desc">A classical and well-evidenced application: pod hairs mixed with honey are used to expel intestinal worms. Mucunain, the cysteine protease in urticating trichomes, mechanically disrupts worm cuticles while serotonin content contributes to vermicidal action. Clinical use validates this ancient indication for roundworm and hookworm infections.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Antioxidant &amp; Anti-inflammatory</div>
+        <div class="benefit-desc">Rich in gallic acid, quercetin, kaempferol, and glutathione, Kauncha seeds demonstrate potent free radical scavenging in DPPH and ABTS assays. Anti-inflammatory activity, demonstrated via inhibition of COX enzymes and reduction of pro-inflammatory cytokines (TNF-α, IL-6), supports its classical use in arthritis, joint pain, and inflammatory neurological conditions.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Mood &amp; Cognitive Enhancement</div>
+        <div class="benefit-desc">Via dopaminergic upregulation and MAO-B inhibition, Kauncha seeds support healthy mood, motivation, and cognitive function. Clinically demonstrated improvements in depression scores accompany its reproductive tonic effects. The β-carboline alkaloids add a mild anxiolytic dimension, while L-DOPA supports working memory and executive function in dopamine-deficient states.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">05</span><h2 class="section-title">How to Consume Kauncha</h2><div class="section-rule"></div></div>
+    <p class="section-body">The seeds of Kauncha are the primary medicinal part. They must be properly processed before consumption — raw seeds contain anti-nutritional factors and excess L-DOPA that can cause nausea. Traditional processing involves soaking seeds overnight, boiling, peeling, drying, and powdering — or preparing as milk decoctions. Seeds should always be used under qualified supervision due to their potent pharmacological activity.</p>
+    <table class="consume-table">
+      <thead><tr><th>Form</th><th>Preparation</th><th>Dosage</th><th>Best Use</th></tr></thead>
+      <tbody>
+        <tr><td>Seed Powder (Churna)</td><td>Processed seed, dried &amp; powdered; taken with warm milk and honey</td><td>3–5 g, 1–2× daily</td><td>Vajikarana, neurological support, strength</td></tr>
+        <tr><td>Milk Decoction (Kshira Paka)</td><td>Boil seed powder in milk with ghee; strain and drink warm</td><td>1 cup (200ml) once daily</td><td>Reproductive tonic, Vata disorders, tremors</td></tr>
+        <tr><td>Standardised Extract</td><td>Seed extract standardised to 15% L-DOPA</td><td>200–400 mg, physician-directed</td><td>Parkinson's support, clinical protocols</td></tr>
+        <tr><td>Kauncha Pak (Classical)</td><td>Seed powder, ghee, sugar, spices — prepared as herbal confection</td><td>10–12 g once daily</td><td>Rasayana, seminal debility, muscle wasting</td></tr>
+        <tr><td>Pod Hair + Honey</td><td>Pod trichomes mixed with raw honey; swallowed carefully</td><td>4–5 g (pod hairs) once</td><td>Anthelmintic — intestinal worms only</td></tr>
+        <tr><td>Root Decoction</td><td>Boil dried root in water; reduce to ¼</td><td>30–40 ml twice daily</td><td>Diuretic, oedema, snake bite (supportive)</td></tr>
+        <tr><td>Leaf Paste (Topical)</td><td>Ground fresh leaves applied externally</td><td>As needed</td><td>Neuralgia (topical), joint pain, oedema</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">06</span><h2 class="section-title">Safety &amp; Precautions</h2><div class="section-rule"></div></div>
+    <p class="section-body">Kauncha is a potent pharmacological agent — not a mild tonic herb. Its significant L-DOPA content means it can interact with medications and produce genuine side effects at high or unsupervised doses. Traditional Ayurveda always combined it with milk, ghee, and digestive spices to moderate its intensity. Modern use should respect the same caution.</p>
+    <ul class="precaution-list">
+      <li><strong>Levodopa / Carbidopa medications:</strong> Strictly avoid concurrent use without specialist supervision — additive L-DOPA effect can cause nausea, dyskinesias, hallucinations, and cardiovascular instability. Must be disclosed to treating neurologist.</li>
+      <li><strong>MAO Inhibitors (MAOIs):</strong> Contraindicated. The β-carboline alkaloids in Kauncha inhibit MAO; combining with pharmaceutical MAOIs (phenelzine, tranylcypromine, selegiline) risks hypertensive crisis.</li>
+      <li><strong>Pregnancy:</strong> Avoid internal use. Dopaminergic activity can inhibit prolactin and oxytocin, potentially interfering with placentation and lactation. Pod hairs are strictly contraindicated.</li>
+      <li><strong>Breastfeeding:</strong> L-DOPA suppresses prolactin (the primary milk-production hormone) — internal use may significantly reduce milk supply and is therefore contraindicated.</li>
+      <li><strong>Mental health conditions:</strong> Use with caution in schizophrenia, bipolar disorder, or psychosis — excess dopamine can exacerbate psychotic symptoms. Should not be used alongside antipsychotic medications (D2 antagonists) without specialist guidance.</li>
+      <li><strong>Nausea &amp; GI effects:</strong> The most common side effect, particularly at higher doses. Always take with warm milk, ghee, or food. Starting with lower doses (1–2 g) and titrating upward minimises this effect.</li>
+      <li><strong>Cardiovascular conditions:</strong> Dopaminergic stimulation can affect heart rate and blood pressure. Use cautiously in arrhythmia, hypertension, and cardiac disease.</li>
+      <li><strong>Skin contact with pods:</strong> The urticating pod hairs cause intense, long-lasting itching and should never be handled without gloves. If contact occurs, wash thoroughly with soap and water; do not rub.</li>
+      <li><strong>Long-term use:</strong> Monitor liver enzymes and renal function with prolonged therapeutic use. Cycling (8–12 weeks on, 4 weeks off) is recommended in most Rasayana protocols.</li>
+    </ul>
+  </div>
+
+  <div class="sources">
+    <div class="sources-title">References &amp; Sources</div>
+    <ul>
+      <li>Lampariello LR et al. — "The Magic Velvet Bean of Mucuna pruriens" — Journal of Traditional and Complementary Medicine, 2012</li>
+      <li>Vaidya AB et al. — "Mucuna pruriens Linn (Kauncha) seeds in the management of Parkinsonism" — Ancient Science of Life, 1978</li>
+      <li>Shukla KK et al. — "Mucuna pruriens improves male fertility by its action on the hypothalamus–pituitary–gonadal axis" — Fertility and Sterility, 2009</li>
+      <li>Katzenschlager R et al. — "Mucuna pruriens in Parkinson's disease: a double blind clinical and pharmacological study" — Journal of Neurology, Neurosurgery &amp; Psychiatry, 2004</li>
+      <li>Bhavaprakasha Nighantu — Kapikachu entry with classical shloka &amp; Vajikarana applications</li>
+      <li>Charaka Samhita, Chikitsa Sthana — Shukrala herbs and Vata Vyadhi formulations including Atmagupta</li>
+      <li>Sushruta Samhita — Vidarigandhadi Gana &amp; Kakolyadi Gana classification of Kapikachu</li>
+      <li>Ashtanga Hridayam — Sutrasthana treatment of Vata vyadhi; Vajikarana chapter preparations</li>
+      <li>Priyavrat Sharma — Dravyaguna Vigyana — Classical rasa-guna-virya-vipaka-karma analysis</li>
+      <li>Rathi SS et al. — "Phytochemistry and pharmacological activities of Mucuna pruriens: A review" — Asian Journal of Pharmaceutical Sciences, 2021</li>
+    </ul>
+  </div>
+</div>
+
+<footer>
+  <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a qualified practitioner before therapeutic use</p>
+</footer>
+
+
+  <div id="viewerModal">
+    <div id="modal-topbar">
+      <span>3D Model — Kauncha</span>
+      <button type="button" id="close3D">✕</button>
+    </div>
+    <model-viewer src="kauncha3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+  </div>
+  <script>
+    (function() {
+      var open3D = document.getElementById('open3D');
+      var close3D = document.getElementById('close3D');
+      var modal = document.getElementById('viewerModal');
+      if (!open3D || !close3D || !modal) return;
+      function openModal() {
+        
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+      function closeModal() {
+        
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+      open3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); openModal();
+      });
+      close3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); closeModal();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+      });
+    })();
+  </script>
+
+</body>
+</html>

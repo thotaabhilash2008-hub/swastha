@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nishapushpa | Turmeric Flower | Swastha</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+  <style>
+    #open3D {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      padding: 10px 18px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: var(--forest);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      z-index: 1000;
+      transition: .3s;
+    }
+    #open3D:hover {
+      background: var(--gold);
+      color: var(--deep);
+    }
+    #viewerModal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+    }
+    #modal-topbar {
+      flex-shrink: 0;
+      height: 58px;
+      background: #111111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px 0 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      z-index: 99999;
+    }
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 4.5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.72);
+      user-select: none;
+    }
+    #close3D {
+      width: 38px;
+      height: 38px;
+      font-size: 15px;
+      font-weight: 300;
+      background: transparent;
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background .2s, color .2s, transform .22s;
+      outline: none;
+      flex-shrink: 0;
+    }
+    #close3D:hover {
+      background: #ffffff;
+      color: #111111;
+      border-color: #ffffff;
+      transform: rotate(90deg);
+    }
+    #viewerModal model-viewer {
+      flex: 1;
+      width: 100%;
+      display: block;
+      background: #ffffff;
+    }
+
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+    * { margin: 0; padding: 0; box-sizing: border-box }
+    html { scroll-behavior: smooth }
+    body {
+      font-family: 'Jost', sans-serif;
+      background: var(--cream);
+      color: var(--ink);
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity: .032;
+      pointer-events: none;
+      z-index: 100;
+    }
+
+    /* Turmeric-hued background accents */
+    .bg-circle { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0 }
+    .bg-circle-1 {
+      width: 720px; height: 720px;
+      background: radial-gradient(circle, rgba(212,160,23,.12) 0%, transparent 70%);
+      top: -220px; right: -160px;
+    }
+    .bg-circle-2 {
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(196,124,10,.09) 0%, transparent 70%);
+      bottom: -100px; left: -100px;
+    }
+
+    /* Botanical SVGs */
+    .botanical-svg { position: fixed; pointer-events: none; z-index: 1; opacity: .10 }
+    .botanical-tl { top: -20px; left: -20px; width: 270px }
+    .botanical-br { bottom: -20px; right: -20px; width: 230px; transform: rotate(180deg) }
+
+    /* Hero */
+    .hero {
+      position: relative; z-index: 10;
+      padding: 54px 40px 0;
+      text-align: center;
+      opacity: 0; animation: fadeUp .9s ease .1s forwards;
+    }
+    .back-link {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+      color: var(--sage); text-decoration: none; margin-bottom: 36px;
+      transition: color .3s;
+    }
+    .back-link:hover { color: var(--gold) }
+    .logo-rule {
+      display: flex; align-items: center; justify-content: center;
+      gap: 20px; margin-bottom: 14px;
+    }
+    .logo-rule span {
+      display: block; height: 1px; width: 70px;
+      background: linear-gradient(to right, transparent, var(--turmeric));
+    }
+    .logo-rule span:last-child { background: linear-gradient(to left, transparent, var(--turmeric)) }
+    .logo-ornament { font-size: 13px; color: var(--turmeric) }
+    .hero-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(60px, 11vw, 105px);
+      font-weight: 300; letter-spacing: 8px; line-height: 1;
+      color: var(--deep);
+    }
+    .hero-subtitle {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 18px; font-style: italic; font-weight: 300;
+      color: var(--saffron); letter-spacing: 2px; margin-top: 8px;
+    }
+    .hero-sci {
+      font-size: 11px; font-weight: 200; letter-spacing: 5px;
+      color: var(--sage); margin-top: 6px;
+    }
+
+    /* Hero Photos */
+    .hero-photos {
+      position: relative; z-index: 10;
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 2px; max-width: 900px; margin: 40px auto 0;
+      opacity: 0; animation: fadeUp .9s ease .35s forwards;
+    }
+    .hero-photos img {
+      width: 100%; height: 380px;
+      object-fit: cover; object-position: center;
+      display: block; background: var(--parchment);
+    }
+    .photo-caption {
+      text-align: center;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 12px; font-style: italic;
+      color: var(--sage); letter-spacing: 1px;
+      padding: 10px 0 0; max-width: 900px;
+      margin: 0 auto; position: relative; z-index: 10;
+      opacity: 0; animation: fadeUp .9s ease .5s forwards;
+    }
+
+    /* Divider */
+    .divider {
+      display: flex; align-items: center; justify-content: center;
+      gap: 16px; margin: 50px auto; max-width: 600px;
+      opacity: 0; animation: fadeUp .9s ease .55s forwards;
+      position: relative; z-index: 10;
+    }
+    .divider-line { height: 1px; width: 120px; background: linear-gradient(to right, transparent, var(--turmeric)) }
+    .divider-line:last-child { background: linear-gradient(to left, transparent, var(--turmeric)) }
+    .divider-leaf { color: var(--saffron); font-size: 18px }
+
+    /* Content */
+    .content {
+      position: relative; z-index: 10;
+      max-width: 860px; margin: 0 auto;
+      padding: 0 30px 80px;
+    }
+    .intro-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 20px; font-weight: 300; line-height: 1.75;
+      color: var(--ink); text-align: center;
+      max-width: 700px; margin: 0 auto 60px;
+      opacity: 0; animation: fadeUp .9s ease .6s forwards;
+    }
+    .intro-text em { color: var(--saffron); font-style: italic }
+
+    /* Sections */
+    .section { margin-bottom: 60px; opacity: 0; animation: fadeUp .9s ease forwards }
+    .section:nth-child(1) { animation-delay: .65s }
+    .section:nth-child(2) { animation-delay: .75s }
+    .section:nth-child(3) { animation-delay: .85s }
+    .section:nth-child(4) { animation-delay: .95s }
+    .section:nth-child(5) { animation-delay: 1.05s }
+    .section:nth-child(6) { animation-delay: 1.15s }
+    .section:nth-child(7) { animation-delay: 1.25s }
+
+    .section-header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px }
+    .section-num { font-family: 'Cormorant Garamond', serif; font-size: 11px; letter-spacing: 4px; color: var(--turmeric) }
+    .section-title { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 400; color: var(--deep); letter-spacing: 1px }
+    .section-rule { height: 1px; flex: 1; background: linear-gradient(to right, var(--turmeric), transparent) }
+    .section-body { font-size: 13px; font-weight: 300; line-height: 1.9; color: var(--ink); margin-bottom: 24px }
+    .section-body strong { color: var(--deep); font-weight: 400 }
+
+    /* Tables */
+    .data-table { width: 100%; border-collapse: collapse; margin: 16px 0 8px; font-size: 12px }
+    .data-table thead tr { background: var(--deep); color: var(--gold); font-size: 10px; letter-spacing: 3px; text-transform: uppercase }
+    .data-table thead th { padding: 12px 14px; text-align: left; font-weight: 400 }
+    .data-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .data-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .data-table tbody tr { transition: background .2s }
+    .data-table tbody tr:hover { background: #f0dfa8 }
+    .data-table tbody td { padding: 10px 14px; color: var(--ink); border-bottom: 1px solid rgba(122,79,30,.08) }
+    .data-table tbody td:first-child { font-weight: 400; color: var(--deep); width: 28% }
+
+    .dosha-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .dosha-table thead tr { background: var(--saffron); color: var(--cream) }
+    .dosha-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .dosha-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .dosha-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .dosha-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(122,79,30,.08) }
+    .dosha-table tbody td:first-child { font-weight: 400; color: var(--saffron); width: 18% }
+    .dosha-table tbody td:nth-child(2) { color: var(--earth); width: 20% }
+
+    .consume-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .consume-table thead tr { background: var(--earth); color: var(--cream) }
+    .consume-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .consume-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .consume-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .consume-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(122,79,30,.08) }
+    .consume-table tbody td:first-child { font-weight: 400; color: var(--earth); width: 22% }
+
+    /* Nutrition bar */
+    .nutrition-bar {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 1px; background: rgba(122,79,30,.12);
+      border: 1px solid rgba(122,79,30,.12); margin: 20px 0;
+    }
+    .nutrition-cell {
+      background: var(--cream); padding: 22px 16px;
+      text-align: center; transition: background .3s;
+    }
+    .nutrition-cell:hover { background: var(--parchment) }
+    .nutrition-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 36px; font-weight: 300; color: var(--saffron);
+      line-height: 1; margin-bottom: 4px;
+    }
+    .nutrition-unit { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--turmeric); font-weight: 300 }
+    .nutrition-label { font-size: 11px; font-weight: 300; color: var(--ink); margin-top: 5px }
+
+    /* Benefits grid */
+    .benefits-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 1px; background: rgba(122,79,30,.12);
+      border: 1px solid rgba(122,79,30,.12); margin: 8px 0;
+    }
+    .benefit-card {
+      background: var(--cream); padding: 24px 22px;
+      transition: background .3s; position: relative; overflow: hidden;
+    }
+    .benefit-card:hover { background: #f0dfa8 }
+    .benefit-card::before {
+      content: ''; position: absolute; bottom: 0; left: 0;
+      width: 0; height: 2px; background: var(--turmeric); transition: width .4s;
+    }
+    .benefit-card:hover::before { width: 100% }
+    .benefit-title { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 600; color: var(--saffron); margin-bottom: 8px }
+    .benefit-desc { font-size: 11.5px; font-weight: 300; line-height: 1.75; color: var(--ink); opacity: .85 }
+
+    /* Precaution list */
+    .precaution-list { list-style: none; margin: 8px 0 }
+    .precaution-list li {
+      display: flex; gap: 12px; align-items: flex-start;
+      padding: 10px 14px; font-size: 12px; font-weight: 300;
+      line-height: 1.7; color: var(--ink);
+      border-bottom: 1px solid rgba(122,79,30,.08);
+    }
+    .precaution-list li:last-child { border-bottom: none }
+    .precaution-list li::before { content: '▸'; color: var(--turmeric); flex-shrink: 0; margin-top: 1px }
+
+    /* Sources */
+    .sources { border-top: 1px solid rgba(122,79,30,.15); padding-top: 24px; margin-top: 20px }
+    .sources-title { font-size: 10px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); margin-bottom: 12px; font-weight: 300 }
+    .sources ul { list-style: none }
+    .sources ul li {
+      font-family: 'Cormorant Garamond', serif; font-size: 13px;
+      font-style: italic; color: var(--earth); padding: 5px 0;
+      border-bottom: 1px solid rgba(122,79,30,.06);
+    }
+    .sources ul li::before { content: '· '; color: var(--sage) }
+
+    footer {
+      position: relative; z-index: 10;
+      text-align: center; padding: 24px 20px 44px;
+      border-top: 1px solid rgba(122,79,30,.12);
+      max-width: 860px; margin: 0 auto;
+    }
+    footer p { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); font-weight: 300 }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(28px) }
+      to { opacity: 1; transform: translateY(0) }
+    }
+    @media(max-width:700px) {
+      .hero-photos { grid-template-columns: 1fr }
+      .hero-photos img { height: 260px }
+      .benefits-grid { grid-template-columns: 1fr }
+      .nutrition-bar { grid-template-columns: 1fr 1fr }
+      .content { padding: 0 18px 60px }
+    }
+  </style>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+</head>
+<body>
+  <button type="button" id="open3D">View in 3D</button>
+
+
+  <!-- Background accents -->
+  <div class="bg-circle bg-circle-1"></div>
+  <div class="bg-circle bg-circle-2"></div>
+
+  <!-- Botanical corner SVGs -->
+  <svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#c47c0a" stroke-width="1.5" fill="none"/>
+    <ellipse cx="105" cy="195" rx="22" ry="10" fill="#d4a017" transform="rotate(-30 105 195)"/>
+    <ellipse cx="148" cy="155" rx="18" ry="9" fill="#c47c0a" transform="rotate(-45 148 155)"/>
+    <ellipse cx="190" cy="115" rx="16" ry="8" fill="#d4a017" transform="rotate(-60 190 115)"/>
+    <circle cx="88" cy="213" r="9" fill="#e0b84a" opacity="0.6"/>
+    <circle cx="168" cy="133" r="7" fill="#c47c0a" opacity="0.7"/>
+  </svg>
+  <svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#c47c0a" stroke-width="1.5" fill="none"/>
+    <ellipse cx="105" cy="195" rx="22" ry="10" fill="#d4a017" transform="rotate(-30 105 195)"/>
+    <ellipse cx="148" cy="155" rx="18" ry="9" fill="#c47c0a" transform="rotate(-45 148 155)"/>
+    <circle cx="88" cy="213" r="9" fill="#e0b84a" opacity="0.6"/>
+  </svg>
+
+  <!-- Hero -->
+  <div class="hero">
+    <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+    <div class="logo-rule">
+      <span></span>
+      <div class="logo-ornament">✦</div>
+      <span></span>
+    </div>
+    <div class="hero-title">Nishapushpa</div>
+    <div class="hero-subtitle">Turmeric Flower — The Blossom of the Night Goddess</div>
+    <div class="hero-sci">Curcuma longa L. &nbsp;·&nbsp; Zingiberaceae</div>
+  </div>
+
+  <div class="hero-photos">
+    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/4/47/Starr-140925-1977-Curcuma_longa-flowering_habit-Pali_o_Waipio_Huelo-Maui_%2825128294462%29.jpg/1280px-Starr-140925-1977-Curcuma_longa-flowering_habit-Pali_o_Waipio_Huelo-Maui_%2825128294462%29.jpg" alt="Turmeric flower spike with pale yellow and pink bracts"
+      onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5b/Curcuma_longa_roots.jpg/1280px-Curcuma_longa_roots.jpg" alt="Curcuma longa inflorescence showing white and pink bracts"
+      onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+  </div>
+  <p class="photo-caption">Fig. 1 — The elegant cone-shaped inflorescence of Curcuma longa, crowned with pale pink and white bracts &nbsp;·&nbsp; Fig. 2 — Close view of the turmeric flower emerging from its golden-rhizomed plant</p>
+
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-leaf">❧</div>
+    <div class="divider-line"></div>
+  </div>
+
+  <div class="content">
+    <p class="intro-text">Though the world knows <em>Haridra</em> for its golden rhizome, it is the flower — <em>Nishapushpa</em>, "bloom of the night one" — that carries its own quiet pharmacopoeia. Borne on a cone-shaped spike of pale bracts, this ethereal blossom is prized in folk medicine across South and Southeast Asia as an anti-inflammatory, digestive, and wound-healing agent, its culinary and ornamental grace matched by a rich heritage of therapeutic use.</p>
+
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">01</span>
+        <h2 class="section-title">Botanical Profile</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Curcuma longa is a robust, rhizomatous perennial herb of the Zingiberaceae family — kin to ginger, cardamom, and galangal — native to the Indian subcontinent and cultivated throughout tropical Asia. The plant grows 60–100 cm tall from a cluster of aromatic, deep-orange rhizomes, with large, oblong-lanceolate leaves emerging on long sheaths. The flower spike — the <em>Nishapushpa</em> — rises directly from the rhizome on a separate peduncle or from the centre of the leafy shoot, reaching 15–20 cm in length.</p>
+      <p class="section-body">The inflorescence is a dense cylindrical spike of spirally arranged bracts: the lower fertile bracts are pale green, the upper sterile coma bracts are vivid pink to pale lilac, and the actual flowers are small, yellow, tubular, and three-petalled — emerging one or two at a time from within the fertile bracts. The flower is ephemeral, lasting only a day; the entire spike, however, persists for weeks, making it highly ornamental. It blooms in the monsoon season — July to September — coinciding with peak rhizome growth.</p>
+      <table class="data-table">
+        <thead><tr><th>PROPERTY</th><th>Detail</th></tr></thead>
+        <tbody>
+          <tr><td>Family</td><td>Zingiberaceae (Shringaveradi Kula)</td></tr>
+          <tr><td>Botanical Name</td><td>Curcuma longa L.</td></tr>
+          <tr><td>Sanskrit Names</td><td>Haridra, Nishapushpa, Nisha, Kanchani, Rajani, Gauri, Varnavilasini</td></tr>
+          <tr><td>Common Names</td><td>Turmeric, Indian Saffron, Yellow Ginger</td></tr>
+          <tr><td>Regional Names</td><td>Pasupu (Tel), Manjal (Tam/Mal), Haldi (Hindi/Mar), Arishina (Kan)</td></tr>
+          <tr><td>Plant Type</td><td>Rhizomatous perennial herb (60–100 cm)</td></tr>
+          <tr><td>Flowering Season</td><td>July–September (monsoon)</td></tr>
+          <tr><td>Inflorescence</td><td>Dense cylindrical spike; pale green, pink, and lilac bracts</td></tr>
+          <tr><td>Medicinal Parts</td><td>Flower, rhizome, leaves, essential oil</td></tr>
+          <tr><td>Taste Profile</td><td>Katu (pungent), Tikta (bitter)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">02</span>
+        <h2 class="section-title">Phytochemistry of the Flower</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">While the rhizome is globally studied for curcuminoids (curcumin, demethoxycurcumin, bisdemethoxycurcumin), the <em>flower</em> of Curcuma longa presents a distinct and complementary phytochemical profile. Flower extracts are notably rich in flavonoids, phenolic acids, and essential oil volatiles — including ar-turmerone, α-turmerone, and zingiberene — while curcuminoid content, though present, is lower than in the rhizome. This makes the flower pharmacologically valuable in its own right, particularly for antioxidant, antimicrobial, and anti-inflammatory applications.</p>
+      <div class="nutrition-bar">
+        <div class="nutrition-cell">
+          <div class="nutrition-num">~5%</div>
+          <div class="nutrition-unit">volatile oil</div>
+          <div class="nutrition-label">In flower bracts</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">3+</div>
+          <div class="nutrition-unit">curcuminoids</div>
+          <div class="nutrition-label">Curcumin, DMC, BDMC</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">High</div>
+          <div class="nutrition-unit">flavonoids</div>
+          <div class="nutrition-label">vs. rhizome comparatively</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">July–Sep</div>
+          <div class="nutrition-unit">bloom window</div>
+          <div class="nutrition-label">Peak potency harvest</div>
+        </div>
+      </div>
+      <table class="data-table">
+        <thead><tr><th>Compound</th><th>Category</th><th>Primary Action</th></tr></thead>
+        <tbody>
+          <tr><td>Curcumin</td><td>Diarylheptanoid polyphenol</td><td>Anti-inflammatory, antioxidant, anticancer, neuroprotective</td></tr>
+          <tr><td>Demethoxycurcumin (DMC)</td><td>Curcuminoid</td><td>Anti-inflammatory, antioxidant, anti-proliferative</td></tr>
+          <tr><td>Bisdemethoxycurcumin (BDMC)</td><td>Curcuminoid</td><td>Antioxidant, immunomodulatory</td></tr>
+          <tr><td>ar-Turmerone &amp; α-Turmerone</td><td>Sesquiterpene ketones</td><td>Antimicrobial, anti-inflammatory, neuroprotective, anti-venom</td></tr>
+          <tr><td>Zingiberene</td><td>Sesquiterpene hydrocarbon</td><td>Digestive stimulant, carminative, anti-nausea</td></tr>
+          <tr><td>Quercetin &amp; Luteolin</td><td>Flavonoids</td><td>Antioxidant, anti-allergic, anti-inflammatory</td></tr>
+          <tr><td>Caffeic &amp; Ferulic Acid</td><td>Phenolic acids</td><td>Antioxidant, wound-healing, antimicrobial</td></tr>
+          <tr><td>β-Sitosterol</td><td>Phytosterol</td><td>Hypolipidemic, anti-inflammatory, immunomodulatory</td></tr>
+          <tr><td>Cineole (1,8-cineole)</td><td>Monoterpene oxide</td><td>Expectorant, antimicrobial, analgesic</td></tr>
+          <tr><td>Tannins &amp; Saponins</td><td>Secondary metabolites</td><td>Astringent, wound-healing, antimicrobial</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">03</span>
+        <h2 class="section-title">Ayurvedic Significance</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Haridra is one of the most extensively described plants in classical Ayurveda, appearing in Charaka Samhita, Sushruta Samhita, Ashtanga Hridayam, and virtually every Nighantu text. The plant's name <em>Nisha</em> ("night") refers to its deep golden rhizome resembling the skin colour attributed to the goddess Durga (<em>Nisha</em> as an epithet), while <em>Nishapushpa</em> — the flower — is specifically referenced in regional ethnobotanical traditions and in Bhavaprakasha as the flowering part of the Haridra plant used in ritual, cosmetic, and therapeutic preparations.</p>
+      <p class="section-body">Classically, Haridra (including its flower) is categorised under <em>Lekhaniya</em> (scraping/reducing), <em>Kushtaghna</em> (skin disease–curing), and <em>Krimighna</em> (anti-parasitic) drugs by Charaka. In Sushruta, it appears in <em>Priyangvadi Gana</em> (complexion-improving drugs) and <em>Mustadi Gana</em>. The flower specifically appears in folk traditions of Andhra Pradesh, Tamil Nadu, and Kerala as an ingredient in ritual offerings, bridal preparations, and wound-healing poultices.</p>
+      <table class="dosha-table">
+        <thead><tr><th>Dosha</th><th>Effect</th><th>Mechanism &amp; Notes</th></tr></thead>
+        <tbody>
+          <tr><td>Vata ↓</td><td>Pacifying</td><td>Ushna virya (hot potency) relieves Vata-related stiffness, joint pain, and neuralgic conditions; used in Vatarakta and arthritic conditions</td></tr>
+          <tr><td>Pitta ↓</td><td>Mildly pacifying</td><td>Tikta rasa (bitter taste) cools Pitta — unusual for a hot-potency herb; balances skin and blood (Rakta-pitta) conditions including inflammatory skin diseases</td></tr>
+          <tr><td>Kapha ↓</td><td>Strongly pacifying</td><td>Laghu (light), Ruksha (dry), Ushna (hot) qualities powerfully reduce Kapha; used in obesity, diabetes (Prameha), mucus disorders, and respiratory congestion</td></tr>
+        </tbody>
+      </table>
+      <p class="section-body"><strong>Rasa:</strong> Katu (pungent), Tikta (bitter) &nbsp;·&nbsp; <strong>Guna:</strong> Laghu (light), Ruksha (dry) &nbsp;·&nbsp; <strong>Virya:</strong> Ushna (hot) &nbsp;·&nbsp; <strong>Vipaka:</strong> Katu (pungent) &nbsp;·&nbsp; <strong>Karma:</strong> Tridosha-shamaka (balances all three doshas, with primary affinity for Kapha and Pitta)</p>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">04</span>
+        <h2 class="section-title">Key Health Benefits</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">The flower of Curcuma longa shares the broad therapeutic footprint of the rhizome while offering unique properties from its distinct phytochemical composition. Folk traditions of South India particularly value the fresh flower in skin care, wound healing, and menstrual health — uses corroborated by emerging pharmacological research.</p>
+      <div class="benefits-grid">
+        <div class="benefit-card">
+          <div class="benefit-title">Anti-inflammatory</div>
+          <div class="benefit-desc">Curcuminoids in the flower inhibit COX-2, LOX, and NF-κB inflammatory pathways. Flower extract poultices are applied to inflamed joints, sprains, and post-partum abdominal inflammation in traditional South Indian practice. Comparable to ibuprofen in some animal models.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Wound Healing &amp; Skin Care</div>
+          <div class="benefit-desc">Fresh flower paste is applied to cuts, burns, and infected wounds in folk medicine across Andhra Pradesh and Tamil Nadu. Curcumin accelerates re-epithelialisation and collagen deposition. Combined with its antimicrobial activity, the flower is a powerful topical healing agent.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Digestive Health</div>
+          <div class="benefit-desc">The flower's volatile oils — zingiberene, cineole — stimulate bile flow, improve digestion, relieve flatulence, and soothe intestinal inflammation. In Kerala cuisine, turmeric flowers are eaten as a vegetable precisely for their digestive benefits alongside their delicate flavour.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Antimicrobial &amp; Antifungal</div>
+          <div class="benefit-desc">Flower extracts demonstrate significant inhibition of E. coli, Staphylococcus aureus, Bacillus cereus, and Aspergillus sp. Essential oil constituents — ar-turmerone and 1,8-cineole — are primarily responsible for antifungal activity, making the flower useful in skin and oral infections.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Antioxidant Activity</div>
+          <div class="benefit-desc">DPPH and FRAP assay studies show high free-radical scavenging activity in turmeric flower extracts — in some studies exceeding that of the rhizome per unit weight, due to elevated flavonoid and phenolic acid concentrations in the bracts and petals.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Menstrual &amp; Uterine Health</div>
+          <div class="benefit-desc">Classical texts describe Haridra as <em>artavajanana</em> (emmenagogue) — promoting healthy menstrual flow. The flower is used in folk preparations for dysmenorrhea (painful periods) and menstrual irregularity across South Indian tribal traditions, often combined with jaggery.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Skin Brightening &amp; Cosmetic</div>
+          <div class="benefit-desc">Turmeric flowers are a traditional ingredient in bridal ubtan (body scrub) preparations in Andhra Pradesh and Telangana. The flower's mild curcuminoid content and volatile oils impart a subtle luminosity to the skin, and its anti-inflammatory properties reduce redness and pigmentation.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Respiratory Support</div>
+          <div class="benefit-desc">1,8-Cineole and ar-turmerone in the flower act as expectorants and bronchodilators. Decoction of the flower is used in folk traditions for cough, bronchitis, and sinusitis — complementing the rhizome's well-known application of turmeric milk for respiratory ailments.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">05</span>
+        <h2 class="section-title">Culinary Uses of the Flower</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Unlike the rhizome, which is universally used, the turmeric flower is a regional culinary delicacy — most prominently in Kerala, Odisha, Andhra Pradesh, and parts of Northeast India and Southeast Asia. Its flavour is delicate, mildly bitter, faintly floral, and earthy — quite unlike the assertive pungency of the root. It is typically used fresh or briefly cooked, as prolonged heat diminishes both flavour and nutritional value.</p>
+      <table class="data-table">
+        <thead><tr><th>Preparation</th><th>Region</th><th>How Used</th></tr></thead>
+        <tbody>
+          <tr><td>Manjal Poo Thoran</td><td>Kerala</td><td>Stir-fried with grated coconut, mustard, and curry leaves — a classic dry side dish</td></tr>
+          <tr><td>Haridra Pushpa Chutney</td><td>Andhra Pradesh</td><td>Fresh flower pounded with green chilli, tamarind, and salt into a pungent chutney</td></tr>
+          <tr><td>Flower Curry / Sabzi</td><td>Odisha, Northeast India</td><td>Cooked with potatoes or lentils in a light gravy with mustard oil and panch phoron</td></tr>
+          <tr><td>Raw Salad</td><td>Thailand, Laos</td><td>Thinly sliced fresh bracts added to green papaya salads and Nam Phrik dips</td></tr>
+          <tr><td>Flower Rice</td><td>Tamil Nadu</td><td>Fresh petals mixed into cooked rice with sesame, chilli, and curry leaf tempering</td></tr>
+          <tr><td>Pickle (Achar)</td><td>Karnataka, Goa</td><td>Brined in vinegar, mustard, and spices — served as a condiment with rice meals</td></tr>
+          <tr><td>Flower Pakoda / Bajji</td><td>Telangana, AP</td><td>Whole flower spike dipped in spiced chickpea batter and deep-fried</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">06</span>
+        <h2 class="section-title">How to Use Nishapushpa</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">The turmeric flower is primarily used fresh during its July–September blooming season. It can be preserved by sun-drying or refrigerating for up to a week. Internal therapeutic preparations should be taken in moderation; topical use is generally safe for all.</p>
+      <table class="consume-table">
+        <thead><tr><th>Form</th><th>Preparation</th><th>Dosage</th><th>Best Use</th></tr></thead>
+        <tbody>
+          <tr><td>Fresh Flower (Culinary)</td><td>Cook lightly — stir-fry, curry, or raw in salad</td><td>One flower spike per serving</td><td>Digestive health, general wellness</td></tr>
+          <tr><td>Fresh Flower Juice</td><td>Pound fresh flowers; strain juice</td><td>10–15 ml once daily</td><td>Skin brightening, mild anti-inflammatory</td></tr>
+          <tr><td>Flower Decoction (Kwatha)</td><td>Boil dried/fresh flower in water; reduce to ¼</td><td>30 ml twice daily</td><td>Cough, menstrual irregularity, inflammation</td></tr>
+          <tr><td>Flower Powder</td><td>Dry and powder the bracts</td><td>1–2 g with honey or warm water</td><td>Respiratory disorders, digestive complaints</td></tr>
+          <tr><td>Flower Paste (Topical)</td><td>Ground fresh flower with water or coconut oil</td><td>Apply to affected area</td><td>Wounds, skin infections, joint inflammation</td></tr>
+          <tr><td>Ubtan / Scrub</td><td>Dried flower powder + turmeric + sandalwood + milk</td><td>Apply to face/body; rinse after 20 min</td><td>Skin brightening, anti-inflammatory cosmetic</td></tr>
+          <tr><td>Infused Oil</td><td>Fresh flowers steeped in sesame or coconut oil for 2 weeks</td><td>Massage into joints or skin</td><td>Arthritic pain, skin conditions, hair care</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">07</span>
+        <h2 class="section-title">Safety &amp; Precautions</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">The turmeric flower is generally very safe — far more so than many medicinal herbs. Its culinary use across South and Southeast Asia for centuries attests to excellent safety at food-grade quantities. Therapeutic internal use at higher doses warrants some attention, particularly regarding its emmenagogic (uterine-stimulating) properties.</p>
+      <ul class="precaution-list">
+        <li><strong>Pregnancy:</strong> Culinary amounts (as a vegetable in cooking) are safe. Concentrated extracts, decoctions, or medicinal doses should be avoided during pregnancy due to emmenagogic and uterine-stimulating properties.</li>
+        <li><strong>Gallbladder conditions:</strong> Curcuminoids strongly stimulate bile production — those with gallstones or bile duct obstruction should use therapeutic doses cautiously.</li>
+        <li><strong>Blood-thinning medications:</strong> Curcumin has mild antiplatelet activity. Avoid high therapeutic doses if on warfarin, aspirin, clopidogrel, or other anticoagulants without medical supervision.</li>
+        <li><strong>Topical staining:</strong> Fresh flower juice and paste will stain skin and fabric yellow — this is temporary on skin (2–3 days) but near-permanent on fabric. Use accordingly.</li>
+        <li><strong>Iron absorption:</strong> Curcumin can chelate iron. Individuals with iron-deficiency anaemia should avoid consuming turmeric flower preparations simultaneously with iron-rich foods or supplements.</li>
+        <li><strong>Allergic dermatitis:</strong> Rare contact allergy to Curcuma species (usually from curcumin or essential oils) can cause contact dermatitis — patch-test topical preparations if skin sensitivity is a concern.</li>
+        <li><strong>Drug interactions:</strong> Curcumin may affect the metabolism of some drugs via CYP450 enzymes. Consult a physician if using multiple medications alongside concentrated flower extracts.</li>
+      </ul>
+    </div>
+
+    <div class="sources">
+      <div class="sources-title">References &amp; Sources</div>
+      <ul>
+        <li>Chattopadhyay I et al. — "Turmeric and curcumin: Biological actions and medicinal applications" — Current Science, 2004</li>
+        <li>Prasad S &amp; Aggarwal BB — "Turmeric, the Golden Spice: From Traditional Medicine to Modern Medicine" — Herbal Medicine: Biomolecular and Clinical Aspects, 2011</li>
+        <li>Akram M et al. — "Curcuma longa and Curcumin: A review" — Romanian Journal of Biology, 2010</li>
+        <li>Krup V, Prakash LH &amp; Harini A — "Pharmacological activities of turmeric (Curcuma longa linn): A review" — Journal of Homeopathy &amp; Ayurvedic Medicine, 2013</li>
+        <li>Policegoudra RS et al. — "Biochemistry and pharmacology of turmeric: A review" — Journal of Food Biochemistry, 2011</li>
+        <li>Bhavaprakasha Nighantu — Haridra &amp; Nisha entries; Karpuradi Varga</li>
+        <li>Charaka Samhita — Lekhaniya Dravya, Kushtaghna Mahakashaya; Haridra references in Suthrasthana and Chikitsasthana</li>
+        <li>Sushruta Samhita — Priyangvadi Gana, Mustadi Gana; cosmetic and wound-healing references</li>
+        <li>Dymock W, Warden CJH &amp; Hooper D — Pharmacographia Indica — Classic colonial-era documentation of Curcuma longa medicinal use across India</li>
+        <li>Raja Nighantu — Pippalyadi Varga; Haridra characteristics and synonyms</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer>
+    <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a qualified practitioner before therapeutic use</p>
+  </footer>
+
+
+  <div id="viewerModal">
+    <div id="modal-topbar">
+      <span>3D Model — Nishapushpa</span>
+      <button type="button" id="close3D">✕</button>
+    </div>
+    <model-viewer src="nishapushpa3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+  </div>
+  <script>
+    (function() {
+      var open3D = document.getElementById('open3D');
+      var close3D = document.getElementById('close3D');
+      var modal = document.getElementById('viewerModal');
+      if (!open3D || !close3D || !modal) return;
+      function openModal() {
+        
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+      function closeModal() {
+        
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+      open3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); openModal();
+      });
+      close3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); closeModal();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+      });
+    })();
+  </script>
+
+</body>
+</html>

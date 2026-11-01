@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Marigold / Genda | Swastha</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+    * { margin: 0; padding: 0; box-sizing: border-box }
+    html { scroll-behavior: smooth }
+    body {
+      font-family: 'Jost', sans-serif;
+      background: var(--cream);
+      color: var(--ink);
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity: .03;
+      pointer-events: none;
+      z-index: 100;
+    }
+    .bg-circle { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0 }
+    .bg-circle-1 { width: 700px; height: 700px; background: radial-gradient(circle, rgba(232,160,32,.12) 0%, transparent 70%); top: -200px; right: -150px }
+    .bg-circle-2 { width: 500px; height: 500px; background: radial-gradient(circle, rgba(90,122,42,.09) 0%, transparent 70%); bottom: -100px; left: -100px }
+
+    /* Marigold petal SVG decorations */
+    .botanical-svg { position: fixed; pointer-events: none; z-index: 1; opacity: .10 }
+    .botanical-tl { top: -20px; left: -20px; width: 260px }
+    .botanical-br { bottom: -20px; right: -20px; width: 220px; transform: rotate(180deg) }
+
+    #open3D {
+      position: fixed; top: 25px; right: 30px;
+      padding: 10px 18px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+      background: var(--forest); color: #fff; border: none; cursor: pointer; z-index: 1000; transition: .3s;
+    }
+    #open3D:hover { background: var(--forest); color: var(--deep) }
+
+    #viewerModal { position: fixed; inset: 0; z-index: 2000; display: none; flex-direction: column }
+    #modal-topbar {
+      flex-shrink: 0; height: 58px; background: #111; display: flex;
+      align-items: center; justify-content: space-between; padding: 0 28px 0 32px;
+      border-bottom: 1px solid rgba(255,255,255,.07); z-index: 99999;
+    }
+    #modal-topbar span { font-family: 'Jost',sans-serif; font-size: 11px; font-weight: 300; letter-spacing: 4.5px; text-transform: uppercase; color: rgba(255,255,255,.72); user-select: none }
+    #close3D {
+      width: 38px; height: 38px; font-size: 15px; font-weight: 300;
+      background: transparent; color: #fff; border: 1.5px solid rgba(255,255,255,.7);
+      border-radius: 50%; cursor: pointer; z-index: 99999; display: flex;
+      align-items: center; justify-content: center; transition: background .2s, color .2s, transform .22s; outline: none; flex-shrink: 0;
+    }
+    #close3D:hover { background: #fff; color: #111; border-color: #fff; transform: rotate(90deg) }
+    #viewerModal model-viewer { flex: 1; width: 100%; display: block; background: #fff }
+
+    .hero {
+      position: relative; z-index: 10; padding: 54px 40px 0;
+      text-align: center; opacity: 0; animation: fadeUp .9s ease .1s forwards;
+    }
+    .back-link {
+      display: inline-flex; align-items: center; gap: 8px; font-size: 11px;
+      letter-spacing: 3px; text-transform: uppercase; color: var(--sage);
+      text-decoration: none; margin-bottom: 36px; transition: color .3s;
+    }
+    .back-link:hover { color: var(--gold) }
+    .logo-rule { display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 14px }
+    .logo-rule span { display: block; height: 1px; width: 70px; background: linear-gradient(to right, transparent, var(--gold)) }
+    .logo-rule span:last-child { background: linear-gradient(to left, transparent, var(--gold)) }
+    .logo-ornament { font-size: 16px; color: var(--gold) }
+    .hero-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(58px, 11vw, 106px); font-weight: 300; letter-spacing: 8px; line-height: 1; color: var(--deep) }
+    .hero-title-alt { font-family: 'Cormorant Garamond', serif; font-size: clamp(28px, 5vw, 48px); font-weight: 300; letter-spacing: 6px; color: var(--amber); margin-top: 6px }
+    .hero-subtitle { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-style: italic; font-weight: 300; color: var(--earth); letter-spacing: 2px; margin-top: 6px }
+    .hero-sci { font-size: 11px; font-weight: 200; letter-spacing: 5px; color: var(--sage); margin-top: 6px }
+
+    .hero-photos {
+      position: relative; z-index: 10; display: grid; grid-template-columns: 1fr 1fr;
+      gap: 2px; max-width: 900px; margin: 40px auto 0;
+      opacity: 0; animation: fadeUp .9s ease .35s forwards;
+    }
+    .hero-photos img {
+      width: 100%; height: 380px; object-fit: cover; object-position: center;
+      display: block; background: var(--parchment);
+    }
+    .photo-caption {
+      text-align: center; font-family: 'Cormorant Garamond', serif; font-size: 12px;
+      font-style: italic; color: var(--sage); letter-spacing: 1px; padding: 10px 0 0;
+      max-width: 900px; margin: 0 auto; position: relative; z-index: 10;
+      opacity: 0; animation: fadeUp .9s ease .5s forwards;
+    }
+    .divider {
+      display: flex; align-items: center; justify-content: center; gap: 16px;
+      margin: 50px auto; max-width: 600px; opacity: 0; animation: fadeUp .9s ease .55s forwards;
+      position: relative; z-index: 10;
+    }
+    .divider-line { height: 1px; width: 120px; background: linear-gradient(to right, transparent, var(--gold)) }
+    .divider-line:last-child { background: linear-gradient(to left, transparent, var(--gold)) }
+    .divider-leaf { color: var(--amber); font-size: 20px }
+
+    .content { position: relative; z-index: 10; max-width: 860px; margin: 0 auto; padding: 0 30px 80px }
+    .intro-text {
+      font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 300;
+      line-height: 1.75; color: var(--ink); text-align: center; max-width: 700px;
+      margin: 0 auto 60px; opacity: 0; animation: fadeUp .9s ease .6s forwards;
+    }
+    .intro-text em { color: var(--amber); font-style: italic }
+
+    .section { margin-bottom: 60px; opacity: 0; animation: fadeUp .9s ease forwards }
+    .section:nth-child(1) { animation-delay: .65s }
+    .section:nth-child(2) { animation-delay: .75s }
+    .section:nth-child(3) { animation-delay: .85s }
+    .section:nth-child(4) { animation-delay: .95s }
+    .section:nth-child(5) { animation-delay: 1.05s }
+    .section:nth-child(6) { animation-delay: 1.15s }
+    .section:nth-child(7) { animation-delay: 1.25s }
+
+    .section-header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px }
+    .section-num { font-family: 'Cormorant Garamond', serif; font-size: 11px; letter-spacing: 4px; color: var(--gold) }
+    .section-title { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 400; color: var(--deep); letter-spacing: 1px }
+    .section-rule { height: 1px; flex: 1; background: linear-gradient(to right, var(--gold), transparent) }
+    .section-body { font-size: 13px; font-weight: 300; line-height: 1.9; color: var(--ink); margin-bottom: 24px }
+
+    .data-table { width: 100%; border-collapse: collapse; margin: 16px 0 8px; font-size: 12px }
+    .data-table thead tr { background: var(--deep); color: var(--gold); font-size: 10px; letter-spacing: 3px; text-transform: uppercase }
+    .data-table thead th { padding: 12px 14px; text-align: left; font-weight: 400 }
+    .data-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .data-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .data-table tbody tr { transition: background .2s }
+    .data-table tbody tr:hover { background: #f0e2b8 }
+    .data-table tbody td { padding: 10px 14px; color: var(--ink); border-bottom: 1px solid rgba(122,79,29,.08) }
+    .data-table tbody td:first-child { font-weight: 400; color: var(--deep); width: 28% }
+
+    .dosha-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .dosha-table thead tr { background: var(--forest); color: var(--cream) }
+    .dosha-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .dosha-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .dosha-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .dosha-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(122,79,29,.08) }
+    .dosha-table tbody td:first-child { font-weight: 400; color: var(--forest); width: 18% }
+    .dosha-table tbody td:nth-child(2) { color: var(--earth); width: 20% }
+
+    .consume-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .consume-table thead tr { background: var(--amber); color: var(--cream) }
+    .consume-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .consume-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .consume-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .consume-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(122,79,29,.08) }
+    .consume-table tbody td:first-child { font-weight: 400; color: var(--amber); width: 22% }
+
+    .benefits-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: rgba(122,79,29,.12); border: 1px solid rgba(122,79,29,.12); margin: 8px 0 }
+    .benefit-card { background: var(--cream); padding: 24px 22px; transition: background .3s; position: relative; overflow: hidden }
+    .benefit-card:hover { background: #f0e5c2 }
+    .benefit-card::before { content: ''; position: absolute; bottom: 0; left: 0; width: 0; height: 2px; background: var(--gold); transition: width .4s }
+    .benefit-card:hover::before { width: 100% }
+    .benefit-title { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 600; color: var(--amber); margin-bottom: 8px }
+    .benefit-desc { font-size: 11.5px; font-weight: 300; line-height: 1.75; color: var(--ink); opacity: .85 }
+
+    .precaution-list { list-style: none; margin: 8px 0 }
+    .precaution-list li { display: flex; gap: 12px; align-items: flex-start; padding: 10px 14px; font-size: 12px; font-weight: 300; line-height: 1.7; color: var(--ink); border-bottom: 1px solid rgba(122,79,29,.08) }
+    .precaution-list li:last-child { border-bottom: none }
+    .precaution-list li::before { content: '▸'; color: var(--gold); flex-shrink: 0; margin-top: 1px }
+
+    .nutrition-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: rgba(122,79,29,.12); border: 1px solid rgba(122,79,29,.12); margin: 20px 0 }
+    .nutrition-cell { background: var(--cream); padding: 22px 16px; text-align: center; transition: background .3s }
+    .nutrition-cell:hover { background: var(--parchment) }
+    .nutrition-num { font-family: 'Cormorant Garamond', serif; font-size: 36px; font-weight: 300; color: var(--amber); line-height: 1; margin-bottom: 4px }
+    .nutrition-unit { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); font-weight: 300 }
+    .nutrition-label { font-size: 11px; font-weight: 300; color: var(--ink); margin-top: 5px }
+
+    .sources { border-top: 1px solid rgba(122,79,29,.15); padding-top: 24px; margin-top: 20px }
+    .sources-title { font-size: 10px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); margin-bottom: 12px; font-weight: 300 }
+    .sources ul { list-style: none }
+    .sources ul li { font-family: 'Cormorant Garamond', serif; font-size: 13px; font-style: italic; color: var(--earth); padding: 5px 0; border-bottom: 1px solid rgba(122,79,29,.06) }
+    .sources ul li::before { content: '· '; color: var(--sage) }
+
+    footer { position: relative; z-index: 10; text-align: center; padding: 24px 20px 44px; border-top: 1px solid rgba(122,79,29,.12); max-width: 860px; margin: 0 auto }
+    footer p { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); font-weight: 300 }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(28px) } to { opacity: 1; transform: translateY(0) } }
+
+    @media(max-width:700px) {
+      .hero-photos { grid-template-columns: 1fr }
+      .hero-photos img { height: 260px }
+      .benefits-grid { grid-template-columns: 1fr }
+      .nutrition-bar { grid-template-columns: 1fr 1fr }
+      .content { padding: 0 18px 60px }
+    }
+  </style>
+</head>
+<body>
+
+<button id="open3D">View in 3D</button>
+<div id="viewerModal">
+  <div id="modal-topbar">
+    <span>3D Model — Marigold / Genda</span>
+    <button id="close3D">✕</button>
+  </div>
+  <model-viewer src="marigold3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+</div>
+
+<div class="bg-circle bg-circle-1"></div>
+<div class="bg-circle bg-circle-2"></div>
+
+<!-- Marigold-inspired botanical SVG decorations -->
+<svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="150" cy="150" r="60" stroke="#e8a020" stroke-width="1.2" fill="none"/>
+  <circle cx="150" cy="150" r="20" fill="#d4600a" opacity="0.5"/>
+  <ellipse cx="150" cy="82" rx="14" ry="28" fill="#e8a020" opacity="0.7"/>
+  <ellipse cx="150" cy="218" rx="14" ry="28" fill="#e8a020" opacity="0.7"/>
+  <ellipse cx="82" cy="150" rx="28" ry="14" fill="#e8a020" opacity="0.7"/>
+  <ellipse cx="218" cy="150" rx="28" ry="14" fill="#e8a020" opacity="0.7"/>
+  <ellipse cx="101" cy="101" rx="14" ry="28" fill="#d4600a" opacity="0.5" transform="rotate(-45 101 101)"/>
+  <ellipse cx="199" cy="199" rx="14" ry="28" fill="#d4600a" opacity="0.5" transform="rotate(-45 199 199)"/>
+  <ellipse cx="199" cy="101" rx="14" ry="28" fill="#d4600a" opacity="0.5" transform="rotate(45 199 101)"/>
+  <ellipse cx="101" cy="199" rx="14" ry="28" fill="#d4600a" opacity="0.5" transform="rotate(45 101 199)"/>
+</svg>
+<svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="150" cy="150" r="55" stroke="#e8a020" stroke-width="1.2" fill="none"/>
+  <circle cx="150" cy="150" r="18" fill="#d4600a" opacity="0.5"/>
+  <ellipse cx="150" cy="88" rx="12" ry="25" fill="#e8a020" opacity="0.6"/>
+  <ellipse cx="150" cy="212" rx="12" ry="25" fill="#e8a020" opacity="0.6"/>
+  <ellipse cx="88" cy="150" rx="25" ry="12" fill="#e8a020" opacity="0.6"/>
+  <ellipse cx="212" cy="150" rx="25" ry="12" fill="#e8a020" opacity="0.6"/>
+</svg>
+
+<div class="hero">
+  <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+  <div class="logo-rule"><span></span><div class="logo-ornament">✿</div><span></span></div>
+  <div class="hero-title">Marigold</div>
+  <div class="hero-title-alt">Genda / Zendu</div>
+  <div class="hero-subtitle">The Golden Flower of Auspiciousness</div>
+  <div class="hero-sci">Tagetes erecta &nbsp;·&nbsp; Calendula officinalis &nbsp;·&nbsp; Asteraceae</div>
+</div>
+
+<div class="hero-photos">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/2/2f/Tagetes_x_erecta1.jpg" alt="Bright orange African marigold blooms" onerror="this.src='';this.style.minHeight='380px';this.style.background='linear-gradient(135deg,#f5c842,#d4600a)';">
+  <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a2/Tagetes_erecta_2.jpg/1280px-Tagetes_erecta_2.jpg" alt="Marigold garlands used in Indian temple offerings" onerror="this.src='';this.style.minHeight='380px';this.style.background='linear-gradient(135deg,#e8a020,#7a4f1d)';">
+</div>
+<p class="photo-caption">Fig. 1 — Dense double blooms of Tagetes erecta in brilliant orange-gold &nbsp;·&nbsp; Fig. 2 — Genda garlands adorning a temple, a quintessential sight across the Indian subcontinent</p>
+
+<div class="divider">
+  <div class="divider-line"></div>
+  <div class="divider-leaf">✿</div>
+  <div class="divider-line"></div>
+</div>
+
+<div class="content">
+  <p class="intro-text">From temple garlands and festival colours to classical wound-healing preparations and modern cosmeceuticals, <em>Genda</em> — the marigold — stands as one of the most culturally embedded and medicinally versatile flowers of India. Equally revered in Ayurveda, Unani, and folk traditions, its vivid orange petals carry potent <em>lutein, quercetin, and carotenoid</em> compounds that science has only recently begun to quantify.</p>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">01</span><h2 class="section-title">Botanical Profile</h2><div class="section-rule"></div></div>
+    <p class="section-body">Genda (<em>Tagetes erecta</em> L.), commonly called African or Mexican Marigold, is an erect, branching annual herb of the Asteraceae (Compositae) family, native to Mexico and Central America but naturalised across the Indian subcontinent for centuries. It grows 30–100 cm tall with pinnately divided, strongly aromatic leaves and large, terminal, double or semi-double flower heads of brilliant yellow, orange, or deep amber. A closely related species, <em>Tagetes patula</em> (French Marigold), is smaller and widely used in companion planting and folk medicine. <em>Calendula officinalis</em>, though unrelated taxonomically, shares the vernacular "marigold" name and many healing properties.</p>
+    <p class="section-body">Marigolds flourish in well-drained soil under full sun and are among the most cultivated ornamental and commercial flowers in India. The flowers contain a highly concentrated source of xanthophyll carotenoids — particularly lutein — making them one of the most commercially important natural pigment sources for the poultry, food, and pharmaceutical industries. They bloom through most of the year in tropical India with peak harvest from October to March.</p>
+    <table class="data-table">
+      <thead><tr><th>PROPERTY</th><th>Detail</th></tr></thead>
+      <tbody>
+        <tr><td>Family</td><td>Asteraceae (Compositae)</td></tr>
+        <tr><td>Botanical Name</td><td>Tagetes erecta L. (African Marigold)</td></tr>
+        <tr><td>Related Species</td><td>Tagetes patula (French Marigold), Calendula officinalis</td></tr>
+        <tr><td>Sanskrit Names</td><td>Sthulapushpa, Jhandu, Gendha, Hemapushpa</td></tr>
+        <tr><td>Hindi / Common</td><td>Genda, Zendu, Gainda</td></tr>
+        <tr><td>Regional Names</td><td>Banthigida (Kan), Tulukka Samanthi (Tam), Bantichettu (Tel), Thiruvanthi (Mal)</td></tr>
+        <tr><td>Origin</td><td>Mexico / Central America; naturalised pan-tropical</td></tr>
+        <tr><td>Plant Type</td><td>Erect, branching annual herb (30–100 cm)</td></tr>
+        <tr><td>Flowering Season</td><td>Year-round in tropics; peak October–March</td></tr>
+        <tr><td>Medicinal Parts</td><td>Flowers (primary), leaves, roots, whole plant</td></tr>
+        <tr><td>Taste (Rasa)</td><td>Tikta (bitter), Katu (pungent)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">02</span><h2 class="section-title">Phytochemical Composition</h2><div class="section-rule"></div></div>
+    <p class="section-body">Marigold flowers are one of the richest known plant sources of carotenoid pigments — particularly <em>lutein</em> and its ester forms — which constitute up to 80–90% of the total xanthophylls in the petals. Beyond pigments, the plant yields a remarkable array of flavonoids (quercetin, isorhamnetin, patuletin), thiophene derivatives unique to the genus Tagetes, terpenoids, phenolic acids, and an aromatic essential oil dominated by piperitone, ocimene, and tagetone.</p>
+    <div class="nutrition-bar">
+      <div class="nutrition-cell">
+        <div class="nutrition-num">80%</div>
+        <div class="nutrition-unit">of xanthophylls</div>
+        <div class="nutrition-label">Lutein content in petals</div>
+      </div>
+      <div class="nutrition-cell">
+        <div class="nutrition-num">1–2%</div>
+        <div class="nutrition-unit">essential oil</div>
+        <div class="nutrition-label">Yield from fresh flowers</div>
+      </div>
+      <div class="nutrition-cell">
+        <div class="nutrition-num">13+</div>
+        <div class="nutrition-unit">flavonoids</div>
+        <div class="nutrition-label">Identified in Tagetes spp.</div>
+      </div>
+      <div class="nutrition-cell">
+        <div class="nutrition-num">5</div>
+        <div class="nutrition-unit">thiophenes</div>
+        <div class="nutrition-label">Genus-specific bioactives</div>
+      </div>
+    </div>
+    <table class="data-table">
+      <thead><tr><th>Compound</th><th>Category</th><th>Primary Action</th></tr></thead>
+      <tbody>
+        <tr><td>Lutein &amp; Lutein Esters</td><td>Xanthophyll carotenoid</td><td>Macular protection, antioxidant, anti-inflammatory</td></tr>
+        <tr><td>Zeaxanthin</td><td>Carotenoid</td><td>Eye health, photoprotection</td></tr>
+        <tr><td>Quercetin &amp; Isorhamnetin</td><td>Flavonoids</td><td>Antioxidant, anti-inflammatory, capillary strengthening</td></tr>
+        <tr><td>Patuletin &amp; Quercetagetin</td><td>Flavonoids (Tagetes-specific)</td><td>Antimicrobial, anti-allergic</td></tr>
+        <tr><td>α-Terthienyl (α-T)</td><td>Thiophene derivative</td><td>Nematocidal, antifungal, phototoxic antimicrobial</td></tr>
+        <tr><td>Piperitone &amp; Tagetone</td><td>Monoterpenoids (EO)</td><td>Insect repellent, antifungal, antimicrobial</td></tr>
+        <tr><td>Oleanolic &amp; Ursolic Acids</td><td>Triterpenoids</td><td>Anti-inflammatory, hepatoprotective, anticancer</td></tr>
+        <tr><td>Chlorogenic &amp; Caffeic Acids</td><td>Phenolic acids</td><td>Antioxidant, antimicrobial, skin-protective</td></tr>
+        <tr><td>Gallic Acid</td><td>Phenolic acid</td><td>Wound healing, astringent, antimicrobial</td></tr>
+        <tr><td>Thiophene Polyacetylenes</td><td>Polyacetylenes</td><td>Nematocidal, insecticidal, antiviral</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">03</span><h2 class="section-title">Ayurvedic Significance</h2><div class="section-rule"></div></div>
+    <p class="section-body">Though Tagetes erecta is of New World origin, it was assimilated into Indian ethnobotany and Ayurvedic folk practice with remarkable speed after the 16th–17th century arrival, recognised for its resemblance in action to indigenous Asteraceae members. Classical Ayurvedic texts reference <em>Sthulapushpa</em> and <em>Hemapushpa</em> — "the large golden flower" — with properties consistent with Tagetes. Bhavaprakasha Nighantu and later regional formularies document its use in skin diseases, eye disorders, and wound healing.</p>
+    <p class="section-body">In Ayurvedic pharmacology, Genda's bitter-pungent taste, hot potency, and light-dry qualities make it a classic Kapha-Vata pacifier. Its anti-inflammatory and wound-healing actions align with <em>Vrana Shotha Hara</em> (reducing inflammation) and <em>Krimighna</em> (antimicrobial) categories. Externally, fresh petal paste is applied to skin ulcers, wounds, and inflammatory swellings; internally, flower decoctions address fevers, digestive disturbances, and eye conditions.</p>
+    <table class="dosha-table">
+      <thead><tr><th>Dosha</th><th>Effect</th><th>Mechanism &amp; Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Vata ↓</td><td>Pacifying</td><td>Ushna virya (hot potency) and tikshna guna warm and move stagnant Vata; useful in joint stiffness, nerve pain, and spasmodic conditions</td></tr>
+        <tr><td>Pitta ↑</td><td>Mildly aggravating</td><td>Katu-tikta rasa and ushna virya may aggravate Pitta — use cautiously in inflammatory Pitta conditions; however, short-term external use on inflamed skin is well-tolerated</td></tr>
+        <tr><td>Kapha ↓</td><td>Pacifying</td><td>Tikshna (sharp), laghu (light), and ruksha (dry) qualities reduce Kapha; useful in skin congestion, lymphatic sluggishness, and respiratory excess</td></tr>
+      </tbody>
+    </table>
+    <p class="section-body"><strong>Rasa:</strong> Tikta (bitter), Katu (pungent) &nbsp;·&nbsp; <strong>Guna:</strong> Laghu (light), Ruksha (dry), Tikshna (sharp) &nbsp;·&nbsp; <strong>Virya:</strong> Ushna (hot) &nbsp;·&nbsp; <strong>Vipaka:</strong> Katu &nbsp;·&nbsp; <strong>Karma:</strong> Kapha-Vata shamaka, Krimighna, Vrana ropana</p>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">04</span><h2 class="section-title">Key Health Benefits</h2><div class="section-rule"></div></div>
+    <p class="section-body">Marigold's pharmacological profile is one of the most extensively studied among Indian medicinal flowers. Modern research validates its traditional use across dermatology, ophthalmology, oncology, antimicrobial therapy, and anti-inflammatory applications.</p>
+    <div class="benefits-grid">
+      <div class="benefit-card">
+        <div class="benefit-title">Eye Health &amp; Macular Protection</div>
+        <div class="benefit-desc">Lutein and zeaxanthin — concentrated in the macula of the human eye — filter blue light and neutralise free radicals. Multiple clinical studies confirm that lutein supplementation (largely derived from marigold extract) reduces risk of age-related macular degeneration (AMD) and cataracts. This is now the primary global commercial use of T. erecta flowers.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Wound Healing &amp; Dermatology</div>
+        <div class="benefit-desc">Marigold petal extract accelerates wound closure through enhanced fibroblast migration, collagen synthesis, and re-epithelialisation. Calendula-based creams (closely related species) are clinically proven for dermatitis, eczema, and post-radiation skin reactions. Fresh Genda petal paste is a time-honoured folk remedy for ulcers, burns, and fungal infections.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Anti-inflammatory &amp; Analgesic</div>
+        <div class="benefit-desc">Quercetin and isorhamnetin inhibit COX-1, COX-2, and pro-inflammatory cytokines (IL-1β, TNF-α). Ethanolic flower extracts demonstrate anti-inflammatory activity comparable to indomethacin in carrageenan-induced paw edema models. Leaf poultice is applied to swollen joints in folk practice across Rajasthan, UP, and Bengal.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Antimicrobial &amp; Antifungal</div>
+        <div class="benefit-desc">Essential oil and thiophene derivatives show broad-spectrum antimicrobial activity against E. coli, Staphylococcus aureus, Pseudomonas aeruginosa, and Candida albicans. α-Terthienyl is uniquely phototoxic — activated by UV light to produce singlet oxygen that disrupts microbial membranes, explaining traditional use of flower paste on sun-exposed wounds.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Antioxidant &amp; Skin Brightening</div>
+        <div class="benefit-desc">High carotenoid and flavonoid content confers significant DPPH, ABTS, and FRAP antioxidant activity. Topical application reduces melanin overproduction and photo-oxidative damage. Widely used in traditional ubtan (herbal face packs) across India for brightening dull skin and fading post-inflammatory hyperpigmentation.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Anticancer Potential</div>
+        <div class="benefit-desc">Oleanolic acid, ursolic acid, and quercetin from marigold extracts induce apoptosis and inhibit proliferation in breast, colon, and cervical cancer cell lines in vitro. Lutein's inverse association with lung cancer risk is documented epidemiologically. α-Terthienyl shows phototoxic cytotoxicity against certain tumour cells.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Digestive &amp; Hepatoprotective</div>
+        <div class="benefit-desc">Flower decoction is used in folk medicine for gastric ulcers, dyspepsia, and intestinal cramps. Chlorogenic acid and caffeic acid protect hepatocytes from oxidative stress. Roots and whole plant extracts show hepatoprotective activity against CCl₄-induced liver toxicity in animal models, supporting traditional use in jaundice.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Insect Repellent &amp; Nematocide</div>
+        <div class="benefit-desc">The essential oil's high tagetone and piperitone content provides effective repellency against mosquitoes (Aedes aegypti), houseflies, and stored-grain pests. Root-secreted thiophenes are potent nematocides — the basis for its wide use as a companion plant in vegetable gardens to suppress root-knot nematode infestations.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">05</span><h2 class="section-title">Cultural &amp; Ritual Significance</h2><div class="section-rule"></div></div>
+    <p class="section-body">No flower is more quintessentially Indian in its cultural omnipresence than Genda. From Navratri, Diwali, and Makar Sankranti to weddings, funerals, and daily temple puja, the marigold garland — <em>genda ki mala</em> — is the universal offering across Hindu, Jain, and Sikh traditions. Its brilliant colour symbolises the sun, auspiciousness, and the divine — worn around the necks of deities and honoured guests alike.</p>
+    <p class="section-body">In Bengal, Zendu flowers are inseparable from Durga Puja, forming the iconic yellow-orange borders of clay idols. In Rajasthan and UP, the flower is central to seasonal markets where farmers bring truckloads for festival demand. Marigold petal water (<em>Genda jal</em>) is used in ritual sprinkling and is believed to purify spaces. In Mexican Day of the Dead (Día de Muertos) traditions — reflecting its pre-Columbian Aztec sacred use — marigolds mark the path for returning souls, connecting its ritual significance across two hemispheres.</p>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">06</span><h2 class="section-title">How to Use Genda</h2><div class="section-rule"></div></div>
+    <p class="section-body">Genda is primarily used externally in skin and wound care, or internally as a mild therapeutic flower tea or decoction. The flowers are also consumed as food colouring and as a food supplement (lutein extract). Use should be supervised for systemic internal applications, especially in pregnant women and those on blood thinners.</p>
+    <table class="consume-table">
+      <thead><tr><th>Form</th><th>Preparation</th><th>Dosage</th><th>Best Use</th></tr></thead>
+      <tbody>
+        <tr><td>Flower Tea (Infusion)</td><td>2–3 g dried petals steeped in hot water 10 min</td><td>1 cup, 1–2× daily</td><td>Eye strain, digestive upset, fever, inflammation</td></tr>
+        <tr><td>Fresh Petal Paste (Topical)</td><td>Pound fresh petals; apply directly</td><td>As needed on affected area</td><td>Wounds, ulcers, burns, fungal skin infections</td></tr>
+        <tr><td>Flower Decoction (Kwatha)</td><td>Boil 10 g dried flowers in 200 ml water; reduce</td><td>30–40 ml twice daily</td><td>Fevers, eye wash (diluted), digestive issues</td></tr>
+        <tr><td>Flower Oil (Infused)</td><td>Dried petals infused in sesame or coconut oil</td><td>Massage as needed</td><td>Joint pain, skin dryness, eczema</td></tr>
+        <tr><td>Ubtan / Face Pack</td><td>Dried petal powder + milk or rosewater</td><td>2× weekly on cleansed skin</td><td>Skin brightening, acne, hyperpigmentation</td></tr>
+        <tr><td>Eye Wash</td><td>Very dilute cool flower decoction (filtered)</td><td>2× daily for 3–5 days</td><td>Conjunctivitis, eye inflammation (folk use)</td></tr>
+        <tr><td>Lutein Supplement</td><td>Standardised extract capsule</td><td>10–20 mg/day (clinically studied)</td><td>AMD prevention, macular health, visual acuity</td></tr>
+        <tr><td>Fresh Flower Juice</td><td>Express juice from fresh petals</td><td>5–10 ml once daily</td><td>Ear drops (folk use for ear infections); wound wash</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">07</span><h2 class="section-title">Safety &amp; Precautions</h2><div class="section-rule"></div></div>
+    <p class="section-body">Marigold (Tagetes) is generally considered safe for topical and short-term internal use at therapeutic doses. However, it belongs to the Asteraceae family — the same family as ragweed, chrysanthemum, and chamomile — and cross-reactive allergies are well documented. Unlike Adhapushpi, Genda does not contain pyrrolizidine alkaloids and has a favourable safety profile overall.</p>
+    <ul class="precaution-list">
+      <li><strong>Asteraceae allergy:</strong> Individuals allergic to ragweed, chamomile, chrysanthemum, or Echinacea may experience contact dermatitis or systemic allergic reactions with Tagetes. Always patch-test before topical use.</li>
+      <li><strong>Pregnancy:</strong> Internal use of Tagetes erecta should be avoided during pregnancy — the plant has historically been used as an emmenagogue (to stimulate menstruation) and may stimulate uterine contractions. Topical use on unbroken skin is generally considered safe in moderation.</li>
+      <li><strong>Blood thinners:</strong> Quercetin and flavonoids in marigold may potentiate the effects of anticoagulant drugs (warfarin, aspirin). Monitor clotting parameters if consuming flower tea alongside these medications.</li>
+      <li><strong>Photosensitivity:</strong> α-Terthienyl in the essential oil is photoactivated — avoid applying concentrated essential oil to sun-exposed skin, as it may cause phototoxic burns or hyperpigmentation.</li>
+      <li><strong>Diabetes medication:</strong> Marigold extracts have mild hypoglycemic activity. Monitor blood glucose if combining with insulin or oral antidiabetic drugs to avoid hypoglycemia.</li>
+      <li><strong>Eye wash caution:</strong> Only use very dilute, properly filtered, and sterile preparations for eye application. Never apply concentrated decoctions or petal juice directly to eyes — risk of irritation and infection.</li>
+      <li><strong>Children:</strong> Topical applications are generally well tolerated; avoid internal use without specialist guidance in children under 6 years.</li>
+      <li><strong>Ingestion of essential oil:</strong> Neat Tagetes essential oil is NOT for internal use — it contains concentrated tagetone, piperitone, and phototoxic thiophenes that are toxic at small doses.</li>
+    </ul>
+  </div>
+
+  <div class="sources">
+    <div class="sources-title">References &amp; Sources</div>
+    <ul>
+      <li>Bhavaprakasha Nighantu — Hemapushpa / Sthulapushpa references in regional Varga</li>
+      <li>Kirtikar KR &amp; Basu BD — Indian Medicinal Plants — Tagetes erecta monograph</li>
+      <li>Bhat S et al. — "Phytochemistry, Pharmacology and Ethnomedicinal Uses of Tagetes erecta" — Asian Pacific Journal of Tropical Biomedicine, 2022</li>
+      <li>Abdel-Aal ESM et al. — "Dietary Sources of Lutein and Zeaxanthin Carotenoids and Their Role in Eye Health" — Nutrients, 2013</li>
+      <li>Preethi KC et al. — "Wound healing activity of flower extract of Calendula officinalis" — Journal of Wound Care, 2009</li>
+      <li>Franke SI et al. — "Antioxidant activity of Tagetes erecta petal extracts" — Food Chemistry, 2005</li>
+      <li>Arora D et al. — "Antimicrobial activity of essential oil of Tagetes erecta" — Natural Product Research, 2013</li>
+      <li>Oguis GK et al. — "Marigold Lutein: From Production to Application" — Frontiers in Plant Science, 2021</li>
+      <li>Vora J &amp; Srivastava A — "Tagetes erecta L.: A Multipurpose Crop in Indian Agriculture" — Agricultural Reviews, 2015</li>
+      <li>Sharma N et al. — "Pharmacological and clinical aspects of Tagetes species" — Indian Journal of Natural Products and Resources, 2011</li>
+    </ul>
+  </div>
+</div>
+
+<footer>
+  <p>Swastha Herbal Garden &nbsp;·&nbsp; No. 521 — Marigold / Genda &nbsp;·&nbsp; For educational purposes only &nbsp;·&nbsp; Consult a qualified practitioner before therapeutic use</p>
+</footer>
+
+<script>
+  const open3D = document.getElementById('open3D');
+  const close3D = document.getElementById('close3D');
+  const modal = document.getElementById('viewerModal');
+  function openModal() {
+    var _aud = document.getElementById('marigoldAudio'); if(_aud){ _aud.currentTime=0; var playPromise = _aud.play(); if (playPromise !== undefined) { playPromise.catch(function(e){ console.log(e); }); } }
+ modal.style.display = 'flex'; document.body.style.overflow = 'hidden' }
+  function closeModal() {
+    var _aud = document.getElementById('marigoldAudio'); if(_aud){ _aud.pause(); }
+ modal.style.display = 'none'; document.body.style.overflow = '' }
+  open3D.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); openModal() });
+  close3D.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); closeModal() });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && modal.style.display === 'flex') closeModal() });
+</script>
+
+  <audio id="marigoldAudio" src="marigold_benefits.mp3" loop preload="auto"></audio>
+</body>
+</html>

@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mandara | Swastha</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap"
+    rel="stylesheet">
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+  <style>
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+
+    * { margin: 0; padding: 0; box-sizing: border-box }
+    html { scroll-behavior: smooth }
+
+    body {
+      font-family: 'Jost', sans-serif;
+      background: var(--cream);
+      color: var(--ink);
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity: .04;
+      pointer-events: none;
+      z-index: 100
+    }
+
+    #open3D {
+      position: fixed; top: 25px; right: 30px;
+      padding: 10px 18px; font-size: 11px; letter-spacing: 2px;
+      text-transform: uppercase; background: var(--forest); color: #fff;
+      border: none; cursor: pointer; z-index: 1000; transition: .3s
+    }
+    #open3D:hover { background: var(--forest); color: var(--deep) }
+
+    #viewerModal {
+      position: fixed; inset: 0; z-index: 2000;
+      display: none; flex-direction: column;
+    }
+    #modal-topbar {
+      flex-shrink: 0; height: 58px; background: #1a0a05;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 28px 0 32px;
+      border-bottom: 1px solid rgba(255,255,255,0.07); z-index: 99999;
+    }
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif; font-size: 11px; font-weight: 300;
+      letter-spacing: 4.5px; text-transform: uppercase;
+      color: rgba(255,255,255,0.72); user-select: none;
+    }
+    #close3D {
+      width: 38px; height: 38px; font-size: 15px; font-weight: 300;
+      background: transparent; color: #fff;
+      border: 1.5px solid rgba(255,255,255,0.7); border-radius: 50%;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: background .2s, color .2s, transform .22s; outline: none;
+    }
+    #close3D:hover { background: #fff; color: #1a0a05; transform: rotate(90deg) }
+    #viewerModal model-viewer { flex: 1; width: 100%; display: block; background: #fff; }
+
+    .bg-circle { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0 }
+    .bg-circle-1 {
+      width: 700px; height: 700px;
+      background: radial-gradient(circle, rgba(192,57,43,.09) 0%, transparent 70%);
+      top: -200px; right: -150px
+    }
+    .bg-circle-2 {
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(201,129,60,.09) 0%, transparent 70%);
+      bottom: -100px; left: -100px
+    }
+
+    /* Coral-flame botanical SVG */
+    .botanical-svg { position: fixed; pointer-events: none; z-index: 1; opacity: .09 }
+    .botanical-tl { top: -10px; left: -10px; width: 240px }
+    .botanical-br { bottom: -10px; right: -10px; width: 200px; transform: rotate(180deg) }
+
+    .hero {
+      position: relative; z-index: 10;
+      padding: 54px 40px 0; text-align: center;
+      opacity: 0; animation: fadeUp .9s ease .1s forwards
+    }
+    .back-link {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+      color: var(--sage); text-decoration: none; margin-bottom: 36px; transition: color .3s
+    }
+    .back-link:hover { color: var(--gold) }
+
+    .logo-rule {
+      display: flex; align-items: center; justify-content: center;
+      gap: 20px; margin-bottom: 14px
+    }
+    .logo-rule span {
+      display: block; height: 1px; width: 70px;
+      background: linear-gradient(to right, transparent, var(--coral))
+    }
+    .logo-rule span:last-child { background: linear-gradient(to left, transparent, var(--coral)) }
+    .logo-ornament { font-size: 13px; color: var(--coral) }
+
+    .hero-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(64px, 12vw, 110px);
+      font-weight: 300; letter-spacing: 8px; line-height: 1; color: var(--deep)
+    }
+    .hero-subtitle {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 18px; font-style: italic; font-weight: 300;
+      color: var(--earth); letter-spacing: 2px; margin-top: 8px
+    }
+    .hero-sci {
+      font-size: 11px; font-weight: 200; letter-spacing: 5px;
+      color: var(--sage); margin-top: 6px
+    }
+
+    .hero-photos {
+      position: relative; z-index: 10;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 2px;
+      max-width: 900px; margin: 40px auto 0;
+      opacity: 0; animation: fadeUp .9s ease .35s forwards
+    }
+    .hero-photos img {
+      width: 100%; height: 380px; object-fit: cover;
+      object-position: center; display: block; background: var(--parchment)
+    }
+    .hero-photos img:first-child { object-position: center 40% }
+
+    .photo-caption {
+      text-align: center; font-family: 'Cormorant Garamond', serif;
+      font-size: 12px; font-style: italic; color: var(--sage);
+      letter-spacing: 1px; padding: 10px 0 0; max-width: 900px;
+      margin: 0 auto; position: relative; z-index: 10;
+      opacity: 0; animation: fadeUp .9s ease .5s forwards
+    }
+
+    .divider {
+      display: flex; align-items: center; justify-content: center;
+      gap: 16px; margin: 50px auto; max-width: 600px;
+      opacity: 0; animation: fadeUp .9s ease .55s forwards;
+      position: relative; z-index: 10
+    }
+    .divider-line {
+      height: 1px; width: 120px;
+      background: linear-gradient(to right, transparent, var(--coral-soft))
+    }
+    .divider-line:last-child { background: linear-gradient(to left, transparent, var(--coral-soft)) }
+    .divider-leaf { color: var(--coral); font-size: 18px }
+
+    .content {
+      position: relative; z-index: 10;
+      max-width: 860px; margin: 0 auto; padding: 0 30px 80px
+    }
+
+    .intro-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 20px; font-weight: 300; line-height: 1.75;
+      color: var(--ink); text-align: center; max-width: 700px;
+      margin: 0 auto 60px;
+      opacity: 0; animation: fadeUp .9s ease .6s forwards
+    }
+    .intro-text em { color: var(--coral); font-style: italic }
+
+    .section {
+      margin-bottom: 60px; opacity: 0; animation: fadeUp .9s ease forwards
+    }
+    .section:nth-child(1) { animation-delay: .65s }
+    .section:nth-child(2) { animation-delay: .75s }
+    .section:nth-child(3) { animation-delay: .85s }
+    .section:nth-child(4) { animation-delay: .95s }
+    .section:nth-child(5) { animation-delay: 1.05s }
+    .section:nth-child(6) { animation-delay: 1.15s }
+    .section:nth-child(7) { animation-delay: 1.25s }
+
+    .section-header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px }
+    .section-num { font-family: 'Cormorant Garamond', serif; font-size: 11px; letter-spacing: 4px; color: var(--gold) }
+    .section-title { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 400; color: var(--deep); letter-spacing: 1px }
+    .section-rule { height: 1px; flex: 1; background: linear-gradient(to right, var(--coral), transparent) }
+    .section-body { font-size: 13px; font-weight: 300; line-height: 1.9; color: var(--ink); margin-bottom: 24px }
+
+    .data-table { width: 100%; border-collapse: collapse; margin: 16px 0 8px; font-size: 12px }
+    .data-table thead tr { background: var(--deep); color: var(--coral-soft); font-size: 10px; letter-spacing: 3px; text-transform: uppercase }
+    .data-table thead th { padding: 12px 14px; text-align: left; font-weight: 400 }
+    .data-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .data-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .data-table tbody tr { transition: background .2s }
+    .data-table tbody tr:hover { background: #ead5c0 }
+    .data-table tbody td { padding: 10px 14px; color: var(--ink); border-bottom: 1px solid rgba(122,58,30,.08) }
+    .data-table tbody td:first-child { font-weight: 400; color: var(--deep); width: 28% }
+
+    .dosha-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .dosha-table thead tr { background: var(--coral); color: var(--cream) }
+    .dosha-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .dosha-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .dosha-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .dosha-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(122,58,30,.08) }
+    .dosha-table tbody td:first-child { font-weight: 400; color: var(--coral); width: 18% }
+    .dosha-table tbody td:nth-child(2) { color: var(--earth); width: 20% }
+
+    .consume-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .consume-table thead tr { background: var(--earth); color: var(--cream) }
+    .consume-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .consume-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .consume-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .consume-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(122,58,30,.08) }
+    .consume-table tbody td:first-child { font-weight: 400; color: var(--earth); width: 22% }
+
+    .benefits-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 1px;
+      background: rgba(122,58,30,.12); border: 1px solid rgba(122,58,30,.12); margin: 8px 0
+    }
+    .benefit-card {
+      background: var(--cream); padding: 24px 22px;
+      transition: background .3s; position: relative; overflow: hidden
+    }
+    .benefit-card:hover { background: #f0dece }
+    .benefit-card::before {
+      content: ''; position: absolute; bottom: 0; left: 0;
+      width: 0; height: 2px; background: var(--coral); transition: width .4s
+    }
+    .benefit-card:hover::before { width: 100% }
+    .benefit-title { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 600; color: var(--coral); margin-bottom: 8px }
+    .benefit-desc { font-size: 11.5px; font-weight: 300; line-height: 1.75; color: var(--ink); opacity: .85 }
+
+    .precaution-list { list-style: none; margin: 8px 0 }
+    .precaution-list li {
+      display: flex; gap: 12px; align-items: flex-start;
+      padding: 10px 14px; font-size: 12px; font-weight: 300; line-height: 1.7; color: var(--ink);
+      border-bottom: 1px solid rgba(122,58,30,.08)
+    }
+    .precaution-list li:last-child { border-bottom: none }
+    .precaution-list li::before { content: '▸'; color: var(--coral); flex-shrink: 0; margin-top: 1px }
+
+    .nutrition-bar {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px;
+      background: rgba(122,58,30,.12); border: 1px solid rgba(122,58,30,.12); margin: 20px 0
+    }
+    .nutrition-cell { background: var(--cream); padding: 22px 16px; text-align: center; transition: background .3s }
+    .nutrition-cell:hover { background: var(--parchment) }
+    .nutrition-num { font-family: 'Cormorant Garamond', serif; font-size: 36px; font-weight: 300; color: var(--coral); line-height: 1; margin-bottom: 4px }
+    .nutrition-unit { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); font-weight: 300 }
+    .nutrition-label { font-size: 11px; font-weight: 300; color: var(--ink); margin-top: 5px }
+
+    .sources { border-top: 1px solid rgba(122,58,30,.15); padding-top: 24px; margin-top: 20px }
+    .sources-title { font-size: 10px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); margin-bottom: 12px; font-weight: 300 }
+    .sources ul { list-style: none }
+    .sources ul li { font-family: 'Cormorant Garamond', serif; font-size: 13px; font-style: italic; color: var(--earth); padding: 5px 0; border-bottom: 1px solid rgba(122,58,30,.06) }
+    .sources ul li::before { content: '· '; color: var(--sage) }
+
+    footer {
+      position: relative; z-index: 10; text-align: center;
+      padding: 24px 20px 44px; border-top: 1px solid rgba(122,58,30,.12);
+      max-width: 860px; margin: 0 auto
+    }
+    footer p { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); font-weight: 300 }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(28px) }
+      to   { opacity: 1; transform: translateY(0) }
+    }
+
+    @media(max-width:700px) {
+      .hero-photos { grid-template-columns: 1fr }
+      .hero-photos img { height: 260px }
+      .benefits-grid { grid-template-columns: 1fr }
+      .nutrition-bar { grid-template-columns: 1fr 1fr }
+      .content { padding: 0 18px 60px }
+      #modal-topbar { padding: 0 16px 0 20px }
+      #modal-topbar span { font-size: 9px; letter-spacing: 3px }
+    }
+  </style>
+</head>
+
+<body>
+
+  <button id="open3D">View in 3D</button>
+
+  <div id="viewerModal">
+    <div id="modal-topbar">
+      <span>3D Model — Mandara / Coral Tree</span>
+      <button id="close3D">✕</button>
+    </div>
+    <model-viewer src="mandara3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+  </div>
+
+  <div class="bg-circle bg-circle-1"></div>
+  <div class="bg-circle bg-circle-2"></div>
+
+  <!-- Flame-shaped botanical SVG accent -->
+  <svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M20 280 Q 90 200 140 140 Q 190 80 260 20" stroke="#c0392b" stroke-width="1.5" fill="none"/>
+    <ellipse cx="105" cy="205" rx="22" ry="9" fill="#c0392b" transform="rotate(-40 105 205)" opacity="0.7"/>
+    <ellipse cx="148" cy="162" rx="19" ry="8" fill="#e07055" transform="rotate(-52 148 162)" opacity="0.6"/>
+    <ellipse cx="190" cy="118" rx="17" ry="7" fill="#c0392b" transform="rotate(-65 190 118)" opacity="0.8"/>
+    <circle cx="108" cy="198" r="6" fill="#c9813c" opacity="0.6"/>
+    <circle cx="152" cy="155" r="5" fill="#c9813c" opacity="0.5"/>
+    <circle cx="195" cy="110" r="7" fill="#c0392b" opacity="0.5"/>
+  </svg>
+  <svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M20 280 Q 90 200 140 140 Q 190 80 260 20" stroke="#c0392b" stroke-width="1.5" fill="none"/>
+    <ellipse cx="105" cy="205" rx="22" ry="9" fill="#c0392b" transform="rotate(-40 105 205)" opacity="0.7"/>
+    <ellipse cx="148" cy="162" rx="19" ry="8" fill="#e07055" transform="rotate(-52 148 162)" opacity="0.6"/>
+    <circle cx="108" cy="198" r="6" fill="#c9813c" opacity="0.6"/>
+  </svg>
+
+  <div class="hero">
+    <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+    <div class="logo-rule"><span></span>
+      <div class="logo-ornament">✦</div><span></span>
+    </div>
+    <div class="hero-title">Mandara</div>
+    <div class="hero-subtitle">Coral Tree — The Sacred Flame of the Forest</div>
+    <div class="hero-sci">Erythrina indica &nbsp;·&nbsp; Erythrina variegata</div>
+  </div>
+
+  <div class="hero-photos">
+    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ed/Kinmen_Erythrina_variegata.jpg/1280px-Kinmen_Erythrina_variegata.jpg" alt="Mandara coral tree vivid scarlet flowers on bare branches"
+      onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/0/01/Erythrina_variegata_118670006.jpg/1280px-Erythrina_variegata_118670006.jpg" alt="Mandara tree bark with thorns and trifoliate leaves"
+      onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+  </div>
+  <p class="photo-caption">Fig. 1 — Vivid scarlet flame-like flowers of Mandara blooming on bare branches before leaf flush &nbsp;·&nbsp; Fig. 2 — Distinctive thorny bark and broad trifoliate leaves of the Coral Tree</p>
+
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-leaf">❧</div>
+    <div class="divider-line"></div>
+  </div>
+
+  <div class="content">
+    <p class="intro-text">One of the five celestial trees of the Hindu mythological <em>Svarga</em>, Mandara adorns Indra's paradise and is celebrated in Charaka Samhita, Sushruta Samhita, and Ashtanga Hridayam alike — its vivid scarlet blooms emerging from bare, thorned branches like flames from ancient wood, while its bark, leaves, roots, and flowers quietly serve a vast pharmacopoeia spanning <em>vata-kapha shamana</em>, wound healing, nervous disorders, and gynaecological conditions.</p>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">01</span>
+        <h2 class="section-title">Botanical Profile</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Mandara (<em>Erythrina variegata</em> / <em>E. indica</em>) is a medium to large deciduous tree of the Fabaceae (Leguminosae) family, native to the tropical and subtropical coasts of the Indian subcontinent, Southeast Asia, and the Pacific Islands. It typically grows 15–25 m tall, with a wide-spreading crown and a deeply furrowed grey-brown trunk armed with short, conical thorns.</p>
+      <p class="section-body">The leaves are large and trifoliate — three broad, rhomboid-ovate leaflets — bright green on the upper surface, glaucous below, and among the most recognisable in Indian traditional plant knowledge. Its flowers are perhaps its most dramatic feature: dense, erect racemes of brilliant scarlet-orange, pea-shaped blossoms appearing between January and March, <em>entirely on bare branches before the leaves flush</em>, giving the tree a spectacular torch-like appearance. The fruit is a long, constricted pod containing bright red seeds. The tree is sacred to Shiva and is a key feature of coastal and riparian landscapes across peninsular India.</p>
+      <table class="data-table">
+        <thead><tr><th>PROPERTY</th><th>Detail</th></tr></thead>
+        <tbody>
+          <tr><td>Family</td><td>Fabaceae / Leguminosae (Shimbi Kula)</td></tr>
+          <tr><td>Botanical Name</td><td>Erythrina variegata L. / Erythrina indica Lam.</td></tr>
+          <tr><td>Sanskrit Names</td><td>Mandara, Paribhadra, Raktapushpa, Nimba-pushpa, Virana, Parijatak</td></tr>
+          <tr><td>Common Names</td><td>Coral Tree, Indian Coral Tree, Tiger's Claw, Sunshine Tree</td></tr>
+          <tr><td>Regional Names</td><td>Pangara (Mar), Halichina-mara (Kan), Badisa (Ori), Mullumurikku (Mal), Badudamara (Tel)</td></tr>
+          <tr><td>Origin</td><td>Tropical Asia — Indian subcontinent, SE Asia, Pacific Islands</td></tr>
+          <tr><td>Plant Type</td><td>Deciduous tree, 15–25 m; thorny bark, spreading crown</td></tr>
+          <tr><td>Flowering Season</td><td>January–March (on bare branches before leaf flush)</td></tr>
+          <tr><td>Medicinal Parts</td><td>Bark (primary), leaves, roots, flowers, seeds</td></tr>
+          <tr><td>Taste Profile</td><td>Tikta (bitter), Katu (pungent), Kashaya (astringent)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">02</span>
+        <h2 class="section-title">Phytochemistry &amp; Composition</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">The genus <em>Erythrina</em> is phytochemically one of the richest in the Fabaceae, with over 200 alkaloids isolated — the largest known complement in any plant genus. <em>E. variegata</em> yields a distinctive matrix of isoquinoline alkaloids, flavonoids, pterocarpans, isoflavones, and lectins, varying significantly by plant part. The bark is richest in alkaloids; the seeds and heartwood in flavonoids and lectins.</p>
+      <p class="section-body">The erythrina alkaloids (erysotrine, erythraline, erythroidine) are particularly noteworthy — they act as curare-like neuromuscular blocking agents and have formed the basis of research into antiepileptic and anxiolytic pharmacology. The flavonoid fraction — including erythrinin A &amp; B, alpinumisoflavone, and erycristagallin — demonstrates significant antimicrobial, anti-osteoporotic, and estrogenic activity.</p>
+      <div class="nutrition-bar">
+        <div class="nutrition-cell">
+          <div class="nutrition-num">200+</div>
+          <div class="nutrition-unit">alkaloids</div>
+          <div class="nutrition-label">Identified in Erythrina genus</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">40+</div>
+          <div class="nutrition-unit">flavonoids</div>
+          <div class="nutrition-label">Isolated from bark &amp; seeds</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">3</div>
+          <div class="nutrition-unit">lectins</div>
+          <div class="nutrition-label">Seed haemagglutinins (ECA)</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">25m</div>
+          <div class="nutrition-unit">max height</div>
+          <div class="nutrition-label">Mature tree growth</div>
+        </div>
+      </div>
+      <table class="data-table">
+        <thead><tr><th>Compound</th><th>Category</th><th>Primary Action</th></tr></thead>
+        <tbody>
+          <tr><td>Erysotrine &amp; Erythraline</td><td>Erythrina alkaloids</td><td>Neuromuscular blocking, sedative, anti-epileptic</td></tr>
+          <tr><td>β-Erythroidine</td><td>Lactonic alkaloid</td><td>Nicotinic receptor antagonist; curare-like; anxiolytic research</td></tr>
+          <tr><td>Erythrinin A &amp; B</td><td>Pterocarpans</td><td>Antimicrobial, antifungal, anti-MRSA</td></tr>
+          <tr><td>Alpinumisoflavone</td><td>Isoflavone</td><td>Anti-osteoporotic, phytoestrogenic, anticancer</td></tr>
+          <tr><td>Erycristagallin</td><td>Isoflavone</td><td>Antifungal, antimicrobial, anti-inflammatory</td></tr>
+          <tr><td>Erythrinasinate</td><td>Ester alkaloid</td><td>Anti-inflammatory, analgesic</td></tr>
+          <tr><td>Hypaphorine</td><td>Betaine-indole alkaloid</td><td>Anti-inflammatory, sedative, anti-parasitic</td></tr>
+          <tr><td>Lectins (ECA)</td><td>Haemagglutinating proteins</td><td>Immunostimulant, mitogenic, anti-tumour</td></tr>
+          <tr><td>Lupeol &amp; β-Sitosterol</td><td>Triterpene / Phytosterol</td><td>Anti-inflammatory, analgesic, hypolipidemic</td></tr>
+          <tr><td>Quercetin &amp; Kaempferol</td><td>Flavonols</td><td>Antioxidant, anti-allergic, vascular-protective</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">03</span>
+        <h2 class="section-title">Ayurvedic Significance</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Mandara holds dual identity in classical Ayurveda — it is simultaneously one of the five divine trees (<em>Panchavruksha</em>) of Indra's paradise and a prominent medicinal plant referenced across all three foundational classical texts. Charaka lists it in <em>Vata-kapha shamana</em> group drugs; Sushruta classifies its bark in <em>Nyagrodhadi gana</em> (wound-healing group) and uses it in <em>Shodana</em> (purification) formulations; Ashtanga Hridayam includes it in management of <em>krimiroga</em> (parasitic/infective conditions) and skin diseases.</p>
+      <p class="section-body">The classical shloka describes Mandara as — <em>"Mandarasya phalam tiktam kashayam katu cha smrutam, kaphavatashamakam, vranaharam, krimignam"</em> — bitter, astringent and pungent in taste, pacifying Kapha and Vata, healing wounds, and destroying parasites. Its bark is considered <em>Shothahara</em> (anti-inflammatory), <em>Vedanasthapana</em> (analgesic), and <em>Rasayana</em> (rejuvenative) when processed correctly.</p>
+      <table class="dosha-table">
+        <thead><tr><th>Dosha</th><th>Effect</th><th>Mechanism &amp; Notes</th></tr></thead>
+        <tbody>
+          <tr><td>Vata ↓</td><td>Pacifying</td><td>Tikshna (sharp), ushna (hot) properties relieve Vata-related neuralgia, joint stiffness, and muscular spasm; bark decoction used in paralysis and sciatica in classical practice</td></tr>
+          <tr><td>Pitta ↑</td><td>Mildly aggravating</td><td>Ushna virya and katu rasa can provoke Pitta at high doses; flowers are exceptions — considered tridosha-balancing and cooling in some regional traditions</td></tr>
+          <tr><td>Kapha ↓</td><td>Pacifying</td><td>Bitter, astringent, and pungent tastes clear Kapha accumulation; used in obesity, lymphadenopathy, skin disorders with dampness, and productive cough</td></tr>
+        </tbody>
+      </table>
+      <p class="section-body"><strong>Rasa:</strong> Tikta, Katu, Kashaya &nbsp;·&nbsp; <strong>Guna:</strong> Laghu, Tikshna &nbsp;·&nbsp; <strong>Virya:</strong> Ushna &nbsp;·&nbsp; <strong>Vipaka:</strong> Katu &nbsp;·&nbsp; <strong>Karma:</strong> Vata-Kapha shamaka, Shothahara, Vedanasthapana, Krimighna, Vranahara</p>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">04</span>
+        <h2 class="section-title">Key Health Benefits</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Modern pharmacological investigation of Mandara has substantiated many classical applications, validating anti-inflammatory, analgesic, antimicrobial, antifungal, sedative, antiparasitic, and bone-protective activities through rigorous <em>in vitro</em>, <em>in vivo</em>, and increasingly clinical studies of its bark, leaf, seed, and root extracts.</p>
+      <div class="benefits-grid">
+        <div class="benefit-card">
+          <div class="benefit-title">Anti-inflammatory &amp; Analgesic</div>
+          <div class="benefit-desc">Bark and leaf extracts demonstrate significant inhibition of inflammatory mediators — COX-1/2, lipoxygenase, and pro-inflammatory cytokines. Classically used as bark paste over inflamed joints and arthritic swellings; animal models confirm dose-dependent reduction in carrageenan-induced paw edema comparable to reference drugs.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Sedative &amp; Neuro-protective</div>
+          <div class="benefit-desc">Erythrina alkaloids — particularly β-erythroidine and erysotrine — act on nicotinic acetylcholine receptors, producing sedative and anxiolytic effects. Used in traditional medicine for insomnia, anxiety, and epilepsy; bark decoction is a classical remedy for <em>apasmara</em> (epilepsy) and neuralgia across multiple regional traditions.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Antimicrobial &amp; Antifungal</div>
+          <div class="benefit-desc">Erythrinin A &amp; B and erycristagallin show potent activity against MRSA, Candida species, Aspergillus, and dermatophytes. Bark paste is a classical wound dressing used to prevent infection; leaf decoction is applied externally to fungal skin conditions. Notably active against drug-resistant clinical isolates in recent studies.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Bone Health &amp; Anti-osteoporotic</div>
+          <div class="benefit-desc">Alpinumisoflavone and related isoflavones exhibit phytoestrogenic and osteoblast-stimulating activity — increasing bone mineral density in ovariectomised animal models and inhibiting osteoclast-mediated bone resorption. Makes Mandara a promising candidate in post-menopausal bone loss management.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Gynaecological &amp; Uterine Support</div>
+          <div class="benefit-desc">Root bark decoction is classically used in <em>artava kshaya</em> (menstrual irregularity), dysmenorrhea, and as a galactagogue. The phytoestrogenic isoflavone content provides a plausible biochemical basis. Used across traditional medicine systems of Kerala, Karnataka, and Tamil Nadu in female reproductive disorders.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Wound Healing</div>
+          <div class="benefit-desc">Sushruta's classification of Mandara in <em>Nyagrodhadi gana</em> — the wound-healing drug group — is substantiated by studies showing accelerated epithelialisation, collagen deposition, and wound contraction with bark extract formulations. Leaf paste on ulcers and bark decoction for wound washing are widely practised ethnomedicinal uses.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Antiparasitic &amp; Anthelmintic</div>
+          <div class="benefit-desc">Classical karma of Mandara includes <em>krimighna</em> — destruction of parasites. Hypaphorine and certain alkaloids show antiparasitic activity against helminths and protozoal pathogens. Bark decoction is used in intestinal parasitosis; leaf extract demonstrates inhibition of Leishmania and Plasmodium species in research models.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Hepatoprotective Activity</div>
+          <div class="benefit-desc">Ethanolic leaf and bark extracts significantly attenuate paracetamol- and CCl₄-induced liver toxicity in animal models, normalising AST, ALT, and ALP levels. Mechanism involves antioxidant free-radical scavenging, membrane stabilisation, and upregulation of hepatic glutathione — supporting classical use in liver conditions and jaundice.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">06</span>
+        <h2 class="section-title">How to Use Mandara</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">All parts of Mandara are medicinally active, with the bark being the most widely used in classical formulations. Internal preparations must be strictly physician-directed, as erythrina alkaloids require precise dosing — their therapeutic window is relatively narrow. External applications are generally safer and used extensively in regional folk traditions.</p>
+      <table class="consume-table">
+        <thead><tr><th>Form</th><th>Preparation</th><th>Dosage</th><th>Best Use</th></tr></thead>
+        <tbody>
+          <tr><td>Bark Decoction (Kwatha)</td><td>Boil dried bark in water; reduce to ¼</td><td>30–50 ml twice daily (supervised)</td><td>Arthritis, skin diseases, oedema</td></tr>
+          <tr><td>Bark Powder (Churna)</td><td>Dried bark finely powdered</td><td>1–3 g with honey (physician-directed)</td><td>Parasitic infections, cough, obesity</td></tr>
+          <tr><td>Leaf Decoction</td><td>Fresh leaves decocted in water</td><td>30 ml once daily</td><td>Liver support, fever, jaundice</td></tr>
+          <tr><td>Root Bark Decoction</td><td>Dried root bark boiled</td><td>20–30 ml (physician-directed)</td><td>Gynaecological conditions, menstrual irregularity</td></tr>
+          <tr><td>Bark Paste (Topical)</td><td>Bark ground with water/ghee</td><td>Apply 1–2× daily to affected area</td><td>Inflammatory joints, skin conditions</td></tr>
+          <tr><td>Leaf Paste (Topical)</td><td>Fresh leaves pounded</td><td>Apply to wound or swelling</td><td>Wound healing, ulcers, lymph nodes</td></tr>
+          <tr><td>Seed Oil (Topical)</td><td>Cold-pressed from seeds</td><td>Massage as needed</td><td>Paralysis, neuralgia, muscle spasm</td></tr>
+          <tr><td>Classical Formulations</td><td>Nyagrodhadi Kashaya, Mandara Ghrita</td><td>Per classical text &amp; practitioner</td><td>Skin disorders, wound healing, Vata conditions</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">07</span>
+        <h2 class="section-title">Safety &amp; Precautions</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Mandara is a potent medicinal plant whose internal use demands expert supervision. Erythrina alkaloids have a relatively narrow therapeutic index — at excessive doses they produce respiratory paralysis in animal models. Classical Ayurveda employs <em>shodhana</em> (purification) of bark before internal use; self-administration of unpurified preparations is inadvisable.</p>
+      <ul class="precaution-list">
+        <li><strong>Pregnancy:</strong> Strongly contraindicated internally. The plant's uterine-stimulating properties and phytoestrogenic compounds pose significant risk of miscarriage or preterm labour.</li>
+        <li><strong>Neuromuscular conditions:</strong> Erythrina alkaloids block nicotinic receptors — do not use alongside neuromuscular blocking agents, anaesthetics, or myasthenia gravis management drugs without specialist review.</li>
+        <li><strong>Respiratory compromise:</strong> High doses of alkaloids can depress respiratory drive. Use with caution in any patient with respiratory insufficiency.</li>
+        <li><strong>Seeds — high toxicity:</strong> The bright red seeds are highly toxic and should never be consumed. Keep away from children. Seed lectins are potently haemagglutinating.</li>
+        <li><strong>Pitta-dominant constitutions:</strong> Avoid in active bleeding disorders, hyperacidity, inflammatory Pitta conditions, and peptic ulcers — the plant's ushna virya aggravates Pitta significantly.</li>
+        <li><strong>Drug interactions:</strong> May potentiate CNS depressants, sedatives, benzodiazepines, and anti-epileptic medications. Avoid concurrent use without medical supervision.</li>
+        <li><strong>Shodhana requirement:</strong> Classical texts mandate purification (heating in cow's milk or ghee) of bark before internal use to reduce alkaloid toxicity. Raw, unpurified internal preparations are unsafe.</li>
+        <li><strong>Topical precaution:</strong> Bark sap contact with eyes causes irritation. Prolonged topical application on broken skin may cause sensitisation in some individuals.</li>
+        <li><strong>Duration:</strong> Limit supervised internal use to 4–6 weeks at a time. Liver function monitoring is advisable with extended use.</li>
+      </ul>
+    </div>
+
+    <div class="sources">
+      <div class="sources-title">References &amp; Sources</div>
+      <ul>
+        <li>Kaur R, et al. — "A comprehensive review on phytochemistry and pharmacological activities of Erythrina variegata" — Asian Pacific Journal of Tropical Biomedicine, 2016</li>
+        <li>Yadav SS &amp; Chaturvedi M — "A Review on Erythrina indica (Mandara) in Ayurveda" — International Journal of Ayurveda Research, 2019</li>
+        <li>Tanaka H, et al. — "Antibacterial compounds from Erythrina variegata" — Phytochemistry, 2004</li>
+        <li>Lawal IO, et al. — "Erythrina species: traditional uses, phytochemistry, and pharmacological activities" — Pharmacognosy Reviews, 2020</li>
+        <li>Ibrahim MA, et al. — "Antiplasmodial and antileishmanial activity of Erythrina alkaloids" — Parasitology Research, 2013</li>
+        <li>Kinjo J, et al. — "Isoflavonoids and related compounds from Erythrina variegata with anti-osteoporotic activity" — Chemical and Pharmaceutical Bulletin, 2004</li>
+        <li>Charaka Samhita, Sutrasthana — Vata-kapha shamana gana classification of Mandara</li>
+        <li>Sushruta Samhita, Sutrasthana — Nyagrodhadi gana (Mandara bark as Vranahara)</li>
+        <li>Ashtanga Hridayam, Sutrasthana — Krimiroga and skin disease applications of Mandara</li>
+        <li>Bhavaprakasha Nighantu — Vanaspati Varga entry for Mandara / Paribhadra</li>
+        <li>Priyavrat Sharma — Dravyaguna Vigyana, Vol. II — Classical properties and formulations</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer>
+    <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a qualified practitioner before therapeutic use</p>
+  </footer>
+
+  <script>
+    const open3D = document.getElementById('open3D');
+    const close3D = document.getElementById('close3D');
+    const modal  = document.getElementById('viewerModal');
+
+    function openModal() {
+    var _aud = document.getElementById('mandaraAudio'); if(_aud){ _aud.currentTime=0; var playPromise = _aud.play(); if (playPromise !== undefined) { playPromise.catch(function(e){ console.log(e); }); } }
+
+      modal.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+      history.pushState({ modal: 'mandara3d' }, '', '#3d');
+    }
+    function closeModal() {
+    var _aud = document.getElementById('mandaraAudio'); if(_aud){ _aud.pause(); }
+
+      modal.style.display = 'none';
+      document.body.style.overflow = '';
+      if (window.location.hash === '#3d')
+        history.replaceState(null, '', window.location.pathname);
+    }
+
+    open3D.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); openModal(); });
+    close3D.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); closeModal(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && modal.style.display === 'flex') closeModal(); });
+    window.addEventListener('popstate', () => { if (modal.style.display === 'flex') { modal.style.display = 'none'; document.body.style.overflow = ''; } });
+  </script>
+
+  <audio id="mandaraAudio" src="mandara_benefits.mp3" loop preload="auto"></audio>
+</body>
+</html>

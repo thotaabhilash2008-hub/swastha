@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rose | Swastha</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+  <style>
+    #open3D {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      padding: 10px 18px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: var(--forest);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      z-index: 1000;
+      transition: .3s;
+    }
+    #open3D:hover {
+      background: var(--gold);
+      color: var(--deep);
+    }
+    #viewerModal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+    }
+    #modal-topbar {
+      flex-shrink: 0;
+      height: 58px;
+      background: #111111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px 0 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      z-index: 99999;
+    }
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 4.5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.72);
+      user-select: none;
+    }
+    #close3D {
+      width: 38px;
+      height: 38px;
+      font-size: 15px;
+      font-weight: 300;
+      background: transparent;
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background .2s, color .2s, transform .22s;
+      outline: none;
+      flex-shrink: 0;
+    }
+    #close3D:hover {
+      background: #ffffff;
+      color: #111111;
+      border-color: #ffffff;
+      transform: rotate(90deg);
+    }
+    #viewerModal model-viewer {
+      flex: 1;
+      width: 100%;
+      display: block;
+      background: #ffffff;
+    }
+
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+    * { margin: 0; padding: 0; box-sizing: border-box }
+    html { scroll-behavior: smooth }
+    body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--ink); min-height: 100vh; overflow-x: hidden; position: relative }
+    body::before { content: ''; position: fixed; inset: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E"); opacity: .035; pointer-events: none; z-index: 100 }
+    .bg-circle { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0 }
+    .bg-circle-1 { width: 700px; height: 700px; background: radial-gradient(circle, rgba(122,37,53,.08) 0%, transparent 70%); top: -200px; right: -150px }
+    .bg-circle-2 { width: 500px; height: 500px; background: radial-gradient(circle, rgba(201,124,90,.07) 0%, transparent 70%); bottom: -100px; left: -100px }
+    .botanical-svg { position: fixed; pointer-events: none; z-index: 1; opacity: .09 }
+    .botanical-tl { top: -20px; left: -20px; width: 280px }
+    .botanical-br { bottom: -20px; right: -20px; width: 240px; transform: rotate(180deg) }
+    .hero { position: relative; z-index: 10; padding: 54px 40px 0; text-align: center; opacity: 0; animation: fadeUp .9s ease .1s forwards }
+    .back-link { display: inline-flex; align-items: center; gap: 8px; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--sage); text-decoration: none; margin-bottom: 36px; transition: color .3s }
+    .back-link:hover { color: var(--gold) }
+    .logo-rule { display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 14px }
+    .logo-rule span { display: block; height: 1px; width: 70px; background: linear-gradient(to right, transparent, var(--gold)) }
+    .logo-rule span:last-child { background: linear-gradient(to left, transparent, var(--gold)) }
+    .logo-ornament { font-size: 13px; color: var(--gold) }
+    .hero-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(64px,12vw,110px); font-weight: 300; letter-spacing: 8px; line-height: 1; color: var(--deep) }
+    .hero-subtitle { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-style: italic; font-weight: 300; color: var(--earth); letter-spacing: 2px; margin-top: 8px }
+    .hero-sci { font-size: 11px; font-weight: 200; letter-spacing: 5px; color: var(--sage); margin-top: 6px }
+    .hero-photos { position: relative; z-index: 10; display: grid; grid-template-columns: 1fr 1fr; gap: 2px; max-width: 900px; margin: 40px auto 0; opacity: 0; animation: fadeUp .9s ease .35s forwards }
+    .hero-photos img { width: 100%; height: 380px; object-fit: cover; object-position: center; display: block; background: var(--parchment) }
+    .photo-caption { text-align: center; font-family: 'Cormorant Garamond', serif; font-size: 12px; font-style: italic; color: var(--sage); letter-spacing: 1px; padding: 10px 0 0; max-width: 900px; margin: 0 auto; position: relative; z-index: 10; opacity: 0; animation: fadeUp .9s ease .5s forwards }
+    .divider { display: flex; align-items: center; justify-content: center; gap: 16px; margin: 50px auto; max-width: 600px; opacity: 0; animation: fadeUp .9s ease .55s forwards; position: relative; z-index: 10 }
+    .divider-line { height: 1px; width: 120px; background: linear-gradient(to right, transparent, var(--sage)) }
+    .divider-line:last-child { background: linear-gradient(to left, transparent, var(--sage)) }
+    .divider-leaf { color: var(--forest); font-size: 18px }
+    .content { position: relative; z-index: 10; max-width: 860px; margin: 0 auto; padding: 0 30px 80px }
+    .intro-text { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 300; line-height: 1.75; color: var(--ink); text-align: center; max-width: 700px; margin: 0 auto 60px; opacity: 0; animation: fadeUp .9s ease .6s forwards }
+    .intro-text em { color: var(--forest); font-style: italic }
+    .section { margin-bottom: 60px; opacity: 0; animation: fadeUp .9s ease forwards }
+    .section:nth-child(1) { animation-delay: .65s }
+    .section:nth-child(2) { animation-delay: .75s }
+    .section:nth-child(3) { animation-delay: .85s }
+    .section:nth-child(4) { animation-delay: .95s }
+    .section:nth-child(5) { animation-delay: 1.05s }
+    .section:nth-child(6) { animation-delay: 1.15s }
+    .section:nth-child(7) { animation-delay: 1.25s }
+    .section-header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px }
+    .section-num { font-family: 'Cormorant Garamond', serif; font-size: 11px; letter-spacing: 4px; color: var(--gold) }
+    .section-title { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 400; color: var(--deep); letter-spacing: 1px }
+    .section-rule { height: 1px; flex: 1; background: linear-gradient(to right, var(--gold), transparent) }
+    .section-body { font-size: 13px; font-weight: 300; line-height: 1.9; color: var(--ink); margin-bottom: 24px }
+    .data-table { width: 100%; border-collapse: collapse; margin: 16px 0 8px; font-size: 12px }
+    .data-table thead tr { background: var(--deep); color: var(--gold); font-size: 10px; letter-spacing: 3px; text-transform: uppercase }
+    .data-table thead th { padding: 12px 14px; text-align: left; font-weight: 400 }
+    .data-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .data-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .data-table tbody tr { transition: background .2s }
+    .data-table tbody tr:hover { background: #e8d0c8 }
+    .data-table tbody td { padding: 10px 14px; color: var(--ink); border-bottom: 1px solid rgba(122,63,63,.08) }
+    .data-table tbody td:first-child { font-weight: 400; color: var(--deep); width: 28% }
+    .dosha-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .dosha-table thead tr { background: var(--forest); color: var(--cream) }
+    .dosha-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .dosha-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .dosha-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .dosha-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(122,63,63,.08) }
+    .dosha-table tbody td:first-child { font-weight: 400; color: var(--forest); width: 18% }
+    .dosha-table tbody td:nth-child(2) { color: var(--earth); width: 20% }
+    .consume-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .consume-table thead tr { background: var(--earth); color: var(--cream) }
+    .consume-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .consume-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .consume-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .consume-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(122,63,63,.08) }
+    .consume-table tbody td:first-child { font-weight: 400; color: var(--earth); width: 22% }
+    .benefits-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: rgba(122,63,63,.12); border: 1px solid rgba(122,63,63,.12); margin: 8px 0 }
+    .benefit-card { background: var(--cream); padding: 24px 22px; transition: background .3s; position: relative; overflow: hidden }
+    .benefit-card:hover { background: #edd8d0 }
+    .benefit-card::before { content: ''; position: absolute; bottom: 0; left: 0; width: 0; height: 2px; background: var(--gold); transition: width .4s }
+    .benefit-card:hover::before { width: 100% }
+    .benefit-title { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 600; color: var(--forest); margin-bottom: 8px }
+    .benefit-desc { font-size: 11.5px; font-weight: 300; line-height: 1.75; color: var(--ink); opacity: .85 }
+    .precaution-list { list-style: none; margin: 8px 0 }
+    .precaution-list li { display: flex; gap: 12px; align-items: flex-start; padding: 10px 14px; font-size: 12px; font-weight: 300; line-height: 1.7; color: var(--ink); border-bottom: 1px solid rgba(122,63,63,.08) }
+    .precaution-list li:last-child { border-bottom: none }
+    .precaution-list li::before { content: '▸'; color: var(--gold); flex-shrink: 0; margin-top: 1px }
+    .sources { border-top: 1px solid rgba(122,63,63,.15); padding-top: 24px; margin-top: 20px }
+    .sources-title { font-size: 10px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); margin-bottom: 12px; font-weight: 300 }
+    .sources ul { list-style: none }
+    .sources ul li { font-family: 'Cormorant Garamond', serif; font-size: 13px; font-style: italic; color: var(--earth); padding: 5px 0; border-bottom: 1px solid rgba(122,63,63,.06) }
+    .sources ul li::before { content: '· '; color: var(--sage) }
+    .nutrition-bar { display: grid; grid-template-columns: repeat(4,1fr); gap: 1px; background: rgba(122,63,63,.12); border: 1px solid rgba(122,63,63,.12); margin: 20px 0 }
+    .nutrition-cell { background: var(--cream); padding: 22px 16px; text-align: center; transition: background .3s }
+    .nutrition-cell:hover { background: var(--parchment) }
+    .nutrition-num { font-family: 'Cormorant Garamond', serif; font-size: 36px; font-weight: 300; color: var(--forest); line-height: 1; margin-bottom: 4px }
+    .nutrition-unit { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); font-weight: 300 }
+    .nutrition-label { font-size: 11px; font-weight: 300; color: var(--ink); margin-top: 5px }
+    footer { position: relative; z-index: 10; text-align: center; padding: 24px 20px 44px; border-top: 1px solid rgba(122,63,63,.12); max-width: 860px; margin: 0 auto }
+    footer p { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); font-weight: 300 }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(28px) } to { opacity: 1; transform: translateY(0) } }
+    @media(max-width:700px) {
+      .hero-photos { grid-template-columns: 1fr }
+      .hero-photos img { height: 260px }
+      .benefits-grid { grid-template-columns: 1fr }
+      .nutrition-bar { grid-template-columns: 1fr 1fr }
+      .content { padding: 0 18px 60px }
+    }
+  </style>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+</head>
+<body>
+  <button type="button" id="open3D">View in 3D</button>
+
+
+  <div class="bg-circle bg-circle-1"></div>
+  <div class="bg-circle bg-circle-2"></div>
+
+  <!-- Rose petal botanical SVG -->
+  <svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <ellipse cx="80" cy="200" rx="38" ry="22" fill="#7a2535" transform="rotate(-40 80 200)"/>
+    <ellipse cx="120" cy="160" rx="34" ry="20" fill="#a03050" transform="rotate(-20 120 160)"/>
+    <ellipse cx="100" cy="180" rx="30" ry="18" fill="#7a2535" transform="rotate(10 100 180)"/>
+    <ellipse cx="150" cy="130" rx="28" ry="16" fill="#c97c5a" transform="rotate(-55 150 130)"/>
+    <ellipse cx="65" cy="225" rx="24" ry="13" fill="#a03050" transform="rotate(-70 65 225)"/>
+    <path d="M150 130 Q 180 90 220 50" stroke="#7a2535" stroke-width="1.2" fill="none"/>
+    <ellipse cx="185" cy="95" rx="22" ry="12" fill="#7a2535" transform="rotate(-30 185 95)"/>
+    <ellipse cx="215" cy="60" rx="18" ry="10" fill="#c97c5a" transform="rotate(-50 215 60)"/>
+  </svg>
+  <svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <ellipse cx="80" cy="200" rx="38" ry="22" fill="#7a2535" transform="rotate(-40 80 200)"/>
+    <ellipse cx="120" cy="160" rx="34" ry="20" fill="#a03050" transform="rotate(-20 120 160)"/>
+    <ellipse cx="100" cy="180" rx="30" ry="18" fill="#7a2535" transform="rotate(10 100 180)"/>
+    <ellipse cx="150" cy="130" rx="28" ry="16" fill="#c97c5a" transform="rotate(-55 150 130)"/>
+  </svg>
+
+  <div class="hero">
+    <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+    <div class="logo-rule"><span></span><div class="logo-ornament">✦</div><span></span></div>
+    <div class="hero-title">Gulab</div>
+    <div class="hero-subtitle">Rose — The Queen of Flowers</div>
+    <div class="hero-sci">Rosa damascena Mill. &nbsp;·&nbsp; Rosa centifolia L. &nbsp;·&nbsp; Rosa indica</div>
+  </div>
+
+  <div class="hero-photos">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/d/d1/Rosa_damascena5.jpg" alt="Deep pink Rosa damascena blooms — Damask rose petals used in rosewater and attar" onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/2/21/Rosa_centifolia_foliacea_17.jpg" alt="Rose hip fruits and dried rose petals for Ayurvedic and Unani preparations" onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+  </div>
+  <p class="photo-caption">Fig. 1 — Velvet-petalled Rosa damascena, the primary source of rose attar and rosewater &nbsp;·&nbsp; Fig. 2 — Dried rose petals and rose hips — principal forms used in Ayurvedic, Unani, and culinary traditions</p>
+
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-leaf">❧</div>
+    <div class="divider-line"></div>
+  </div>
+
+  <div class="content">
+    <p class="intro-text">In Sanskrit, <em>Shatapatra</em> — "she of a hundred petals" — the Rose has been woven into the fabric of Indian civilisation as medicine, perfume, ritual offering, and culinary delight for over two thousand years. Beloved equally by Ayurveda, Unani, and Siddha, it is the pre-eminent <em>Hridya dravya</em> (heart tonic), the sovereign Pitta-pacifier, and the fragrant ambassador of beauty in classical pharmacopoeia.</p>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">01</span><h2 class="section-title">Botanical Profile</h2><div class="section-rule"></div></div>
+      <p class="section-body">The medicinal Rose of the Indian subcontinent belongs primarily to three species: <em>Rosa damascena</em> Mill. (Damask Rose — the source of attar and rosewater), <em>Rosa centifolia</em> L. (Cabbage Rose — used in Unani medicine), and <em>Rosa indica</em> (Country Rose — widely distributed across India). All are thorny, deciduous or semi-evergreen shrubs of the Rosaceae family, with pinnately compound leaves, stipulate leaflets, and the characteristic solitary or clustered flowers that have made them universally beloved.</p>
+      <p class="section-body"><em>Rosa damascena</em>, the most medicinally significant, is cultivated extensively in the valley of Kannauj (Uttar Pradesh) — India's attar capital — as well as in Rajasthan, Kashmir, and Himachal Pradesh. Its flowers are harvested at dawn before full opening to preserve volatile oil content. The rose hip (fruit), petals, seeds, leaves, and root bark are all employed medicinally, with fresh and dried petals and rosewater forming the backbone of classical preparations.</p>
+      <table class="data-table">
+        <thead><tr><th>Property</th><th>Detail</th></tr></thead>
+        <tbody>
+          <tr><td>Family</td><td>Rosaceae</td></tr>
+          <tr><td>Primary Species</td><td>Rosa damascena Mill. (Damask); R. centifolia L. (Cabbage); R. indica (Country Rose)</td></tr>
+          <tr><td>Sanskrit Names</td><td>Shatapatra, Taruni, Shatapatrika, Deshi Gulab, Karnika, Padmini</td></tr>
+          <tr><td>Hindi / Common</td><td>Gulab, Gul, Desi Gulab, Rose</td></tr>
+          <tr><td>Regional Names</td><td>Roja (Tel/Tam/Kan/Mal), Golap (Ben), Gulab (Mar/Guj/Pun)</td></tr>
+          <tr><td>Unani Name</td><td>Gul-e-Surkh (Red Rose), Gul-e-Sad-barg (Hundred-petalled Rose)</td></tr>
+          <tr><td>Plant Type</td><td>Deciduous / semi-evergreen thorny shrub (1–3 m)</td></tr>
+          <tr><td>Cultivation</td><td>Kannauj (UP), Rajasthan, Kashmir, Himachal Pradesh; also globally</td></tr>
+          <tr><td>Flowering Season</td><td>February–April (primary); some cultivars throughout the year</td></tr>
+          <tr><td>Medicinal Parts</td><td>Petals (primary), rosewater, attar/essential oil, rose hip (fruit), leaves, root bark</td></tr>
+          <tr><td>Taste Profile</td><td>Madhura (sweet), Kashaya (astringent), Tikta (bitter, mild)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">02</span><h2 class="section-title">Phytochemistry Composition</h2><div class="section-rule"></div></div>
+      <p class="section-body">The chemistry of <em>Rosa damascena</em> is among the most complex in the plant kingdom — over 400 volatile compounds have been identified in rose essential oil, making it one of the most intricate natural perfumes. The primary constituents are citronellol (18–55%), geraniol (10–22%), nerol, linalool, and phenylethanol (rose alcohol) — the compound most responsible for the characteristic rose fragrance. The petals are rich in polyphenols including quercetin, kaempferol, gallic acid, and ellagic acid. Rose hips are an extraordinarily concentrated source of vitamin C (up to 1,700 mg/100 g dried — one of the highest in the plant kingdom), along with carotenoids, tocopherols, and essential fatty acids.</p>
+      <div class="nutrition-bar">
+        <div class="nutrition-cell">
+          <div class="nutrition-num">400+</div>
+          <div class="nutrition-unit">volatiles</div>
+          <div class="nutrition-label">In rose essential oil</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">1700</div>
+          <div class="nutrition-unit">mg/100g</div>
+          <div class="nutrition-label">Vitamin C in rose hips</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">3–5</div>
+          <div class="nutrition-unit">tonnes</div>
+          <div class="nutrition-label">Petals per kg attar</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">2000+</div>
+          <div class="nutrition-unit">years</div>
+          <div class="nutrition-label">Of documented use in India</div>
+        </div>
+      </div>
+      <table class="data-table">
+        <thead><tr><th>Compound</th><th>Category</th><th>Primary Action</th></tr></thead>
+        <tbody>
+          <tr><td>Citronellol & Geraniol</td><td>Monoterpene alcohols (essential oil)</td><td>Antimicrobial, anti-inflammatory, anxiolytic, insect-repellent; primary fragrance components</td></tr>
+          <tr><td>2-Phenylethanol (Phenylethyl alcohol)</td><td>Aromatic alcohol (essential oil)</td><td>Anxiolytic, antidepressant, antimicrobial; characteristic rose fragrance molecule</td></tr>
+          <tr><td>Nerol & Linalool</td><td>Monoterpene alcohols</td><td>Sedative, anxiolytic, antispasmodic; enhance the floral note of attar</td></tr>
+          <tr><td>Quercetin & Kaempferol</td><td>Flavonols (petals)</td><td>Antioxidant, anti-inflammatory, anti-allergic, cardioprotective</td></tr>
+          <tr><td>Gallic Acid & Ellagic Acid</td><td>Hydrolysable tannins</td><td>Astringent, antimicrobial, antitumour, antioxidant</td></tr>
+          <tr><td>Anthocyanins (Cyanidin-3-glucoside)</td><td>Flavonoid pigments</td><td>Antioxidant, anti-inflammatory, vasoprotective; give petals their colour</td></tr>
+          <tr><td>Vitamin C (Rose hips)</td><td>Ascorbic acid</td><td>Immune support, collagen synthesis, antioxidant; among highest plant sources</td></tr>
+          <tr><td>Carotenoids (β-carotene, lycopene)</td><td>Terpenoid pigments (hips)</td><td>Antioxidant, anti-inflammatory, vision support, skin health</td></tr>
+          <tr><td>Rosehip Seed Oil (LCFA)</td><td>Essential fatty acids (linoleic, α-linolenic)</td><td>Skin regeneration, wound healing, anti-scarring; used in cosmetic dermatology</td></tr>
+          <tr><td>Terpinen-4-ol & Eugenol</td><td>Terpene / phenylpropanoid</td><td>Antimicrobial, anti-inflammatory, analgesic; present in minor amounts</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">03</span><h2 class="section-title">Ayurvedic Significance</h2><div class="section-rule"></div></div>
+      <p class="section-body">Rose is prominently placed in the Bhavaprakasha Nighantu (<em>Pushpa Varga</em> — flower group), Dhanvantari Nighantu, Raja Nighantu, and Shaligrama Nighantu. It is the quintessential <em>Hridya dravya</em> — a substance that gladdens and strengthens the heart — and its cooling, sweet, and mildly astringent properties make it the primary Pitta-pacifying flower in classical Ayurveda. Shatapatra is used in a wide range of classical formulations including <em>Gulkand</em> (rose petal jam), <em>Arq-e-Gulab</em> (rosewater), and many compound preparations for the heart, skin, and mind.</p>
+      <p class="section-body">Classical shloka from Bhavaprakasha: <em>"Shatapatra madhuram sheetam, Pittaharam hridyam param, Chakshuya varnya cha shramam, Dahashoshartikrut nahi"</em> — sweet, cooling, supremely Pitta-pacifying and heart-nourishing, benefiting the eyes and complexion, relieving fatigue, burning, and wasting. Its fragrance (<em>gandha</em>) alone is considered therapeutically active — a unique recognition that olfactory medicine (aromatherapy) had its roots in classical Ayurveda.</p>
+      <table class="dosha-table">
+        <thead><tr><th>Dosha</th><th>Effect</th><th>Mechanism &amp; Notes</th></tr></thead>
+        <tbody>
+          <tr><td>Vata ~</td><td>Mildly balancing</td><td>Madhura rasa and snigdha (unctuous) quality of rose oil gently nourish Vata; suitable for Vata-type anxiety, palpitations, and nervous exhaustion; rose ghee preparations are specifically indicated for Vata</td></tr>
+          <tr><td>Pitta ↓↓</td><td>Strongly pacifying</td><td>Primary classical indication — sheeta virya (cold potency), madhura-kashaya rasa, and stambhana (astringent) properties directly reduce Pitta. Used in heat conditions, hyperacidity, burning sensations, anger, inflammatory skin, and blood disorders</td></tr>
+          <tr><td>Kapha ~</td><td>Neutral to mildly aggravating</td><td>Sweet taste and unctuous quality may slightly increase Kapha in excess; kashaya rasa partially counteracts this; use moderately in pure Kapha presentations; Gulkand (sweet) should be avoided in heavy Kapha conditions</td></tr>
+        </tbody>
+      </table>
+      <p class="section-body"><strong>Rasa:</strong> Madhura, Kashaya, Tikta (mild) &nbsp;·&nbsp; <strong>Guna:</strong> Laghu, Snigdha &nbsp;·&nbsp; <strong>Virya:</strong> Sheeta (cold) &nbsp;·&nbsp; <strong>Vipaka:</strong> Madhura &nbsp;·&nbsp; <strong>Karma:</strong> Hridya, Pittahara, Chakshuya, Varnya, Stambhana, Rakta-prasadana, Shramahara</p>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">04</span><h2 class="section-title">Key Health Benefits</h2><div class="section-rule"></div></div>
+      <p class="section-body">Modern pharmacological research has validated rose's classical reputation across multiple domains — anxiolytic, antidepressant, cardioprotective, antimicrobial, anti-inflammatory, and skin-regenerative effects are all supported by preclinical and clinical evidence. Its aromatherapy applications have the strongest clinical backing of any plant fragrance.</p>
+      <div class="benefits-grid">
+        <div class="benefit-card">
+          <div class="benefit-title">Heart Tonic &amp; Cardioprotective</div>
+          <div class="benefit-desc">As the supreme <em>Hridya dravya</em>, rose strengthens cardiac function and soothes palpitations, anxiety-related tachycardia, and emotionally driven heart distress. Quercetin and anthocyanins reduce LDL oxidation, improve endothelial function, and reduce platelet aggregation. Gulkand is a classical daily heart tonic. Rose water reduces stress-induced cortisol spikes implicated in cardiac risk.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Anxiety, Stress &amp; Mood</div>
+          <div class="benefit-desc">The most robustly evidenced benefit of rose aromatherapy — multiple RCTs confirm that inhaled rose essential oil significantly reduces anxiety scores, salivary cortisol, blood pressure, and heart rate compared to placebo. Phenylethanol and linalool modulate GABA-A receptors, producing anxiolytic and antidepressant effects. Used in labour anxiety, examination stress, and post-partum depression.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Skin Health &amp; Complexion</div>
+          <div class="benefit-desc">Classical <em>Varnya</em> (complexion-enhancing) and <em>Tvachya</em> (skin-nourishing) — rosewater is a classical face toner, reducing redness, tightening pores, and balancing skin pH. Rosehip seed oil (rich in linoleic and α-linolenic acids) clinically demonstrated to reduce post-surgical scarring, melasma, and fine lines. Anti-inflammatory polyphenols soothe eczema, rosacea, and Pitta-type inflammatory dermatoses.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Eye Care &amp; Vision</div>
+          <div class="benefit-desc">A premier <em>Chakshuya dravya</em> — rosewater eye drops are a classical Ayurvedic treatment for conjunctivitis, eye fatigue, burning eyes, and mild inflammations. Clinical studies validate rosewater's efficacy in reducing ocular surface inflammation and dryness. The astringent tannins reduce redness; the cooling sheeta virya soothes burning; antimicrobial properties inhibit ocular bacterial growth.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Digestive &amp; Carminative</div>
+          <div class="benefit-desc">Gulkand (rose petal preserve with sugar) is one of Ayurveda's most beloved digestive tonics — cooling acid reflux, reducing oral ulcers, relieving constipation from excess Pitta-heat, and improving appetite. Rose petal decoction is used for mouth ulcers, gastritis, and peptic disorders. Mild laxative action from tannins and the cooling effect on the enteric nervous system reduce colonic spasm.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Antimicrobial &amp; Antiviral</div>
+          <div class="benefit-desc">Rose essential oil and aqueous extracts show activity against S. aureus, E. coli, Candida albicans, and HSV-1 (herpes simplex). Gallic and ellagic acids are potent antimicrobials with activity against drug-resistant strains. Rosewater is used as a topical antimicrobial rinse for wounds, minor burns, and infected skin conditions in classical and folk traditions.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Menstrual &amp; Reproductive Health</div>
+          <div class="benefit-desc">Classical <em>Artava-janana</em> (menstrual normaliser) — rose regulates and initiates healthy menstrual flow, reduces dysmenorrhoea, and soothes PMS-related irritability and heat. Multiple RCTs confirm rose aromatherapy and oral preparations significantly reduce menstrual pain intensity. Used in leucorrhoea, excessive uterine bleeding, and menopausal hot flushes in classical Ayurvedic and Unani practice.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Immune &amp; Antioxidant</div>
+          <div class="benefit-desc">Rose hips are one of the most vitamin-C-dense foods known (up to 1,700 mg/100 g dried) — historically used across Asia and Europe to prevent scurvy and infections. Modern studies confirm rosehip powder's anti-inflammatory effects in rheumatoid arthritis through GCSF inhibition. Rich anthocyanin and carotenoid content provide broad-spectrum antioxidant protection against oxidative stress.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">05</span><h2 class="section-title">Rose in Unani &amp; Cultural Traditions</h2><div class="section-rule"></div></div>
+      <p class="section-body">In Unani medicine, the rose — <em>Gul-e-Surkh</em> — is a <em>Mufarreh</em> (exhilarant), <em>Muqawwi-e-Qalb</em> (heart strengthener), and <em>Muqawwi-e-Dimagh</em> (brain tonic). Classical Unani preparations include <em>Arq-e-Gulab</em> (distilled rosewater), <em>Gulkand</em> (rose petal electuary), <em>Rooh Afza</em> (traditional cooler), <em>Majun-e-Baladur</em>, and <em>Qurs-e-Gulab</em> (rose tablets). Ibn Sina (Avicenna) in his <em>Canon of Medicine</em> devotes extensive treatment to rose, naming it a remedy for cardiac palpitations, depression, and nervous debility.</p>
+      <p class="section-body">In Siddha medicine, <em>Roja</em> is used for Pitta-related disorders, skin conditions, and as a cooling nervine. In Hindu ritual, the rose is offered to Lakshmi and used in Sufi devotional traditions as the fragrance of the divine. The Mughal attar industry of Kannauj — established by Empress Noor Jahan — still produces rose attar by traditional deg-bhapka hydro-distillation, where steam from simmering rose petals is passed through sandalwood oil to capture the volatile fragrance. One kilogram of rose attar requires 3–5 tonnes of petals harvested at dawn — making genuine rose attar among the most precious botanical substances on earth.</p>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">06</span><h2 class="section-title">How to Use Rose / Gulab</h2><div class="section-rule"></div></div>
+      <p class="section-body">Rose is one of the safest and most versatile medicinal plants — suitable for internal, external, aromatic, and culinary use across all ages. Its gentle, cooling, and nourishing nature means it can be used regularly without the strict dosing constraints of more potent herbs. Always use food-grade, unsprayed rose petals for internal preparations, and ensure rosewater is 100% pure distillate rather than synthetic fragrance dilution.</p>
+      <table class="consume-table">
+        <thead><tr><th>Form</th><th>Preparation</th><th>Dosage</th><th>Best Use</th></tr></thead>
+        <tbody>
+          <tr><td>Gulkand</td><td>Alternate layers of fresh petals and sugar; sun-cure 3–4 weeks in sealed jar</td><td>5–10 g (1–2 tsp) daily with milk or plain</td><td>Acidity, constipation, oral ulcers, heat, cardiac tonic</td></tr>
+          <tr><td>Rosewater (Arq-e-Gulab)</td><td>Pure distilled rose hydrosol; internal or topical</td><td>15–30 ml in cold water or milk; topical as needed</td><td>Eye drops, face toner, digestive cooling, anxiety</td></tr>
+          <tr><td>Rose Petal Tea</td><td>Steep 1–2 tsp dried petals in hot water 5 min; strain</td><td>1–2 cups daily</td><td>Stress, PMS, dysmenorrhoea, mild anxiety, digestion</td></tr>
+          <tr><td>Rose Hip Decoction</td><td>Boil crushed dried hips 15 min; strain; sweeten lightly</td><td>100–150 ml once or twice daily</td><td>Immune support, joint inflammation, vitamin C replenishment</td></tr>
+          <tr><td>Rose Petal Powder</td><td>Dried petals ground fine; with honey or ghee</td><td>3–5 g once or twice daily</td><td>Skin disorders, eye health, menopausal symptoms</td></tr>
+          <tr><td>Rose Essential Oil (Aromatherapy)</td><td>2–3 drops in diffuser; or 1% in carrier oil (topically)</td><td>Diffuse 20–30 min; apply topically as needed</td><td>Anxiety, depression, PMS, insomnia, skin inflammation</td></tr>
+          <tr><td>Rosehip Seed Oil (Topical)</td><td>Pure cold-pressed oil applied to clean skin</td><td>3–5 drops on face at night</td><td>Scarring, hyperpigmentation, ageing skin, eczema</td></tr>
+          <tr><td>Rose Petal Face Pack</td><td>Fresh petal paste with sandalwood powder and rosewater</td><td>Apply 15 min; 2–3× weekly</td><td>Pitta skin, redness, acne, complexion brightening</td></tr>
+          <tr><td>Rose Ghrita</td><td>Rose petal juice processed in cow's ghee (classical)</td><td>5 g with warm milk before bed</td><td>Heart tonic, Pitta disorders, nervous exhaustion, dryness</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">07</span><h2 class="section-title">Safety &amp; Precautions</h2><div class="section-rule"></div></div>
+      <p class="section-body">Rose is one of the gentlest and safest herbs in the Ayurvedic pharmacopoeia — its mild nature and long culinary history mean it is generally suitable for all ages, constitutions, and life stages. Serious adverse effects are rare and mostly limited to allergic responses or misuse of concentrated essential oil.</p>
+      <ul class="precaution-list">
+        <li><strong>Rose essential oil — never undiluted on skin:</strong> Pure rose attar or essential oil is highly concentrated and must always be diluted to 1–2% in a carrier oil before topical application. Undiluted application can cause contact sensitisation and chemical burns in sensitive individuals.</li>
+        <li><strong>Synthetic rosewater:</strong> Most commercially available "rose water" is synthetic fragrance (phenylethanol in water) with no medicinal value. Always verify it is genuine steam-distilled or hydro-distilled rose hydrosol for therapeutic use.</li>
+        <li><strong>Gulkand in diabetes / Kapha excess:</strong> Gulkand contains substantial sugar — avoid or restrict in diabetes mellitus, obesity, and heavy Kapha presentations. Sugarless preparations (dried petal powder, rose tea) are preferable in these cases.</li>
+        <li><strong>Pesticide contamination:</strong> Commercially grown ornamental roses are among the most heavily pesticide-treated crops globally. Never use florist or garden centre roses for internal preparations — use only certified organic, food-grade, unsprayed roses.</li>
+        <li><strong>Rose hip seeds:</strong> The small seeds inside rose hips are covered in tiny irritating hairs that can cause mucous membrane irritation — always strain rose hip preparations thoroughly through a fine mesh before consumption.</li>
+        <li><strong>Pregnancy:</strong> Rose petal tea and rosewater at normal culinary amounts are generally considered safe. Therapeutic-dose preparations and concentrated essential oil should be discussed with a practitioner during pregnancy, as high-dose rose oil has historical use as a uterine stimulant.</li>
+        <li><strong>Eye drops:</strong> Use only pure, sterile, preservative-free rosewater in eyes. Never apply essential oil near the eyes. Ensure rosewater is freshly opened or freshly prepared; contaminated rosewater can cause eye infections.</li>
+        <li><strong>Drug interactions:</strong> Rose at normal food/tea doses has no clinically significant interactions. Concentrated rosehip extract at high doses may theoretically potentiate anticoagulants due to vitamin C and salicylate-like compounds — caution with warfarin at high therapeutic doses.</li>
+      </ul>
+    </div>
+
+    <div class="sources">
+      <div class="sources-title">References &amp; Sources</div>
+      <ul>
+        <li>Boskabady MH et al. — "Pharmacological Effects of Rosa damascena" — Iranian Journal of Basic Medical Sciences, 2011</li>
+        <li>Mohebitabar S et al. — "Therapeutic efficacy of rose oil: A comprehensive review" — Avicenna Journal of Phytomedicine, 2017</li>
+        <li>Conrad P & Adams C — "The effects of clinical aromatherapy for anxiety and depression in the high-risk postpartum woman" — Complementary Therapies in Clinical Practice, 2012</li>
+        <li>Igarashi M et al. — "Physiological and psychological effects of aromatherapy on healthy volunteers" — Natural Product Communications, 2014</li>
+        <li>Willich SN et al. — "Rose hip herbal remedy in patients with RA — a randomised controlled trial" — Phytomedicine, 2010</li>
+        <li>Bhavaprakasha Nighantu — Pushpa Varga — Shatapatra (Rose) properties and indications</li>
+        <li>Ibn Sina (Avicenna) — Al-Qanun fi't-Tibb (Canon of Medicine) — Gul-e-Surkh monograph</li>
+        <li>Priyavrat Sharma — Dravyaguna Vigyana (Vol. II) — Rosa damascena and R. centifolia monographs</li>
+        <li>Chandorkar AG & Bhitre M — "Study of Gulkand (rose petal electuary) in gastric disorders" — Ancient Science of Life, 1997</li>
+        <li>Wichtl M (ed.) — Herbal Drugs and Phytopharmaceuticals — Rosa canina / Rosae fructus monograph</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer>
+    <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a qualified practitioner before therapeutic use</p>
+  </footer>
+
+
+  <div id="viewerModal">
+    <div id="modal-topbar">
+      <span>3D Model — Gulab</span>
+      <button type="button" id="close3D">✕</button>
+    </div>
+    <model-viewer src="gulab3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+  </div>
+  <script>
+    (function() {
+      var open3D = document.getElementById('open3D');
+      var close3D = document.getElementById('close3D');
+      var modal = document.getElementById('viewerModal');
+      if (!open3D || !close3D || !modal) return;
+      function openModal() {
+        
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+      function closeModal() {
+        
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+      open3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); openModal();
+      });
+      close3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); closeModal();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+      });
+    })();
+  </script>
+
+</body>
+</html>

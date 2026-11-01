@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Masura | Red Lentil | Swastha</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+  <style>
+    #open3D {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      padding: 10px 18px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: var(--forest);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      z-index: 1000;
+      transition: .3s;
+    }
+    #open3D:hover {
+      background: var(--gold);
+      color: var(--deep);
+    }
+    #viewerModal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+    }
+    #modal-topbar {
+      flex-shrink: 0;
+      height: 58px;
+      background: #111111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px 0 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      z-index: 99999;
+    }
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 4.5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.72);
+      user-select: none;
+    }
+    #close3D {
+      width: 38px;
+      height: 38px;
+      font-size: 15px;
+      font-weight: 300;
+      background: transparent;
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background .2s, color .2s, transform .22s;
+      outline: none;
+      flex-shrink: 0;
+    }
+    #close3D:hover {
+      background: #ffffff;
+      color: #111111;
+      border-color: #ffffff;
+      transform: rotate(90deg);
+    }
+    #viewerModal model-viewer {
+      flex: 1;
+      width: 100%;
+      display: block;
+      background: #ffffff;
+    }
+
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+    * { margin: 0; padding: 0; box-sizing: border-box }
+    html { scroll-behavior: smooth }
+    body {
+      font-family: 'Jost', sans-serif;
+      background: var(--cream);
+      color: var(--ink);
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity: .03;
+      pointer-events: none;
+      z-index: 100
+    }
+    .bg-circle { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0 }
+    .bg-circle-1 { width: 700px; height: 700px; background: radial-gradient(circle, rgba(192,69,26,.08) 0%, transparent 70%); top: -200px; right: -150px }
+    .bg-circle-2 { width: 500px; height: 500px; background: radial-gradient(circle, rgba(212,134,42,.07) 0%, transparent 70%); bottom: -100px; left: -100px }
+
+    /* Lentil scatter background */
+    .lentil-bg {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1;
+      overflow: hidden;
+    }
+    .lentil-bg svg { position: absolute; opacity: .07 }
+
+    .hero {
+      position: relative; z-index: 10;
+      padding: 54px 40px 0;
+      text-align: center;
+      opacity: 0;
+      animation: fadeUp .9s ease .1s forwards
+    }
+    .back-link {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+      color: var(--sage); text-decoration: none; margin-bottom: 36px;
+      transition: color .3s
+    }
+    .back-link:hover { color: var(--gold) }
+    .logo-rule { display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 14px }
+    .logo-rule span { display: block; height: 1px; width: 70px; background: linear-gradient(to right, transparent, var(--gold)) }
+    .logo-rule span:last-child { background: linear-gradient(to left, transparent, var(--gold)) }
+    .logo-ornament { font-size: 13px; color: var(--gold) }
+    .hero-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(64px, 12vw, 110px);
+      font-weight: 300; letter-spacing: 8px; line-height: 1; color: var(--deep)
+    }
+    .hero-subtitle {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 18px; font-style: italic; font-weight: 300;
+      color: var(--earth); letter-spacing: 2px; margin-top: 8px
+    }
+    .hero-sci {
+      font-size: 11px; font-weight: 200; letter-spacing: 5px;
+      color: var(--sage); margin-top: 6px
+    }
+    .hero-photos {
+      position: relative; z-index: 10;
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 2px; max-width: 900px; margin: 40px auto 0;
+      opacity: 0; animation: fadeUp .9s ease .35s forwards
+    }
+    .hero-photos img {
+      width: 100%; height: 380px;
+      object-fit: cover; object-position: center; display: block;
+      background: var(--parchment)
+    }
+    .photo-caption {
+      text-align: center; font-family: 'Cormorant Garamond', serif;
+      font-size: 12px; font-style: italic; color: var(--sage);
+      letter-spacing: 1px; padding: 10px 0 0; max-width: 900px;
+      margin: 0 auto; position: relative; z-index: 10;
+      opacity: 0; animation: fadeUp .9s ease .5s forwards
+    }
+    .divider {
+      display: flex; align-items: center; justify-content: center; gap: 16px;
+      margin: 50px auto; max-width: 600px;
+      opacity: 0; animation: fadeUp .9s ease .55s forwards;
+      position: relative; z-index: 10
+    }
+    .divider-line { height: 1px; width: 120px; background: linear-gradient(to right, transparent, var(--gold)) }
+    .divider-line:last-child { background: linear-gradient(to left, transparent, var(--gold)) }
+    .divider-leaf { color: var(--rust); font-size: 18px }
+    .content {
+      position: relative; z-index: 10;
+      max-width: 860px; margin: 0 auto; padding: 0 30px 80px
+    }
+    .intro-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 20px; font-weight: 300; line-height: 1.75;
+      color: var(--ink); text-align: center; max-width: 700px;
+      margin: 0 auto 60px;
+      opacity: 0; animation: fadeUp .9s ease .6s forwards
+    }
+    .intro-text em { color: var(--rust); font-style: italic }
+    .section { margin-bottom: 60px; opacity: 0; animation: fadeUp .9s ease forwards }
+    .section:nth-child(1) { animation-delay: .65s }
+    .section:nth-child(2) { animation-delay: .75s }
+    .section:nth-child(3) { animation-delay: .85s }
+    .section:nth-child(4) { animation-delay: .95s }
+    .section:nth-child(5) { animation-delay: 1.05s }
+    .section:nth-child(6) { animation-delay: 1.15s }
+    .section:nth-child(7) { animation-delay: 1.25s }
+    .section-header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px }
+    .section-num { font-family: 'Cormorant Garamond', serif; font-size: 11px; letter-spacing: 4px; color: var(--gold) }
+    .section-title { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 400; color: var(--deep); letter-spacing: 1px }
+    .section-rule { height: 1px; flex: 1; background: linear-gradient(to right, var(--gold), transparent) }
+    .section-body { font-size: 13px; font-weight: 300; line-height: 1.9; color: var(--ink); margin-bottom: 24px }
+    .data-table { width: 100%; border-collapse: collapse; margin: 16px 0 8px; font-size: 12px }
+    .data-table thead tr { background: var(--deep); color: var(--gold); font-size: 10px; letter-spacing: 3px; text-transform: uppercase }
+    .data-table thead th { padding: 12px 14px; text-align: left; font-weight: 400 }
+    .data-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .data-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .data-table tbody tr { transition: background .2s }
+    .data-table tbody tr:hover { background: #e8d4b8 }
+    .data-table tbody td { padding: 10px 14px; color: var(--ink); border-bottom: 1px solid rgba(139,58,26,.08) }
+    .data-table tbody td:first-child { font-weight: 400; color: var(--deep); width: 28% }
+    .dosha-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .dosha-table thead tr { background: var(--rust); color: var(--cream) }
+    .dosha-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .dosha-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .dosha-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .dosha-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(139,58,26,.08) }
+    .dosha-table tbody td:first-child { font-weight: 400; color: var(--rust); width: 18% }
+    .consume-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .consume-table thead tr { background: var(--earth); color: var(--cream) }
+    .consume-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .consume-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .consume-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .consume-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(139,58,26,.08) }
+    .consume-table tbody td:first-child { font-weight: 400; color: var(--earth); width: 22% }
+    .benefits-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 1px;
+      background: rgba(139,58,26,.12); border: 1px solid rgba(139,58,26,.12); margin: 8px 0
+    }
+    .benefit-card {
+      background: var(--cream); padding: 24px 22px;
+      transition: background .3s; position: relative; overflow: hidden
+    }
+    .benefit-card:hover { background: #f0e0c8 }
+    .benefit-card::before {
+      content: ''; position: absolute; bottom: 0; left: 0;
+      width: 0; height: 2px; background: var(--gold); transition: width .4s
+    }
+    .benefit-card:hover::before { width: 100% }
+    .benefit-title { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 600; color: var(--rust); margin-bottom: 8px }
+    .benefit-desc { font-size: 11.5px; font-weight: 300; line-height: 1.75; color: var(--ink); opacity: .85 }
+    .nutrition-bar {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px;
+      background: rgba(139,58,26,.12); border: 1px solid rgba(139,58,26,.12); margin: 20px 0
+    }
+    .nutrition-cell { background: var(--cream); padding: 22px 16px; text-align: center; transition: background .3s }
+    .nutrition-cell:hover { background: var(--parchment) }
+    .nutrition-num { font-family: 'Cormorant Garamond', serif; font-size: 36px; font-weight: 300; color: var(--rust); line-height: 1; margin-bottom: 4px }
+    .nutrition-unit { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); font-weight: 300 }
+    .nutrition-label { font-size: 11px; font-weight: 300; color: var(--ink); margin-top: 5px }
+    .precaution-list { list-style: none; margin: 8px 0 }
+    .precaution-list li {
+      display: flex; gap: 12px; align-items: flex-start;
+      padding: 10px 14px; font-size: 12px; font-weight: 300; line-height: 1.7;
+      color: var(--ink); border-bottom: 1px solid rgba(139,58,26,.08)
+    }
+    .precaution-list li:last-child { border-bottom: none }
+    .precaution-list li::before { content: '▸'; color: var(--gold); flex-shrink: 0; margin-top: 1px }
+    .sources { border-top: 1px solid rgba(139,58,26,.15); padding-top: 24px; margin-top: 20px }
+    .sources-title { font-size: 10px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); margin-bottom: 12px; font-weight: 300 }
+    .sources ul { list-style: none }
+    .sources ul li { font-family: 'Cormorant Garamond', serif; font-size: 13px; font-style: italic; color: var(--earth); padding: 5px 0; border-bottom: 1px solid rgba(139,58,26,.06) }
+    .sources ul li::before { content: '· '; color: var(--sage) }
+    footer {
+      position: relative; z-index: 10; text-align: center;
+      padding: 24px 20px 44px; border-top: 1px solid rgba(139,58,26,.12);
+      max-width: 860px; margin: 0 auto
+    }
+    footer p { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); font-weight: 300 }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(28px) } to { opacity: 1; transform: translateY(0) } }
+    @media(max-width:700px) {
+      .hero-photos { grid-template-columns: 1fr }
+      .hero-photos img { height: 260px }
+      .benefits-grid { grid-template-columns: 1fr }
+      .nutrition-bar { grid-template-columns: 1fr 1fr }
+      .content { padding: 0 18px 60px }
+    }
+  </style>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+</head>
+<body>
+  <button type="button" id="open3D">View in 3D</button>
+
+
+  <div class="bg-circle bg-circle-1"></div>
+  <div class="bg-circle bg-circle-2"></div>
+
+  <!-- Scattered lentil shapes background -->
+  <div class="lentil-bg">
+    <svg width="900" height="900" viewBox="0 0 900 900" style="top:-100px;left:-100px">
+      <ellipse cx="120" cy="80" rx="18" ry="11" fill="#c0451a" transform="rotate(-20 120 80)"/>
+      <ellipse cx="300" cy="200" rx="22" ry="13" fill="#8b3a1a" transform="rotate(15 300 200)"/>
+      <ellipse cx="500" cy="60" rx="16" ry="10" fill="#c0451a" transform="rotate(-35 500 60)"/>
+      <ellipse cx="700" cy="150" rx="20" ry="12" fill="#d4862a" transform="rotate(10 700 150)"/>
+      <ellipse cx="820" cy="300" rx="17" ry="11" fill="#8b3a1a" transform="rotate(-25 820 300)"/>
+      <ellipse cx="80" cy="400" rx="21" ry="13" fill="#c0451a" transform="rotate(30 80 400)"/>
+      <ellipse cx="400" cy="350" rx="19" ry="12" fill="#d4862a" transform="rotate(-10 400 350)"/>
+      <ellipse cx="650" cy="430" rx="15" ry="9" fill="#8b3a1a" transform="rotate(20 650 430)"/>
+      <ellipse cx="200" cy="600" rx="23" ry="14" fill="#c0451a" transform="rotate(-15 200 600)"/>
+      <ellipse cx="780" cy="550" rx="18" ry="11" fill="#d4862a" transform="rotate(5 780 550)"/>
+      <ellipse cx="450" cy="700" rx="20" ry="12" fill="#8b3a1a" transform="rotate(-30 450 700)"/>
+      <ellipse cx="100" cy="800" rx="16" ry="10" fill="#c0451a" transform="rotate(25 100 800)"/>
+      <ellipse cx="600" cy="820" rx="22" ry="13" fill="#d4862a" transform="rotate(-12 600 820)"/>
+      <ellipse cx="850" cy="750" rx="17" ry="11" fill="#8b3a1a" transform="rotate(18 850 750)"/>
+    </svg>
+  </div>
+
+  <div class="hero">
+    <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+    <div class="logo-rule"><span></span><div class="logo-ornament">✦</div><span></span></div>
+    <div class="hero-title">Masura</div>
+    <div class="hero-subtitle">Red Lentil — The Ancient Nourisher</div>
+    <div class="hero-sci">Lens culinaris Medik. &nbsp;·&nbsp; Lens esculenta Moench</div>
+  </div>
+
+  <div class="hero-photos">
+    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/4/42/Lens_culinaris_sl13.jpg/1280px-Lens_culinaris_sl13.jpg" alt="Red lentils close-up showing their characteristic coral-red split form"
+      onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/4/4a/Lens_culinaris_Sturm8.jpg" alt="Masura lentil plant with small pods growing in the field"
+      onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+  </div>
+  <p class="photo-caption">Fig. 1 — Coral-red split lentils (masur dal) displaying characteristic lens-shaped form &nbsp;·&nbsp; Fig. 2 — Lens culinaris field crop with slender pinnate leaves and small flat pods</p>
+
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-leaf">❧</div>
+    <div class="divider-line"></div>
+  </div>
+
+  <div class="content">
+    <p class="intro-text">Known in Sanskrit as <em>Masura</em> — mentioned in the Charaka Samhita among the foremost of <em>Shimbi Dhanya</em> (pulse grains) — the red lentil has sustained civilisations for over 9,000 years, its humble split form concealing one of nature's most complete plant protein matrices and a rich tradition of both <em>dietary medicine</em> and <em>topical Ayurvedic therapy</em>.</p>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">01</span><h2 class="section-title">Botanical Profile</h2><div class="section-rule"></div></div>
+      <p class="section-body">Masura (<em>Lens culinaris</em>) is a slender, erect annual herb of the Fabaceae (Leguminosae) family, cultivated across South Asia, the Middle East, and the Mediterranean since at least 7000 BCE — placing it among humanity's oldest cultivated crops. The plant grows 20–40 cm tall with pinnately compound leaves ending in a tendril, small white to pale violet pea-like flowers, and characteristic flat, lens-shaped pods containing one to two seeds.</p>
+      <p class="section-body">The name "lentil" itself derives from the Latin <em>lens</em> — for the seed's distinctive biconvex shape, which later lent its name to optical lenses. The red or orange colour of the split lentil is the inner cotyledon revealed after dehulling; the whole lentil is typically brown or greenish. India is the world's largest consumer and a major producer, with <em>masur dal</em> (split red lentil) being among the most widely consumed pulses in Ayurvedic dietetics.</p>
+      <table class="data-table">
+        <thead><tr><th>PROPERTY</th><th>Detail</th></tr></thead>
+        <tbody>
+          <tr><td>Family</td><td>Fabaceae / Leguminosae (Shimbi Kula)</td></tr>
+          <tr><td>Botanical Name</td><td>Lens culinaris Medik. / Lens esculenta Moench</td></tr>
+          <tr><td>Sanskrit Names</td><td>Masura, Mangalyaka, Mangalya, Mandalika</td></tr>
+          <tr><td>Common Names</td><td>Red Lentil, Masoor Dal, Egyptian Lentil</td></tr>
+          <tr><td>Regional Names</td><td>Masoor (Hindi/Bengali), Mysore Paruppu (Tam), Misur Pappu (Tel), Masur (Kannada)</td></tr>
+          <tr><td>Origin</td><td>Near East / South Asia; cultivated since ~7000 BCE</td></tr>
+          <tr><td>Plant Type</td><td>Slender erect annual legume (20–40 cm)</td></tr>
+          <tr><td>Edible Parts</td><td>Seeds (whole & split), young pods, sprouts</td></tr>
+          <tr><td>Medicinal Parts</td><td>Seeds, seed flour, seed decoction; topical seed paste</td></tr>
+          <tr><td>Taste Profile</td><td>Kashaya (astringent), Madhura (sweet)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">02</span><h2 class="section-title">Nutritional Composition</h2><div class="section-rule"></div></div>
+      <p class="section-body">Red lentils are among the most nutritionally dense legumes, delivering exceptional protein with a near-complete amino acid profile (high in lysine, deficient only in methionine — complemented by grains), significant dietary fibre including resistant starch and prebiotics, and a remarkable spectrum of micronutrients. Per 100 g of cooked red lentils they provide approximately 9 g protein, 20 g complex carbohydrates, 8 g dietary fibre, and under 0.4 g fat — with virtually no sodium and a low glycaemic index of ~21.</p>
+      <div class="nutrition-bar">
+        <div class="nutrition-cell"><div class="nutrition-num">26</div><div class="nutrition-unit">g / 100g</div><div class="nutrition-label">Protein (raw)</div></div>
+        <div class="nutrition-cell"><div class="nutrition-num">358</div><div class="nutrition-unit">kcal</div><div class="nutrition-label">Energy (raw per 100g)</div></div>
+        <div class="nutrition-cell"><div class="nutrition-num">21</div><div class="nutrition-unit">GI</div><div class="nutrition-label">Glycaemic Index</div></div>
+        <div class="nutrition-cell"><div class="nutrition-num">90</div><div class="nutrition-unit">mcg / 100g</div><div class="nutrition-label">Folate (cooked)</div></div>
+      </div>
+      <table class="data-table">
+        <thead><tr><th>Nutrient</th><th>Amount (raw, 100g)</th><th>Significance</th></tr></thead>
+        <tbody>
+          <tr><td>Protein</td><td>25–26 g</td><td>All essential amino acids; high lysine content — complements cereals</td></tr>
+          <tr><td>Dietary Fibre</td><td>10–11 g</td><td>Soluble + insoluble; prebiotic; glycaemic control</td></tr>
+          <tr><td>Iron</td><td>6.5–7.5 mg</td><td>Non-haem iron; paired with Vit C for optimal absorption</td></tr>
+          <tr><td>Folate (B9)</td><td>479 mcg</td><td>Neural tube development; cardiovascular health; methylation</td></tr>
+          <tr><td>Potassium</td><td>677 mg</td><td>Blood pressure regulation; cardiac rhythm</td></tr>
+          <tr><td>Magnesium</td><td>47 mg</td><td>Bone health; blood sugar regulation; nerve function</td></tr>
+          <tr><td>Phosphorus</td><td>451 mg</td><td>Bone mineralisation; energy metabolism (ATP)</td></tr>
+          <tr><td>Zinc</td><td>3.3 mg</td><td>Immunity, wound healing, protein synthesis</td></tr>
+          <tr><td>Polyphenols</td><td>~460 mg GAE</td><td>Antioxidant; anti-inflammatory; cardioprotective</td></tr>
+          <tr><td>Resistant Starch</td><td>~15–30% of starch</td><td>Prebiotic; colon health; postprandial glucose blunting</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">03</span><h2 class="section-title">Ayurvedic Significance</h2><div class="section-rule"></div></div>
+      <p class="section-body">Masura is classified in the <em>Shimbi Dhanya Varga</em> (pulse grains group) in Charaka Samhita, Sushruta Samhita, and Ashtanga Hridayam. Charaka describes it among the best of pulses for those with digestive strength (<em>deepana</em>) and as beneficial in skin diseases, eye disorders, and as a blood purifier. Bhavaprakasha Nighantu records it under <em>Dhanya Varga</em> with specific properties — Kashaya (astringent) and Madhura (sweet) in taste, Laghu (light) and Ruksha (dry) in quality, and Sheeta (cool) in potency.</p>
+      <p class="section-body">The classical shloka from Bhavaprakasha — <em>"Masura kashayamadhuro laghurushtho vistambhi cha, chakshurhyo vatapitta-hrit kaphamehashonitapranut"</em> — describes Masura as slightly constipating (<em>vistambhi</em>), beneficial to the eyes (<em>chakshurhya</em>), alleviating Vata and Pitta, and useful in Kapha disorders, diabetes (<em>meha</em>), and bleeding conditions (<em>rakta-pitta</em>).</p>
+      <table class="dosha-table">
+        <thead><tr><th>Dosha</th><th>Effect</th><th>Mechanism &amp; Notes</th></tr></thead>
+        <tbody>
+          <tr><td>Vata ↓</td><td>Mildly pacifying</td><td>Madhura rasa and Sheeta virya reduce Vata intensity; however Ruksha (dry) guna can aggravate Vata if eaten alone without ghee or oil — always cook with healthy fats</td></tr>
+          <tr><td>Pitta ↓</td><td>Pacifying</td><td>Sheeta (cool) virya and Kashaya rasa are cooling and astringent; beneficial in Pitta-type skin diseases, bleeding disorders, and inflammatory conditions</td></tr>
+          <tr><td>Kapha ↓</td><td>Reducing</td><td>Laghu (light) and Ruksha (dry) qualities reduce Kapha; useful in obesity, diabetes (Prameha), and mucus accumulation; best prepared without heavy cream or excessive ghee</td></tr>
+        </tbody>
+      </table>
+      <p class="section-body"><strong>Rasa:</strong> Kashaya (astringent), Madhura (sweet) &nbsp;·&nbsp; <strong>Guna:</strong> Laghu (light), Ruksha (dry) &nbsp;·&nbsp; <strong>Virya:</strong> Sheeta (cool) &nbsp;·&nbsp; <strong>Vipaka:</strong> Katu (pungent) &nbsp;·&nbsp; <strong>Karma:</strong> Vata-Pitta shamaka, Kapha-Meha-Rakta nashaka</p>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">04</span><h2 class="section-title">Key Health Benefits</h2><div class="section-rule"></div></div>
+      <p class="section-body">Modern nutritional science and pharmacology have extensively validated Masura's role in cardiovascular health, glycaemic control, gut microbiome support, and skin care — corroborating classical Ayurvedic applications documented over 2,500 years of use.</p>
+      <div class="benefits-grid">
+        <div class="benefit-card">
+          <div class="benefit-title">Cardiovascular Health</div>
+          <div class="benefit-desc">Regular lentil consumption is associated with significant reductions in LDL cholesterol, total cholesterol, and blood pressure. The combination of soluble fibre, potassium, folate (reducing homocysteine), and polyphenols creates a multi-pathway cardioprotective effect supported by multiple prospective cohort studies.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Glycaemic Control &amp; Diabetes</div>
+          <div class="benefit-desc">With a glycaemic index of ~21 and high resistant starch content, red lentils significantly blunt postprandial blood glucose and insulin spikes. Classical use in <em>Prameha</em> (diabetes/metabolic disorders) is directly supported by clinical evidence showing improved HbA1c with regular dal consumption.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Digestive &amp; Gut Health</div>
+          <div class="benefit-desc">The prebiotic fibre and resistant starch of Masura feeds beneficial Lactobacillus and Bifidobacterium species in the colon. Regular consumption is associated with improved gut transit, reduced constipation (despite classical <em>vistambhi</em> designation at high intake), and production of beneficial short-chain fatty acids.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Skin Health &amp; Topical Use</div>
+          <div class="benefit-desc">Classical Ayurveda prominently uses Masura flour paste (<em>ubtana</em>) for skin brightening, complexion enhancement, and treatment of acne, oily skin, and hyperpigmentation. Modern evidence confirms lentil flour's mild exfoliant, sebum-regulating, and tyrosinase-inhibiting properties relevant to melanin reduction.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Anaemia &amp; Iron Deficiency</div>
+          <div class="benefit-desc">With ~7 mg iron per 100g raw, red lentils are among the richest plant sources of non-haem iron. The accompanying folate and Vitamin C (when prepared with tomatoes or lemon) significantly enhances iron bioavailability — making masur dal a classical dietary prescription for <em>Pandu</em> (anaemia) in Ayurveda.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Pregnancy &amp; Foetal Health</div>
+          <div class="benefit-desc">Masura's folate content (479 mcg/100g raw — exceeding the daily requirement) makes it exceptional for pregnant women and those planning conception. Folate is critical for neural tube closure, and classical Ayurvedic texts specifically recommend Masura in post-partum care and for nourishing <em>dhatus</em> (body tissues).</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Weight Management</div>
+          <div class="benefit-desc">The high protein and fibre content of red lentils produces significant satiety, reducing overall caloric intake. Being Laghu (light) in Ayurveda — yet highly satiating — Masura occupies a unique position as a complete food appropriate for those managing obesity and Kapha-related metabolic sluggishness.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Eye Health &amp; Vision</div>
+          <div class="benefit-desc">Classical texts specifically designate Masura as <em>chakshurhya</em> — beneficial to the eyes. The zinc, folate, and polyphenol content contribute to macular protection, and zinc is a critical cofactor in retinal function and Vitamin A metabolism, supporting the traditional Ayurvedic use for eye care.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">05</span><h2 class="section-title">How to Use Masura</h2><div class="section-rule"></div></div>
+      <p class="section-body">Masura is remarkable in both its internal dietary use and its external therapeutic applications in Ayurveda. As a food, it requires minimal preparation — splitting and dehulling makes red lentils the fastest-cooking legume, requiring no soaking. Externally, the flour is a pillar of classical Ayurvedic <em>lepa</em> (paste) therapy for skin conditions.</p>
+      <table class="consume-table">
+        <thead><tr><th>Form</th><th>Preparation</th><th>Dosage / Usage</th><th>Best Use</th></tr></thead>
+        <tbody>
+          <tr><td>Masur Dal (Cooked)</td><td>Simmer split lentils 15–20 min with turmeric, cumin, and asafoetida</td><td>½–1 cup per meal, daily</td><td>General nourishment, protein, gut health</td></tr>
+          <tr><td>Sprouted Masura</td><td>Soak 8 hrs, sprout 24–36 hrs at room temperature</td><td>50–80 g daily, raw or lightly cooked</td><td>Enhanced iron absorption, vitamin C boost</td></tr>
+          <tr><td>Masura Decoction (Kwatha)</td><td>Boil whole lentils in water; strain and drink liquid</td><td>50–100 ml, twice daily</td><td>Anaemia (Pandu), bleeding disorders</td></tr>
+          <tr><td>Masura Ubtana (Topical)</td><td>Mix red lentil flour with rose water or raw milk into paste</td><td>Apply to face/skin; leave 15–20 min, rinse</td><td>Complexion, acne, oily skin, tan removal</td></tr>
+          <tr><td>Masura Lepa (Skin Paste)</td><td>Lentil flour + turmeric + sandalwood powder + milk</td><td>2–3× weekly topical application</td><td>Hyperpigmentation, dark spots, skin brightening</td></tr>
+          <tr><td>Masura Flour in Diet</td><td>Use as partial wheat flour substitute in rotis, pancakes</td><td>20–30% substitution in recipes</td><td>Gluten-reduced, high-protein baking</td></tr>
+          <tr><td>Masura Soup</td><td>Cook with ginger, garlic, lemon — as thin restorative broth</td><td>1 bowl daily during convalescence</td><td>Post-illness recovery, digestive weakness</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">06</span><h2 class="section-title">Safety &amp; Precautions</h2><div class="section-rule"></div></div>
+      <p class="section-body">Masura is among the safest and most universally tolerated foods in both Ayurvedic and modern dietary frameworks. However, certain classical cautions and modern considerations deserve attention, particularly around preparation methods and specific health conditions.</p>
+      <ul class="precaution-list">
+        <li><strong>Vistambhi (constipating) effect:</strong> Classical texts describe Masura as mildly vistambhi at high intake. Always cook thoroughly with digestive spices (cumin, asafoetida, ginger) and consume with ghee or oil to mitigate dryness and prevent gas or constipation.</li>
+        <li><strong>Uric acid &amp; gout:</strong> Lentils contain moderate purines (~127 mg/100g). Those with active gout or elevated uric acid should moderate consumption to ½ cup per day and prioritise well-cooked, de-foamed lentils, which have reduced purine load.</li>
+        <li><strong>Antinutrients:</strong> Raw lentils contain phytic acid and lectins that reduce mineral absorption. Soaking (for whole lentils), sprouting, or thorough cooking significantly reduces these — always cook lentils fully; never eat raw.</li>
+        <li><strong>Vata constitution:</strong> Pure Vata types or those with severe IBS/bloating should use Masura with care — the Ruksha (dry) guna can aggravate Vata-type constipation and bloating. Adding ghee and cooking with asafoetida is essential.</li>
+        <li><strong>Kidney disease:</strong> Those with advanced kidney disease may need to limit lentils due to potassium and phosphorus load. Consult a nephrologist regarding pulse consumption in CKD stages 3–5.</li>
+        <li><strong>Thyroid conditions:</strong> Like most legumes, lentils contain goitrogens that may mildly interfere with thyroid hormone synthesis when consumed in very large quantities raw. Cooked lentils in normal dietary quantities pose no concern.</li>
+        <li><strong>Allergic reactions:</strong> Rare but documented. Lentil allergy is more common in South Asian and Mediterranean populations. Cross-reactivity with peanut and chickpea is possible — discontinue if any allergic symptoms occur.</li>
+        <li><strong>Topical use:</strong> The flour paste (ubtana) is gentle but may cause mild irritation on very sensitive or broken skin. Always patch-test before full facial application.</li>
+      </ul>
+    </div>
+
+    <div class="sources">
+      <div class="sources-title">References &amp; Sources</div>
+      <ul>
+        <li>Charaka Samhita, Sutrasthana — Shimbi Dhanya Varga classification of Masura</li>
+        <li>Bhavaprakasha Nighantu — Dhanya Varga; Masura properties and classical shloka</li>
+        <li>Ashtanga Hridayam, Sutrasthana — Pulse grains properties and Masura dietetics</li>
+        <li>Dahl WJ &amp; Foster LM — "Review of the health benefits of peas (Pisum sativum L.) and lentils (Lens culinaris subsp. culinaris)" — British Journal of Nutrition, 2012</li>
+        <li>Ganesan K &amp; Xu B — "Polyphenol-rich lentils and their health promoting effects" — International Journal of Molecular Sciences, 2017</li>
+        <li>USDA FoodData Central — Lens culinaris (red, split) nutritional profile, 2024</li>
+        <li>Jenkins DJA et al. — "Lentils and blood glucose control" — Archives of Internal Medicine, 2012</li>
+        <li>Gupta RK et al. — "Anti-nutritional and phytochemical constituents of lentils" — Journal of Food Science and Technology, 2013</li>
+        <li>Priyavrat Sharma — Dravyaguna Vigyana Vol. II — Classical properties of Masura</li>
+        <li>Fabbri ADT &amp; Crosby GA — "A review of the impact of preparation and cooking on the nutritional quality of vegetables" — International Journal of Gastronomy and Food Science, 2016</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer>
+    <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a qualified practitioner before therapeutic use</p>
+  </footer>
+
+
+  <div id="viewerModal">
+    <div id="modal-topbar">
+      <span>3D Model — Masura</span>
+      <button type="button" id="close3D">✕</button>
+    </div>
+    <model-viewer src="masura3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+  </div>
+  <script>
+    (function() {
+      var open3D = document.getElementById('open3D');
+      var close3D = document.getElementById('close3D');
+      var modal = document.getElementById('viewerModal');
+      if (!open3D || !close3D || !modal) return;
+      function openModal() {
+        
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+      function closeModal() {
+        
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+      open3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); openModal();
+      });
+      close3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); closeModal();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+      });
+    })();
+  </script>
+
+</body>
+</html>

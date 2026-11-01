@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nimbuka | Swastha</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap"
+    rel="stylesheet">
+  <style>
+    #open3D {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      padding: 10px 18px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: var(--forest);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      z-index: 1000;
+      transition: .3s;
+    }
+    #open3D:hover {
+      background: var(--gold);
+      color: var(--deep);
+    }
+    #viewerModal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+    }
+    #modal-topbar {
+      flex-shrink: 0;
+      height: 58px;
+      background: #111111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px 0 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      z-index: 99999;
+    }
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 4.5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.72);
+      user-select: none;
+    }
+    #close3D {
+      width: 38px;
+      height: 38px;
+      font-size: 15px;
+      font-weight: 300;
+      background: transparent;
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background .2s, color .2s, transform .22s;
+      outline: none;
+      flex-shrink: 0;
+    }
+    #close3D:hover {
+      background: #ffffff;
+      color: #111111;
+      border-color: #ffffff;
+      transform: rotate(90deg);
+    }
+    #viewerModal model-viewer {
+      flex: 1;
+      width: 100%;
+      display: block;
+      background: #ffffff;
+    }
+
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+
+    * { margin: 0; padding: 0; box-sizing: border-box }
+    html { scroll-behavior: smooth }
+
+    body {
+      font-family: 'Jost', sans-serif;
+      background: var(--cream);
+      color: var(--ink);
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity: .03;
+      pointer-events: none;
+      z-index: 100
+    }
+
+    .bg-circle {
+      position: fixed;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0
+    }
+
+    .bg-circle-1 {
+      width: 700px; height: 700px;
+      background: radial-gradient(circle, rgba(212,160,23,.10) 0%, transparent 70%);
+      top: -200px; right: -150px
+    }
+
+    .bg-circle-2 {
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(74,124,47,.08) 0%, transparent 70%);
+      bottom: -100px; left: -100px
+    }
+
+    .botanical-svg {
+      position: fixed;
+      pointer-events: none;
+      z-index: 1;
+      opacity: .10
+    }
+
+    .botanical-tl { top: -20px; left: -20px; width: 260px }
+    .botanical-br { bottom: -20px; right: -20px; width: 220px; transform: rotate(180deg) }
+
+    /* HERO */
+    .hero {
+      position: relative; z-index: 10;
+      padding: 54px 40px 0;
+      text-align: center;
+      opacity: 0;
+      animation: fadeUp .9s ease .1s forwards
+    }
+
+    .back-link {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+      color: var(--sage); text-decoration: none; margin-bottom: 36px;
+      transition: color .3s
+    }
+    .back-link:hover { color: var(--gold) }
+
+    .logo-rule {
+      display: flex; align-items: center; justify-content: center;
+      gap: 20px; margin-bottom: 14px
+    }
+    .logo-rule span {
+      display: block; height: 1px; width: 70px;
+      background: linear-gradient(to right, transparent, var(--gold))
+    }
+    .logo-rule span:last-child { background: linear-gradient(to left, transparent, var(--gold)) }
+    .logo-ornament { font-size: 13px; color: var(--gold) }
+
+    .hero-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(64px, 12vw, 110px);
+      font-weight: 300; letter-spacing: 8px; line-height: 1;
+      color: var(--deep)
+    }
+
+    .hero-subtitle {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 18px; font-style: italic; font-weight: 300;
+      color: var(--earth); letter-spacing: 2px; margin-top: 8px
+    }
+
+    .hero-sci {
+      font-size: 11px; font-weight: 200; letter-spacing: 5px;
+      color: var(--sage); margin-top: 6px
+    }
+
+    .hero-photos {
+      position: relative; z-index: 10;
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 2px; max-width: 900px;
+      margin: 40px auto 0;
+      opacity: 0; animation: fadeUp .9s ease .35s forwards
+    }
+
+    .hero-photos img {
+      width: 100%; height: 380px;
+      object-fit: cover; object-position: center;
+      display: block; background: var(--parchment)
+    }
+
+    .photo-caption {
+      text-align: center;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 12px; font-style: italic;
+      color: var(--sage); letter-spacing: 1px;
+      padding: 10px 0 0; max-width: 900px;
+      margin: 0 auto; position: relative; z-index: 10;
+      opacity: 0; animation: fadeUp .9s ease .5s forwards
+    }
+
+    .divider {
+      display: flex; align-items: center; justify-content: center;
+      gap: 16px; margin: 50px auto; max-width: 600px;
+      opacity: 0; animation: fadeUp .9s ease .55s forwards;
+      position: relative; z-index: 10
+    }
+    .divider-line {
+      height: 1px; width: 120px;
+      background: linear-gradient(to right, transparent, var(--sage))
+    }
+    .divider-line:last-child { background: linear-gradient(to left, transparent, var(--sage)) }
+    .divider-leaf { color: var(--forest); font-size: 18px }
+
+    /* CONTENT */
+    .content {
+      position: relative; z-index: 10;
+      max-width: 860px; margin: 0 auto;
+      padding: 0 30px 80px
+    }
+
+    .intro-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 20px; font-weight: 300; line-height: 1.75;
+      color: var(--ink); text-align: center;
+      max-width: 700px; margin: 0 auto 60px;
+      opacity: 0; animation: fadeUp .9s ease .6s forwards
+    }
+    .intro-text em { color: var(--forest); font-style: italic }
+
+    .section {
+      margin-bottom: 60px; opacity: 0;
+      animation: fadeUp .9s ease forwards
+    }
+    .section:nth-child(1) { animation-delay: .65s }
+    .section:nth-child(2) { animation-delay: .75s }
+    .section:nth-child(3) { animation-delay: .85s }
+    .section:nth-child(4) { animation-delay: .95s }
+    .section:nth-child(5) { animation-delay: 1.05s }
+    .section:nth-child(6) { animation-delay: 1.15s }
+    .section:nth-child(7) { animation-delay: 1.25s }
+
+    .section-header {
+      display: flex; align-items: center; gap: 14px; margin-bottom: 20px
+    }
+    .section-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 11px; letter-spacing: 4px; color: var(--gold)
+    }
+    .section-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 28px; font-weight: 400;
+      color: var(--deep); letter-spacing: 1px
+    }
+    .section-rule {
+      height: 1px; flex: 1;
+      background: linear-gradient(to right, var(--gold), transparent)
+    }
+
+    .section-body {
+      font-size: 13px; font-weight: 300;
+      line-height: 1.9; color: var(--ink); margin-bottom: 24px
+    }
+
+    /* TABLES */
+    .data-table {
+      width: 100%; border-collapse: collapse;
+      margin: 16px 0 8px; font-size: 12px
+    }
+    .data-table thead tr {
+      background: var(--deep); color: var(--lemon);
+      font-size: 10px; letter-spacing: 3px; text-transform: uppercase
+    }
+    .data-table thead th { padding: 12px 14px; text-align: left; font-weight: 400 }
+    .data-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .data-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .data-table tbody tr { transition: background .2s }
+    .data-table tbody tr:hover { background: #f0e8c0 }
+    .data-table tbody td { padding: 10px 14px; color: var(--ink); border-bottom: 1px solid rgba(122,92,30,.08) }
+    .data-table tbody td:first-child { font-weight: 400; color: var(--deep); width: 28% }
+
+    .dosha-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .dosha-table thead tr { background: var(--forest); color: var(--lemon-soft) }
+    .dosha-table thead th {
+      padding: 12px 14px; text-align: left; font-weight: 400;
+      letter-spacing: 2px; font-size: 10px; text-transform: uppercase
+    }
+    .dosha-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .dosha-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .dosha-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(122,92,30,.08) }
+    .dosha-table tbody td:first-child { font-weight: 400; color: var(--forest); width: 18% }
+    .dosha-table tbody td:nth-child(2) { color: var(--earth); width: 20% }
+
+    .consume-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .consume-table thead tr { background: var(--earth); color: var(--lemon-soft) }
+    .consume-table thead th {
+      padding: 12px 14px; text-align: left; font-weight: 400;
+      letter-spacing: 2px; font-size: 10px; text-transform: uppercase
+    }
+    .consume-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .consume-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .consume-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(122,92,30,.08) }
+    .consume-table tbody td:first-child { font-weight: 400; color: var(--earth); width: 22% }
+
+    /* BENEFITS GRID */
+    .benefits-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 1px; background: rgba(122,92,30,.12);
+      border: 1px solid rgba(122,92,30,.12); margin: 8px 0
+    }
+    .benefit-card {
+      background: var(--cream); padding: 24px 22px;
+      transition: background .3s; position: relative; overflow: hidden
+    }
+    .benefit-card:hover { background: #f5edcc }
+    .benefit-card::before {
+      content: ''; position: absolute; bottom: 0; left: 0;
+      width: 0; height: 2px; background: var(--gold); transition: width .4s
+    }
+    .benefit-card:hover::before { width: 100% }
+    .benefit-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 16px; font-weight: 600; color: var(--forest); margin-bottom: 8px
+    }
+    .benefit-desc { font-size: 11.5px; font-weight: 300; line-height: 1.75; color: var(--ink); opacity: .85 }
+
+    /* NUTRITION BAR */
+    .nutrition-bar {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 1px; background: rgba(122,92,30,.12);
+      border: 1px solid rgba(122,92,30,.12); margin: 20px 0
+    }
+    .nutrition-cell {
+      background: var(--cream); padding: 22px 16px;
+      text-align: center; transition: background .3s
+    }
+    .nutrition-cell:hover { background: var(--parchment) }
+    .nutrition-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 36px; font-weight: 300; color: var(--forest); line-height: 1; margin-bottom: 4px
+    }
+    .nutrition-unit { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); font-weight: 300 }
+    .nutrition-label { font-size: 11px; font-weight: 300; color: var(--ink); margin-top: 5px }
+
+    /* PRECAUTIONS */
+    .precaution-list { list-style: none; margin: 8px 0 }
+    .precaution-list li {
+      display: flex; gap: 12px; align-items: flex-start;
+      padding: 10px 14px; font-size: 12px; font-weight: 300;
+      line-height: 1.7; color: var(--ink); border-bottom: 1px solid rgba(122,92,30,.08)
+    }
+    .precaution-list li:last-child { border-bottom: none }
+    .precaution-list li::before { content: '▸'; color: var(--gold); flex-shrink: 0; margin-top: 1px }
+
+    /* SOURCES */
+    .sources { border-top: 1px solid rgba(122,92,30,.15); padding-top: 24px; margin-top: 20px }
+    .sources-title {
+      font-size: 10px; letter-spacing: 4px; text-transform: uppercase;
+      color: var(--sage); margin-bottom: 12px; font-weight: 300
+    }
+    .sources ul { list-style: none }
+    .sources ul li {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 13px; font-style: italic; color: var(--earth);
+      padding: 5px 0; border-bottom: 1px solid rgba(122,92,30,.06)
+    }
+    .sources ul li::before { content: '· '; color: var(--sage) }
+
+    footer {
+      position: relative; z-index: 10; text-align: center;
+      padding: 24px 20px 44px;
+      border-top: 1px solid rgba(122,92,30,.12);
+      max-width: 860px; margin: 0 auto
+    }
+    footer p {
+      font-size: 11px; letter-spacing: 4px; text-transform: uppercase;
+      color: var(--sage); font-weight: 300
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(28px) }
+      to   { opacity: 1; transform: translateY(0) }
+    }
+
+    @media(max-width:700px) {
+      .hero-photos { grid-template-columns: 1fr }
+      .hero-photos img { height: 260px }
+      .benefits-grid { grid-template-columns: 1fr }
+      .nutrition-bar { grid-template-columns: 1fr 1fr }
+      .content { padding: 0 18px 60px }
+    }
+  </style>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+</head>
+
+<body>
+  <button type="button" id="open3D">View in 3D</button>
+
+
+  <div class="bg-circle bg-circle-1"></div>
+  <div class="bg-circle bg-circle-2"></div>
+
+  <!-- Botanical SVG decorations -->
+  <svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#4a7c2f" stroke-width="1.5" fill="none"/>
+    <ellipse cx="105" cy="195" rx="28" ry="14" fill="#d4a017" transform="rotate(-30 105 195)" opacity="0.7"/>
+    <ellipse cx="145" cy="155" rx="24" ry="12" fill="#4a7c2f" transform="rotate(-45 145 155)" opacity="0.6"/>
+    <ellipse cx="185" cy="115" rx="20" ry="10" fill="#d4a017" transform="rotate(-60 185 115)" opacity="0.5"/>
+    <circle cx="130" cy="175" r="5" fill="#f7e04a" opacity="0.9"/>
+    <circle cx="170" cy="135" r="4" fill="#f7e04a" opacity="0.8"/>
+  </svg>
+  <svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#4a7c2f" stroke-width="1.5" fill="none"/>
+    <ellipse cx="105" cy="195" rx="28" ry="14" fill="#d4a017" transform="rotate(-30 105 195)" opacity="0.6"/>
+    <ellipse cx="145" cy="155" rx="24" ry="12" fill="#4a7c2f" transform="rotate(-45 145 155)" opacity="0.5"/>
+    <circle cx="130" cy="175" r="5" fill="#f7e04a" opacity="0.8"/>
+  </svg>
+
+  <div class="hero">
+    <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+    <div class="logo-rule"><span></span>
+      <div class="logo-ornament">✦</div><span></span>
+    </div>
+    <div class="hero-title">Nimbuka</div>
+    <div class="hero-subtitle">Lemon — The Golden Souring Fruit</div>
+    <div class="hero-sci">Citrus limon (L.) Osbeck &nbsp;·&nbsp; Citrus medica var. limon</div>
+  </div>
+
+  <div class="hero-photos">
+    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9c/Unripe_fruits_of_Citrus_limon.jpg/1280px-Unripe_fruits_of_Citrus_limon.jpg" alt="Fresh lemons on branch with glossy leaves"
+      onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/8/8f/Citrus_x_limon_-_K%C3%B6hler%E2%80%93s_Medizinal-Pflanzen-041.jpg" alt="Halved lemon showing juicy interior segments"
+      onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+  </div>
+  <p class="photo-caption">Fig. 1 — Ripe Nimbuka fruit on branch, its bright yellow rind rich in volatile oils &nbsp;·&nbsp; Fig. 2 — Cross-section revealing the pale-yellow acidic pulp and oil-rich pericarp</p>
+
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-leaf">❧</div>
+    <div class="divider-line"></div>
+  </div>
+
+  <div class="content">
+    <p class="intro-text">Revered in Ayurveda as <em>Nimbuka</em> or <em>Jambira</em> — "the sharp souring fruit" — the lemon has been prescribed since the time of Charaka and Sushruta for kindling <em>agni</em> (digestive fire), purifying the blood, and countering the effects of toxins. Described in the <em>Dravyaguna</em> texts as a supreme <em>Amlapachana</em> herb, it occupies a singular place in Ayurvedic, Unani, and folk traditions across the Indian subcontinent as both a daily tonic and an acute therapeutic agent.</p>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">01</span>
+        <h2 class="section-title">Botanical Profile</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Nimbuka (<em>Citrus limon</em>) is a small, thorny evergreen tree or large shrub of the Rutaceae family, typically reaching 3–6 metres, native to Northeast India (likely a hybrid originating in Assam/Northern Burma) and now cultivated globally in subtropical and tropical regions. The plant bears ovate, slightly serrate leaves with broadly winged petioles that release a characteristic citrus fragrance when crushed.</p>
+      <p class="section-body">Flowers are white to pale lavender, intensely fragrant, and borne in clusters. The fruit — botanically a hesperidium — is oval to oblong with a nipple-shaped apex, a yellow or greenish-yellow rind pitted with oil glands, and pale yellow, juicy, highly acidic pulp divided into 8–10 segments. The rind contains a rich volatile oil (lemon oil) dominated by limonene. Trees bear fruit throughout the year in tropical conditions, with peak harvest in November–March in India.</p>
+      <table class="data-table">
+        <thead><tr><th>PROPERTY</th><th>Detail</th></tr></thead>
+        <tbody>
+          <tr><td>Family</td><td>Rutaceae</td></tr>
+          <tr><td>Botanical Name</td><td>Citrus limon (L.) Osbeck</td></tr>
+          <tr><td>Sanskrit Names</td><td>Nimbuka, Jambira, Nimbura, Dantashatha, Amlasakhi, Rochanaphala</td></tr>
+          <tr><td>Common Names</td><td>Lemon, Indian Lemon, True Lemon</td></tr>
+          <tr><td>Regional Names</td><td>Nimbu (Hindi), Elumichai (Tam), Nimmakai (Tel), Cherunaranga (Mal), Limbu (Guj/Mar)</td></tr>
+          <tr><td>Origin</td><td>Northeast India (Assam / Northern Burma hybrid)</td></tr>
+          <tr><td>Plant Type</td><td>Small evergreen tree or shrub (3–6 m), thorny</td></tr>
+          <tr><td>Fruiting Season</td><td>Year-round; peak November–March in India</td></tr>
+          <tr><td>Medicinal Parts</td><td>Fruit juice, rind (peel), seeds, leaves, flowers, root bark</td></tr>
+          <tr><td>Taste Profile</td><td>Amla (sour) primary; Madhura (sweet) in rind; Tikta (bitter) in pith</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">02</span>
+        <h2 class="section-title">Phytochemistry &amp; Composition</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Lemon is a phytochemically complex fruit with its therapeutic activity distributed across peel, pulp, juice, and seeds. The peel is the richest source of volatile oils — limonene (up to 70%), β-pinene, γ-terpinene, and citral — as well as polymethoxylated flavones (tangeretin, nobiletin) and coumarins. The juice provides citric acid (5–8%), ascorbic acid (Vitamin C), flavonoids, and potassium. The white pith and membrane concentrate hesperidin, eriocitrin, and pectin.</p>
+      <p class="section-body">Its seeds yield limonoids — limonin, nomilin — with demonstrated antitumour and antimicrobial activity. The interplay of all these compounds makes whole-fruit consumption therapeutically superior to isolated juice or extract preparations.</p>
+      <div class="nutrition-bar">
+        <div class="nutrition-cell">
+          <div class="nutrition-num">53</div>
+          <div class="nutrition-unit">mg / 100g</div>
+          <div class="nutrition-label">Vitamin C (ascorbic acid)</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">70%</div>
+          <div class="nutrition-unit">of peel oil</div>
+          <div class="nutrition-label">Limonene (volatile oil)</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">5–8%</div>
+          <div class="nutrition-unit">juice weight</div>
+          <div class="nutrition-label">Citric acid content</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">138</div>
+          <div class="nutrition-unit">mg / 100g</div>
+          <div class="nutrition-label">Potassium</div>
+        </div>
+      </div>
+      <table class="data-table">
+        <thead><tr><th>Compound</th><th>Category</th><th>Primary Action</th></tr></thead>
+        <tbody>
+          <tr><td>Limonene</td><td>Monoterpene (peel oil)</td><td>Antioxidant, chemopreventive, carminative, mood-elevating</td></tr>
+          <tr><td>Citric Acid</td><td>Organic acid (juice)</td><td>Digestive stimulant, alkalinising metabolite, kidney stone preventive</td></tr>
+          <tr><td>Ascorbic Acid (Vit C)</td><td>Vitamin (juice)</td><td>Antioxidant, collagen synthesis, immune modulation</td></tr>
+          <tr><td>Hesperidin &amp; Eriocitrin</td><td>Flavanones (pith/juice)</td><td>Anti-inflammatory, capillary-protective, antioxidant</td></tr>
+          <tr><td>Nobiletin &amp; Tangeretin</td><td>Polymethoxylated flavones (peel)</td><td>Anti-inflammatory, neuroprotective, antitumour</td></tr>
+          <tr><td>Limonin &amp; Nomilin</td><td>Limonoids (seeds)</td><td>Antimicrobial, antitumour, antiviral</td></tr>
+          <tr><td>Citral (Geranial + Neral)</td><td>Aldehydes (peel oil)</td><td>Antimicrobial, sedative, anti-inflammatory</td></tr>
+          <tr><td>Pectin</td><td>Soluble fibre (pith/peel)</td><td>Cholesterol-lowering, prebiotic, wound-healing</td></tr>
+          <tr><td>β-Pinene &amp; γ-Terpinene</td><td>Monoterpenes (peel)</td><td>Antifungal, antioxidant, analgesic</td></tr>
+          <tr><td>Calcium, Potassium, Folate</td><td>Minerals &amp; vitamins</td><td>Bone support, blood pressure regulation, cell division</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">03</span>
+        <h2 class="section-title">Ayurvedic Significance</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Nimbuka is extensively documented in classical Ayurvedic texts. Charaka praises it as a supreme <em>Rochana</em> (appetite-stimulating), <em>Deepana</em> (digestive-fire kindling), and <em>Pachana</em> (digestive) agent. Sushruta places it in the <em>Phala Varga</em> (fruit group) with primary action on <em>Amadosha</em> — clearing undigested metabolic residue. The <em>Ashtanga Hridayam</em> describes it in <em>Amla Skanda</em> (sour taste group) with specific virtues for Vata-Kapha disorders.</p>
+      <p class="section-body">Classical shloka — <em>"Nimbukam amlamadhuram laghu rochanam deepanam vataghnam shleshaghnam"</em> — describes it as sour-sweet, light, appetite-stimulating, digestive-fire kindling, and pacifying to both Vata and Kapha. The fruit is considered <em>Satmya</em> (wholesome for regular use) and is among the few sour substances that, paradoxically, have an <em>alkaline</em> post-digestive metabolic effect (<em>kshara vipaka</em>) once metabolised in the body.</p>
+      <table class="dosha-table">
+        <thead><tr><th>Dosha</th><th>Effect</th><th>Mechanism &amp; Notes</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Vata ↓</td><td>Pacifying</td>
+            <td>Amla rasa and ushna virya ground and warm Vata; classically used for joint pain, neuralgia, and constipation of Vata origin; lemon water with rock salt and ginger is a canonical Vata-pacifying tonic</td>
+          </tr>
+          <tr>
+            <td>Pitta ↑↓</td><td>Context-dependent</td>
+            <td>Paradoxical: fresh diluted juice cools Pitta due to alkalising vipaka; concentrated/undiluted juice or excess consumption aggravates Pitta — hyperacidity, heartburn; best used diluted and not at peak summer heat</td>
+          </tr>
+          <tr>
+            <td>Kapha ↓</td><td>Pacifying</td>
+            <td>Laghu (light), tikshna (sharp), ushna (warm) properties clear Kapha accumulation; used in obesity, mucus disorders, sluggish digestion, and respiratory congestion</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="section-body"><strong>Rasa:</strong> Amla (sour), Madhura (sweet in rind) &nbsp;·&nbsp; <strong>Guna:</strong> Laghu (light), Snigdha (slightly unctuous in seed) &nbsp;·&nbsp; <strong>Virya:</strong> Ushna (hot) &nbsp;·&nbsp; <strong>Vipaka:</strong> Amla then Kshara (alkalinising) &nbsp;·&nbsp; <strong>Karma:</strong> Deepana, Pachana, Rochana, Vata-Kapha shamaka</p>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">04</span>
+        <h2 class="section-title">Key Health Benefits</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Modern pharmacology has validated an impressive spectrum of Nimbuka's classical claims — from digestive stimulation and antimicrobial activity to antioxidant, anticancer, and cardioprotective effects. Lemon and its isolated constituents have been studied extensively across <em>in vitro</em>, animal, and clinical settings.</p>
+      <div class="benefits-grid">
+        <div class="benefit-card">
+          <div class="benefit-title">Digestive Fire Kindler (Deepana)</div>
+          <div class="benefit-desc">Citric acid and volatile limonene stimulate gastric secretion, bile flow, and pancreatic enzyme activity. Fresh lemon juice before meals is clinically validated to reduce post-meal blood glucose spikes and improve gastric emptying time. Classical combination with rock salt, ginger, and warm water is the original Ayurvedic digestive tonic.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Alkalising &amp; Detoxifying</div>
+          <div class="benefit-desc">Despite being acidic in taste, lemon has an alkalising metabolic effect once digested — citric acid is oxidised to CO₂ and water, leaving alkaline mineral residues. This property is used classically for uric acid disorders (gout), kidney stones (calcium oxalate), and general systemic acidosis.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Immune Amplifier</div>
+          <div class="benefit-desc">Vitamin C (53 mg/100 g) is central to neutrophil function, natural killer cell activity, and interferon production. Regular lemon consumption significantly reduces duration and severity of upper respiratory infections. Synergistic with bioflavonoids hesperidin and eriocitrin, which enhance Vit C absorption and potentiate antioxidant activity.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Cardiovascular &amp; Lipid Support</div>
+          <div class="benefit-desc">Eriocitrin and hesperidin improve endothelial function and reduce LDL oxidation. Pectin from the peel reduces total cholesterol by binding bile acids. Clinical studies in hypertensive patients show daily lemon consumption combined with walking reduces systolic blood pressure — attributed to citric acid's effect on calcium channel regulation.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Antimicrobial &amp; Antiviral</div>
+          <div class="benefit-desc">Lemon essential oil (limonene, citral, β-pinene) demonstrates significant inhibition of E. coli, Salmonella, Staphylococcus aureus, and Candida albicans. Limonoids (limonin, nomilin) from the seeds show antiviral activity against poliovirus and herpes simplex. Fresh lemon juice is a classical gargle for sore throat and gingivitis.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Skin Brightening &amp; Wound Healing</div>
+          <div class="benefit-desc">Vitamin C is essential for collagen biosynthesis; flavonoids reduce UV-induced oxidative damage. Classically, fresh lemon rind paste is applied for hyperpigmentation, ringworm, and insect bites. Diluted juice is used as an astringent toner. Topical application requires sun protection due to photosensitising furanocoumarins in the peel.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Anti-nausea &amp; Appetite Stimulant</div>
+          <div class="benefit-desc">Lemon aroma (limonene, citral) stimulates the vomiting centre counterintuitively, providing anti-nausea relief — clinically shown to reduce nausea in pregnancy and post-chemotherapy. Classical Ayurvedic use of lemon with rock salt and ginger at the start of meals is the textbook Rochana (appetite-stimulating) protocol.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Kidney Stone Prevention</div>
+          <div class="benefit-desc">Citrate in lemon juice is a well-established inhibitor of calcium oxalate and uric acid stone crystallisation in the renal tubules. Clinical trials show daily lemon juice increases urinary citrate excretion to levels comparable to potassium citrate supplementation — the pharmaceutical standard — making it a cost-effective natural preventive.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">05</span>
+        <h2 class="section-title">How to Consume Nimbuka</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Lemon is one of Ayurveda's most versatile and widely applicable herbs — used fresh, as juice, as dried powder, as peel oil, and in medicated preparations. The therapeutic application changes significantly based on the part used, the form of preparation, and whether it is taken warm or cold, diluted or concentrated, and in combination with which anupanas (vehicles).</p>
+      <table class="consume-table">
+        <thead><tr><th>Form</th><th>Preparation</th><th>Dosage</th><th>Best Use</th></tr></thead>
+        <tbody>
+          <tr><td>Warm Lemon Water</td><td>Juice of ½ lemon in 200 ml warm water</td><td>Once daily, morning (empty stomach)</td><td>Digestion, detox, weight management, alkalising</td></tr>
+          <tr><td>Lemon + Rock Salt + Ginger</td><td>Fresh juice with sendha namak and dry ginger</td><td>15–20 ml before meals</td><td>Appetite stimulation, indigestion, Vata-Kapha disorders</td></tr>
+          <tr><td>Nimbu Pani (Sharbat)</td><td>Juice in cold/room-temp water, jaggery or misri</td><td>100–150 ml, 1–2× daily</td><td>Summer heat, electrolyte replenishment, Pitta pacification</td></tr>
+          <tr><td>Fresh Juice (undiluted)</td><td>Squeezed directly; strain seeds</td><td>15–30 ml with meals</td><td>Vitamin C boost, antimicrobial gargle, iron absorption</td></tr>
+          <tr><td>Lemon Peel Powder (Churna)</td><td>Sun-dried rind ground to fine powder</td><td>1–2 g with honey or warm water</td><td>Lipid management, antioxidant, skin health</td></tr>
+          <tr><td>Lemon Peel Zest (Topical)</td><td>Fresh grated rind in carrier oil</td><td>Apply to skin; wash off in 20 min</td><td>Hyperpigmentation, acne (avoid sun exposure after)</td></tr>
+          <tr><td>Lemon Essential Oil (Aromatherapy)</td><td>2–3 drops in diffuser or in steam inhalation</td><td>10–15 min sessions</td><td>Anti-nausea, mood elevation, respiratory decongestant</td></tr>
+          <tr><td>Lemon Pickle (Nimbu Achar)</td><td>Classical Ayurvedic: lemon in salt, turmeric, mustard</td><td>1 tsp with main meal</td><td>Digestive enzyme stimulation, preservation of agni</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">06</span>
+        <h2 class="section-title">Safety &amp; Precautions</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Nimbuka is among Ayurveda's safest <em>Satmya</em> (wholesome for regular use) herbs, and in appropriate doses is suitable for most constitutions. However, its sour-acidic nature, volatile oils, and furanocoumarins require specific cautions — particularly for individuals with hyperacidity, dental enamel concerns, and photosensitive skin.</p>
+      <ul class="precaution-list">
+        <li><strong>Hyperacidity &amp; GERD:</strong> Concentrated or undiluted lemon juice aggravates Pitta and can worsen acid reflux, peptic ulcers, and gastritis. Always dilute and avoid on an empty stomach if prone to hyperacidity.</li>
+        <li><strong>Dental enamel erosion:</strong> Citric acid directly demineralises tooth enamel with repeated direct contact. Always dilute in water; drink through a straw for daily regimens; rinse mouth with water after; avoid brushing teeth for 30 minutes after lemon consumption.</li>
+        <li><strong>Photosensitivity (topical use):</strong> Peel oils and furanocoumarins (bergapten) in lemon rind are potently photosensitising. Topical lemon juice or peel application followed by sun exposure can cause phytophotodermatitis — significant burns and permanent hyperpigmentation. Apply only at night or use sun protection.</li>
+        <li><strong>Kidney disease:</strong> High potassium content warrants caution in patients with chronic kidney disease (CKD stages 3–5) on a potassium-restricted diet; confirm intake with a nephrologist.</li>
+        <li><strong>Drug interactions:</strong> Citrus flavonoids inhibit CYP3A4 enzyme — may increase blood levels of certain statins, calcium channel blockers, immunosuppressants, and antihistamines. Inform your physician if on these medications.</li>
+        <li><strong>Iron overload conditions:</strong> Vitamin C dramatically enhances non-haem iron absorption; individuals with haemochromatosis or thalassaemia should moderate high-dose lemon juice consumption.</li>
+        <li><strong>Mouth ulcers:</strong> Avoid direct application of fresh juice on active oral ulcers — the acidity is intensely irritating and delays healing.</li>
+        <li><strong>Pitta-dominant constitutions:</strong> Those with naturally high Pitta (migraines, rosacea, bleeding tendencies) should use lemon in moderation, always diluted and preferably in cooler preparations like nimbu pani rather than warm lemon water.</li>
+      </ul>
+    </div>
+
+    <div class="sources">
+      <div class="sources-title">References &amp; Sources</div>
+      <ul>
+        <li>Charaka Samhita, Sutrasthana — Phala Varga and Deepaniya Gana; Chikitsasthana — Amla Skanda preparations</li>
+        <li>Ashtanga Hridayam — Sutrasthana, Dravyadi Vijnaniyadhyaya; Amla Varga description of Jambira-Nimbuka</li>
+        <li>Bhavaprakasha Nighantu — Amradi Phala Varga; Nimbuka, Jambira and allied Citrus species</li>
+        <li>Dravyaguna Vigyana (Priyavrat Sharma) — Classical Dravyaguna properties of Nimbuka</li>
+        <li>Klimek-Szczykutowicz M et al. — "Citrus limon (Lemon) Phenomenon — A Quick Look at Phytochemistry, Bioactivity, and Application" — Molecules, MDPI, 2020</li>
+        <li>Mohanapriya M et al. — "Health and Medicinal Properties of Lemon (Citrus limonum)" — International Journal of Ayurvedic and Herbal Medicine, 2013</li>
+        <li>Penniston KL et al. — "Quantitative Assessment of Citric Acid in Lemon Juice, Lime Juice, and Commercially-Available Fruit Juice Products" — Journal of Endourology, 2008</li>
+        <li>Kato T et al. — "Lemon polyphenols suppress diet-induced obesity by up-regulation of mRNA levels of the enzymes involved in β-oxidation in mouse white adipose tissue" — Journal of Clinical Biochemistry and Nutrition, 2014</li>
+        <li>Aibinu I et al. — "Antimicrobial activity of Citrus limon peel extracts against food-borne pathogens" — Nigerian Journal of Health and Biomedical Sciences, 2007</li>
+        <li>Nishino H et al. — "Cancer prevention by phytochemicals" — Oncology (limonoids and limonene context), 2005</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer>
+    <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a qualified practitioner before therapeutic use</p>
+  </footer>
+
+
+  <div id="viewerModal">
+    <div id="modal-topbar">
+      <span>3D Model — Nimbuka</span>
+      <button type="button" id="close3D">✕</button>
+    </div>
+    <model-viewer src="nimbuka3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+  </div>
+  <script>
+    (function() {
+      var open3D = document.getElementById('open3D');
+      var close3D = document.getElementById('close3D');
+      var modal = document.getElementById('viewerModal');
+      if (!open3D || !close3D || !modal) return;
+      function openModal() {
+        
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+      function closeModal() {
+        
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+      open3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); openModal();
+      });
+      close3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); closeModal();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+      });
+    })();
+  </script>
+
+</body>
+</html>

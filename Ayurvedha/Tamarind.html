@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tamarind | Swastha</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+  <style>
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+    * { margin:0; padding:0; box-sizing:border-box }
+    html { scroll-behavior:smooth }
+    body { font-family:'Jost',sans-serif; background:var(--cream); color:var(--ink); min-height:100vh; overflow-x:hidden; position:relative }
+    body::before { content:''; position:fixed; inset:0; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E"); opacity:.03; pointer-events:none; z-index:100 }
+
+    #open3D { position:fixed; top:25px; right:30px; padding:10px 18px; font-size:11px; letter-spacing:2px; text-transform:uppercase; background:var(--forest); color:#fff; border:none; cursor:pointer; z-index:1000; transition:.3s }
+    #open3D:hover { background:var(--gold); color:var(--deep) }
+    #viewerModal { position:fixed; inset:0; z-index:2000; display:none; flex-direction:column }
+    #modal-topbar { flex-shrink:0; height:58px; background:#111; display:flex; align-items:center; justify-content:space-between; padding:0 28px 0 32px; border-bottom:1px solid rgba(255,255,255,.07) }
+    #modal-topbar span { font-family:'Jost',sans-serif; font-size:11px; font-weight:300; letter-spacing:4.5px; text-transform:uppercase; color:rgba(255,255,255,.72) }
+    #close3D { width:38px; height:38px; font-size:15px; background:transparent; color:#fff; border:1.5px solid rgba(255,255,255,.7); border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background .2s,color .2s,transform .22s }
+    #close3D:hover { background:#fff; color:#111; transform:rotate(90deg) }
+    #viewerModal model-viewer { flex:1; width:100%; display:block; background:#fff }
+
+    .bg-circle { position:fixed; border-radius:50%; pointer-events:none; z-index:0 }
+    .bg-circle-1 { width:700px; height:700px; background:radial-gradient(circle,rgba(139,69,19,.08) 0%,transparent 70%); top:-200px; right:-150px }
+    .bg-circle-2 { width:500px; height:500px; background:radial-gradient(circle,rgba(200,146,42,.07) 0%,transparent 70%); bottom:-100px; left:-100px }
+
+    /* Tamarind pod & leaf SVG */
+    .botanical-svg { position:fixed; pointer-events:none; z-index:1; opacity:.09 }
+    .botanical-tl { top:-10px; left:-10px; width:260px }
+    .botanical-br { bottom:-10px; right:-10px; width:230px; transform:rotate(180deg) }
+
+    .hero { position:relative; z-index:10; padding:54px 40px 0; text-align:center; opacity:0; animation:fadeUp .9s ease .1s forwards }
+    .back-link { display:inline-flex; align-items:center; gap:8px; font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--sage); text-decoration:none; margin-bottom:36px; transition:color .3s }
+    .back-link:hover { color:var(--gold) }
+    .logo-rule { display:flex; align-items:center; justify-content:center; gap:20px; margin-bottom:14px }
+    .logo-rule span { display:block; height:1px; width:70px; background:linear-gradient(to right,transparent,var(--gold)) }
+    .logo-rule span:last-child { background:linear-gradient(to left,transparent,var(--gold)) }
+    .logo-ornament { font-size:13px; color:var(--gold) }
+    .hero-title { font-family:'Cormorant Garamond',serif; font-size:clamp(52px,10vw,100px); font-weight:300; letter-spacing:8px; line-height:1; color:var(--deep) }
+    .hero-subtitle { font-family:'Cormorant Garamond',serif; font-size:18px; font-style:italic; font-weight:300; color:var(--earth); letter-spacing:2px; margin-top:8px }
+    .hero-sci { font-size:11px; font-weight:200; letter-spacing:5px; color:var(--sage); margin-top:6px }
+
+    .hero-photos { position:relative; z-index:10; display:grid; grid-template-columns:1fr 1fr; gap:2px; max-width:900px; margin:40px auto 0; opacity:0; animation:fadeUp .9s ease .35s forwards }
+    .hero-photos img { width:100%; height:380px; object-fit:cover; object-position:center; display:block; background:var(--parchment) }
+    .photo-caption { text-align:center; font-family:'Cormorant Garamond',serif; font-size:12px; font-style:italic; color:var(--sage); letter-spacing:1px; padding:10px 0 0; max-width:900px; margin:0 auto; position:relative; z-index:10; opacity:0; animation:fadeUp .9s ease .5s forwards }
+
+    .divider { display:flex; align-items:center; justify-content:center; gap:16px; margin:50px auto; max-width:600px; opacity:0; animation:fadeUp .9s ease .55s forwards; position:relative; z-index:10 }
+    .divider-line { height:1px; width:120px; background:linear-gradient(to right,transparent,var(--sage)) }
+    .divider-line:last-child { background:linear-gradient(to left,transparent,var(--sage)) }
+    .divider-leaf { color:var(--earth); font-size:18px }
+
+    .content { position:relative; z-index:10; max-width:860px; margin:0 auto; padding:0 30px 80px }
+    .intro-text { font-family:'Cormorant Garamond',serif; font-size:20px; font-weight:300; line-height:1.75; color:var(--ink); text-align:center; max-width:700px; margin:0 auto 60px; opacity:0; animation:fadeUp .9s ease .6s forwards }
+    .intro-text em { color:var(--earth); font-style:italic }
+
+    .section { margin-bottom:60px; opacity:0; animation:fadeUp .9s ease forwards }
+    .section:nth-child(1){animation-delay:.65s}.section:nth-child(2){animation-delay:.75s}.section:nth-child(3){animation-delay:.85s}.section:nth-child(4){animation-delay:.95s}.section:nth-child(5){animation-delay:1.05s}.section:nth-child(6){animation-delay:1.15s}.section:nth-child(7){animation-delay:1.25s}
+
+    .section-header { display:flex; align-items:center; gap:14px; margin-bottom:20px }
+    .section-num { font-family:'Cormorant Garamond',serif; font-size:11px; letter-spacing:4px; color:var(--gold) }
+    .section-title { font-family:'Cormorant Garamond',serif; font-size:28px; font-weight:400; color:var(--deep); letter-spacing:1px }
+    .section-rule { height:1px; flex:1; background:linear-gradient(to right,var(--gold),transparent) }
+    .section-body { font-size:13px; font-weight:300; line-height:1.9; color:var(--ink); margin-bottom:24px }
+
+    .data-table { width:100%; border-collapse:collapse; margin:16px 0 8px; font-size:12px }
+    .data-table thead tr { background:var(--deep); color:var(--gold); font-size:10px; letter-spacing:3px; text-transform:uppercase }
+    .data-table thead th { padding:12px 14px; text-align:left; font-weight:400 }
+    .data-table tbody tr:nth-child(even){background:var(--parchment)}.data-table tbody tr:nth-child(odd){background:var(--cream)}
+    .data-table tbody tr { transition:background .2s }
+    .data-table tbody tr:hover { background:#e0d0b0 }
+    .data-table tbody td { padding:10px 14px; color:var(--ink); border-bottom:1px solid rgba(139,69,19,.08) }
+    .data-table tbody td:first-child { font-weight:400; color:var(--deep); width:28% }
+
+    .dosha-table { width:100%; border-collapse:collapse; margin:16px 0; font-size:12px }
+    .dosha-table thead tr { background:var(--forest); color:var(--cream) }
+    .dosha-table thead th { padding:12px 14px; text-align:left; font-weight:400; letter-spacing:2px; font-size:10px; text-transform:uppercase }
+    .dosha-table tbody tr:nth-child(even){background:var(--parchment)}.dosha-table tbody tr:nth-child(odd){background:var(--cream)}
+    .dosha-table tbody td { padding:11px 14px; color:var(--ink); border-bottom:1px solid rgba(139,69,19,.08) }
+    .dosha-table tbody td:first-child { font-weight:400; color:var(--forest); width:18% }
+    .dosha-table tbody td:nth-child(2) { color:var(--earth); width:20% }
+
+    .consume-table { width:100%; border-collapse:collapse; margin:16px 0; font-size:12px }
+    .consume-table thead tr { background:var(--earth); color:var(--cream) }
+    .consume-table thead th { padding:12px 14px; text-align:left; font-weight:400; letter-spacing:2px; font-size:10px; text-transform:uppercase }
+    .consume-table tbody tr:nth-child(even){background:var(--parchment)}.consume-table tbody tr:nth-child(odd){background:var(--cream)}
+    .consume-table tbody td { padding:11px 14px; color:var(--ink); border-bottom:1px solid rgba(139,69,19,.08) }
+    .consume-table tbody td:first-child { font-weight:400; color:var(--earth); width:22% }
+
+    .benefits-grid { display:grid; grid-template-columns:1fr 1fr; gap:1px; background:rgba(139,69,19,.14); border:1px solid rgba(139,69,19,.14); margin:8px 0 }
+    .benefit-card { background:var(--cream); padding:24px 22px; transition:background .3s; position:relative; overflow:hidden }
+    .benefit-card:hover { background:#ead9bb }
+    .benefit-card::before { content:''; position:absolute; bottom:0; left:0; width:0; height:2px; background:var(--gold); transition:width .4s }
+    .benefit-card:hover::before { width:100% }
+    .benefit-title { font-family:'Cormorant Garamond',serif; font-size:16px; font-weight:600; color:var(--forest); margin-bottom:8px }
+    .benefit-desc { font-size:11.5px; font-weight:300; line-height:1.75; color:var(--ink); opacity:.85 }
+
+    .precaution-list { list-style:none; margin:8px 0 }
+    .precaution-list li { display:flex; gap:12px; align-items:flex-start; padding:10px 14px; font-size:12px; font-weight:300; line-height:1.7; color:var(--ink); border-bottom:1px solid rgba(139,69,19,.08) }
+    .precaution-list li:last-child { border-bottom:none }
+    .precaution-list li::before { content:'▸'; color:var(--gold); flex-shrink:0; margin-top:1px }
+
+    .nutrition-bar { display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:rgba(139,69,19,.14); border:1px solid rgba(139,69,19,.14); margin:20px 0 }
+    .nutrition-cell { background:var(--cream); padding:22px 16px; text-align:center; transition:background .3s }
+    .nutrition-cell:hover { background:var(--parchment) }
+    .nutrition-num { font-family:'Cormorant Garamond',serif; font-size:36px; font-weight:300; color:var(--forest); line-height:1; margin-bottom:4px }
+    .nutrition-unit { font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--gold); font-weight:300 }
+    .nutrition-label { font-size:11px; font-weight:300; color:var(--ink); margin-top:5px }
+
+    .sources { border-top:1px solid rgba(139,69,19,.15); padding-top:24px; margin-top:20px }
+    .sources-title { font-size:10px; letter-spacing:4px; text-transform:uppercase; color:var(--sage); margin-bottom:12px; font-weight:300 }
+    .sources ul { list-style:none }
+    .sources ul li { font-family:'Cormorant Garamond',serif; font-size:13px; font-style:italic; color:var(--earth); padding:5px 0; border-bottom:1px solid rgba(139,69,19,.06) }
+    .sources ul li::before { content:'· '; color:var(--sage) }
+
+    footer { position:relative; z-index:10; text-align:center; padding:24px 20px 44px; border-top:1px solid rgba(139,69,19,.12); max-width:860px; margin:0 auto }
+    footer p { font-size:11px; letter-spacing:4px; text-transform:uppercase; color:var(--sage); font-weight:300 }
+
+    @keyframes fadeUp { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:translateY(0)} }
+    @media(max-width:700px) {
+      .hero-photos{grid-template-columns:1fr}.hero-photos img{height:260px}
+      .benefits-grid{grid-template-columns:1fr}.nutrition-bar{grid-template-columns:1fr 1fr}
+      .content{padding:0 18px 60px}
+    }
+  </style>
+</head>
+<body>
+
+<button id="open3D">View in 3D</button>
+<div id="viewerModal">
+  <div id="modal-topbar"><span>3D Model — Tamarind</span><button id="close3D">✕</button></div>
+  <model-viewer src="tamarind3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+</div>
+
+<div class="bg-circle bg-circle-1"></div>
+<div class="bg-circle bg-circle-2"></div>
+
+<!-- Tamarind pod & pinnate leaf SVG -->
+<svg class="botanical-svg botanical-tl" viewBox="0 0 260 380" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- main branch -->
+  <path d="M30 370 Q 70 290 110 210 Q 150 130 210 40" stroke="#5c3317" stroke-width="2.5" fill="none"/>
+  <!-- tamarind pods hanging -->
+  <g transform="translate(72,248) rotate(-30)">
+    <rect x="-5" y="0" width="10" height="38" rx="5" fill="#8b4513" opacity=".8"/>
+    <rect x="-3" y="8" width="6" height="6" rx="3" fill="#5c3317" opacity=".6"/>
+    <rect x="-3" y="18" width="6" height="6" rx="3" fill="#5c3317" opacity=".6"/>
+    <rect x="-3" y="28" width="6" height="6" rx="3" fill="#5c3317" opacity=".6"/>
+    <line x1="0" y1="0" x2="0" y2="-12" stroke="#5c3317" stroke-width="1.5"/>
+  </g>
+  <g transform="translate(108,200) rotate(-20)">
+    <rect x="-5" y="0" width="10" height="32" rx="5" fill="#8b4513" opacity=".75"/>
+    <rect x="-3" y="7" width="6" height="6" rx="3" fill="#5c3317" opacity=".6"/>
+    <rect x="-3" y="17" width="6" height="6" rx="3" fill="#5c3317" opacity=".6"/>
+    <line x1="0" y1="0" x2="0" y2="-10" stroke="#5c3317" stroke-width="1.5"/>
+  </g>
+  <!-- pinnate leaves -->
+  <g transform="translate(90,225)">
+    <line x1="0" y1="0" x2="40" y2="-18" stroke="#5c3317" stroke-width="1.2"/>
+    <ellipse cx="10" cy="-4" rx="7" ry="3.5" fill="#8b4513" transform="rotate(-25 10 -4)" opacity=".7"/>
+    <ellipse cx="20" cy="-9" rx="7" ry="3.5" fill="#a0784a" transform="rotate(-25 20 -9)" opacity=".7"/>
+    <ellipse cx="30" cy="-14" rx="7" ry="3.5" fill="#8b4513" transform="rotate(-25 30 -14)" opacity=".7"/>
+    <ellipse cx="10" cy="-4" rx="6" ry="3" fill="#8b4513" transform="rotate(155 10 -4)" opacity=".5"/>
+    <ellipse cx="20" cy="-9" rx="6" ry="3" fill="#a0784a" transform="rotate(155 20 -9)" opacity=".5"/>
+  </g>
+  <g transform="translate(128,172)">
+    <line x1="0" y1="0" x2="-42" y2="-16" stroke="#5c3317" stroke-width="1.2"/>
+    <ellipse cx="-10" cy="-4" rx="7" ry="3.5" fill="#a0784a" transform="rotate(160 -10 -4)" opacity=".7"/>
+    <ellipse cx="-22" cy="-8" rx="7" ry="3.5" fill="#8b4513" transform="rotate(160 -22 -8)" opacity=".7"/>
+    <ellipse cx="-34" cy="-13" rx="7" ry="3.5" fill="#a0784a" transform="rotate(160 -34 -13)" opacity=".7"/>
+  </g>
+  <g transform="translate(155,138)">
+    <line x1="0" y1="0" x2="38" y2="-14" stroke="#5c3317" stroke-width="1.2"/>
+    <ellipse cx="10" cy="-3" rx="7" ry="3.5" fill="#8b4513" transform="rotate(-20 10 -3)" opacity=".7"/>
+    <ellipse cx="22" cy="-8" rx="7" ry="3.5" fill="#a0784a" transform="rotate(-20 22 -8)" opacity=".7"/>
+    <ellipse cx="32" cy="-12" rx="6" ry="3" fill="#8b4513" transform="rotate(-20 32 -12)" opacity=".7"/>
+    <ellipse cx="10" cy="-3" rx="6" ry="3" fill="#a0784a" transform="rotate(160 10 -3)" opacity=".5"/>
+    <ellipse cx="22" cy="-8" rx="6" ry="3" fill="#8b4513" transform="rotate(160 22 -8)" opacity=".5"/>
+  </g>
+</svg>
+<svg class="botanical-svg botanical-br" viewBox="0 0 260 380" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M30 370 Q 70 290 110 210 Q 150 130 210 40" stroke="#5c3317" stroke-width="2.5" fill="none"/>
+  <g transform="translate(72,248) rotate(-30)">
+    <rect x="-5" y="0" width="10" height="38" rx="5" fill="#8b4513" opacity=".8"/>
+    <rect x="-3" y="8" width="6" height="6" rx="3" fill="#5c3317" opacity=".6"/>
+    <rect x="-3" y="18" width="6" height="6" rx="3" fill="#5c3317" opacity=".6"/>
+    <rect x="-3" y="28" width="6" height="6" rx="3" fill="#5c3317" opacity=".6"/>
+    <line x1="0" y1="0" x2="0" y2="-12" stroke="#5c3317" stroke-width="1.5"/>
+  </g>
+  <g transform="translate(128,172)">
+    <line x1="0" y1="0" x2="-42" y2="-16" stroke="#5c3317" stroke-width="1.2"/>
+    <ellipse cx="-10" cy="-4" rx="7" ry="3.5" fill="#a0784a" transform="rotate(160 -10 -4)" opacity=".7"/>
+    <ellipse cx="-22" cy="-8" rx="7" ry="3.5" fill="#8b4513" transform="rotate(160 -22 -8)" opacity=".7"/>
+    <ellipse cx="-34" cy="-13" rx="7" ry="3.5" fill="#a0784a" transform="rotate(160 -34 -13)" opacity=".7"/>
+  </g>
+  <g transform="translate(155,138)">
+    <line x1="0" y1="0" x2="38" y2="-14" stroke="#5c3317" stroke-width="1.2"/>
+    <ellipse cx="10" cy="-3" rx="7" ry="3.5" fill="#8b4513" transform="rotate(-20 10 -3)" opacity=".7"/>
+    <ellipse cx="22" cy="-8" rx="7" ry="3.5" fill="#a0784a" transform="rotate(-20 22 -8)" opacity=".7"/>
+  </g>
+</svg>
+
+<div class="hero">
+  <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+  <div class="logo-rule"><span></span><div class="logo-ornament">✦</div><span></span></div>
+  <div class="hero-title">Tamarind</div>
+  <div class="hero-subtitle">Amlika — The Sour Tree of the Tropics</div>
+  <div class="hero-sci">Tamarindus indica L. &nbsp;·&nbsp; Fabaceae (Leguminosae)</div>
+</div>
+
+<div class="hero-photos">
+  <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/c/cd/Tamarind_fruits_%28Tamarindus_indica_%27Si_Thong%27%29.jpg/1280px-Tamarind_fruits_%28Tamarindus_indica_%27Si_Thong%27%29.jpg" alt="Ripe tamarind pods — brown curved legumes cracking open to reveal sticky pulp"
+    onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/2/2e/Tamarindus_indica_pods.JPG" alt="Tamarindus indica — large canopy tree with feathery pinnate leaves"
+    onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+</div>
+<p class="photo-caption">Fig. 1 — Ripe tamarind pods with the characteristic brown brittle shell and sticky dark pulp surrounding the seeds &nbsp;·&nbsp; Fig. 2 — Tamarindus indica — a majestic, long-lived canopy tree with delicate feathery pinnate foliage</p>
+
+<div class="divider">
+  <div class="divider-line"></div>
+  <div class="divider-leaf">❧</div>
+  <div class="divider-line"></div>
+</div>
+
+<div class="content">
+  <p class="intro-text">Ancient enough to be described in the oldest Ayurvedic texts as <em>Amlika</em> — "the sour one" — Tamarind is at once a beloved culinary cornerstone of South and Southeast Asian cooking, a cornerstone of African and Latin American cuisine, and a richly documented medicinal plant whose fruit pulp, leaves, seeds, flowers, and bark have each been deployed across traditional pharmacopoeia as a laxative, digestive, anti-inflammatory, antimicrobial, and hepatoprotective agent for over three thousand years.</p>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">01</span><h2 class="section-title">Botanical Profile</h2><div class="section-rule"></div></div>
+    <p class="section-body">Tamarind (<em>Tamarindus indica</em> L.) is a large, slow-growing, long-lived evergreen tree of the Fabaceae family — the legume family — and the sole species of its genus. Native to tropical Africa (likely the Sudan savanna), it was introduced to the Indian subcontinent in antiquity and has been cultivated there for so long that it was historically misidentified as Indian in origin, even by early European botanists. Today it is naturalised and cultivated pan-tropically across South Asia, Southeast Asia, West Africa, the Caribbean, and Latin America.</p>
+    <p class="section-body">The tree grows to 20–30 m height with a massive domed canopy spread of up to 20 m, and is known to live for centuries — individual specimens over 200 years old are documented in India. The bark is rough, grey-brown, and scaly. Leaves are pinnately compound with 10–18 pairs of small oblong leaflets that fold together at night (nyctinastic movement). Flowers are small, pale yellow with red veins, borne in racemes. The fruit is a curved, brown, indehiscent pod (legume) 5–15 cm long containing 3–10 seeds embedded in the characteristic sticky, dark-brown, intensely sour-sweet pulp — the primary medicinal and culinary product.</p>
+    <table class="data-table">
+      <thead><tr><th>Property</th><th>Detail</th></tr></thead>
+      <tbody>
+        <tr><td>Family</td><td>Fabaceae (Leguminosae) — Caesalpinioideae subfamily</td></tr>
+        <tr><td>Botanical Name</td><td>Tamarindus indica L.</td></tr>
+        <tr><td>Sanskrit Names</td><td>Amlika, Chincha, Tintidika, Amlavriksha, Amlaphala</td></tr>
+        <tr><td>Hindi Names</td><td>Imli, Tamarind, Ambli</td></tr>
+        <tr><td>Regional Names</td><td>Puli (Tam/Mal), Chinta (Tel), Hunase (Kan), Chinch (Mar)</td></tr>
+        <tr><td>Arabic / Persian</td><td>Tamr-hindi ("Indian date") — the origin of the word "tamarind"</td></tr>
+        <tr><td>Origin</td><td>Tropical Africa (Sudan savanna); naturalised pan-tropically</td></tr>
+        <tr><td>Tree Lifespan</td><td>200+ years; specimens exceeding 300 years documented</td></tr>
+        <tr><td>Medicinal Parts</td><td>Fruit pulp (primary), seeds, leaves, flowers, bark, root</td></tr>
+        <tr><td>Taste Profile</td><td>Amla (sour), Madhura (sweet); extremely high tartaric acid content</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">02</span><h2 class="section-title">Phytochemical Composition</h2><div class="section-rule"></div></div>
+    <p class="section-body">The fruit pulp is one of the richest natural sources of tartaric acid (8–18% by weight) — a potent antioxidant and the primary organic acid responsible for tamarind's intense sourness. The pulp also contains remarkable concentrations of B-vitamins (particularly thiamine and niacin), potassium, magnesium, iron, and calcium relative to other fruits. The seeds yield a polysaccharide-rich kernel (tamarind kernel powder, TKP) used as a food thickener and pharmaceutical excipient; the seed coat is rich in proanthocyanidins and flavonoids.</p>
+    <p class="section-body">The leaves contain luteolin, orientin, and vitexin glycosides; the bark is rich in tannins (catechin, epicatechin, procyanidin B2) and phlobaphenes; the flowers yield flavonoids including eriodictyol and apigenin. This whole-plant chemical richness underpins Tamarind's diverse pharmacological applications across every traditional medicine system that has encountered it.</p>
+    <div class="nutrition-bar">
+      <div class="nutrition-cell"><div class="nutrition-num">8–18</div><div class="nutrition-unit">% tartaric</div><div class="nutrition-label">Acid in ripe pulp</div></div>
+      <div class="nutrition-cell"><div class="nutrition-num">239</div><div class="nutrition-unit">kcal/100g</div><div class="nutrition-label">Energy (pulp)</div></div>
+      <div class="nutrition-cell"><div class="nutrition-num">62</div><div class="nutrition-unit">mg / 100g</div><div class="nutrition-label">Magnesium (pulp)</div></div>
+      <div class="nutrition-cell"><div class="nutrition-num">High</div><div class="nutrition-unit">B-vitamins</div><div class="nutrition-label">Thiamine, niacin, B6</div></div>
+    </div>
+    <table class="data-table">
+      <thead><tr><th>Compound</th><th>Part</th><th>Primary Action</th></tr></thead>
+      <tbody>
+        <tr><td>Tartaric Acid</td><td>Pulp (8–18%)</td><td>Antioxidant, chelating agent, laxative, pH buffer; dominant organic acid</td></tr>
+        <tr><td>Malic &amp; Citric Acids</td><td>Pulp</td><td>Digestive stimulant, alkalising metabolite, antimicrobial</td></tr>
+        <tr><td>Proanthocyanidins (B2, C1)</td><td>Seed coat, bark</td><td>Antioxidant, antimicrobial, anti-inflammatory, hepatoprotective</td></tr>
+        <tr><td>Luteolin &amp; Orientin</td><td>Leaves, flowers</td><td>Anti-inflammatory, antidiabetic, antioxidant, anti-allergic</td></tr>
+        <tr><td>Catechin &amp; Epicatechin</td><td>Bark, seed coat</td><td>Antimicrobial, antidiarrhoeal, astringent, hepatoprotective</td></tr>
+        <tr><td>Tamarind Seed Polysaccharide (TSP)</td><td>Seed kernel</td><td>Viscosifying, wound-healing, eye-drop base, drug delivery matrix</td></tr>
+        <tr><td>β-Sitosterol &amp; Lupeol</td><td>Bark, leaves</td><td>Anti-inflammatory, analgesic, hepatoprotective, anti-ulcer</td></tr>
+        <tr><td>Thiamine (B1)</td><td>Pulp</td><td>Nerve function, energy metabolism; remarkably high for a fruit</td></tr>
+        <tr><td>Potassium &amp; Magnesium</td><td>Pulp</td><td>Cardiac regulation, blood pressure, muscle function, electrolyte balance</td></tr>
+        <tr><td>Phlobaphenes &amp; Tannins</td><td>Bark</td><td>Astringent, antimicrobial, anti-diarrhoeal, wound-healing</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">03</span><h2 class="section-title">Ayurvedic Significance</h2><div class="section-rule"></div></div>
+    <p class="section-body">Tamarind is documented across the major classical Ayurvedic texts under the name <em>Amlika</em> or <em>Chincha</em>. Charaka Samhita categorises it within the <em>Amlavarga</em> (sour group) and includes it in preparations for <em>Vata</em> disorders, noting its ability to pacify Vata through its sour, heavy, and unctuous qualities. Sushruta Samhita describes the fruit pulp as a <em>Deepana</em> (digestive stimulant) and <em>Rechana</em> (mild laxative). Bhavaprakasha Nighantu (Amravarga section) gives the most complete classical monograph — documenting its properties for bilious fever, worm infestation, muscle pain, and as a sourening agent in medicinal preparations.</p>
+    <p class="section-body">A notable complexity in Ayurveda: ripe tamarind pulp and unripe/raw tamarind are treated as distinct medicinal substances with partly opposing properties. Ripe pulp is Vata-pacifying, nutritive, and laxative; unripe pulp is more astringent, less Vata-pacifying, and more Kapha and Pitta-aggravating. Classical texts consistently warn against excessive daily use due to its Pitta-increasing potential — a caution borne out by its effect on acid secretion and dental enamel.</p>
+    <table class="dosha-table">
+      <thead><tr><th>Dosha</th><th>Effect</th><th>Mechanism &amp; Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Vata ↓</td><td>Pacifying (ripe pulp)</td><td>Amla (sour) rasa and Guru (heavy), Snigdha (unctuous) qualities ground and warm Vata — effective in Vata-type joint pain, bloating, constipation, and spasm. Classical primary indication in Vata disorders</td></tr>
+        <tr><td>Pitta ↑↑</td><td>Strongly aggravating</td><td>Sour taste and hot potency increase Pitta significantly — contraindicated in excess in hyperacidity, peptic ulcers, bleeding disorders, inflammatory bowel, and high-Pitta constitutions. Key classical caveat</td></tr>
+        <tr><td>Kapha ↑</td><td>Mildly aggravating</td><td>Heavy, unctuous qualities and sweetness of ripe pulp may increase Kapha — use cautiously in obesity, diabetes, and Kapha-dominant conditions. Unripe pulp less aggravating to Kapha</td></tr>
+      </tbody>
+    </table>
+    <p class="section-body"><strong>Rasa:</strong> Amla (sour), Madhura (sweet) in ripe; Kashaya (astringent) in unripe &nbsp;·&nbsp; <strong>Guna:</strong> Guru (heavy), Snigdha (unctuous) &nbsp;·&nbsp; <strong>Virya:</strong> Ushna (hot) &nbsp;·&nbsp; <strong>Vipaka:</strong> Amla (sour) &nbsp;·&nbsp; <strong>Karma:</strong> Deepana, Rechana, Vata-shamaka; Pitta-Kapha vardhaka in excess</p>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">04</span><h2 class="section-title">Key Health Benefits</h2><div class="section-rule"></div></div>
+    <p class="section-body">Tamarind has attracted substantial modern pharmacological research — particularly in the areas of antimicrobial activity, hepatoprotection, anti-diabetic potential, and the tamarind seed polysaccharide's ophthalmic and pharmaceutical applications. Its diverse chemical profile across different plant parts provides a broad therapeutic canvas.</p>
+    <div class="benefits-grid">
+      <div class="benefit-card">
+        <div class="benefit-title">Digestive Stimulant &amp; Laxative</div>
+        <div class="benefit-desc">Tamarind's most ancient and universal therapeutic role — the pulp's high tartaric, malic, and potassium bitartrate content acts as a mild osmotic laxative, softening stool and stimulating peristalsis. Particularly effective for Vata-type constipation (dry, hard stool with bloating). Classical preparations include tamarind pulp decoctions and Triphala-tamarind combinations for chronic constipation.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Hepatoprotective &amp; Liver Support</div>
+        <div class="benefit-desc">Multiple animal studies demonstrate significant hepatoprotective activity of tamarind seed extract and bark tannins against paracetamol (acetaminophen)-, carbon tetrachloride-, and ethanol-induced liver injury — with normalisation of liver enzymes (ALT, AST) and histological protection comparable to standard hepatoprotective drugs. Lupeol, β-sitosterol, and proanthocyanidins are the primary active agents.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Antimicrobial &amp; Anti-parasitic</div>
+        <div class="benefit-desc">Bark, seed, and leaf extracts show broad-spectrum antimicrobial activity against E. coli, Salmonella typhi, Staphylococcus aureus, Pseudomonas aeruginosa, and Candida albicans. Classical Ayurvedic use as a <em>Krimighna</em> (anti-parasitic/anti-worm) agent — tamarind pulp with rock salt was given for intestinal worm infestation — is supported by demonstrated antihelminthic activity.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Anti-inflammatory &amp; Analgesic</div>
+        <div class="benefit-desc">Luteolin, orientin, and proanthocyanidins from the leaves and seed coat demonstrate significant COX-inhibitory and PGE2-reducing activity in animal models — comparable to aspirin in some assays. Tamarind leaf poultice is used topically across African and South Asian folk medicine for joint swelling, sprains, and inflammatory skin conditions; the phytochemistry validates this traditional application.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Cardiovascular &amp; Lipid Management</div>
+        <div class="benefit-desc">Animal studies show tamarind seed coat extract significantly reduces total cholesterol, LDL, and triglycerides while increasing HDL, with antioxidant protection of LDL against oxidation — a key step in atherosclerosis prevention. Potassium-rich pulp supports healthy blood pressure regulation. Classical use in <em>Hridaya</em> (cardiac) formulations aligns with this cardiovascular protective profile.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Anti-diabetic Potential</div>
+        <div class="benefit-desc">Tamarind seed kernel extract significantly lowered blood glucose in streptozotocin-induced diabetic rats and regenerated pancreatic beta cells in histological studies. Luteolin and orientin from the leaves are known α-glucosidase inhibitors — slowing carbohydrate digestion and post-meal glucose rise. Human clinical data is limited but traditional use across Africa and Asia in diabetes management reflects consistent empirical observation.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Ophthalmic &amp; Eye Health</div>
+        <div class="benefit-desc">Tamarind seed polysaccharide (TSP) — a xyloglucan extracted from the seed kernel — is one of the most extensively studied natural ophthalmic agents. Its viscoelastic properties mimic the mucin layer of the tear film; clinical trials confirm efficacy in dry eye disease comparable to hyaluronic acid eye drops, with superior retention time. It is approved as an ophthalmic excipient in several countries.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Fluoride Chelation &amp; Dental Protection</div>
+        <div class="benefit-desc">A clinically unique application: tartaric acid and other organic acids in tamarind pulp form complexes with fluoride ions, facilitating their urinary excretion. Studies in endemic fluorosis areas of India found that regular tamarind consumption significantly reduced urinary fluoride retention and improved dental and skeletal fluorosis markers — making it a practical nutritional intervention in high-fluoride groundwater regions.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">05</span><h2 class="section-title">Classical Formulations Containing Tamarind</h2><div class="section-rule"></div></div>
+    <p class="section-body">Tamarind (Amlika / Chincha) appears across classical Ayurvedic, Siddha, and Unani compound preparations — most often as a souring agent, laxative component, or vehicle for other medicinal substances.</p>
+    <table class="data-table">
+      <thead><tr><th>Formulation</th><th>System</th><th>Primary Indication</th></tr></thead>
+      <tbody>
+        <tr><td>Amlika Avaleha</td><td>Ayurveda</td><td>Classical confection for Vata-type constipation, digestive debility, and anorexia</td></tr>
+        <tr><td>Chinchadi Lehyam</td><td>Siddha / Kerala Ayurveda</td><td>Laxative, digestive stimulant, bilious conditions and hepatic support</td></tr>
+        <tr><td>Tamarindus Purgative Compound</td><td>Unani Tibb</td><td>Constipation, bile regulation, sluggish digestion; classical Unani laxative base</td></tr>
+        <tr><td>Panchakola Churna (variant)</td><td>Ayurveda</td><td>Digestive stimulant formulation where Amlika provides sour complement to pungent herbs</td></tr>
+        <tr><td>Imli-based Rasayana preparations</td><td>Folk / Regional</td><td>Tamarind with jaggery and black salt — classical folk Rasayana for strength, Vata disorders</td></tr>
+        <tr><td>Chitrak Haritaki (with Amlika)</td><td>Ayurveda</td><td>Respiratory and digestive tonic; tamarind as souring-laxative component</td></tr>
+        <tr><td>Tamarind Seed Eye Drops (TSP)</td><td>Modern Ayurveda / Pharma</td><td>Dry eye disease, conjunctival xerosis — clinically validated ophthalmic preparation</td></tr>
+        <tr><td>Tamarhindi Sherbet</td><td>Unani Tibb</td><td>Cooling febrifuge drink for Pitta-type fevers, thirst, and summer heat disorders</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">06</span><h2 class="section-title">How to Consume Tamarind</h2><div class="section-rule"></div></div>
+    <p class="section-body">Tamarind is one of the most versatile medicinal foods — consumed daily across South Asia and Africa as a culinary ingredient while simultaneously functioning as a gentle therapeutic agent. Different parts of the plant offer different applications; the fruit pulp remains the most widely used form in both culinary and medicinal contexts.</p>
+    <table class="consume-table">
+      <thead><tr><th>Form</th><th>Preparation</th><th>Dosage</th><th>Best Use</th></tr></thead>
+      <tbody>
+        <tr><td>Ripe Pulp (Culinary)</td><td>Dissolve in warm water; strain seeds and fibres; use as souring agent in cooking</td><td>10–30 g daily in cooking</td><td>Digestive stimulation, flavour, general wellness</td></tr>
+        <tr><td>Tamarind Water / Sherbet</td><td>Soak 20–30 g pulp in 300 ml water 30 min; strain; add jaggery, cumin, black salt</td><td>150–200 ml once daily</td><td>Summer cooling, constipation, Vata-type digestive issues</td></tr>
+        <tr><td>Pulp Decoction</td><td>Boil 15–20 g pulp in 400 ml water; reduce to 100 ml; strain</td><td>50–100 ml twice daily</td><td>Constipation, bilious fever, muscle pain</td></tr>
+        <tr><td>Leaf Decoction</td><td>Boil fresh leaves in water; strain</td><td>30–50 ml twice daily</td><td>Fever, jaundice, diarrhoea, inflammation</td></tr>
+        <tr><td>Seed Kernel Powder</td><td>Dried, de-hulled seed kernel; ground fine; with water or honey</td><td>1–3 g twice daily</td><td>Anti-diabetic, liver support, cholesterol management</td></tr>
+        <tr><td>Bark Decoction</td><td>Boil dried bark pieces in water; strain</td><td>30–50 ml twice daily</td><td>Diarrhoea, dysentery, mouth ulcers (also topical gargle)</td></tr>
+        <tr><td>Leaf Poultice (Topical)</td><td>Pound fresh leaves into paste; apply warm to affected area</td><td>As needed, 1–2× daily</td><td>Joint inflammation, sprains, boils, eye inflammation</td></tr>
+        <tr><td>Pulp with Jaggery &amp; Rock Salt</td><td>Classical folk preparation — mix ripe pulp, jaggery, black salt</td><td>10–15 g once daily</td><td>Constipation, Vata-type pain, worm infestation</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">07</span><h2 class="section-title">Safety &amp; Precautions</h2><div class="section-rule"></div></div>
+    <p class="section-body">Tamarind at culinary amounts is extremely safe and consumed daily by billions of people across the tropics without adverse effects. Therapeutic doses of pulp, seed extracts, or bark preparations warrant specific attention for certain populations, particularly due to its significant Pitta-aggravating potential and interactions with certain medications.</p>
+    <ul class="precaution-list">
+      <li><strong>Hyperacidity &amp; peptic ulcers:</strong> Tamarind's high organic acid content and Pitta-aggravating Ushna virya make it strictly contraindicated in active gastric or duodenal ulcers, GERD, and chronic hyperacidity. Even culinary amounts may exacerbate these conditions — reduce or eliminate in Pitta-excess presentations.</li>
+      <li><strong>Dental enamel:</strong> Frequent direct contact with tamarind pulp erodes dental enamel due to its high acidity (pH 2.0–3.5). Rinse mouth with water after consuming tamarind-rich preparations; avoid brushing teeth immediately after as enamel is temporarily softened.</li>
+      <li><strong>Blood sugar medications:</strong> Tamarind seed extract has demonstrated clinically significant glucose-lowering activity. Individuals on metformin, insulin, or sulfonylureas should monitor blood glucose closely when using therapeutic (non-culinary) doses — risk of additive hypoglycaemia.</li>
+      <li><strong>Anticoagulants:</strong> Tamarind may inhibit platelet aggregation and potentiate the effect of aspirin and warfarin. A documented drug interaction: studies show tamarind increases bioavailability of aspirin and ibuprofen by up to 100% by altering gastric pH and absorption. Inform your physician if taking blood thinners or NSAIDs with therapeutic tamarind doses.</li>
+      <li><strong>Pregnancy:</strong> Culinary amounts are universally safe and commonly consumed. High-dose medicinal preparations (concentrated extracts, large amounts of leaf decoctions) should be used with caution given the traditional use of bark preparations as emmenagogues in some folk traditions.</li>
+      <li><strong>Lead utensils:</strong> A specific historical warning — tamarind pulp's high acidity leaches lead from brass, copper, and lead-containing utensils used for cooking or storage. Use stainless steel, clay, or food-grade non-reactive vessels when preparing tamarind-based preparations.</li>
+      <li><strong>Obesity &amp; Kapha excess:</strong> The ripe pulp's sweetness and heavy quality can contribute to weight gain and Kapha accumulation with excessive daily use — balance with digestive spices (cumin, black salt, ginger) in preparations.</li>
+      <li><strong>Children:</strong> Culinary use is safe and commonly consumed across South Asia from an early age. Therapeutic seed kernel or bark preparations should be appropriately dosed by a practitioner for children under 12.</li>
+    </ul>
+  </div>
+
+  <div class="sources">
+    <div class="sources-title">References &amp; Sources</div>
+    <ul>
+      <li>Charaka Samhita — Amlavarga: Amlika / Chincha classification and properties in Vata disorders</li>
+      <li>Bhavaprakasha Nighantu — Amravarga: complete Amlika / Chincha monograph with Karma and indications</li>
+      <li>Sushruta Samhita — Sutra and Chikitsa Sthana: Tamarind pulp as Deepana and Rechana</li>
+      <li>El-Siddig K et al. — "Tamarindus indica" — ICRAF (World Agroforestry Centre) Monograph, 2006</li>
+      <li>Martinello F et al. — "Hypolipidemic and antioxidative activities of Tamarindus indica L. in hypercholesterolemic golden Syrian hamsters" — Food and Chemical Toxicology, 2006</li>
+      <li>Maiti R et al. — "In vivo evaluation of antidiabetic activity of aqueous extract of Tamarindus indica seeds in Wistar rats" — Journal of Ethnopharmacology, 2004</li>
+      <li>Otang WM &amp; Afolayan AJ — "Antimicrobial and antioxidant efficacy of Tamarindus indica L." — Asian Pacific Journal of Tropical Biomedicine, 2016</li>
+      <li>Rolando M et al. — "Tamarind seed polysaccharide for ophthalmic drug delivery" — Drug Development and Industrial Pharmacy, 2009</li>
+      <li>Khandare AL et al. — "Beneficial effect of tamarind ingestion on fluoride toxicity in dogs" — Fluoride, 2000</li>
+      <li>Dravyaguna Vigyana — Prof. P.V. Sharma: Tamarind (Amlika) monograph, classical properties and formulations</li>
+    </ul>
+  </div>
+</div>
+
+<footer>
+  <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a qualified practitioner before therapeutic use</p>
+</footer>
+
+<script>
+  const open3D=document.getElementById('open3D'),close3D=document.getElementById('close3D'),modal=document.getElementById('viewerModal');
+  function openModal(){
+    var _aud = document.getElementById('tamarindAudio'); if(_aud){ _aud.currentTime=0; var playPromise = _aud.play(); if (playPromise !== undefined) { playPromise.catch(function(e){ console.log(e); }); } }
+modal.style.display='flex';document.body.style.overflow='hidden';history.pushState({modal:'tamarind3d'},'','#3d');}
+  function closeModal(){
+    var _aud = document.getElementById('tamarindAudio'); if(_aud){ _aud.pause(); }
+modal.style.display='none';document.body.style.overflow='';if(window.location.hash==='#3d')history.replaceState(null,'',window.location.pathname);}
+  open3D.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();openModal();});
+  close3D.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();closeModal();});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&modal.style.display==='flex')closeModal();});
+  window.addEventListener('popstate',()=>{if(modal.style.display==='flex'){modal.style.display='none';document.body.style.overflow='';}});
+</script>
+
+  <audio id="tamarindAudio" src="tamarind_benefits.mp3" loop preload="auto"></audio>
+</body>
+</html>

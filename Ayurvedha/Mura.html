@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mura | Swastha</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap"
+    rel="stylesheet">
+  <style>
+    #open3D {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      padding: 10px 18px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: var(--forest);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      z-index: 1000;
+      transition: .3s;
+    }
+    #open3D:hover {
+      background: var(--gold);
+      color: var(--deep);
+    }
+    #viewerModal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+    }
+    #modal-topbar {
+      flex-shrink: 0;
+      height: 58px;
+      background: #111111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px 0 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      z-index: 99999;
+    }
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 4.5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.72);
+      user-select: none;
+    }
+    #close3D {
+      width: 38px;
+      height: 38px;
+      font-size: 15px;
+      font-weight: 300;
+      background: transparent;
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background .2s, color .2s, transform .22s;
+      outline: none;
+      flex-shrink: 0;
+    }
+    #close3D:hover {
+      background: #ffffff;
+      color: #111111;
+      border-color: #ffffff;
+      transform: rotate(90deg);
+    }
+    #viewerModal model-viewer {
+      flex: 1;
+      width: 100%;
+      display: block;
+      background: #ffffff;
+    }
+
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+
+    * { margin: 0; padding: 0; box-sizing: border-box }
+    html { scroll-behavior: smooth }
+    body {
+      font-family: 'Jost', sans-serif;
+      background: var(--cream);
+      color: var(--ink);
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity: .035;
+      pointer-events: none;
+      z-index: 100
+    }
+
+    .bg-circle { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0 }
+    .bg-circle-1 {
+      width: 700px; height: 700px;
+      background: radial-gradient(circle, rgba(42,92,63,.1) 0%, transparent 70%);
+      top: -200px; right: -150px
+    }
+    .bg-circle-2 {
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(201,168,76,.08) 0%, transparent 70%);
+      bottom: -100px; left: -100px
+    }
+
+    .botanical-svg { position: fixed; pointer-events: none; z-index: 1; opacity: .1 }
+    .botanical-tl { top: -20px; left: -20px; width: 260px }
+    .botanical-br { bottom: -20px; right: -20px; width: 220px; transform: rotate(180deg) }
+
+    .hero {
+      position: relative; z-index: 10;
+      padding: 54px 40px 0;
+      text-align: center;
+      opacity: 0;
+      animation: fadeUp .9s ease .1s forwards
+    }
+    .back-link {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+      color: var(--sage); text-decoration: none; margin-bottom: 36px; transition: color .3s
+    }
+    .back-link:hover { color: var(--gold) }
+
+    .logo-rule {
+      display: flex; align-items: center; justify-content: center;
+      gap: 20px; margin-bottom: 14px
+    }
+    .logo-rule span {
+      display: block; height: 1px; width: 70px;
+      background: linear-gradient(to right, transparent, var(--gold))
+    }
+    .logo-rule span:last-child { background: linear-gradient(to left, transparent, var(--gold)) }
+    .logo-ornament { font-size: 13px; color: var(--gold) }
+
+    .hero-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(64px, 12vw, 110px);
+      font-weight: 300; letter-spacing: 8px; line-height: 1; color: var(--deep)
+    }
+    .hero-subtitle {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 18px; font-style: italic; font-weight: 300;
+      color: var(--earth); letter-spacing: 2px; margin-top: 8px
+    }
+    .hero-sci {
+      font-size: 11px; font-weight: 200; letter-spacing: 5px;
+      color: var(--sage); margin-top: 6px
+    }
+
+    .hero-photos {
+      position: relative; z-index: 10;
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 2px; max-width: 900px; margin: 40px auto 0;
+      opacity: 0; animation: fadeUp .9s ease .35s forwards
+    }
+    .hero-photos img {
+      width: 100%; height: 380px;
+      object-fit: cover; object-position: center; display: block;
+      background: var(--parchment)
+    }
+    .hero-photos img:first-child { object-position: center 40% }
+
+    .photo-caption {
+      text-align: center;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 12px; font-style: italic; color: var(--sage);
+      letter-spacing: 1px; padding: 10px 0 0;
+      max-width: 900px; margin: 0 auto;
+      position: relative; z-index: 10;
+      opacity: 0; animation: fadeUp .9s ease .5s forwards
+    }
+
+    .divider {
+      display: flex; align-items: center; justify-content: center;
+      gap: 16px; margin: 50px auto; max-width: 600px;
+      opacity: 0; animation: fadeUp .9s ease .55s forwards;
+      position: relative; z-index: 10
+    }
+    .divider-line { height: 1px; width: 120px; background: linear-gradient(to right, transparent, var(--sage)) }
+    .divider-line:last-child { background: linear-gradient(to left, transparent, var(--sage)) }
+    .divider-leaf { color: var(--forest); font-size: 18px }
+
+    .content {
+      position: relative; z-index: 10;
+      max-width: 860px; margin: 0 auto; padding: 0 30px 80px
+    }
+
+    .intro-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 20px; font-weight: 300; line-height: 1.75;
+      color: var(--ink); text-align: center;
+      max-width: 700px; margin: 0 auto 60px;
+      opacity: 0; animation: fadeUp .9s ease .6s forwards
+    }
+    .intro-text em { color: var(--forest); font-style: italic }
+
+    .section {
+      margin-bottom: 60px; opacity: 0;
+      animation: fadeUp .9s ease forwards
+    }
+    .section:nth-child(1) { animation-delay: .65s }
+    .section:nth-child(2) { animation-delay: .75s }
+    .section:nth-child(3) { animation-delay: .85s }
+    .section:nth-child(4) { animation-delay: .95s }
+    .section:nth-child(5) { animation-delay: 1.05s }
+    .section:nth-child(6) { animation-delay: 1.15s }
+    .section:nth-child(7) { animation-delay: 1.25s }
+
+    .section-header {
+      display: flex; align-items: center; gap: 14px; margin-bottom: 20px
+    }
+    .section-num { font-family: 'Cormorant Garamond', serif; font-size: 11px; letter-spacing: 4px; color: var(--gold) }
+    .section-title { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 400; color: var(--deep); letter-spacing: 1px }
+    .section-rule { height: 1px; flex: 1; background: linear-gradient(to right, var(--gold), transparent) }
+    .section-body { font-size: 13px; font-weight: 300; line-height: 1.9; color: var(--ink); margin-bottom: 24px }
+
+    .data-table { width: 100%; border-collapse: collapse; margin: 16px 0 8px; font-size: 12px }
+    .data-table thead tr { background: var(--deep); color: var(--gold); font-size: 10px; letter-spacing: 3px; text-transform: uppercase }
+    .data-table thead th { padding: 12px 14px; text-align: left; font-weight: 400 }
+    .data-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .data-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .data-table tbody tr { transition: background .2s }
+    .data-table tbody tr:hover { background: rgba(200, 164, 93, 0.15) }
+    .data-table tbody td { padding: 10px 14px; color: var(--ink); border-bottom: 1px solid rgba(107,79,45,.08) }
+    .data-table tbody td:first-child { font-weight: 400; color: var(--deep); width: 28% }
+
+    .dosha-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .dosha-table thead tr { background: var(--forest); color: var(--cream) }
+    .dosha-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .dosha-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .dosha-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .dosha-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(107,79,45,.08) }
+    .dosha-table tbody td:first-child { font-weight: 400; color: var(--forest); width: 18% }
+    .dosha-table tbody td:nth-child(2) { color: var(--earth); width: 20% }
+
+    .consume-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .consume-table thead tr { background: var(--earth); color: var(--cream) }
+    .consume-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .consume-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .consume-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .consume-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(107,79,45,.08) }
+    .consume-table tbody td:first-child { font-weight: 400; color: var(--earth); width: 22% }
+
+    .benefits-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 1px; background: rgba(107,79,45,.12);
+      border: 1px solid rgba(107,79,45,.12); margin: 8px 0
+    }
+    .benefit-card {
+      background: var(--cream); padding: 24px 22px;
+      transition: background .3s; position: relative; overflow: hidden
+    }
+    .benefit-card:hover { background: #ede4ce }
+    .benefit-card::before {
+      content: ''; position: absolute; bottom: 0; left: 0;
+      width: 0; height: 2px; background: var(--gold); transition: width .4s
+    }
+    .benefit-card:hover::before { width: 100% }
+    .benefit-title { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 600; color: var(--forest); margin-bottom: 8px }
+    .benefit-desc { font-size: 11.5px; font-weight: 300; line-height: 1.75; color: var(--ink); opacity: .85 }
+
+    .precaution-list { list-style: none; margin: 8px 0 }
+    .precaution-list li {
+      display: flex; gap: 12px; align-items: flex-start;
+      padding: 10px 14px; font-size: 12px; font-weight: 300;
+      line-height: 1.7; color: var(--ink);
+      border-bottom: 1px solid rgba(107,79,45,.08)
+    }
+    .precaution-list li:last-child { border-bottom: none }
+    .precaution-list li::before { content: '▸'; color: var(--gold); flex-shrink: 0; margin-top: 1px }
+
+    .nutrition-bar {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 1px; background: rgba(107,79,45,.12);
+      border: 1px solid rgba(107,79,45,.12); margin: 20px 0
+    }
+    .nutrition-cell { background: var(--cream); padding: 22px 16px; text-align: center; transition: background .3s }
+    .nutrition-cell:hover { background: var(--parchment) }
+    .nutrition-num { font-family: 'Cormorant Garamond', serif; font-size: 36px; font-weight: 300; color: var(--forest); line-height: 1; margin-bottom: 4px }
+    .nutrition-unit { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); font-weight: 300 }
+    .nutrition-label { font-size: 11px; font-weight: 300; color: var(--ink); margin-top: 5px }
+
+    .sources { border-top: 1px solid rgba(107,79,45,.15); padding-top: 24px; margin-top: 20px }
+    .sources-title { font-size: 10px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); margin-bottom: 12px; font-weight: 300 }
+    .sources ul { list-style: none }
+    .sources ul li { font-family: 'Cormorant Garamond', serif; font-size: 13px; font-style: italic; color: var(--earth); padding: 5px 0; border-bottom: 1px solid rgba(107,79,45,.06) }
+    .sources ul li::before { content: '· '; color: var(--sage) }
+
+    footer {
+      position: relative; z-index: 10; text-align: center;
+      padding: 24px 20px 44px;
+      border-top: 1px solid rgba(107,79,45,.12);
+      max-width: 860px; margin: 0 auto
+    }
+    footer p { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); font-weight: 300 }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(28px) }
+      to   { opacity: 1; transform: translateY(0) }
+    }
+    @media(max-width:700px) {
+      .hero-photos { grid-template-columns: 1fr }
+      .hero-photos img { height: 260px }
+      .benefits-grid { grid-template-columns: 1fr }
+      .nutrition-bar { grid-template-columns: 1fr 1fr }
+      .content { padding: 0 18px 60px }
+    }
+  </style>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+</head>
+
+<body>
+  <button type="button" id="open3D">View in 3D</button>
+
+
+  <div class="bg-circle bg-circle-1"></div>
+  <div class="bg-circle bg-circle-2"></div>
+
+  <svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#2a5c3f" stroke-width="1.5" fill="none"/>
+    <circle cx="90" cy="210" r="8" fill="#2a5c3f" opacity="0.7"/>
+    <circle cx="130" cy="175" r="10" fill="#7a9e7e" opacity="0.6"/>
+    <circle cx="170" cy="135" r="7" fill="#2a5c3f" opacity="0.8"/>
+    <circle cx="210" cy="95" r="9" fill="#c9a84c" opacity="0.5"/>
+    <ellipse cx="115" cy="195" rx="20" ry="10" fill="#7a9e7e" transform="rotate(-30 115 195)"/>
+    <ellipse cx="155" cy="155" rx="18" ry="9" fill="#2a5c3f" transform="rotate(-45 155 155)"/>
+    <ellipse cx="195" cy="115" rx="16" ry="8" fill="#7a9e7e" transform="rotate(-60 195 115)"/>
+  </svg>
+  <svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#2a5c3f" stroke-width="1.5" fill="none"/>
+    <circle cx="90" cy="210" r="8" fill="#2a5c3f" opacity="0.7"/>
+    <circle cx="130" cy="175" r="10" fill="#7a9e7e" opacity="0.6"/>
+    <ellipse cx="115" cy="195" rx="20" ry="10" fill="#7a9e7e" transform="rotate(-30 115 195)"/>
+  </svg>
+
+  <div class="hero">
+    <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+    <div class="logo-rule"><span></span>
+      <div class="logo-ornament">✦</div><span></span>
+    </div>
+    <div class="hero-title">Mura</div>
+    <div class="hero-subtitle">Spikenard of the Ancients — The Sacred Aromatic Root</div>
+    <div class="hero-sci">Nardostachys jatamansi &nbsp;·&nbsp; DC.</div>
+  </div>
+
+  <div class="hero-photos">
+    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/7/78/Spikenard_%28Nardostachys_jatamansi%29_essential_oil_from_Nepal.jpg/1280px-Spikenard_%28Nardostachys_jatamansi%29_essential_oil_from_Nepal.jpg" alt="Mura rhizome roots dried" onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/a/a4/%D0%AD%D1%84%D0%B8%D1%80%D0%BD%D0%BE%D0%B5_%D0%BC%D0%B0%D1%81%D0%BB%D0%BE_%D0%BD%D0%B0%D1%80%D0%B4%D0%B0_%D0%B3%D0%B8%D0%BC%D0%B0%D0%BB%D0%B0%D0%B9%D1%81%D0%BA%D0%BE%D0%B3%D0%BE_%28Nardostachys_jatamansi%29_%D0%B8%D0%B7_%D0%9D%D0%B5%D0%BF%D0%B0%D0%BB%D0%B0.jpg" alt="Nardostachys jatamansi plant in Himalayan habitat" onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+  </div>
+  <p class="photo-caption">Fig. 1 — Dried rhizomes of Mura, bristled with the fibrous remains of old leaf bases &nbsp;·&nbsp; Fig. 2 — Nardostachys jatamansi flowering in its native high-altitude Himalayan meadow habitat</p>
+
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-leaf">❧</div>
+    <div class="divider-line"></div>
+  </div>
+
+  <div class="content">
+
+    <p class="intro-text">Known to Charaka as <em>Mura</em> and to the wider world as Spikenard, this revered Himalayan rhizome has crossed civilisations — anointed the feet of Christ, sealed the tombs of Egyptian pharaohs, and formed the cornerstone of classical Ayurvedic <em>Medhya</em> (intellect-promoting) and <em>Hridya</em> (cardiac-tonic) therapy. Among the oldest recorded aromatics, its dense, musky fragrance and profound nervine action remain as prized today as in the Atharva Veda's age.</p>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">01</span>
+        <h2 class="section-title">Botanical Profile</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Mura (<em>Nardostachys jatamansi</em>) is a small, perennial, aromatic herb of the Caprifoliaceae (formerly Valerianaceae) family, growing exclusively in alpine meadows and rocky slopes at 3,000–5,000 m altitude across the Himalayan arc — from Kumaon and Nepal through Sikkim, Bhutan, and into Yunnan province of China. The plant is low-growing, rarely exceeding 60 cm, with a rosette of long, narrow basal leaves and a branching stem bearing smaller, clasping leaves.</p>
+      <p class="section-body">The flowers are small, pink to pale purple, borne in dense terminal cymes above conspicuous reddish bracts. But it is the <em>rhizome</em> — the thick, woody underground stem bristling with fibrous remains of old leaf sheaths, resembling the matted locks (<em>jata</em>) of a Shiva devotee — that is the medicinal treasure. This "hairy" rhizome, when dried, yields a deep, complex, earthy-musky aroma dominated by sesquiterpenes and is the source of the legendary spikenard oil of antiquity.</p>
+
+      <table class="data-table">
+        <thead><tr><th>PROPERTY</th><th>Detail</th></tr></thead>
+        <tbody>
+          <tr><td>Family</td><td>Caprifoliaceae (formerly Valerianaceae)</td></tr>
+          <tr><td>Botanical Name</td><td>Nardostachys jatamansi (D.Don) DC.</td></tr>
+          <tr><td>Sanskrit Names</td><td>Mura, Jatamansi, Narda, Bhutajata, Tapasvini, Sulomasha</td></tr>
+          <tr><td>Common Names</td><td>Spikenard, Indian Nard, Muskroot, Jatamansi</td></tr>
+          <tr><td>Regional Names</td><td>Balchad (Hindi), Jatamanchi (Tel), Jadumadhuri (Ben)</td></tr>
+          <tr><td>Medicinal Part</td><td>Rhizome &amp; roots (primary); leaves (secondary)</td></tr>
+          <tr><td>Habitat</td><td>Himalayan alpine meadows, 3,000–5,000 m altitude</td></tr>
+          <tr><td>Flowering Season</td><td>July – August</td></tr>
+          <tr><td>Taste Profile</td><td>Tikta (bitter), Kashaya (astringent), Madhura (sweet)</td></tr>
+          <tr><td>Conservation Status</td><td>Vulnerable (IUCN); Schedule VI — CITES Appendix II</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">02</span>
+        <h2 class="section-title">Phytochemistry</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">The rhizome of <em>N. jatamansi</em> is exceptionally rich in sesquiterpenes — the chemical class responsible for its distinctive deep, earthy-musky aroma. Over 60 bioactive compounds have been isolated, with jatamansone (valeranone), jatamansin, nardostachin, calarenol, and nardosinone among the pharmacologically most significant. The essential oil content of the dried rhizome is 0.5–3%, varying with altitude and harvest season.</p>
+      <p class="section-body">Additionally, the plant contains coumarins (jatamansin), iridoids, lignans, flavonoids (hesperidin, luteolin), neolignans, and sterols — a multi-class phytochemical matrix that collectively underpins its documented sedative, antioxidant, hepatoprotective, and neuroprotective actions. Recent metabolomics profiling has identified over 100 secondary metabolites.</p>
+
+      <div class="nutrition-bar">
+        <div class="nutrition-cell">
+          <div class="nutrition-num">60+</div>
+          <div class="nutrition-unit">compounds</div>
+          <div class="nutrition-label">Identified bioactives</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">3%</div>
+          <div class="nutrition-unit">volatile oil</div>
+          <div class="nutrition-label">Maximum rhizome yield</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">5000</div>
+          <div class="nutrition-unit">m altitude</div>
+          <div class="nutrition-label">Upper Himalayan habitat</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">40+</div>
+          <div class="nutrition-unit">sesquiterpenes</div>
+          <div class="nutrition-label">Dominant compound class</div>
+        </div>
+      </div>
+
+      <table class="data-table">
+        <thead><tr><th>Compound</th><th>Category</th><th>Primary Action</th></tr></thead>
+        <tbody>
+          <tr><td>Jatamansone (Valeranone)</td><td>Sesquiterpene ketone</td><td>Sedative, anxiolytic, antispasmodic; principal active constituent</td></tr>
+          <tr><td>Jatamansin</td><td>Coumarin / Iridoid</td><td>Antioxidant, neuroprotective, MAO-inhibitory</td></tr>
+          <tr><td>Nardostachin</td><td>Sesquiterpene</td><td>CNS-depressant, muscle relaxant</td></tr>
+          <tr><td>Calarenol &amp; Nardol</td><td>Sesquiterpene alcohols</td><td>Antimicrobial, anti-inflammatory, fragrance character</td></tr>
+          <tr><td>Nardosinone</td><td>Sesquiterpene lactone</td><td>Neurite outgrowth promoting; potential in neurodegeneration</td></tr>
+          <tr><td>Hesperidin &amp; Luteolin</td><td>Flavonoids</td><td>Antioxidant, anti-inflammatory, capillary-strengthening</td></tr>
+          <tr><td>β-Sitosterol</td><td>Phytosterol</td><td>Hypolipidemic, immunomodulatory</td></tr>
+          <tr><td>Oleanolic &amp; Ursolic Acids</td><td>Pentacyclic triterpenes</td><td>Hepatoprotective, anti-inflammatory, antidiabetic</td></tr>
+          <tr><td>Lignans (Oroselol)</td><td>Lignans</td><td>Antioxidant, antifungal, estrogenic modulation</td></tr>
+          <tr><td>Valerenic Acid analogues</td><td>Sesquiterpene acids</td><td>GABA-A receptor modulation; sedative and anxiolytic</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">03</span>
+        <h2 class="section-title">Ayurvedic Significance</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Mura is one of the oldest continuously used Ayurvedic drugs, appearing in both the Charaka Samhita and Sushruta Samhita. Charaka lists it among the <em>Hridya Dravyas</em> (cardiac tonics), <em>Medhya Rasayanas</em> (intellect-promoting rejuvenatives), and <em>Stanyashodhana</em> drugs (purifying breast milk). It is a key ingredient in Maha Panchagavya Ghrita, Saraswata Ghrita, Jatamansi Churna, and the famous <em>Tagara-Mura</em> sleep formulation. The Ashtanga Hridayam lauds it for <em>Unmada</em> (psychosis), <em>Apasmara</em> (epilepsy), <em>Shirorogas</em> (head diseases), and <em>Tvagrogas</em> (skin diseases).</p>
+      <p class="section-body">Its synonym <em>Bhutajata</em> — "born of elemental forces" — reflects its classical importance in treating disorders of the mind and consciousness. In Atharva Veda, it is invoked as <em>Tapasvini</em> — the ascetic — linking its meditative, grounding aroma to spiritual practice.</p>
+
+      <table class="dosha-table">
+        <thead><tr><th>Dosha</th><th>Effect</th><th>Mechanism &amp; Notes</th></tr></thead>
+        <tbody>
+          <tr><td>Vata ↓</td><td>Pacifying</td><td>Ushna virya and sweet vipaka soothe Vata's erratic movement — particularly in the nervous system; indicated in insomnia, anxiety, tremors, and neuralgic pain</td></tr>
+          <tr><td>Pitta ↓</td><td>Pacifying</td><td>Tikta-kashaya rasa and bitter vipaka cool and calm Pitta; used in inflammatory skin conditions, excess heat in the head, and irritability</td></tr>
+          <tr><td>Kapha ↓</td><td>Mildly pacifying</td><td>Tikshna (sharp) quality and ushna virya help clear Kapha stagnation; useful in dullness of mind and congestion, though prolonged use may eventually increase Kapha</td></tr>
+        </tbody>
+      </table>
+      <p class="section-body"><strong>Rasa:</strong> Tikta, Kashaya, Madhura &nbsp;·&nbsp; <strong>Guna:</strong> Laghu, Snigdha &nbsp;·&nbsp; <strong>Virya:</strong> Ushna &nbsp;·&nbsp; <strong>Vipaka:</strong> Madhura &nbsp;·&nbsp; <strong>Prabhava:</strong> Medhya, Hridya &nbsp;·&nbsp; <strong>Karma:</strong> Tridosha-shamaka (primarily Vata-Pitta)</p>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">04</span>
+        <h2 class="section-title">Key Health Benefits</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Modern pharmacology has validated Mura's classical applications across neurology, cardiology, hepatology, and dermatology. Its primary reputation as a sedative and nervine tonic is supported by robust experimental evidence, with clinical corroboration emerging in anxiety, insomnia, and neurodegenerative research.</p>
+
+      <div class="benefits-grid">
+        <div class="benefit-card">
+          <div class="benefit-title">Sedative &amp; Anti-anxiety (Medhya)</div>
+          <div class="benefit-desc">Jatamansone and nardostachin modulate GABA-A receptors and reduce monoamine neurotransmitter turnover, producing anxiolytic and sedative effects. Animal studies confirm significant reduction in locomotor activity and potentiation of barbiturate sleep — comparable to diazepam at equivalent doses in rodent models.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Neuroprotective &amp; Anti-epileptic</div>
+          <div class="benefit-desc">Nardosinone promotes neurite outgrowth and protects dopaminergic neurons. Ethanolic extract significantly attenuates seizure activity in maximal electroshock and PTZ-induced epilepsy models. Classically listed in Charaka for Apasmara (epilepsy) and Unmada (psychosis-like states).</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Cardiac Tonic (Hridya)</div>
+          <div class="benefit-desc">Mura's classification as one of the foremost Hridya Dravyas is supported by studies showing reduction in heart rate variability, anti-arrhythmic activity, and mild hypotensive effect. Improves cardiac output without increasing myocardial oxygen demand — relevant in stress-related cardiac complaints.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Hepatoprotective</div>
+          <div class="benefit-desc">Ursolic acid and oleanolic acid in the rhizome exhibit significant hepatoprotective activity, reducing CCl4-induced liver damage and normalising serum transaminase levels. Jatamansi water extract protects against paracetamol-induced hepatotoxicity with potency comparable to silymarin.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Hair Growth &amp; Scalp Health</div>
+          <div class="benefit-desc">Among its most clinically relevant traditional uses: Jatamansi oil applied to the scalp stimulates hair follicles, reduces premature greying, and addresses scalp disorders. Mechanistic studies suggest JAK-STAT pathway modulation and improved follicular blood flow — validated by hair count studies showing significant growth promotion.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Antioxidant &amp; Skin-protective</div>
+          <div class="benefit-desc">High radical-scavenging capacity attributed to jatamansin, luteolin, and hesperidin. Topical preparations in sesame oil are classical for Tvagrogas (skin diseases), leukoderma, and improving skin complexion. DPPH and ABTS assays confirm potent antioxidant activity of rhizome extracts across polarity gradients.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Antihypertensive</div>
+          <div class="benefit-desc">Alcoholic extract significantly lowers blood pressure in experimental hypertension models via calcium channel antagonism and ACE-inhibitory activity. Mura is traditionally combined with Arjuna bark in stress-related hypertension — a formulation now attracting clinical trial interest.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Anti-inflammatory &amp; Analgesic</div>
+          <div class="benefit-desc">Sesquiterpene constituents inhibit COX-2 and lipoxygenase pathways, reducing prostaglandin synthesis. Significant antinociceptive activity demonstrated in hot-plate and writhing tests. Classical application in Shirorogas (headache, migraine) supported by both anti-inflammatory and vasodilatory mechanisms.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">05</span>
+        <h2 class="section-title">How to Use Mura</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Mura is used both internally as a nervine tonic and externally as a hair and skin oil. Given its Vulnerable conservation status, quality-certified, sustainably sourced preparations should always be preferred. Internal use should be guided by a qualified Ayurvedic physician, particularly in children, during pregnancy, and in combination with pharmaceutical medications.</p>
+
+      <table class="consume-table">
+        <thead><tr><th>Form</th><th>Preparation</th><th>Dosage</th><th>Best Use</th></tr></thead>
+        <tbody>
+          <tr><td>Churna (Powder)</td><td>Dried rhizome powder; with honey, ghee, or warm milk</td><td>1–3 g twice daily</td><td>Anxiety, insomnia, memory support</td></tr>
+          <tr><td>Kwatha (Decoction)</td><td>Boil rhizome in water; reduce to quarter volume</td><td>30–40 ml twice daily</td><td>Epilepsy support, cardiac disorders</td></tr>
+          <tr><td>Jatamansi Ghrita</td><td>Classical medicated ghee (Saraswata Ghrita)</td><td>5–10 g with warm milk at bedtime</td><td>Medhya Rasayana, neurological conditions</td></tr>
+          <tr><td>Nasya (Nasal Oil)</td><td>Jatamansi-infused sesame oil; 2 drops per nostril</td><td>2 drops each nostril, morning</td><td>Headache, sinusitis, mental clarity</td></tr>
+          <tr><td>Taila (Hair Oil)</td><td>Rhizome decocted in sesame or coconut oil</td><td>Apply to scalp, leave 1+ hour</td><td>Hair growth, greying, scalp disorders</td></tr>
+          <tr><td>Essential Oil</td><td>Steam-distilled spikenard EO; dilute in carrier (2–3%)</td><td>Topical or aromatic diffusion</td><td>Anxiety, skin conditions, aromatherapy</td></tr>
+          <tr><td>Ark (Distillate)</td><td>Aqueous distillate of rhizome</td><td>20–30 ml, twice daily</td><td>Hypertension, palpitations</td></tr>
+          <tr><td>Tagara-Mura Yoga</td><td>Equal parts Mura + Tagara (Valerian); honey anupana</td><td>Per physician direction</td><td>Insomnia, anxiety, Vata disorders of mind</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">06</span>
+        <h2 class="section-title">Safety &amp; Precautions</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Mura is generally well-tolerated at classical doses. Its primary risk is additive CNS depression when combined with sedative medications. Due to its Vulnerable conservation status, overharvesting is an ecological concern — always purchase from certified, sustainable sources. The plant is officially listed under CITES Appendix II and India's Wildlife Protection Act Schedule VI.</p>
+
+      <ul class="precaution-list">
+        <li><strong>Pregnancy:</strong> Avoid internal use. Classical texts mention Mura among Stanyashodhana drugs modifying reproductive physiology — internal use in pregnancy is not established as safe.</li>
+        <li><strong>Sedative medications:</strong> Additive CNS depression with benzodiazepines, barbiturates, antiepileptics, and antihistamines. Reduce or taper pharmaceutical sedatives before introducing Mura under physician supervision.</li>
+        <li><strong>Operating machinery &amp; driving:</strong> Large doses may cause drowsiness — avoid activities requiring full alertness after therapeutic internal doses.</li>
+        <li><strong>Antihypertensive medications:</strong> Mura's mild hypotensive action may potentiate antihypertensive drugs; blood pressure monitoring recommended when used concurrently.</li>
+        <li><strong>Prolonged use &amp; dosage:</strong> Long-term use beyond 12 weeks without physician supervision is not recommended. Very high doses may paradoxically stimulate the CNS — stay within classical dosage ranges.</li>
+        <li><strong>Children:</strong> Only under qualified Ayurvedic specialist supervision. The Medhya preparations use very small doses — do not extrapolate adult dosing to children.</li>
+        <li><strong>Allergic contact dermatitis:</strong> Rare — topical Jatamansi oil may cause sensitisation in predisposed individuals. Patch test before full scalp application.</li>
+        <li><strong>Conservation ethics:</strong> Mura is Vulnerable in the wild. Source only from AYUSH-licensed manufacturers with sustainable cultivation chains; avoid raw rhizome of unknown provenance.</li>
+      </ul>
+    </div>
+
+    <div class="sources">
+      <div class="sources-title">References &amp; Sources</div>
+      <ul>
+        <li>Dhuna K et al. — "Nardostachys jatamansi: A comprehensive review of its phytochemistry, pharmacological activities, and traditional uses" — Journal of Ethnopharmacology, 2022</li>
+        <li>Singh V &amp; Singh R — "Central nervous system activity of Nardostachys jatamansi DC" — Journal of Ethnopharmacology, 2010</li>
+        <li>Rashid S et al. — "Neuroprotective effects of Nardostachys jatamansi in oxidative stress-induced models" — Pharmacognosy Magazine, 2014</li>
+        <li>Prabhu V et al. — "Hepatoprotective activity of Nardostachys jatamansi" — Indian Journal of Pharmacology, 2009</li>
+        <li>Gottumukkala VR et al. — "Hair growth promoting activity of Nardostachys jatamansi DC on mice" — Pharmacognosy Research, 2011</li>
+        <li>Charaka Samhita — Chikitsasthana, Hridaya Dravya, Medhya Rasayana references</li>
+        <li>Sushruta Samhita — Uttaratantra: Unmada and Apasmara Chikitsa</li>
+        <li>Ashtanga Hridayam — Chikitsasthana, Unmada and Shirorogas Chikitsa</li>
+        <li>Priyavrat Sharma — Dravyaguna Vigyana, Vol. II — Classical properties of Jatamansi</li>
+        <li>IUCN Red List — Nardostachys jatamansi conservation assessment, 2020</li>
+        <li>Atharva Veda — Tapasvini / Mura references (Books 6, 19)</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer>
+    <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a qualified practitioner before therapeutic use</p>
+  </footer>
+
+
+  <div id="viewerModal">
+    <div id="modal-topbar">
+      <span>3D Model — Mura</span>
+      <button type="button" id="close3D">✕</button>
+    </div>
+    <model-viewer src="mura3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+  </div>
+  <script>
+    (function() {
+      var open3D = document.getElementById('open3D');
+      var close3D = document.getElementById('close3D');
+      var modal = document.getElementById('viewerModal');
+      if (!open3D || !close3D || !modal) return;
+      function openModal() {
+        
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+      function closeModal() {
+        
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+      open3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); openModal();
+      });
+      close3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); closeModal();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+      });
+    })();
+  </script>
+
+</body>
+</html>

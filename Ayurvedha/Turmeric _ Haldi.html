@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Turmeric | Haldi | Swastha</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+  <style>
+    #open3D {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      padding: 10px 18px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: var(--forest);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      z-index: 1000;
+      transition: .3s;
+    }
+    #open3D:hover {
+      background: var(--gold);
+      color: var(--deep);
+    }
+    #viewerModal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+    }
+    #modal-topbar {
+      flex-shrink: 0;
+      height: 58px;
+      background: #111111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px 0 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      z-index: 99999;
+    }
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 4.5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.72);
+      user-select: none;
+    }
+    #close3D {
+      width: 38px;
+      height: 38px;
+      font-size: 15px;
+      font-weight: 300;
+      background: transparent;
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background .2s, color .2s, transform .22s;
+      outline: none;
+      flex-shrink: 0;
+    }
+    #close3D:hover {
+      background: #ffffff;
+      color: #111111;
+      border-color: #ffffff;
+      transform: rotate(90deg);
+    }
+    #viewerModal model-viewer {
+      flex: 1;
+      width: 100%;
+      display: block;
+      background: #ffffff;
+    }
+
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+    * { margin: 0; padding: 0; box-sizing: border-box }
+    html { scroll-behavior: smooth }
+    body {
+      font-family: 'Jost', sans-serif;
+      background: var(--cream);
+      color: var(--ink);
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity: .03;
+      pointer-events: none;
+      z-index: 100;
+    }
+    .bg-circle { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0 }
+    .bg-circle-1 { width: 700px; height: 700px; background: radial-gradient(circle, rgba(224,165,0,.13) 0%, transparent 70%); top: -200px; right: -150px }
+    .bg-circle-2 { width: 500px; height: 500px; background: radial-gradient(circle, rgba(245,166,35,.1) 0%, transparent 70%); bottom: -100px; left: -100px }
+    .botanical-svg { position: fixed; pointer-events: none; z-index: 1; opacity: .1 }
+    .botanical-tl { top: -20px; left: -20px; width: 260px }
+    .botanical-br { bottom: -20px; right: -20px; width: 220px; transform: rotate(180deg) }
+
+    .hero {
+      position: relative; z-index: 10;
+      padding: 54px 40px 0;
+      text-align: center;
+      opacity: 0;
+      animation: fadeUp .9s ease .1s forwards;
+    }
+    .back-link {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+      color: var(--sage); text-decoration: none; margin-bottom: 36px; transition: color .3s;
+    }
+    .back-link:hover { color: var(--turmeric) }
+    .logo-rule { display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 14px }
+    .logo-rule span { display: block; height: 1px; width: 70px; background: linear-gradient(to right, transparent, var(--gold)) }
+    .logo-rule span:last-child { background: linear-gradient(to left, transparent, var(--gold)) }
+    .logo-ornament { font-size: 13px; color: var(--gold) }
+    .hero-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(64px, 12vw, 110px);
+      font-weight: 300; letter-spacing: 8px; line-height: 1;
+      color: var(--deep);
+    }
+    .hero-subtitle {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 18px; font-style: italic; font-weight: 300;
+      color: var(--turmeric-dark); letter-spacing: 2px; margin-top: 8px;
+    }
+    .hero-sci {
+      font-size: 11px; font-weight: 200; letter-spacing: 5px;
+      color: var(--sage); margin-top: 6px;
+    }
+    .hero-photos {
+      position: relative; z-index: 10;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 2px;
+      max-width: 900px; margin: 40px auto 0;
+      opacity: 0; animation: fadeUp .9s ease .35s forwards;
+    }
+    .hero-photos img {
+      width: 100%; height: 380px;
+      object-fit: cover; object-position: center; display: block;
+      background: var(--parchment);
+    }
+    .photo-caption {
+      text-align: center; font-family: 'Cormorant Garamond', serif;
+      font-size: 12px; font-style: italic; color: var(--sage); letter-spacing: 1px;
+      padding: 10px 0 0; max-width: 900px; margin: 0 auto;
+      position: relative; z-index: 10;
+      opacity: 0; animation: fadeUp .9s ease .5s forwards;
+    }
+    .divider {
+      display: flex; align-items: center; justify-content: center;
+      gap: 16px; margin: 50px auto; max-width: 600px;
+      opacity: 0; animation: fadeUp .9s ease .55s forwards;
+      position: relative; z-index: 10;
+    }
+    .divider-line { height: 1px; width: 120px; background: linear-gradient(to right, transparent, var(--sage)) }
+    .divider-line:last-child { background: linear-gradient(to left, transparent, var(--sage)) }
+    .divider-leaf { color: var(--turmeric); font-size: 18px }
+
+    .content { position: relative; z-index: 10; max-width: 860px; margin: 0 auto; padding: 0 30px 80px }
+    .intro-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 20px; font-weight: 300; line-height: 1.75;
+      color: var(--ink); text-align: center; max-width: 700px; margin: 0 auto 60px;
+      opacity: 0; animation: fadeUp .9s ease .6s forwards;
+    }
+    .intro-text em { color: var(--turmeric-dark); font-style: italic }
+
+    .section { margin-bottom: 60px; opacity: 0; animation: fadeUp .9s ease forwards }
+    .section:nth-child(1) { animation-delay: .65s }
+    .section:nth-child(2) { animation-delay: .75s }
+    .section:nth-child(3) { animation-delay: .85s }
+    .section:nth-child(4) { animation-delay: .95s }
+    .section:nth-child(5) { animation-delay: 1.05s }
+    .section:nth-child(6) { animation-delay: 1.15s }
+    .section:nth-child(7) { animation-delay: 1.25s }
+
+    .section-header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px }
+    .section-num { font-family: 'Cormorant Garamond', serif; font-size: 11px; letter-spacing: 4px; color: var(--gold) }
+    .section-title { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 400; color: var(--deep); letter-spacing: 1px }
+    .section-rule { height: 1px; flex: 1; background: linear-gradient(to right, var(--gold), transparent) }
+    .section-body { font-size: 13px; font-weight: 300; line-height: 1.9; color: var(--ink); margin-bottom: 24px }
+
+    .data-table { width: 100%; border-collapse: collapse; margin: 16px 0 8px; font-size: 12px }
+    .data-table thead tr { background: var(--deep); color: var(--gold); font-size: 10px; letter-spacing: 3px; text-transform: uppercase }
+    .data-table thead th { padding: 12px 14px; text-align: left; font-weight: 400 }
+    .data-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .data-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .data-table tbody tr { transition: background .2s }
+    .data-table tbody tr:hover { background: #f5e0a0 }
+    .data-table tbody td { padding: 10px 14px; color: var(--ink); border-bottom: 1px solid rgba(122,79,30,.08) }
+    .data-table tbody td:first-child { font-weight: 400; color: var(--deep); width: 28% }
+
+    .dosha-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .dosha-table thead tr { background: var(--turmeric-dark); color: var(--cream) }
+    .dosha-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .dosha-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .dosha-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .dosha-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(122,79,30,.08) }
+    .dosha-table tbody td:first-child { font-weight: 400; color: var(--turmeric-dark); width: 18% }
+    .dosha-table tbody td:nth-child(2) { color: var(--earth); width: 20% }
+
+    .consume-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .consume-table thead tr { background: var(--earth); color: var(--cream) }
+    .consume-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .consume-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .consume-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .consume-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(122,79,30,.08) }
+    .consume-table tbody td:first-child { font-weight: 400; color: var(--earth); width: 22% }
+
+    .benefits-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: rgba(122,79,30,.12); border: 1px solid rgba(122,79,30,.12); margin: 8px 0 }
+    .benefit-card { background: var(--cream); padding: 24px 22px; transition: background .3s; position: relative; overflow: hidden }
+    .benefit-card:hover { background: #fde9a8 }
+    .benefit-card::before { content: ''; position: absolute; bottom: 0; left: 0; width: 0; height: 2px; background: var(--turmeric); transition: width .4s }
+    .benefit-card:hover::before { width: 100% }
+    .benefit-title { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 600; color: var(--turmeric-dark); margin-bottom: 8px }
+    .benefit-desc { font-size: 11.5px; font-weight: 300; line-height: 1.75; color: var(--ink); opacity: .85 }
+
+    .precaution-list { list-style: none; margin: 8px 0 }
+    .precaution-list li { display: flex; gap: 12px; align-items: flex-start; padding: 10px 14px; font-size: 12px; font-weight: 300; line-height: 1.7; color: var(--ink); border-bottom: 1px solid rgba(122,79,30,.08) }
+    .precaution-list li:last-child { border-bottom: none }
+    .precaution-list li::before { content: '▸'; color: var(--turmeric); flex-shrink: 0; margin-top: 1px }
+
+    .nutrition-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: rgba(122,79,30,.12); border: 1px solid rgba(122,79,30,.12); margin: 20px 0 }
+    .nutrition-cell { background: var(--cream); padding: 22px 16px; text-align: center; transition: background .3s }
+    .nutrition-cell:hover { background: var(--parchment) }
+    .nutrition-num { font-family: 'Cormorant Garamond', serif; font-size: 36px; font-weight: 300; color: var(--turmeric-dark); line-height: 1; margin-bottom: 4px }
+    .nutrition-unit { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); font-weight: 300 }
+    .nutrition-label { font-size: 11px; font-weight: 300; color: var(--ink); margin-top: 5px }
+
+    .sources { border-top: 1px solid rgba(122,79,30,.15); padding-top: 24px; margin-top: 20px }
+    .sources-title { font-size: 10px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); margin-bottom: 12px; font-weight: 300 }
+    .sources ul { list-style: none }
+    .sources ul li { font-family: 'Cormorant Garamond', serif; font-size: 13px; font-style: italic; color: var(--earth); padding: 5px 0; border-bottom: 1px solid rgba(122,79,30,.06) }
+    .sources ul li::before { content: '· '; color: var(--sage) }
+
+    footer { position: relative; z-index: 10; text-align: center; padding: 24px 20px 44px; border-top: 1px solid rgba(122,79,30,.12); max-width: 860px; margin: 0 auto }
+    footer p { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); font-weight: 300 }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(28px) } to { opacity: 1; transform: translateY(0) } }
+
+    @media(max-width:700px) {
+      .hero-photos { grid-template-columns: 1fr }
+      .hero-photos img { height: 260px }
+      .benefits-grid { grid-template-columns: 1fr }
+      .nutrition-bar { grid-template-columns: 1fr 1fr }
+      .content { padding: 0 18px 60px }
+    }
+  </style>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+</head>
+<body>
+  <button type="button" id="open3D">View in 3D</button>
+
+
+<div class="bg-circle bg-circle-1"></div>
+<div class="bg-circle bg-circle-2"></div>
+
+<!-- Botanical SVG decorations -->
+<svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#e0a500" stroke-width="1.5" fill="none"/>
+  <ellipse cx="90" cy="215" rx="22" ry="11" fill="#f5a623" opacity="0.7" transform="rotate(-30 90 215)"/>
+  <ellipse cx="130" cy="170" rx="20" ry="10" fill="#e0a500" opacity="0.6" transform="rotate(-45 130 170)"/>
+  <ellipse cx="170" cy="130" rx="18" ry="9" fill="#f5a623" opacity="0.8" transform="rotate(-60 170 130)"/>
+  <ellipse cx="210" cy="90" rx="16" ry="8" fill="#c47d00" opacity="0.5" transform="rotate(-70 210 90)"/>
+  <circle cx="90" cy="215" r="4" fill="#c47d00" opacity="0.6"/>
+  <circle cx="130" cy="170" r="3" fill="#7a4f1e" opacity="0.5"/>
+</svg>
+<svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#e0a500" stroke-width="1.5" fill="none"/>
+  <ellipse cx="90" cy="215" rx="22" ry="11" fill="#f5a623" opacity="0.7" transform="rotate(-30 90 215)"/>
+  <ellipse cx="130" cy="170" rx="20" ry="10" fill="#e0a500" opacity="0.6" transform="rotate(-45 130 170)"/>
+</svg>
+
+<div class="hero">
+  <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+  <div class="logo-rule"><span></span><div class="logo-ornament">✦</div><span></span></div>
+  <div class="hero-title">Haldi</div>
+  <div class="hero-subtitle">Turmeric — The Golden Spice of Life</div>
+  <div class="hero-sci">Curcuma longa L. &nbsp;·&nbsp; Zingiberaceae</div>
+</div>
+
+<div class="hero-photos">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/Curcuma_longa_plant.jpg/800px-Curcuma_longa_plant.jpg" alt="Turmeric plant with broad leaves and yellow rhizome" onerror="this.style.minHeight='380px';this.style.background='var(--parchment)';">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b2/Curcuma_longa_roots.jpg/800px-Curcuma_longa_roots.jpg" alt="Fresh turmeric rhizomes showing vivid golden-orange interior" onerror="this.style.minHeight='380px';this.style.background='var(--parchment)';">
+</div>
+<p class="photo-caption">Fig. 1 — Curcuma longa plant with characteristic broad lanceolate leaves &nbsp;·&nbsp; Fig. 2 — Fresh rhizomes revealing vivid golden-orange interior characteristic of high curcumin content</p>
+
+<div class="divider">
+  <div class="divider-line"></div>
+  <div class="divider-leaf">❧</div>
+  <div class="divider-line"></div>
+</div>
+
+<div class="content">
+  <p class="intro-text">Revered for over 4,000 years as <em>Haridra</em> — "the auspicious golden one" — turmeric is among the most thoroughly studied medicinal plants on earth, with over 13,000 peer-reviewed publications documenting its pharmacology. From the <em>Atharva Veda</em> to modern oncology labs, this rhizome of the ginger family has held its place as India's most sacred spice, kitchen medicine, and ritual purifier.</p>
+
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">01</span>
+      <h2 class="section-title">Botanical Profile</h2>
+      <div class="section-rule"></div>
+    </div>
+    <p class="section-body">Curcuma longa is a robust perennial herb of the Zingiberaceae (ginger) family, native to the tropical forests of South and Southeast Asia — principally the Indian subcontinent, where India accounts for over 75% of global production. The plant grows to 60–90 cm tall from thick, branched underground rhizomes (the "root" of commerce) that are brilliantly orange-yellow inside due to curcuminoid pigments. Its broad, lanceolate leaves — up to 60 cm long — arise directly from the rhizome on long pseudostems. Pale yellow flowers emerge on a cone-shaped spike from the centre of the leaf sheath, though the plant rarely sets seed and propagates almost entirely through rhizome division.</p>
+    <p class="section-body">The rhizome is harvested 7–10 months after planting, boiled, dried, and polished to yield the familiar turmeric powder. The primary rhizome ("mother") and lateral "fingers" differ slightly in curcumin content; the fingers generally yield a higher concentration of active principles.</p>
+    <table class="data-table">
+      <thead><tr><th>PROPERTY</th><th>Detail</th></tr></thead>
+      <tbody>
+        <tr><td>Family</td><td>Zingiberaceae (Ginger Family)</td></tr>
+        <tr><td>Botanical Name</td><td>Curcuma longa L.</td></tr>
+        <tr><td>Sanskrit Names</td><td>Haridra, Kanchani, Nisha, Jayanti, Gauri, Aushadhi, Hattavilasini</td></tr>
+        <tr><td>Hindi / Common Name</td><td>Haldi, Turmeric, Indian Saffron, Yellow Root</td></tr>
+        <tr><td>Regional Names</td><td>Manjal (Tam/Mal), Pasupu (Tel), Halad (Mar), Haladi (Kan)</td></tr>
+        <tr><td>Origin</td><td>Indian Subcontinent; cultivated pan-tropically</td></tr>
+        <tr><td>Plant Type</td><td>Perennial rhizomatous herb (60–90 cm)</td></tr>
+        <tr><td>Medicinal Part</td><td>Rhizome (primary), leaves, essential oil</td></tr>
+        <tr><td>Taste Profile</td><td>Tikta (bitter), Katu (pungent)</td></tr>
+        <tr><td>Key Active</td><td>Curcumin (curcuminoids) — 2–8% of dry rhizome</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">02</span>
+      <h2 class="section-title">Phytochemistry</h2>
+      <div class="section-rule"></div>
+    </div>
+    <p class="section-body">The bioactive richness of turmeric lies primarily in its <em>curcuminoid</em> complex — three closely related polyphenols that constitute 2–8% of the dry rhizome by weight. Curcumin (diferuloylmethane) accounts for approximately 77% of this fraction; demethoxycurcumin and bisdemethoxycurcumin make up the rest. The rhizome also yields 3–7% essential oil containing turmerones, zingiberene, and sesquiterpenoids responsible for its aroma and additional pharmacological activity.</p>
+    <div class="nutrition-bar">
+      <div class="nutrition-cell">
+        <div class="nutrition-num">8%</div>
+        <div class="nutrition-unit">max curcumin</div>
+        <div class="nutrition-label">In dry rhizome</div>
+      </div>
+      <div class="nutrition-cell">
+        <div class="nutrition-num">13k+</div>
+        <div class="nutrition-unit">publications</div>
+        <div class="nutrition-label">PubMed citations</div>
+      </div>
+      <div class="nutrition-cell">
+        <div class="nutrition-num">300+</div>
+        <div class="nutrition-unit">compounds</div>
+        <div class="nutrition-label">Identified in rhizome</div>
+      </div>
+      <div class="nutrition-cell">
+        <div class="nutrition-num">4000</div>
+        <div class="nutrition-unit">years</div>
+        <div class="nutrition-label">Documented use</div>
+      </div>
+    </div>
+    <table class="data-table">
+      <thead><tr><th>Compound</th><th>Category</th><th>Primary Action</th></tr></thead>
+      <tbody>
+        <tr><td>Curcumin (I)</td><td>Diarylheptanoid polyphenol</td><td>Anti-inflammatory (NF-κB inhibitor), antioxidant, antitumour, neuroprotective</td></tr>
+        <tr><td>Demethoxycurcumin (II)</td><td>Curcuminoid</td><td>Antioxidant, anti-proliferative; synergistic with curcumin</td></tr>
+        <tr><td>Bisdemethoxycurcumin (III)</td><td>Curcuminoid</td><td>Antioxidant; stimulates haem oxygenase-1</td></tr>
+        <tr><td>Ar-Turmerone</td><td>Sesquiterpene ketone</td><td>Neuroprotective, anti-snake venom, insecticidal</td></tr>
+        <tr><td>α- &amp; β-Turmerones</td><td>Sesquiterpenoids</td><td>Anti-inflammatory, anticancer, antimicrobial</td></tr>
+        <tr><td>Zingiberene</td><td>Sesquiterpene</td><td>Carminative, anti-nausea, digestive stimulant</td></tr>
+        <tr><td>Bisacurone</td><td>Sesquiterpene</td><td>Antibacterial, hepatoprotective</td></tr>
+        <tr><td>Caffeic Acid, Ferulic Acid</td><td>Hydroxycinnamic acids</td><td>Antioxidant, neuroprotective, anti-inflammatory</td></tr>
+        <tr><td>Polysaccharides (Ukonans A–D)</td><td>Acidic polysaccharides</td><td>Immunostimulant, anti-complementary activity</td></tr>
+        <tr><td>Volatile Oil (3–7%)</td><td>Essential oil fraction</td><td>Antimicrobial, carminative, anti-inflammatory</td></tr>
+      </tbody>
+    </table>
+    <p class="section-body">A critical note: curcumin has notoriously poor oral bioavailability due to rapid hepatic metabolism and low aqueous solubility. Co-ingestion with <em>piperine</em> (black pepper) at 1:20 ratio (20 mg piperine per 1 g curcumin) increases bioavailability by up to 2,000% — a fact ancient cooks intuited long before clinical trials confirmed it. Fat solubility also enhances absorption; consuming turmeric with healthy dietary fats is recommended.</p>
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">03</span>
+      <h2 class="section-title">Ayurvedic Significance</h2>
+      <div class="section-rule"></div>
+    </div>
+    <p class="section-body">Haridra is one of the most universally applied herbs in the Ayurvedic pharmacopoeia — mentioned in the <em>Atharva Veda</em>, the <em>Charaka Samhita</em>, and the <em>Sushruta Samhita</em>. It occupies a position in Bhavaprakasha Nighantu's <em>Haritakyadi Varga</em> and is classified by Chakrapanidatta as both a <em>Tridoshaghna</em> (balancing all three doshas in appropriate formulations) and <em>Raktaprasadana</em> (blood purifier). It is among the Dashemani (ten groups of drugs) listed by Charaka in the <em>Kushtha Chikitsa</em> (skin disease treatment) and is a core ingredient of Haridra Khanda — the classical preparation for allergic rhinitis and skin conditions.</p>
+    <p class="section-body">Its ritual significance parallels its medicinal importance: turmeric paste is applied in Haldi ceremonies before Hindu weddings, smeared on the body of a newborn, and used in temple offerings. It is simultaneously <em>aushadha</em> (medicine), <em>dravya</em> (ritual substance), and <em>ahara</em> (food) — a trifecta unmatched by almost any other plant in Indian tradition.</p>
+    <table class="dosha-table">
+      <thead><tr><th>Dosha</th><th>Effect</th><th>Mechanism &amp; Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Vata ↓</td><td>Mildly pacifying</td><td>Ushna virya and snigdha (slightly unctuous) qualities calm Vata; used in joint pain, arthritis, and neurological disorders; best combined with warm milk or ghee</td></tr>
+        <tr><td>Pitta ↓↑</td><td>Dual action</td><td>Tikta rasa and blood-purifying action reduce Pitta-related skin diseases and inflammation; however, excess use may mildly aggravate Pitta due to ushna virya — use cautiously in severe Pitta excess</td></tr>
+        <tr><td>Kapha ↓</td><td>Strongly pacifying</td><td>Katu-tikta rasa, laghu (light), and ushna (hot) properties make it a principal Kapha-reducing herb; indicated in respiratory congestion, obesity, diabetes, and sluggish digestion</td></tr>
+      </tbody>
+    </table>
+    <p class="section-body"><strong>Rasa:</strong> Tikta (bitter), Katu (pungent) &nbsp;·&nbsp; <strong>Guna:</strong> Laghu (light), Ruksha (dry) &nbsp;·&nbsp; <strong>Virya:</strong> Ushna (hot) &nbsp;·&nbsp; <strong>Vipaka:</strong> Katu &nbsp;·&nbsp; <strong>Karma:</strong> Kapha-Vata shamaka, Raktashodhaka (blood purifier), Varnya (skin-brightening), Vishahara (anti-toxic)</p>
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">04</span>
+      <h2 class="section-title">Key Health Benefits</h2>
+      <div class="section-rule"></div>
+    </div>
+    <p class="section-body">With over 13,000 published studies, turmeric / curcumin is among the most extensively researched natural compounds in history. Its pharmacological breadth spans anti-inflammatory, antioxidant, antimicrobial, neuroprotective, cardioprotective, anticancer, and metabolic activity — validating centuries of Ayurvedic application.</p>
+    <div class="benefits-grid">
+      <div class="benefit-card">
+        <div class="benefit-title">Powerful Anti-inflammatory</div>
+        <div class="benefit-desc">Curcumin inhibits NF-κB — the master switch for inflammatory gene expression — and suppresses COX-2, LOX, and cytokine pathways (TNF-α, IL-1β, IL-6). Multiple clinical trials show efficacy in osteoarthritis and rheumatoid arthritis comparable to ibuprofen, without gastrointestinal side effects.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Antioxidant &amp; Free Radical Scavenging</div>
+        <div class="benefit-desc">Curcumin directly neutralises reactive oxygen species and simultaneously upregulates the body's own antioxidant enzymes — superoxide dismutase, catalase, and glutathione peroxidase — via Nrf2 activation. This dual action makes it uniquely potent among natural antioxidants.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Brain Health &amp; Neuroprotection</div>
+        <div class="benefit-desc">Curcumin crosses the blood-brain barrier and has been shown to reduce amyloid plaque formation and tau tangles associated with Alzheimer's disease. It boosts BDNF (brain-derived neurotrophic factor), supporting neuroplasticity. Clinical trials show improvement in mood, memory, and attention in healthy older adults.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Cardioprotective Effects</div>
+        <div class="benefit-desc">Turmeric improves endothelial function, lowers LDL oxidation, and reduces platelet aggregation. A 2012 study found curcumin supplementation as effective as atorvastatin at improving endothelial function and reducing inflammatory and oxidative stress markers in type-2 diabetes patients.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Anticancer &amp; Chemo-preventive</div>
+        <div class="benefit-desc">Curcumin has demonstrated pro-apoptotic and anti-proliferative activity against over 60 cancer cell lines including colorectal, breast, lung, prostate, and pancreatic cancers in vitro. It modulates over 700 genes and multiple oncogenic signalling pathways (Wnt, MAPK, PI3K/Akt). Phase I–III clinical trials are ongoing.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Digestive &amp; Liver Support</div>
+        <div class="benefit-desc">Turmeric stimulates bile production and flow, aiding fat digestion and preventing gallstone formation. It is hepatoprotective — shielding liver cells from toxin and drug-induced damage. Effective in IBS, inflammatory bowel disease, and ulcerative colitis through mucosal anti-inflammatory action.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Skin Health &amp; Wound Healing</div>
+        <div class="benefit-desc">Its antimicrobial, anti-inflammatory, and antioxidant triad makes turmeric a cornerstone of Ayurvedic dermatology. Topical application accelerates wound healing, reduces psoriasis plaques, treats acne, and brightens hyperpigmentation. The classical <em>Varnya</em> (complexion-enhancing) claim is supported by modern melanin-inhibition studies.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Metabolic &amp; Anti-diabetic</div>
+        <div class="benefit-desc">Curcumin improves insulin sensitivity, reduces HbA1c, and lowers fasting blood glucose. In a landmark 2012 Thai study, curcumin supplementation prevented progression from prediabetes to Type 2 diabetes in 100% of participants versus 16.4% in the placebo group over 9 months of follow-up.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">05</span>
+      <h2 class="section-title">How to Consume Haldi</h2>
+      <div class="section-rule"></div>
+    </div>
+    <p class="section-body">Turmeric is one of the safest medicinal plants known — generally recognised as safe (GRAS) at culinary doses with an excellent safety profile even at higher therapeutic doses in clinical trials. Bioavailability, however, is the key challenge with curcumin, and the method of preparation significantly affects its therapeutic benefit.</p>
+    <table class="consume-table">
+      <thead><tr><th>Form</th><th>Preparation</th><th>Dosage</th><th>Best Use</th></tr></thead>
+      <tbody>
+        <tr><td>Golden Milk (Haldi Doodh)</td><td>½ tsp turmeric + pinch black pepper in warm milk with ghee</td><td>1 cup before bed</td><td>Immunity, sleep, joint pain, respiratory</td></tr>
+        <tr><td>Raw Rhizome Juice</td><td>Juice of 1-inch fresh turmeric rhizome</td><td>20–30 ml daily</td><td>Liver support, skin, anti-inflammatory</td></tr>
+        <tr><td>Turmeric Powder (Culinary)</td><td>Added to cooking with fat and black pepper</td><td>1–3 g daily (½–1 tsp)</td><td>General wellness, digestion, anti-oxidant</td></tr>
+        <tr><td>Standardised Extract</td><td>95% curcuminoids capsule with piperine</td><td>500–1000 mg, 2–3× daily</td><td>Arthritis, inflammation, targeted therapy</td></tr>
+        <tr><td>Haridra Khanda (Classical)</td><td>Classical formulation with sugar, spices, cow's milk</td><td>Per physician direction</td><td>Allergic rhinitis, skin diseases, eczema</td></tr>
+        <tr><td>Turmeric Paste (Topical)</td><td>Turmeric + coconut oil or raw milk</td><td>Apply 15 min before wash</td><td>Acne, hyperpigmentation, wound healing</td></tr>
+        <tr><td>Turmeric Decoction (Kwatha)</td><td>Boil 5 g turmeric in 200 ml water; reduce to 50 ml</td><td>50 ml twice daily</td><td>Cough, respiratory congestion, fever</td></tr>
+        <tr><td>Turmeric Ghee</td><td>Haridra Ghrita — classically prepared medicated ghee</td><td>5–10 g on empty stomach</td><td>Eye disorders, nasal conditions, Vata disorders</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">06</span>
+      <h2 class="section-title">Safety &amp; Precautions</h2>
+      <div class="section-rule"></div>
+    </div>
+    <p class="section-body">Culinary turmeric is exceptionally safe for the vast majority of adults. High-dose curcumin supplementation (above 3–4 g/day) and medicinal use in specific conditions warrants caution. No serious adverse events have been reported in clinical trials using up to 8 g/day for up to 3 months.</p>
+    <ul class="precaution-list">
+      <li><strong>Pregnancy (high doses):</strong> Culinary amounts in food are safe and traditional. However, high-dose therapeutic supplements should be avoided in pregnancy as curcumin may stimulate uterine contractions and interfere with foetal development.</li>
+      <li><strong>Gallstones / Bile Duct Obstruction:</strong> Turmeric strongly stimulates bile secretion — contraindicated in gallstone disease, bile duct obstruction, or obstructive jaundice as it may cause biliary colic or worsen obstruction.</li>
+      <li><strong>Blood thinners / Anticoagulants:</strong> Curcumin inhibits platelet aggregation and potentiates the effects of anticoagulants (warfarin, aspirin, clopidogrel). Patients on anticoagulation therapy should use only culinary doses and consult their physician before supplementing.</li>
+      <li><strong>Pre-surgery:</strong> Discontinue high-dose curcumin supplementation at least 2 weeks before scheduled surgery due to anti-platelet and blood-pressure-lowering effects.</li>
+      <li><strong>Iron deficiency:</strong> Curcumin chelates dietary iron and may reduce its absorption. Individuals with iron-deficiency anaemia should avoid taking turmeric supplements alongside iron-rich meals.</li>
+      <li><strong>Gastrointestinal sensitivity:</strong> High doses may cause nausea, diarrhea, or stomach upset in some individuals. Starting with lower doses and titrating upward is advisable. Taking with food reduces GI discomfort.</li>
+      <li><strong>Diabetes medications:</strong> Curcumin's hypoglycaemic effect may potentiate insulin or oral hypoglycaemic drugs — blood glucose should be monitored when supplementing alongside diabetes medication.</li>
+      <li><strong>Skin staining:</strong> Topical use stains skin, nails, and fabric yellow; this fades within 24–48 hours from skin. Use old clothing and avoid fabric contact during application.</li>
+    </ul>
+  </div>
+
+  <div class="sources">
+    <div class="sources-title">References &amp; Sources</div>
+    <ul>
+      <li>Aggarwal BB, Harikumar KB — "Potential therapeutic effects of curcumin, the anti-inflammatory agent, against neurodegenerative, cardiovascular, pulmonary, metabolic, autoimmune and neoplastic diseases" — International Journal of Biochemistry &amp; Cell Biology, 2009</li>
+      <li>Shehzad A et al. — "Curcumin in Various Cancers" — BioFactors, 2013</li>
+      <li>Hewlings SJ, Kalman DS — "Curcumin: A Review of Its Effects on Human Health" — Foods (MDPI), 2017</li>
+      <li>Chuengsamarn S et al. — "Curcumin extract for prevention of type 2 diabetes" — Diabetes Care, 2012</li>
+      <li>Small GW et al. — "Memory and brain amyloid and tau effects of a bioavailable form of curcumin in non-demented adults" — American Journal of Geriatric Psychiatry, 2018</li>
+      <li>Shoba G et al. — "Influence of piperine on the pharmacokinetics of curcumin in animals and human volunteers" — Planta Medica, 1998</li>
+      <li>Bhavaprakasha Nighantu — Haritakyadi Varga; Charaka Samhita — Kushtha Chikitsa</li>
+      <li>Sushruta Samhita — Haridra applications in Raktapitta and Vrana Chikitsa</li>
+      <li>Priyavrat Sharma — Dravyaguna Vigyana — Classical properties of Haridra</li>
+      <li>National Centre for Complementary and Integrative Health (NCCIH) — Turmeric monograph, 2023</li>
+    </ul>
+  </div>
+</div>
+
+<footer>
+  <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a qualified practitioner before therapeutic use</p>
+</footer>
+
+
+  <div id="viewerModal">
+    <div id="modal-topbar">
+      <span>3D Model — Haldi</span>
+      <button type="button" id="close3D">✕</button>
+    </div>
+    <model-viewer src="haldi3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+  </div>
+  <script>
+    (function() {
+      var open3D = document.getElementById('open3D');
+      var close3D = document.getElementById('close3D');
+      var modal = document.getElementById('viewerModal');
+      if (!open3D || !close3D || !modal) return;
+      function openModal() {
+        
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+      function closeModal() {
+        
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+      open3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); openModal();
+      });
+      close3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); closeModal();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+      });
+    })();
+  </script>
+
+</body>
+</html>

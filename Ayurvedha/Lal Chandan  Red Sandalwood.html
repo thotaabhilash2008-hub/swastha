@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lal Chandan | Swastha</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+  <style>
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+    * { margin:0; padding:0; box-sizing:border-box }
+    html { scroll-behavior:smooth }
+    body { font-family:'Jost',sans-serif; background:var(--cream); color:var(--ink); min-height:100vh; overflow-x:hidden; position:relative }
+    body::before { content:''; position:fixed; inset:0; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E"); opacity:.035; pointer-events:none; z-index:100 }
+
+    #open3D { position:fixed; top:25px; right:30px; padding:10px 18px; font-size:11px; letter-spacing:2px; text-transform:uppercase; background:var(--forest); color:#fff; border:none; cursor:pointer; z-index:1000; transition:.3s }
+    #open3D:hover { background:var(--gold); color:var(--deep) }
+    #viewerModal { position:fixed; inset:0; z-index:2000; display:none; flex-direction:column }
+    #modal-topbar { flex-shrink:0; height:58px; background:#111; display:flex; align-items:center; justify-content:space-between; padding:0 28px 0 32px; border-bottom:1px solid rgba(255,255,255,.07) }
+    #modal-topbar span { font-family:'Jost',sans-serif; font-size:11px; font-weight:300; letter-spacing:4.5px; text-transform:uppercase; color:rgba(255,255,255,.72); user-select:none }
+    #close3D { width:38px; height:38px; font-size:15px; font-weight:300; background:transparent; color:#fff; border:1.5px solid rgba(255,255,255,.7); border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background .2s,color .2s,transform .22s; outline:none; flex-shrink:0 }
+    #close3D:hover { background:#fff; color:#111; border-color:#fff; transform:rotate(90deg) }
+    #viewerModal model-viewer { flex:1; width:100%; display:block; background:#fff }
+
+    .bg-circle { position:fixed; border-radius:50%; pointer-events:none; z-index:0 }
+    .bg-circle-1 { width:700px; height:700px; background:radial-gradient(circle,rgba(139,26,26,.1) 0%,transparent 70%); top:-200px; right:-150px }
+    .bg-circle-2 { width:500px; height:500px; background:radial-gradient(circle,rgba(201,130,76,.08) 0%,transparent 70%); bottom:-100px; left:-100px }
+
+    .botanical-svg { position:fixed; pointer-events:none; z-index:1; opacity:.09 }
+    .botanical-tl { top:-20px; left:-20px; width:260px }
+    .botanical-br { bottom:-20px; right:-20px; width:220px; transform:rotate(180deg) }
+
+    .hero { position:relative; z-index:10; padding:54px 40px 0; text-align:center; opacity:0; animation:fadeUp .9s ease .1s forwards }
+    .back-link { display:inline-flex; align-items:center; gap:8px; font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--sage); text-decoration:none; margin-bottom:36px; transition:color .3s }
+    .back-link:hover { color:var(--gold) }
+    .logo-rule { display:flex; align-items:center; justify-content:center; gap:20px; margin-bottom:14px }
+    .logo-rule span { display:block; height:1px; width:70px; background:linear-gradient(to right,transparent,var(--gold)) }
+    .logo-rule span:last-child { background:linear-gradient(to left,transparent,var(--gold)) }
+    .logo-ornament { font-size:13px; color:var(--gold) }
+    .hero-title { font-family:'Cormorant Garamond',serif; font-size:clamp(52px,10vw,100px); font-weight:300; letter-spacing:8px; line-height:1; color:var(--deep) }
+    .hero-subtitle { font-family:'Cormorant Garamond',serif; font-size:18px; font-style:italic; font-weight:300; color:var(--earth); letter-spacing:2px; margin-top:8px }
+    .hero-sci { font-size:11px; font-weight:200; letter-spacing:5px; color:var(--sage); margin-top:6px }
+
+    .hero-photos { position:relative; z-index:10; display:grid; grid-template-columns:1fr 1fr; gap:2px; max-width:900px; margin:40px auto 0; opacity:0; animation:fadeUp .9s ease .35s forwards }
+    .hero-photos img { width:100%; height:380px; object-fit:cover; object-position:center; display:block; background:var(--parchment) }
+    .photo-caption { text-align:center; font-family:'Cormorant Garamond',serif; font-size:12px; font-style:italic; color:var(--sage); letter-spacing:1px; padding:10px 0 0; max-width:900px; margin:0 auto; position:relative; z-index:10; opacity:0; animation:fadeUp .9s ease .5s forwards }
+
+    .divider { display:flex; align-items:center; justify-content:center; gap:16px; margin:50px auto; max-width:600px; opacity:0; animation:fadeUp .9s ease .55s forwards; position:relative; z-index:10 }
+    .divider-line { height:1px; width:120px; background:linear-gradient(to right,transparent,var(--sage)) }
+    .divider-line:last-child { background:linear-gradient(to left,transparent,var(--sage)) }
+    .divider-leaf { color:var(--forest); font-size:18px }
+
+    .content { position:relative; z-index:10; max-width:860px; margin:0 auto; padding:0 30px 80px }
+    .intro-text { font-family:'Cormorant Garamond',serif; font-size:20px; font-weight:300; line-height:1.75; color:var(--ink); text-align:center; max-width:700px; margin:0 auto 60px; opacity:0; animation:fadeUp .9s ease .6s forwards }
+    .intro-text em { color:var(--forest); font-style:italic }
+
+    .section { margin-bottom:60px; opacity:0; animation:fadeUp .9s ease forwards }
+    .section:nth-child(1){animation-delay:.65s} .section:nth-child(2){animation-delay:.75s} .section:nth-child(3){animation-delay:.85s} .section:nth-child(4){animation-delay:.95s} .section:nth-child(5){animation-delay:1.05s} .section:nth-child(6){animation-delay:1.15s} .section:nth-child(7){animation-delay:1.25s}
+
+    .section-header { display:flex; align-items:center; gap:14px; margin-bottom:20px }
+    .section-num { font-family:'Cormorant Garamond',serif; font-size:11px; letter-spacing:4px; color:var(--gold) }
+    .section-title { font-family:'Cormorant Garamond',serif; font-size:28px; font-weight:400; color:var(--deep); letter-spacing:1px }
+    .section-rule { height:1px; flex:1; background:linear-gradient(to right,var(--gold),transparent) }
+    .section-body { font-size:13px; font-weight:300; line-height:1.9; color:var(--ink); margin-bottom:24px }
+
+    .data-table { width:100%; border-collapse:collapse; margin:16px 0 8px; font-size:12px }
+    .data-table thead tr { background:var(--deep); color:var(--gold); font-size:10px; letter-spacing:3px; text-transform:uppercase }
+    .data-table thead th { padding:12px 14px; text-align:left; font-weight:400 }
+    .data-table tbody tr:nth-child(even) { background:var(--parchment) }
+    .data-table tbody tr:nth-child(odd) { background:var(--cream) }
+    .data-table tbody tr { transition:background .2s }
+    .data-table tbody tr:hover { background:#e8d4c4 }
+    .data-table tbody td { padding:10px 14px; color:var(--ink); border-bottom:1px solid rgba(124,58,30,.08) }
+    .data-table tbody td:first-child { font-weight:400; color:var(--deep); width:28% }
+
+    .dosha-table { width:100%; border-collapse:collapse; margin:16px 0; font-size:12px }
+    .dosha-table thead tr { background:var(--forest); color:var(--cream) }
+    .dosha-table thead th { padding:12px 14px; text-align:left; font-weight:400; letter-spacing:2px; font-size:10px; text-transform:uppercase }
+    .dosha-table tbody tr:nth-child(even) { background:var(--parchment) }
+    .dosha-table tbody tr:nth-child(odd) { background:var(--cream) }
+    .dosha-table tbody td { padding:11px 14px; color:var(--ink); border-bottom:1px solid rgba(124,58,30,.08) }
+    .dosha-table tbody td:first-child { font-weight:400; color:var(--forest); width:18% }
+    .dosha-table tbody td:nth-child(2) { color:var(--earth); width:20% }
+
+    .consume-table { width:100%; border-collapse:collapse; margin:16px 0; font-size:12px }
+    .consume-table thead tr { background:var(--earth); color:var(--cream) }
+    .consume-table thead th { padding:12px 14px; text-align:left; font-weight:400; letter-spacing:2px; font-size:10px; text-transform:uppercase }
+    .consume-table tbody tr:nth-child(even) { background:var(--parchment) }
+    .consume-table tbody tr:nth-child(odd) { background:var(--cream) }
+    .consume-table tbody td { padding:11px 14px; color:var(--ink); border-bottom:1px solid rgba(124,58,30,.08) }
+    .consume-table tbody td:first-child { font-weight:400; color:var(--earth); width:22% }
+
+    .benefits-grid { display:grid; grid-template-columns:1fr 1fr; gap:1px; background:rgba(124,58,30,.12); border:1px solid rgba(124,58,30,.12); margin:8px 0 }
+    .benefit-card { background:var(--cream); padding:24px 22px; transition:background .3s; position:relative; overflow:hidden }
+    .benefit-card:hover { background:#eddfd4 }
+    .benefit-card::before { content:''; position:absolute; bottom:0; left:0; width:0; height:2px; background:var(--gold); transition:width .4s }
+    .benefit-card:hover::before { width:100% }
+    .benefit-title { font-family:'Cormorant Garamond',serif; font-size:16px; font-weight:600; color:var(--forest); margin-bottom:8px }
+    .benefit-desc { font-size:11.5px; font-weight:300; line-height:1.75; color:var(--ink); opacity:.85 }
+
+    .precaution-list { list-style:none; margin:8px 0 }
+    .precaution-list li { display:flex; gap:12px; align-items:flex-start; padding:10px 14px; font-size:12px; font-weight:300; line-height:1.7; color:var(--ink); border-bottom:1px solid rgba(124,58,30,.08) }
+    .precaution-list li:last-child { border-bottom:none }
+    .precaution-list li::before { content:'▸'; color:var(--gold); flex-shrink:0; margin-top:1px }
+
+    .nutrition-bar { display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:rgba(124,58,30,.12); border:1px solid rgba(124,58,30,.12); margin:20px 0 }
+    .nutrition-cell { background:var(--cream); padding:22px 16px; text-align:center; transition:background .3s }
+    .nutrition-cell:hover { background:var(--parchment) }
+    .nutrition-num { font-family:'Cormorant Garamond',serif; font-size:36px; font-weight:300; color:var(--forest); line-height:1; margin-bottom:4px }
+    .nutrition-unit { font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--gold); font-weight:300 }
+    .nutrition-label { font-size:11px; font-weight:300; color:var(--ink); margin-top:5px }
+
+    .sources { border-top:1px solid rgba(124,58,30,.15); padding-top:24px; margin-top:20px }
+    .sources-title { font-size:10px; letter-spacing:4px; text-transform:uppercase; color:var(--sage); margin-bottom:12px; font-weight:300 }
+    .sources ul { list-style:none }
+    .sources ul li { font-family:'Cormorant Garamond',serif; font-size:13px; font-style:italic; color:var(--earth); padding:5px 0; border-bottom:1px solid rgba(124,58,30,.06) }
+    .sources ul li::before { content:'· '; color:var(--sage) }
+
+    footer { position:relative; z-index:10; text-align:center; padding:24px 20px 44px; border-top:1px solid rgba(124,58,30,.12); max-width:860px; margin:0 auto }
+    footer p { font-size:11px; letter-spacing:4px; text-transform:uppercase; color:var(--sage); font-weight:300 }
+
+    @keyframes fadeUp { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:translateY(0)} }
+    @media(max-width:700px){
+      .hero-photos{grid-template-columns:1fr} .hero-photos img{height:260px}
+      .benefits-grid{grid-template-columns:1fr} .nutrition-bar{grid-template-columns:1fr 1fr}
+      .content{padding:0 18px 60px} #modal-topbar{padding:0 16px 0 20px} #modal-topbar span{font-size:9px;letter-spacing:3px}
+    }
+  </style>
+</head>
+<body>
+
+<button id="open3D">View in 3D</button>
+<div id="viewerModal">
+  <div id="modal-topbar">
+    <span>3D Model — Lal Chandan</span>
+    <button id="close3D">✕</button>
+  </div>
+  <model-viewer src="lalchandan3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+</div>
+
+<div class="bg-circle bg-circle-1"></div>
+<div class="bg-circle bg-circle-2"></div>
+
+<!-- Botanical SVG — stylised sandalwood branch -->
+<svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M20 280 Q 70 200 120 150 Q 175 95 260 20" stroke="#8b1a1a" stroke-width="1.5" fill="none"/>
+  <ellipse cx="95" cy="205" rx="22" ry="11" fill="#8b1a1a" transform="rotate(-35 95 205)"/>
+  <ellipse cx="138" cy="162" rx="20" ry="10" fill="#c9824c" transform="rotate(-50 138 162)"/>
+  <ellipse cx="178" cy="122" rx="18" ry="9" fill="#8b1a1a" transform="rotate(-60 178 122)"/>
+  <circle cx="95" cy="205" r="5" fill="#c9824c" opacity=".7"/>
+  <circle cx="138" cy="162" r="4" fill="#8b1a1a" opacity=".8"/>
+  <circle cx="178" cy="122" r="4" fill="#c9824c" opacity=".6"/>
+  <circle cx="218" cy="82" r="5" fill="#8b1a1a" opacity=".7"/>
+</svg>
+<svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M20 280 Q 70 200 120 150 Q 175 95 260 20" stroke="#8b1a1a" stroke-width="1.5" fill="none"/>
+  <ellipse cx="95" cy="205" rx="22" ry="11" fill="#8b1a1a" transform="rotate(-35 95 205)"/>
+  <ellipse cx="138" cy="162" rx="20" ry="10" fill="#c9824c" transform="rotate(-50 138 162)"/>
+</svg>
+
+<div class="hero">
+  <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+  <div class="logo-rule"><span></span><div class="logo-ornament">✦</div><span></span></div>
+  <div class="hero-title">Lal Chandan</div>
+  <div class="hero-subtitle">Red Sandalwood — The Sacred Crimson Heartwood</div>
+  <div class="hero-sci">Pterocarpus santalinus L.f. &nbsp;·&nbsp; Lal Chandan / Rakta Chandana</div>
+</div>
+
+<div class="hero-photos">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/8/8a/Pterocarpus_santalinus_in_Talakona_forest%2C_AP_W_IMG_8145.jpg" alt="Red Sandalwood heartwood cross-section showing deep crimson grain"
+    onerror="this.style.minHeight='380px';this.style.background='var(--parchment)';">
+  <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/0/0d/Pterocarpus_santalinus_-_Red_Sandalwood_01.jpg/1280px-Pterocarpus_santalinus_-_Red_Sandalwood_01.jpg" alt="Pterocarpus santalinus tree with yellow flowers in bloom"
+    onerror="this.style.minHeight='380px';this.style.background='var(--parchment)';">
+</div>
+<p class="photo-caption">Fig. 1 — Deep crimson heartwood of Pterocarpus santalinus, prized since antiquity &nbsp;·&nbsp; Fig. 2 — Lal Chandan tree bearing characteristic bright-yellow pea flowers</p>
+
+<div class="divider">
+  <div class="divider-line"></div>
+  <div class="divider-leaf">❧</div>
+  <div class="divider-line"></div>
+</div>
+
+<div class="content">
+  <p class="intro-text">Revered across millennia as <em>Rakta Chandana</em> — "blood-red sandalwood" — this endemic tree of the Eastern Ghats holds a singular place in Ayurvedic pharmacopoeia, Unani medicine, Buddhist and Hindu ritual, and classical Indian artisanship. Its wine-red heartwood, yielding the pigment <em>santalin</em>, has been traded across Asia since at least the 9th century CE, lauded by Charaka and Sushruta alike for its <em>Pitta-shamaka</em>, wound-healing, and skin-beautifying virtues.</p>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">01</span><h2 class="section-title">Botanical Profile</h2><div class="section-rule"></div></div>
+    <p class="section-body">Lal Chandan (<em>Pterocarpus santalinus</em>) is a slow-growing, medium-sized deciduous tree of the Fabaceae (Leguminosae) family, endemic to the dry hill forests of the Eastern Ghats — principally the Nallamala, Seshachalam, and Veligonda ranges of Andhra Pradesh. It typically reaches 8–12 m in height with a short, irregular bole and a spreading crown. The bark is dark grey-brown, rough, and deeply furrowed; when cut, the inner layers exude a blood-red resinous sap — the hallmark of the species.</p>
+    <p class="section-body">Leaves are alternate, trifoliate, with broadly ovate to suborbicular leaflets bearing finely crenulate margins. Flowers are bright yellow, pea-shaped (papilionaceous), borne in short axillary racemes from April to June — before the leaves fully emerge — presenting a vivid seasonal spectacle. Pods are orbicular, flat, winged samaras, each containing one seed. The <em>heartwood</em> — the therapeutically and commercially valuable part — is deep red to purplish-crimson, extremely dense and hard, non-aromatic (unlike white sandalwood), and naturally resistant to termites and fungi. It is listed as a scheduled species under CITES Appendix II due to decades of over-harvesting and smuggling.</p>
+    <table class="data-table">
+      <thead><tr><th>Property</th><th>Detail</th></tr></thead>
+      <tbody>
+        <tr><td>Family</td><td>Fabaceae (Leguminosae) — Papilionoideae</td></tr>
+        <tr><td>Botanical Name</td><td>Pterocarpus santalinus L.f.</td></tr>
+        <tr><td>Sanskrit Names</td><td>Rakta Chandana, Tilaparni, Raktasara, Kuchandana, Shonitakhya, Patranga</td></tr>
+        <tr><td>Common Names</td><td>Red Sandalwood, Red Sanders, Saunderswood</td></tr>
+        <tr><td>Regional Names</td><td>Lal Chandan (Hindi), Agaru (Telugu), Sivappu Chandanam (Tamil), Raktachandana (Kannada)</td></tr>
+        <tr><td>Origin &amp; Distribution</td><td>Endemic to Eastern Ghats of Andhra Pradesh; now found in Karnataka, Tamil Nadu</td></tr>
+        <tr><td>Plant Type</td><td>Slow-growing deciduous tree (8–12 m)</td></tr>
+        <tr><td>Flowering Season</td><td>April–June (before leaf flush)</td></tr>
+        <tr><td>Medicinal Parts</td><td>Heartwood (primary), bark, leaves, roots</td></tr>
+        <tr><td>Taste Profile</td><td>Tikta (bitter), Madhura (sweet)</td></tr>
+        <tr><td>Conservation Status</td><td>CITES Appendix II; IUCN Vulnerable; protected under Indian Forest Act</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">02</span><h2 class="section-title">Phytochemistry &amp; Composition</h2><div class="section-rule"></div></div>
+    <p class="section-body">The deep-red colour of Lal Chandan heartwood is due primarily to <em>santalin</em> (santalin A and B) — pterocarpene-based homoisoflavonoids unique to this species. Beyond its pigment, the wood yields a remarkable array of bioactive compounds including pterostilbene, pterolinus A–D, cryptostrobin, savinin, and a spectrum of flavonoids and polyphenols. The roots and bark add further alkaloids, terpenoids, and glycosides to the therapeutic palette.</p>
+    <div class="nutrition-bar">
+      <div class="nutrition-cell"><div class="nutrition-num">~3%</div><div class="nutrition-unit">santalin</div><div class="nutrition-label">Heartwood content</div></div>
+      <div class="nutrition-cell"><div class="nutrition-num">4</div><div class="nutrition-unit">pterolinus</div><div class="nutrition-label">Novel pterocarpenes A–D</div></div>
+      <div class="nutrition-cell"><div class="nutrition-num">60+</div><div class="nutrition-unit">compounds</div><div class="nutrition-label">Identified phytoconstituents</div></div>
+      <div class="nutrition-cell"><div class="nutrition-num">1000+</div><div class="nutrition-unit">years</div><div class="nutrition-label">Trade & medicinal history</div></div>
+    </div>
+    <table class="data-table">
+      <thead><tr><th>Compound</th><th>Category</th><th>Primary Action</th></tr></thead>
+      <tbody>
+        <tr><td>Santalin A &amp; B</td><td>Homoisoflavonoids (pterocarpenes)</td><td>Pigment, anti-inflammatory, antidiabetic, antioxidant</td></tr>
+        <tr><td>Pterostilbene</td><td>Stilbenoid</td><td>Antioxidant, anti-inflammatory, neuroprotective, anticancer</td></tr>
+        <tr><td>Savinin &amp; Calocedrin</td><td>Lignan glycosides</td><td>Hepatoprotective, antimicrobial, cytotoxic</td></tr>
+        <tr><td>Pterolinus A–D</td><td>Novel pterocarpenes</td><td>Cytotoxic, antimicrobial, antifungal</td></tr>
+        <tr><td>Cryptostrobin</td><td>Flavanone</td><td>Antioxidant, anti-inflammatory</td></tr>
+        <tr><td>Angolensin</td><td>Isoflavanone</td><td>Antibacterial, antifungal activity</td></tr>
+        <tr><td>Liquiritigenin &amp; Isoliquiritigenin</td><td>Flavonoids</td><td>Anti-inflammatory, neuroprotective, antidiabetic</td></tr>
+        <tr><td>Gallic Acid &amp; Catechins</td><td>Phenolic acids &amp; tannins</td><td>Antioxidant, astringent, wound-healing</td></tr>
+        <tr><td>β-Sitosterol &amp; Lupeol</td><td>Phytosterols &amp; triterpenes</td><td>Anti-inflammatory, hypolipidemic, hepatoprotective</td></tr>
+        <tr><td>Kaempferol &amp; Quercetin</td><td>Flavonols</td><td>Antioxidant, capillary-protective, anti-allergic</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">03</span><h2 class="section-title">Ayurvedic Significance</h2><div class="section-rule"></div></div>
+    <p class="section-body">Rakta Chandana is one of the foremost Pitta-pacifying drugs in the Ayurvedic materia medica, mentioned prominently in Charaka Samhita, Sushruta Samhita, Ashtanga Hridayam, and all major Nighantus. It appears in the <em>Chandanadi Gana</em> (Charaka) and is a principal ingredient in classical formulations including <em>Chandanadya Ghrita</em>, <em>Rakta Chandanasava</em>, <em>Eladi Churna</em>, and <em>Usirasava</em>. Sushruta places it among the <em>Sarivadi</em> drugs useful in skin diseases and blood disorders.</p>
+    <p class="section-body">Classical shloka from Bhavaprakasha Nighantu — <em>"Raktam chandanam sheetam ca tiktam pittaraktapranut, tvakdosha jwarahara ca vrananam ropakam param"</em> — describes it as cold in potency, bitter in taste, pacifying Pitta and blood disorders, curing skin diseases and fever, and supreme in healing wounds.</p>
+    <table class="dosha-table">
+      <thead><tr><th>Dosha</th><th>Effect</th><th>Mechanism &amp; Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Pitta ↓↓</td><td>Strongly pacifying</td><td>Sheeta virya (cooling potency) and tikta-madhura rasa powerfully quell Pitta — the primary classical indication; used in fever, burning sensations, bleeding disorders, inflammatory skin conditions</td></tr>
+        <tr><td>Rakta ↓</td><td>Purifying</td><td>Classified as <em>Raktaprasadana</em> (blood purifier) — clears Pitta-vitiated blood, indicated in skin eruptions, haemorrhagic conditions, erysipelas, and raktapitta</td></tr>
+        <tr><td>Vata ↑</td><td>Mildly aggravating</td><td>Its cooling and drying properties may mildly increase Vata in already Vata-dominant constitutions or in excess doses; use cautiously in significant Vata imbalance</td></tr>
+        <tr><td>Kapha ↑</td><td>Mildly aggravating</td><td>Sweet taste and cooling potency can mildly increase Kapha; monitor in chronic Kapha conditions with mucus or oedema</td></tr>
+      </tbody>
+    </table>
+    <p class="section-body"><strong>Rasa:</strong> Tikta (bitter), Madhura (sweet) &nbsp;·&nbsp; <strong>Guna:</strong> Laghu (light), Ruksha (dry) &nbsp;·&nbsp; <strong>Virya:</strong> Sheeta (cooling) &nbsp;·&nbsp; <strong>Vipaka:</strong> Katu (pungent) &nbsp;·&nbsp; <strong>Karma:</strong> Pitta-Rakta shamaka, Vrana ropana, Tvakaprasadana</p>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">04</span><h2 class="section-title">Key Health Benefits</h2><div class="section-rule"></div></div>
+    <p class="section-body">Modern pharmacological research on Lal Chandan has validated a wide range of its classical applications, with particularly robust data on anti-inflammatory, antidiabetic, hepatoprotective, and skin-healing effects across multiple <em>in vitro</em> and <em>in vivo</em> models.</p>
+    <div class="benefits-grid">
+      <div class="benefit-card">
+        <div class="benefit-title">Skin Health &amp; Complexion</div>
+        <div class="benefit-desc">Perhaps the most celebrated classical application. Heartwood paste (lepa) applied topically cools inflamed skin, reduces hyperpigmentation, fades blemishes, and treats acne, prickly heat, and rashes. Santalin and pterostilbene inhibit melanin synthesis and provide UV-protective antioxidant action. Still widely used in Ayurvedic cosmetics, ubtans, and face packs.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Anti-inflammatory &amp; Analgesic</div>
+        <div class="benefit-desc">Aqueous and ethanolic extracts significantly suppress pro-inflammatory cytokines (TNF-α, IL-1β, IL-6) and inhibit COX-2. Animal studies demonstrate reduction in carrageenan-induced paw oedema comparable to standard anti-inflammatory drugs. Savinin and pterostilbene are key active contributors.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Antidiabetic &amp; Metabolic</div>
+        <div class="benefit-desc">Santalin A demonstrates significant α-glucosidase inhibitory activity — slowing post-meal glucose absorption. Multiple animal studies show heartwood extracts lower fasting blood glucose and improve insulin sensitivity in diabetic models. Pterostilbene additionally activates PPAR-α pathways implicated in lipid regulation.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Hepatoprotective</div>
+        <div class="benefit-desc">Savinin — a key lignan isolated from Lal Chandan — demonstrates dose-dependent protection against CCl₄-induced hepatotoxicity, reducing liver enzyme elevations (ALT, AST) and preventing histological damage. Classical formulation Rakta Chandanasava is used in jaundice, hepatitis, and liver congestion.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Antipyretic &amp; Fever Management</div>
+        <div class="benefit-desc">Its Sheeta virya (cooling potency) is a classical treatment for fever — fresh heartwood paste is applied to the forehead, temples, and chest in heat fevers. Extracts show significant antipyretic activity in yeast-induced pyrexia in animal models, acting via prostaglandin inhibition.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Wound Healing</div>
+        <div class="benefit-desc">Topical application of heartwood paste promotes wound closure through multiple mechanisms: stimulating collagen synthesis, reducing oxidative stress at the wound site, inhibiting bacterial colonisation, and modulating inflammatory resolution. Classical texts term it <em>vrana ropana param</em> — supreme in wound healing.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Antimicrobial &amp; Antifungal</div>
+        <div class="benefit-desc">Pterolinus A–D and angolensin demonstrate significant activity against Staphylococcus aureus, E. coli, Aspergillus niger, and Candida albicans. The wood's natural antimicrobial properties underpin both its traditional wound-care use and its remarkable durability as a timber without chemical treatment.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Urinary &amp; Reproductive Health</div>
+        <div class="benefit-desc">Decoction is used in burning urination (mutrakricchra), haematuria (blood in urine), and seminal disorders (shukrameha) in classical Ayurveda. Aqueous extract shows relaxant effects on smooth muscle, and cooling properties soothe urogenital inflammation. Used in formulations for menorrhagia and uterine bleeding.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">05</span><h2 class="section-title">How to Use Lal Chandan</h2><div class="section-rule"></div></div>
+    <p class="section-body">Lal Chandan is used both internally (decoction, powder, medicated preparations) and extensively as a topical agent. Unlike white sandalwood, its primary modern use is external — in skin care, cooling pastes, and cosmetic formulations. Internal preparations should be taken under qualified supervision. As a protected species, only legally sourced material should be used.</p>
+    <table class="consume-table">
+      <thead><tr><th>Form</th><th>Preparation</th><th>Dosage</th><th>Best Use</th></tr></thead>
+      <tbody>
+        <tr><td>Heartwood Paste (Lepa)</td><td>Grind heartwood on a rough stone with cold water or rose water into smooth paste</td><td>Apply thin layer; leave 20–30 min</td><td>Skin brightening, acne, prickly heat, sunburn, fever (forehead)</td></tr>
+        <tr><td>Heartwood Decoction (Kwatha)</td><td>Boil 10–15 g heartwood chips in 4× water; reduce to ¼</td><td>30–50 ml twice daily</td><td>Fever, burning urination, skin diseases, haemorrhage</td></tr>
+        <tr><td>Heartwood Powder (Churna)</td><td>Fine-milled dried heartwood powder</td><td>1–3 g with honey or milk, physician-directed</td><td>Pitta disorders, diabetes, liver support, anaemia</td></tr>
+        <tr><td>Cold Infusion (Hima)</td><td>Soak chips in cold water overnight; strain</td><td>25–40 ml once daily</td><td>Burning sensations, excess Pitta, heat-related conditions</td></tr>
+        <tr><td>Medicated Oil / Ghee</td><td>Per classical Chandanadya Ghrita formula</td><td>Practitioner-directed only</td><td>Skin diseases, eye conditions, internal Pitta conditions</td></tr>
+        <tr><td>Rakta Chandanasava</td><td>Classical fermented preparation (Asava)</td><td>15–30 ml with equal water after meals</td><td>Jaundice, liver disorders, urinary infections</td></tr>
+        <tr><td>Face Pack (Ubtan)</td><td>Mix powder with multani mitti, turmeric, rose water</td><td>Twice weekly application</td><td>Complexion, oily skin, acne, pigmentation</td></tr>
+        <tr><td>Wood Chip Soak (Topical)</td><td>Soak chips; use water for bathing or compress</td><td>As needed for cooling</td><td>Heat rash, body cooling in summer, fever sponging</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">06</span><h2 class="section-title">Safety &amp; Precautions</h2><div class="section-rule"></div></div>
+    <p class="section-body">Lal Chandan has an excellent safety profile when used at classical doses — it is considered non-toxic and well tolerated in both internal and external applications for most individuals. Topical use is very safe. Internal use requires attention to constitution, dosage, and duration.</p>
+    <ul class="precaution-list">
+      <li><strong>Vata constitution / Vata disorders:</strong> Its Sheeta (cooling) and Ruksha (drying) properties may aggravate Vata — use cautiously in Vata-dominant individuals, in cold climates, or during winter without appropriate anupana (vehicle) such as warm milk or ghee.</li>
+      <li><strong>Pregnancy:</strong> Internal use at therapeutic doses should be supervised. Classical use for uterine bleeding requires physician direction; avoid self-dosing.</li>
+      <li><strong>Kapha disorders:</strong> Its cooling and mildly sweet nature may worsen chronic Kapha conditions — obesity, diabetes with Kapha predominance, or chronic mucus disorders — if used in excess internally.</li>
+      <li><strong>Drug interactions:</strong> May potentiate antidiabetic medications — monitor blood glucose when combining with hypoglycemic drugs. Its hepatoprotective and blood-thinning properties could interact with anticoagulant medications.</li>
+      <li><strong>Skin allergy:</strong> Topical application is very well tolerated, but patch test is advisable for highly sensitive skin. Discontinue if contact dermatitis develops.</li>
+      <li><strong>Sourcing &amp; legality:</strong> Pterocarpus santalinus is a CITES-listed species and its trade is strictly regulated in India. Always purchase from licensed, certified vendors. Illegally sourced wood should never be used or purchased.</li>
+      <li><strong>Prolonged internal use:</strong> No significant toxicity is reported at traditional doses; however, prolonged use beyond 8–12 weeks without supervision is not advisable. Not a substitute for medical treatment in serious conditions.</li>
+      <li><strong>Staining:</strong> The deep-red santalin pigment stains fabrics, skin, and surfaces intensely — use protective measures when preparing pastes or decoctions.</li>
+    </ul>
+  </div>
+
+  <div class="sources">
+    <div class="sources-title">References &amp; Sources</div>
+    <ul>
+      <li>Mohanty SK et al. — "Pterocarpus santalinus Linn.: A comprehensive review on phytochemical and pharmacological profile" — Asian Pacific Journal of Tropical Biomedicine, 2017</li>
+      <li>Srinivasan GV et al. — "Pterolinus A–D: novel pterocarpanoids from Pterocarpus santalinus" — Phytochemistry, 2015</li>
+      <li>Manjunatha BK — "Hepatoprotective activity of Pterocarpus santalinus Linn." — Indian Journal of Pharmacology, 2006</li>
+      <li>Bhanot A et al. — "Antihyperglycemic and antioxidative potential of the heartwood of Pterocarpus santalinus" — Journal of Natural Medicines, 2011</li>
+      <li>Murali Krishna C et al. — "Ethnobotanical and phytochemical review of Pterocarpus santalinus" — Journal of Pharmacognosy and Phytochemistry, 2014</li>
+      <li>Charaka Samhita — Chandanadi Gana, Sutrasthana; Rakta Chandana in Rakta Pitta Chikitsa</li>
+      <li>Sushruta Samhita — Sarivadi Gana; Rakta Chandana in Twak Vikara Chikitsa</li>
+      <li>Bhavaprakasha Nighantu — Chandanadi Varga; classical shloka on Rakta Chandana properties</li>
+      <li>Ashtanga Hridayam — Chandanadya Ghrita formulation; Rakta Chandana in Pitta roga</li>
+      <li>Priyavrat Sharma — Dravyaguna Vigyana Vol. II — Rakta Chandana monograph</li>
+      <li>CITES Appendix II Listing — Pterocarpus santalinus trade regulation documentation</li>
+    </ul>
+  </div>
+</div>
+
+<footer>
+  <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a qualified practitioner before therapeutic use</p>
+</footer>
+
+<script>
+  const open3D = document.getElementById('open3D');
+  const close3D = document.getElementById('close3D');
+  const modal = document.getElementById('viewerModal');
+  function openModal(){
+    var _aud = document.getElementById('lal_chandanAudio'); if(_aud){ _aud.currentTime=0; var playPromise = _aud.play(); if (playPromise !== undefined) { playPromise.catch(function(e){ console.log(e); }); } }
+ modal.style.display='flex'; document.body.style.overflow='hidden'; history.pushState({modal:'lalchandan3d'},'','#3d') }
+  function closeModal(){
+    var _aud = document.getElementById('lal_chandanAudio'); if(_aud){ _aud.pause(); }
+ modal.style.display='none'; document.body.style.overflow=''; if(window.location.hash==='#3d') history.replaceState(null,'',window.location.pathname) }
+  open3D.addEventListener('click',e=>{ e.preventDefault(); e.stopPropagation(); openModal() });
+  close3D.addEventListener('click',e=>{ e.preventDefault(); e.stopPropagation(); closeModal() });
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&modal.style.display==='flex') closeModal() });
+  window.addEventListener('popstate',()=>{ if(modal.style.display==='flex'){ modal.style.display='none'; document.body.style.overflow='' } });
+</script>
+
+  <audio id="lal_chandanAudio" src="lal_chandan_benefits.mp3" loop preload="auto"></audio>
+</body>
+</html>

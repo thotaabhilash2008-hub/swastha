@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sahachara | Swastha</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+  <style>
+    #open3D {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      padding: 10px 18px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: var(--forest);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      z-index: 1000;
+      transition: .3s;
+    }
+    #open3D:hover {
+      background: var(--gold);
+      color: var(--deep);
+    }
+    #viewerModal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+    }
+    #modal-topbar {
+      flex-shrink: 0;
+      height: 58px;
+      background: #111111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px 0 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      z-index: 99999;
+    }
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 4.5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.72);
+      user-select: none;
+    }
+    #close3D {
+      width: 38px;
+      height: 38px;
+      font-size: 15px;
+      font-weight: 300;
+      background: transparent;
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background .2s, color .2s, transform .22s;
+      outline: none;
+      flex-shrink: 0;
+    }
+    #close3D:hover {
+      background: #ffffff;
+      color: #111111;
+      border-color: #ffffff;
+      transform: rotate(90deg);
+    }
+    #viewerModal model-viewer {
+      flex: 1;
+      width: 100%;
+      display: block;
+      background: #ffffff;
+    }
+
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+    * { margin:0; padding:0; box-sizing:border-box }
+    html { scroll-behavior:smooth }
+    body { font-family:'Jost',sans-serif; background:var(--cream); color:var(--ink); min-height:100vh; overflow-x:hidden; position:relative }
+    body::before { content:''; position:fixed; inset:0; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E"); opacity:.035; pointer-events:none; z-index:100 }
+
+    .bg-circle { position:fixed; border-radius:50%; pointer-events:none; z-index:0 }
+    .bg-circle-1 { width:700px; height:700px; background:radial-gradient(circle, rgba(58,95,114,.1) 0%, transparent 70%); top:-200px; right:-150px }
+    .bg-circle-2 { width:500px; height:500px; background:radial-gradient(circle, rgba(184,147,74,.08) 0%, transparent 70%); bottom:-100px; left:-100px }
+
+    .botanical-svg { position:fixed; pointer-events:none; z-index:1; opacity:.1 }
+    .botanical-tl { top:-20px; left:-20px; width:260px }
+    .botanical-br { bottom:-20px; right:-20px; width:220px; transform:rotate(180deg) }
+
+    .hero { position:relative; z-index:10; padding:54px 40px 0; text-align:center; opacity:0; animation:fadeUp .9s ease .1s forwards }
+    .back-link { display:inline-flex; align-items:center; gap:8px; font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--sage); text-decoration:none; margin-bottom:36px; transition:color .3s }
+    .back-link:hover { color:var(--gold) }
+    .logo-rule { display:flex; align-items:center; justify-content:center; gap:20px; margin-bottom:14px }
+    .logo-rule span { display:block; height:1px; width:70px; background:linear-gradient(to right, transparent, var(--gold)) }
+    .logo-rule span:last-child { background:linear-gradient(to left, transparent, var(--gold)) }
+    .logo-ornament { font-size:13px; color:var(--gold) }
+    .hero-title { font-family:'Cormorant Garamond',serif; font-size:clamp(64px,12vw,110px); font-weight:300; letter-spacing:8px; line-height:1; color:var(--deep) }
+    .hero-subtitle { font-family:'Cormorant Garamond',serif; font-size:18px; font-style:italic; font-weight:300; color:var(--earth); letter-spacing:2px; margin-top:8px }
+    .hero-sci { font-size:11px; font-weight:200; letter-spacing:5px; color:var(--sage); margin-top:6px }
+
+    .hero-photos { position:relative; z-index:10; display:grid; grid-template-columns:1fr 1fr; gap:2px; max-width:900px; margin:40px auto 0; opacity:0; animation:fadeUp .9s ease .35s forwards }
+    .hero-photos img { width:100%; height:380px; object-fit:cover; object-position:center; display:block; background:var(--parchment) }
+    .photo-caption { text-align:center; font-family:'Cormorant Garamond',serif; font-size:12px; font-style:italic; color:var(--sage); letter-spacing:1px; padding:10px 0 0; max-width:900px; margin:0 auto; position:relative; z-index:10; opacity:0; animation:fadeUp .9s ease .5s forwards }
+
+    .divider { display:flex; align-items:center; justify-content:center; gap:16px; margin:50px auto; max-width:600px; opacity:0; animation:fadeUp .9s ease .55s forwards; position:relative; z-index:10 }
+    .divider-line { height:1px; width:120px; background:linear-gradient(to right, transparent, var(--sage)) }
+    .divider-line:last-child { background:linear-gradient(to left, transparent, var(--sage)) }
+    .divider-leaf { color:var(--forest); font-size:18px }
+
+    .content { position:relative; z-index:10; max-width:860px; margin:0 auto; padding:0 30px 80px }
+    .intro-text { font-family:'Cormorant Garamond',serif; font-size:20px; font-weight:300; line-height:1.75; color:var(--ink); text-align:center; max-width:700px; margin:0 auto 60px; opacity:0; animation:fadeUp .9s ease .6s forwards }
+    .intro-text em { color:var(--forest); font-style:italic }
+
+    .section { margin-bottom:60px; opacity:0; animation:fadeUp .9s ease forwards }
+    .section:nth-child(1) { animation-delay:.65s } .section:nth-child(2) { animation-delay:.75s }
+    .section:nth-child(3) { animation-delay:.85s } .section:nth-child(4) { animation-delay:.95s }
+    .section:nth-child(5) { animation-delay:1.05s } .section:nth-child(6) { animation-delay:1.15s }
+    .section:nth-child(7) { animation-delay:1.25s }
+
+    .section-header { display:flex; align-items:center; gap:14px; margin-bottom:20px }
+    .section-num { font-family:'Cormorant Garamond',serif; font-size:11px; letter-spacing:4px; color:var(--gold) }
+    .section-title { font-family:'Cormorant Garamond',serif; font-size:28px; font-weight:400; color:var(--deep); letter-spacing:1px }
+    .section-rule { height:1px; flex:1; background:linear-gradient(to right, var(--gold), transparent) }
+    .section-body { font-size:13px; font-weight:300; line-height:1.9; color:var(--ink); margin-bottom:24px }
+
+    .data-table { width:100%; border-collapse:collapse; margin:16px 0 8px; font-size:12px }
+    .data-table thead tr { background:var(--deep); color:var(--gold); font-size:10px; letter-spacing:3px; text-transform:uppercase }
+    .data-table thead th { padding:12px 14px; text-align:left; font-weight:400 }
+    .data-table tbody tr:nth-child(even) { background:var(--parchment) }
+    .data-table tbody tr:nth-child(odd) { background:var(--cream) }
+    .data-table tbody tr { transition:background .2s }
+    .data-table tbody tr:hover { background:#e5dcc8 }
+    .data-table tbody td { padding:10px 14px; color:var(--ink); border-bottom:1px solid rgba(90,70,40,.08) }
+    .data-table tbody td:first-child { font-weight:400; color:var(--deep); width:28% }
+
+    .dosha-table { width:100%; border-collapse:collapse; margin:16px 0; font-size:12px }
+    .dosha-table thead tr { background:var(--forest); color:var(--cream) }
+    .dosha-table thead th { padding:12px 14px; text-align:left; font-weight:400; letter-spacing:2px; font-size:10px; text-transform:uppercase }
+    .dosha-table tbody tr:nth-child(even) { background:var(--parchment) }
+    .dosha-table tbody tr:nth-child(odd) { background:var(--cream) }
+    .dosha-table tbody td { padding:11px 14px; color:var(--ink); border-bottom:1px solid rgba(90,70,40,.08) }
+    .dosha-table tbody td:first-child { font-weight:400; color:var(--forest); width:18% }
+    .dosha-table tbody td:nth-child(2) { color:var(--earth); width:20% }
+
+    .consume-table { width:100%; border-collapse:collapse; margin:16px 0; font-size:12px }
+    .consume-table thead tr { background:var(--earth); color:var(--cream) }
+    .consume-table thead th { padding:12px 14px; text-align:left; font-weight:400; letter-spacing:2px; font-size:10px; text-transform:uppercase }
+    .consume-table tbody tr:nth-child(even) { background:var(--parchment) }
+    .consume-table tbody tr:nth-child(odd) { background:var(--cream) }
+    .consume-table tbody td { padding:11px 14px; color:var(--ink); border-bottom:1px solid rgba(90,70,40,.08) }
+    .consume-table tbody td:first-child { font-weight:400; color:var(--earth); width:22% }
+
+    .benefits-grid { display:grid; grid-template-columns:1fr 1fr; gap:1px; background:rgba(90,70,40,.12); border:1px solid rgba(90,70,40,.12); margin:8px 0 }
+    .benefit-card { background:var(--cream); padding:24px 22px; transition:background .3s; position:relative; overflow:hidden }
+    .benefit-card:hover { background:rgba(200, 164, 93, 0.15) }
+    .benefit-card::before { content:''; position:absolute; bottom:0; left:0; width:0; height:2px; background:var(--gold); transition:width .4s }
+    .benefit-card:hover::before { width:100% }
+    .benefit-title { font-family:'Cormorant Garamond',serif; font-size:16px; font-weight:600; color:var(--forest); margin-bottom:8px }
+    .benefit-desc { font-size:11.5px; font-weight:300; line-height:1.75; color:var(--ink); opacity:.85 }
+
+    .precaution-list { list-style:none; margin:8px 0 }
+    .precaution-list li { display:flex; gap:12px; align-items:flex-start; padding:10px 14px; font-size:12px; font-weight:300; line-height:1.7; color:var(--ink); border-bottom:1px solid rgba(90,70,40,.08) }
+    .precaution-list li:last-child { border-bottom:none }
+    .precaution-list li::before { content:'▸'; color:var(--gold); flex-shrink:0; margin-top:1px }
+
+    .nutrition-bar { display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:rgba(90,70,40,.12); border:1px solid rgba(90,70,40,.12); margin:20px 0 }
+    .nutrition-cell { background:var(--cream); padding:22px 16px; text-align:center; transition:background .3s }
+    .nutrition-cell:hover { background:var(--parchment) }
+    .nutrition-num { font-family:'Cormorant Garamond',serif; font-size:36px; font-weight:300; color:var(--forest); line-height:1; margin-bottom:4px }
+    .nutrition-unit { font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--gold); font-weight:300 }
+    .nutrition-label { font-size:11px; font-weight:300; color:var(--ink); margin-top:5px }
+
+    .sources { border-top:1px solid rgba(90,70,40,.15); padding-top:24px; margin-top:20px }
+    .sources-title { font-size:10px; letter-spacing:4px; text-transform:uppercase; color:var(--sage); margin-bottom:12px; font-weight:300 }
+    .sources ul { list-style:none }
+    .sources ul li { font-family:'Cormorant Garamond',serif; font-size:13px; font-style:italic; color:var(--earth); padding:5px 0; border-bottom:1px solid rgba(90,70,40,.06) }
+    .sources ul li::before { content:'· '; color:var(--sage) }
+
+    footer { position:relative; z-index:10; text-align:center; padding:24px 20px 44px; border-top:1px solid rgba(90,70,40,.12); max-width:860px; margin:0 auto }
+    footer p { font-size:11px; letter-spacing:4px; text-transform:uppercase; color:var(--sage); font-weight:300 }
+
+    @keyframes fadeUp { from { opacity:0; transform:translateY(28px) } to { opacity:1; transform:translateY(0) } }
+    @media(max-width:700px) {
+      .hero-photos { grid-template-columns:1fr } .hero-photos img { height:260px }
+      .benefits-grid { grid-template-columns:1fr } .nutrition-bar { grid-template-columns:1fr 1fr }
+      .content { padding:0 18px 60px }
+    }
+  </style>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+</head>
+<body>
+  <button type="button" id="open3D">View in 3D</button>
+
+
+  <div class="bg-circle bg-circle-1"></div>
+  <div class="bg-circle bg-circle-2"></div>
+
+  <svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#3a5f72" stroke-width="1.5" fill="none"/>
+    <circle cx="90" cy="210" r="8" fill="#3a5f72" opacity="0.7"/>
+    <circle cx="130" cy="175" r="10" fill="#7a9faa" opacity="0.6"/>
+    <circle cx="170" cy="135" r="7" fill="#3a5f72" opacity="0.8"/>
+    <circle cx="210" cy="95" r="9" fill="#b8934a" opacity="0.5"/>
+    <ellipse cx="115" cy="195" rx="20" ry="10" fill="#7a9faa" transform="rotate(-30 115 195)"/>
+    <ellipse cx="155" cy="155" rx="18" ry="9" fill="#3a5f72" transform="rotate(-45 155 155)"/>
+    <ellipse cx="195" cy="115" rx="16" ry="8" fill="#7a9faa" transform="rotate(-60 195 115)"/>
+  </svg>
+  <svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#3a5f72" stroke-width="1.5" fill="none"/>
+    <circle cx="90" cy="210" r="8" fill="#3a5f72" opacity="0.7"/>
+    <circle cx="130" cy="175" r="10" fill="#7a9faa" opacity="0.6"/>
+    <ellipse cx="115" cy="195" rx="20" ry="10" fill="#7a9faa" transform="rotate(-30 115 195)"/>
+  </svg>
+
+  <div class="hero">
+    <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+    <div class="logo-rule"><span></span><div class="logo-ornament">✦</div><span></span></div>
+    <div class="hero-title">Sahachara</div>
+    <div class="hero-subtitle">The Companion Herb — Strobilanthes of the Ancients</div>
+    <div class="hero-sci">Strobilanthes ciliatus &nbsp;·&nbsp; Barleria ciliata &nbsp;·&nbsp; Acanthaceae</div>
+  </div>
+
+  <div class="hero-photos">
+    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/a/af/Strobilanthes_ciliatus_-_Lesser_Kurinji_at_Kannur_2018_%289%29.jpg/1280px-Strobilanthes_ciliatus_-_Lesser_Kurinji_at_Kannur_2018_%289%29.jpg" alt="Sahachara blue-purple tubular flowers in dense spike"
+      onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/0/06/Strobilanthes_ciliatus_-_Lesser_Kurinji_at_Kannur_2018_%287%29.jpg/1280px-Strobilanthes_ciliatus_-_Lesser_Kurinji_at_Kannur_2018_%287%29.jpg" alt="Sahachara plant with lanceolate leaves and flowering stems"
+      onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+  </div>
+  <p class="photo-caption">Fig. 1 — Dense spikes of Sahachara's characteristic blue-violet tubular flowers &nbsp;·&nbsp; Fig. 2 — Sahachara stems with opposite lanceolate leaves in its natural moist forest habitat</p>
+
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-leaf">❧</div>
+    <div class="divider-line"></div>
+  </div>
+
+  <div class="content">
+    <p class="intro-text">Known as <em>Sahachara</em> — "the companion" or "one who walks alongside" — this striking blue-violet flowering herb of the Acanthaceae family occupies a unique position in Ayurvedic classics as a premier herb for <em>Vata-Kapha</em> disorders, especially those affecting joints, the nervous system, and the urinary tract. Mentioned prominently in the Ashtanga Hridayam and Sushruta Samhita, Sahachara's identity has been the subject of centuries of scholarly debate — its name sheltering at least three distinct botanical species across classical and regional traditions.</p>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">01</span>
+        <h2 class="section-title">Botanical Profile</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">The classical Sanskrit term <em>Sahachara</em> has been applied to multiple species in the Acanthaceae family, creating one of Ayurveda's more complex botanical identity disputes. The three most accepted identifications are <em>Strobilanthes ciliatus</em> (Nees) Kuntze — the most widely accepted source in Kerala and South India; <em>Barleria prionitis</em> L. — accepted as Sahachara in North Indian and some classical commentaries; and <em>Nilgirianthus ciliatus</em> (Nees) Bremek — a South Indian variant. <em>Strobilanthes ciliatus</em> is the botanical identity recognised by the Ayurvedic Pharmacopoeia of India (API).</p>
+      <p class="section-body"><em>Strobilanthes ciliatus</em> is a perennial, erect or spreading undershrub growing 60–120 cm tall, native to the moist deciduous and semi-evergreen forests of the Western Ghats, Eastern Ghats, and Sri Lanka. It is particularly abundant in Kerala, Karnataka, and Tamil Nadu. The stems are quadrangular and hairy; leaves are opposite, lanceolate to ovate-lanceolate, with ciliate margins and prominent veins. Its most distinctive feature is the striking blue-violet, tubular two-lipped flowers borne in dense terminal and axillary spikes — highly ornamental and easily recognisable in the wild. The root and whole plant are the primary medicinal parts. Like many Strobilanthes species, it exhibits mass flowering (<em>mast seeding</em>) at long intervals — populations of <em>S. kunthiana</em> (Neelakurinji) famously bloom once every 12 years.</p>
+      <table class="data-table">
+        <thead><tr><th>PROPERTY</th><th>Detail</th></tr></thead>
+        <tbody>
+          <tr><td>Family</td><td>Acanthaceae</td></tr>
+          <tr><td>Primary Botanical Name</td><td>Strobilanthes ciliatus (Nees) Kuntze</td></tr>
+          <tr><td>Synonyms</td><td>Barleria ciliata Roxb., Nilgirianthus ciliatus (Nees) Bremek.</td></tr>
+          <tr><td>Other Identifications</td><td>Barleria prionitis L. (North Indian tradition)</td></tr>
+          <tr><td>Sanskrit Names</td><td>Sahachara, Sahacharya, Jhinti, Pitasahachara, Svetasahachara</td></tr>
+          <tr><td>Common Names</td><td>Sahachara, Blue Strobilanthes, Malabar Strobilanthes</td></tr>
+          <tr><td>Regional Names</td><td>Sahacharam (Mal), Muniretai (Tam), Sahachara (Tel), Sahachara / Jhinti (Hin)</td></tr>
+          <tr><td>Origin</td><td>Western &amp; Eastern Ghats, Sri Lanka; moist deciduous forest</td></tr>
+          <tr><td>Plant Type</td><td>Perennial undershrub (60–120 cm)</td></tr>
+          <tr><td>Medicinal Parts</td><td>Root (primary), whole plant, leaves, stem bark</td></tr>
+          <tr><td>Taste Profile</td><td>Tikta (bitter), Katu (pungent), Kashaya (astringent)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">02</span>
+        <h2 class="section-title">Phytochemistry &amp; Composition</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Phytochemical studies on <em>Strobilanthes ciliatus</em> and the related <em>Barleria prionitis</em> (both used as Sahachara) have identified a rich profile of iridoid glycosides, flavonoids, terpenoids, lignans, and phenolic compounds. The iridoid glycosides — particularly shanzhiside methyl ester and 8-O-acetyl shanzhiside — are considered primary active constituents responsible for anti-inflammatory and analgesic activity. Studies on <em>Barleria prionitis</em>, the North Indian Sahachara, have additionally isolated scutellarein, lupulin, and barlerin with significant antiviral and diuretic activity.</p>
+      <div class="nutrition-bar">
+        <div class="nutrition-cell">
+          <div class="nutrition-num">12+</div>
+          <div class="nutrition-unit">iridoids</div>
+          <div class="nutrition-label">Primary anti-inflammatory agents</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">8+</div>
+          <div class="nutrition-unit">flavonoids</div>
+          <div class="nutrition-label">Antioxidant & vascular support</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">3</div>
+          <div class="nutrition-unit">lignans</div>
+          <div class="nutrition-label">Hepatoprotective & estrogenic</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">2</div>
+          <div class="nutrition-unit">traditions</div>
+          <div class="nutrition-label">North &amp; South Indian botanical identities</div>
+        </div>
+      </div>
+      <table class="data-table">
+        <thead><tr><th>Compound</th><th>Category</th><th>Primary Action</th></tr></thead>
+        <tbody>
+          <tr><td>Shanzhiside Methyl Ester</td><td>Iridoid glycoside</td><td>Anti-inflammatory, analgesic, neuroprotective — principal active compound</td></tr>
+          <tr><td>8-O-Acetyl Shanzhiside</td><td>Iridoid glycoside</td><td>Anti-inflammatory, COX inhibition, joint protection</td></tr>
+          <tr><td>Barlerin &amp; Acetyl Barlerin</td><td>Iridoid glycosides (Barleria)</td><td>Antiviral (dengue, chikungunya), antimicrobial</td></tr>
+          <tr><td>Scutellarein &amp; Scutellarein-7-glucoside</td><td>Flavones</td><td>Antioxidant, anti-inflammatory, antiviral, diuretic</td></tr>
+          <tr><td>Luteolin &amp; Apigenin</td><td>Flavones</td><td>Neuroprotective, anti-inflammatory, anti-spasmodic</td></tr>
+          <tr><td>β-Sitosterol &amp; Stigmasterol</td><td>Phytosterols</td><td>Anti-inflammatory, hormonal modulation, hypolipidemic</td></tr>
+          <tr><td>Verbascoside (Acteoside)</td><td>Phenylethanoid glycoside</td><td>Potent antioxidant, anti-inflammatory, hepatoprotective</td></tr>
+          <tr><td>Oleanolic &amp; Ursolic Acids</td><td>Pentacyclic triterpenes</td><td>Anti-arthritic, hepatoprotective, antimicrobial</td></tr>
+          <tr><td>Tannins &amp; Catechins</td><td>Condensed polyphenols</td><td>Astringent, wound-healing, anti-diarrheal, antimicrobial</td></tr>
+          <tr><td>Potassium Salts &amp; Mineral Ions</td><td>Inorganic constituents</td><td>Diuretic, renal support, electrolyte balance</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">03</span>
+        <h2 class="section-title">Ayurvedic Significance</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Sahachara is referenced prominently across major classical texts. Vagbhata's <em>Ashtanga Hridayam</em> employs it in formulations for <em>Vatarakta</em> (gout), <em>Amavata</em> (rheumatoid arthritis), and urinary disorders (<em>Mutrakrichha</em>). Sushruta uses it in <em>Vatavyadhi</em> (neurological and musculoskeletal disorders) treatments. The <em>Sahasrayoga</em> — Kerala's most important classical formulary — lists Sahachara as an ingredient in several highly regarded preparations including <em>Sahacharadi Tailam</em>, one of Ayurveda's most prized medicated oils for Vata disorders and musculoskeletal pain.</p>
+      <p class="section-body">Classical description — <em>"Sahacharas tu tikto ushno vata-sleshma haro laghu, mutrakrichhraharo vrushyo balakarashcha pachana"</em> — renders it as bitter, hot in potency, Vata-Kapha pacifying, light, relieving urinary difficulty, aphrodisiac, strength-building, and digestive. The Ashtanga Nighantu and Bhavaprakasha classify it in the <em>Guduchyadi Varga</em> and <em>Haritakyadi Varga</em> respectively, emphasising its role in musculoskeletal and Vata-related conditions.</p>
+      <table class="dosha-table">
+        <thead><tr><th>Dosha</th><th>Effect</th><th>Mechanism &amp; Notes</th></tr></thead>
+        <tbody>
+          <tr><td>Vata ↓↓</td><td>Strongly pacifying</td><td>Ushna virya and bitter-pungent rasa are the primary Vata-pacifying drivers; indicated in all neurological, musculoskeletal, and joint conditions with Vata origin — paralysis, sciatica, arthralgia, tremors, and spasms</td></tr>
+          <tr><td>Kapha ↓</td><td>Pacifying</td><td>Laghu (light), tikshna, and ushna qualities reduce Kapha accumulation; useful in Kapha-type oedema, congestion, and obesity-related joint pain</td></tr>
+          <tr><td>Pitta ↑</td><td>Mildly aggravating</td><td>Ushna virya may mildly increase Pitta; exercise caution in hyperacidity, active inflammatory Pitta conditions, and bleeding disorders — combine with cooling herbs if needed</td></tr>
+        </tbody>
+      </table>
+      <p class="section-body"><strong>Rasa:</strong> Tikta (bitter), Katu (pungent), Kashaya (astringent) &nbsp;·&nbsp; <strong>Guna:</strong> Laghu (light), Ruksha (dry) &nbsp;·&nbsp; <strong>Virya:</strong> Ushna (hot) &nbsp;·&nbsp; <strong>Vipaka:</strong> Katu (pungent) &nbsp;·&nbsp; <strong>Karma:</strong> Vata-Kapha shamaka, Mutrakrichhrahara, Vajeekarana, Balya</p>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">04</span>
+        <h2 class="section-title">Key Health Benefits</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Sahachara's pharmacological profile confirms its classical applications — particularly in inflammatory joint disease, neurological conditions, urinary disorders, and as a tonic for musculoskeletal strength. Research on <em>Strobilanthes ciliatus</em>, <em>Barleria prionitis</em>, and related species has validated these traditional uses through a growing body of in vitro and in vivo evidence.</p>
+      <div class="benefits-grid">
+        <div class="benefit-card">
+          <div class="benefit-title">Anti-arthritic &amp; Joint Support</div>
+          <div class="benefit-desc">Sahachara is Ayurveda's foremost herb for Vata-dominant joint disorders. Iridoid glycosides inhibit COX-1/COX-2 pathways and pro-inflammatory cytokines (TNF-α, IL-1β, IL-6). Its flagship preparation — Sahacharadi Tailam — has been clinically studied for rheumatoid arthritis and osteoarthritis with significant reduction in pain, stiffness, and swelling.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Neurological &amp; Neuro-muscular Tonic</div>
+          <div class="benefit-desc">Sahachara is a premier Ayurvedic herb for Vata-related neurological conditions — hemiplegia, facial palsy, sciatica, peripheral neuropathy, and muscular dystrophy. Its neuroprotective iridoids and anti-inflammatory action reduce neuroinflammation, while medicated oil preparations allow transdermal absorption to the affected nerves and muscles via <em>Panchakarma</em> therapies.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Urinary Tract &amp; Diuretic Action</div>
+          <div class="benefit-desc">Classical texts consistently list Sahachara as <em>Mutrakrichhrahara</em> — relieving difficulty and burning in urination. Potassium salts and flavonoid diuretics increase urine output, reduce urinary tract inflammation, and support passage of small calculi. Used in dysuria, urethritis, and bladder irritation, often combined with Gokshura and Punarnava.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Anti-inflammatory &amp; Analgesic</div>
+          <div class="benefit-desc">Multiple in vivo studies demonstrate significant inhibition of acute and chronic inflammation by <em>Strobilanthes</em> and <em>Barleria</em> extracts — carrageenan paw edema, cotton pellet granuloma, and formaldehyde-induced arthritis models all confirm potent anti-inflammatory action comparable to standard NSAIDs without gastric side effects at therapeutic doses.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Antiviral &amp; Antimicrobial</div>
+          <div class="benefit-desc">Barlerin and acetyl barlerin isolated from <em>Barleria prionitis</em> (North Indian Sahachara) demonstrate significant activity against dengue virus, chikungunya, and Hepatitis B. Aqueous and ethanolic extracts inhibit Gram-positive bacteria (Staphylococcus, Streptococcus) and dermatophytes, supporting folk use for skin infections and viral fevers.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Wound Healing &amp; Skin Disorders</div>
+          <div class="benefit-desc">Leaf paste of Sahachara is a classical topical remedy for wound healing, skin inflammation, and oedema. Studies confirm accelerated wound contraction and epithelialisation through tannin-mediated astringency, verbascoside-driven antioxidant activity, and antimicrobial action preventing secondary infection. Used in eczema, psoriasis, and inflammatory skin conditions.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Aphrodisiac &amp; Reproductive Tonic</div>
+          <div class="benefit-desc">Listed as <em>Vrushya</em> (aphrodisiac) and <em>Balakara</em> (strength-building) in classical shloka, Sahachara is used in male sexual debility, spermatorrhoea, and general reproductive weakness — typically as part of multi-herb formulations. Its phytosterols (β-sitosterol, stigmasterol) provide substrate for endogenous steroid synthesis.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Oedema &amp; Fluid Management</div>
+          <div class="benefit-desc">Combined diuretic and anti-inflammatory action makes Sahachara valuable in Kapha-type oedema (<em>shopha</em>), lymphatic congestion, and fluid retention associated with joint disease. Classical formulas combining Sahachara with Punarnava and Gokshura address both the inflammatory and accumulation aspects of oedema synergistically.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">05</span>
+        <h2 class="section-title">Classical Formulations</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Sahachara is most celebrated as the principal herb in <em>Sahacharadi Tailam</em> — one of Kerala Ayurveda's most widely administered medicated oils for Vata disorders. It also features in a number of classical internal preparations. The following are the primary classical formulations in which Sahachara plays a key therapeutic role.</p>
+      <table class="data-table">
+        <thead><tr><th>Formulation</th><th>Type</th><th>Key Indications</th></tr></thead>
+        <tbody>
+          <tr><td>Sahacharadi Tailam</td><td>Medicated oil (external &amp; internal)</td><td>Hemiplegia, sciatica, arthritis, facial palsy, musculoskeletal pain — flagship Vata-disorder preparation of Kerala Ayurveda</td></tr>
+          <tr><td>Sahacharadi Kwatha</td><td>Herbal decoction</td><td>Vatarakta (gout), joint inflammation, urinary disorders, oedema</td></tr>
+          <tr><td>Sahacharadi Churna</td><td>Herbal powder</td><td>Rheumatoid arthritis, general Vata debility, muscle weakness</td></tr>
+          <tr><td>Rasnasaptaka Kwatha</td><td>Multi-herb decoction</td><td>Painful joints, sciatica, rheumatic disorders — Sahachara as supporting herb</td></tr>
+          <tr><td>Dashamula + Sahachara combinations</td><td>Classical compound</td><td>Neurological disorders, post-paralysis recovery, Panchakarma preparations</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">06</span>
+        <h2 class="section-title">How to Use Sahachara</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Sahachara is used both internally as decoction, powder, and classical formulations, and externally as medicated oil in Panchakarma therapies (Abhyanga, Pizhichil, Kizhi). Its most impactful applications are in oil-based external therapies — Sahacharadi Tailam is used extensively in Ayurvedic hospitals for neurological and musculoskeletal conditions.</p>
+      <table class="consume-table">
+        <thead><tr><th>Form</th><th>Preparation</th><th>Dosage</th><th>Best Use</th></tr></thead>
+        <tbody>
+          <tr><td>Root Decoction (Kwatha)</td><td>Boil dried root in water; reduce to ¼</td><td>30–40 ml twice daily</td><td>Arthritis, gout, urinary disorders, oedema</td></tr>
+          <tr><td>Root Powder (Churna)</td><td>Dried root powder with warm water or honey</td><td>3–5 g twice daily</td><td>Vata debility, joint pain, general tonic</td></tr>
+          <tr><td>Sahacharadi Tailam (External)</td><td>Classical medicated sesame oil; warm application</td><td>Abhyanga or localised massage daily</td><td>Hemiplegia, sciatica, frozen shoulder, muscle wasting</td></tr>
+          <tr><td>Sahacharadi Tailam (Internal)</td><td>Small dose internally (Snehapanam)</td><td>5–15 ml per physician direction</td><td>Severe Vata disorders — under Panchakarma supervision only</td></tr>
+          <tr><td>Leaf Paste (Topical)</td><td>Fresh leaves ground to paste</td><td>Apply to affected area, 1–2× daily</td><td>Wounds, oedema, joint swelling, skin inflammation</td></tr>
+          <tr><td>Sahacharadi Kwatha (Classical)</td><td>Multi-herb decoction per classical formula</td><td>Per practitioner direction</td><td>Vatarakta, amavata, neurological conditions</td></tr>
+          <tr><td>Steam Therapy (Swedana)</td><td>Herb boiled in water; steam applied to joints</td><td>15–20 min per session</td><td>Stiff joints, muscle spasms, Vata-Kapha oedema</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">07</span>
+        <h2 class="section-title">Safety &amp; Precautions</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Sahachara has an excellent long-term safety profile at classical doses. It does not contain known highly toxic alkaloids or pyrrolizidine compounds. However, its ushna (hot) potency and botanical identity complexity warrant attention. The most significant practical concern is authentication — the commercial market conflates multiple species under the Sahachara name, and ensuring the correct botanical source is critical for therapeutic efficacy.</p>
+      <ul class="precaution-list">
+        <li><strong>Botanical identity verification:</strong> Ensure the source species — ideally <em>Strobilanthes ciliatus</em> (API-recognised) or <em>Barleria prionitis</em> per North Indian classical tradition. Misidentification with related but pharmacologically different species is common in commercial preparations.</li>
+        <li><strong>Pregnancy:</strong> Sahachara is listed with mild uterine-stimulating properties in some traditions. Internal use during pregnancy should only be undertaken under qualified Ayurvedic supervision. Topical oil use is generally considered safe.</li>
+        <li><strong>Pitta aggravation:</strong> Its ushna virya (hot potency) can aggravate Pitta in susceptible individuals — avoid or use cautiously in hyperacidity, peptic ulcer, inflammatory bowel conditions, bleeding disorders, and active fever with high Pitta.</li>
+        <li><strong>Sahacharadi Tailam internal use:</strong> Internal oleation (Snehapanam) with Sahacharadi Tailam must be performed only under the direct supervision of an Ayurvedic physician as part of formal Panchakarma therapy — self-administration of medicated oils internally carries risk.</li>
+        <li><strong>Kidney disease:</strong> Diuretic action may necessitate dose adjustment in chronic kidney disease or severe renal impairment — consult a physician before use alongside nephrotoxic medications.</li>
+        <li><strong>Drug interactions:</strong> Theoretical interactions with NSAIDs (additive anti-inflammatory effect), diuretics (potentiated urinary output), and anticoagulants (platelet activity of flavonoids) — monitor carefully with concurrent pharmacotherapy.</li>
+        <li><strong>Children and elderly:</strong> Generally safe at reduced doses; classical texts recommend medicated oil application (Abhyanga) as the preferred route for children and the elderly over internal decoction for Vata conditions.</li>
+      </ul>
+    </div>
+
+    <div class="sources">
+      <div class="sources-title">References &amp; Sources</div>
+      <ul>
+        <li>Ayurvedic Pharmacopoeia of India — Part I, Vol. IV — Monograph on Sahachara (Strobilanthes ciliatus)</li>
+        <li>Mukherjee PK et al. — "Phytochemistry and pharmacological studies of Barleria prionitis Linn." — Pharmacognosy Reviews, 2009</li>
+        <li>Sivarajan VV &amp; Balachandran I — Ayurvedic Drugs and their Plant Sources — Sahachara botanical identity discussion</li>
+        <li>Gogte VM — Ayurvedic Pharmacology &amp; Therapeutic Uses of Medicinal Plants — Sahachara chapter</li>
+        <li>Vagbhata — Ashtanga Hridayam, Chikitsasthana — Vatarakta, Vatavyadhi, and Mutrakrichha chapters</li>
+        <li>Sushruta Samhita — Chikitsasthana: Vatavyadhi Chikitsa referencing Sahachara in Vata disorder formulations</li>
+        <li>Sahasrayoga — Kerala classical formulary: Sahacharadi Tailam preparation and indications</li>
+        <li>Bhavaprakasha Nighantu — Haritakyadi Varga: Sahachara properties and classification</li>
+        <li>Dinesh KP et al. — "Strobilanthes species in Western Ghats: botanical and ethnobotanical aspects" — Current Science, 2015</li>
+        <li>Singh B &amp; Sharma RA — "Anti-inflammatory and antinociceptive activity of Barleria prionitis" — Journal of Ethnopharmacology, 2013</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer>
+    <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a qualified practitioner before therapeutic use</p>
+  </footer>
+
+
+  <div id="viewerModal">
+    <div id="modal-topbar">
+      <span>3D Model — Sahachara</span>
+      <button type="button" id="close3D">✕</button>
+    </div>
+    <model-viewer src="sahachara3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+  </div>
+  <script>
+    (function() {
+      var open3D = document.getElementById('open3D');
+      var close3D = document.getElementById('close3D');
+      var modal = document.getElementById('viewerModal');
+      if (!open3D || !close3D || !modal) return;
+      function openModal() {
+        
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+      function closeModal() {
+        
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+      open3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); openModal();
+      });
+      close3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); closeModal();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+      });
+    })();
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ativisha | Swastha</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+  <style>
+    #open3D {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      padding: 10px 18px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: var(--forest);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      z-index: 1000;
+      transition: .3s;
+    }
+    #open3D:hover {
+      background: var(--gold);
+      color: var(--deep);
+    }
+    #viewerModal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+    }
+    #modal-topbar {
+      flex-shrink: 0;
+      height: 58px;
+      background: #111111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px 0 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      z-index: 99999;
+    }
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 4.5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.72);
+      user-select: none;
+    }
+    #close3D {
+      width: 38px;
+      height: 38px;
+      font-size: 15px;
+      font-weight: 300;
+      background: transparent;
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background .2s, color .2s, transform .22s;
+      outline: none;
+      flex-shrink: 0;
+    }
+    #close3D:hover {
+      background: #ffffff;
+      color: #111111;
+      border-color: #ffffff;
+      transform: rotate(90deg);
+    }
+    #viewerModal model-viewer {
+      flex: 1;
+      width: 100%;
+      display: block;
+      background: #ffffff;
+    }
+
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+    *{margin:0;padding:0;box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{font-family:'Jost',sans-serif;background:var(--cream);color:var(--ink);min-height:100vh;overflow-x:hidden;position:relative}
+    body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");opacity:.03;pointer-events:none;z-index:100}
+
+    .bg-circle{position:fixed;border-radius:50%;pointer-events:none;z-index:0}
+    .bg-circle-1{width:700px;height:700px;background:radial-gradient(circle,rgba(91,127,166,.1) 0%,transparent 70%);top:-200px;right:-150px}
+    .bg-circle-2{width:500px;height:500px;background:radial-gradient(circle,rgba(123,94,167,.07) 0%,transparent 70%);bottom:-100px;left:-100px}
+
+    /* mountain silhouette */
+    .mountain-bg{position:fixed;bottom:0;left:0;width:100%;pointer-events:none;z-index:0;opacity:.045}
+
+    .botanical-svg{position:fixed;pointer-events:none;z-index:1;opacity:.09}
+    .botanical-tl{top:-10px;left:-10px;width:280px}
+    .botanical-br{bottom:-10px;right:-10px;width:250px;transform:rotate(180deg)}
+
+    .hero{position:relative;z-index:10;padding:54px 40px 0;text-align:center;opacity:0;animation:fadeUp .9s ease .1s forwards}
+    .back-link{display:inline-flex;align-items:center;gap:8px;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--glacier);text-decoration:none;margin-bottom:36px;transition:color .3s}
+    .back-link:hover{color:var(--amber)}
+    .logo-rule{display:flex;align-items:center;justify-content:center;gap:20px;margin-bottom:14px}
+    .logo-rule span{display:block;height:1px;width:70px;background:linear-gradient(to right,transparent,var(--amber))}
+    .logo-rule span:last-child{background:linear-gradient(to left,transparent,var(--amber))}
+    .logo-ornament{font-size:13px;color:var(--amber)}
+    .hero-title{font-family:'Cormorant Garamond',serif;font-size:clamp(58px,11vw,105px);font-weight:300;letter-spacing:8px;line-height:1;color:var(--deep)}
+    .hero-title-alt{font-family:'Cormorant Garamond',serif;font-size:clamp(22px,4vw,38px);font-weight:300;letter-spacing:5px;color:var(--slate);margin-top:6px}
+    .hero-subtitle{font-family:'Cormorant Garamond',serif;font-size:18px;font-style:italic;font-weight:300;color:var(--slate);letter-spacing:2px;margin-top:8px}
+    .hero-sci{font-size:11px;font-weight:200;letter-spacing:5px;color:var(--glacier);margin-top:6px}
+
+    .altitude-badge{display:inline-flex;align-items:center;gap:10px;margin-top:18px;padding:7px 18px;border:1px solid rgba(91,127,166,.35);background:rgba(91,127,166,.07);font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--glacier);font-weight:300}
+    .altitude-badge::before{content:'▲';font-size:9px;opacity:.7}
+    .altitude-badge::after{content:'▲';font-size:9px;opacity:.7}
+
+    /* endangered banner */
+    .endangered-banner{position:relative;z-index:10;max-width:900px;margin:28px auto 0;padding:11px 20px;background:rgba(123,94,167,.08);border:1px solid rgba(123,94,167,.25);display:flex;align-items:center;justify-content:center;gap:10px;opacity:0;animation:fadeUp .9s ease .28s forwards}
+    .endangered-banner p{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--violet);font-weight:300}
+    .endangered-banner span{font-size:14px}
+
+    .hero-photos{position:relative;z-index:10;display:grid;grid-template-columns:1fr 1fr;gap:2px;max-width:900px;margin:36px auto 0;opacity:0;animation:fadeUp .9s ease .35s forwards}
+    .hero-photos img{width:100%;height:380px;object-fit:cover;object-position:center;display:block;background:var(--parchment)}
+    .photo-placeholder{width:100%;height:380px;background:var(--parchment);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px}
+    .photo-placeholder span{font-family:'Cormorant Garamond',serif;font-size:13px;font-style:italic;color:var(--slate);letter-spacing:1px;opacity:.4}
+
+    .photo-caption{text-align:center;font-family:'Cormorant Garamond',serif;font-size:12px;font-style:italic;color:var(--glacier);letter-spacing:1px;padding:10px 0 0;max-width:900px;margin:0 auto;position:relative;z-index:10;opacity:0;animation:fadeUp .9s ease .5s forwards}
+
+    .divider{display:flex;align-items:center;justify-content:center;gap:16px;margin:50px auto;max-width:600px;opacity:0;animation:fadeUp .9s ease .55s forwards;position:relative;z-index:10}
+    .divider-line{height:1px;width:120px;background:linear-gradient(to right,transparent,var(--glacier))}
+    .divider-line:last-child{background:linear-gradient(to left,transparent,var(--glacier))}
+    .divider-leaf{color:var(--violet);font-size:18px}
+
+    .content{position:relative;z-index:10;max-width:860px;margin:0 auto;padding:0 30px 80px}
+
+    .intro-text{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:300;line-height:1.75;color:var(--ink);text-align:center;max-width:700px;margin:0 auto 60px;opacity:0;animation:fadeUp .9s ease .6s forwards}
+    .intro-text em{color:var(--violet);font-style:italic}
+
+    .section{margin-bottom:60px;opacity:0;animation:fadeUp .9s ease forwards}
+    .section:nth-child(1){animation-delay:.65s}.section:nth-child(2){animation-delay:.75s}
+    .section:nth-child(3){animation-delay:.85s}.section:nth-child(4){animation-delay:.95s}
+    .section:nth-child(5){animation-delay:1.05s}.section:nth-child(6){animation-delay:1.15s}
+    .section:nth-child(7){animation-delay:1.25s}
+
+    .section-header{display:flex;align-items:center;gap:14px;margin-bottom:20px}
+    .section-num{font-family:'Cormorant Garamond',serif;font-size:11px;letter-spacing:4px;color:var(--amber)}
+    .section-title{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:400;color:var(--deep);letter-spacing:1px}
+    .section-rule{height:1px;flex:1;background:linear-gradient(to right,var(--amber),transparent)}
+    .section-body{font-size:13px;font-weight:300;line-height:1.9;color:var(--ink);margin-bottom:24px}
+
+    /* distinction callout */
+    .distinction-box{border-left:2px solid var(--violet);padding:16px 22px;margin:20px 0 24px;background:rgba(123,94,167,.06)}
+    .distinction-box p{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:300;line-height:1.7;color:var(--deep)}
+    .distinction-box strong{color:var(--violet);font-weight:600}
+    .distinction-box cite{display:block;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--glacier);margin-top:8px;font-style:normal}
+
+    /* shloka */
+    .shloka{border-left:2px solid var(--amber);padding:16px 22px;margin:20px 0 24px;background:rgba(176,125,42,.05)}
+    .shloka p{font-family:'Cormorant Garamond',serif;font-size:15px;font-style:italic;font-weight:300;line-height:1.7;color:var(--slate)}
+    .shloka cite{display:block;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--glacier);margin-top:8px;font-style:normal}
+
+    .data-table{width:100%;border-collapse:collapse;margin:16px 0 8px;font-size:12px}
+    .data-table thead tr{background:var(--deep);color:var(--amber);font-size:10px;letter-spacing:3px;text-transform:uppercase}
+    .data-table thead th{padding:12px 14px;text-align:left;font-weight:400}
+    .data-table tbody tr:nth-child(even){background:var(--parchment)}
+    .data-table tbody tr:nth-child(odd){background:var(--snow)}
+    .data-table tbody tr:hover{background:#d2dae6}
+    .data-table tbody td{padding:10px 14px;color:var(--ink);border-bottom:1px solid rgba(61,80,104,.08);transition:background .2s}
+    .data-table tbody td:first-child{font-weight:400;color:var(--deep);width:28%}
+
+    .dosha-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:12px}
+    .dosha-table thead tr{background:var(--slate);color:var(--cream)}
+    .dosha-table thead th{padding:12px 14px;text-align:left;font-weight:400;letter-spacing:2px;font-size:10px;text-transform:uppercase}
+    .dosha-table tbody tr:nth-child(even){background:var(--parchment)}
+    .dosha-table tbody tr:nth-child(odd){background:var(--snow)}
+    .dosha-table tbody td{padding:11px 14px;color:var(--ink);border-bottom:1px solid rgba(61,80,104,.08)}
+    .dosha-table tbody td:first-child{font-weight:400;color:var(--glacier);width:18%}
+    .dosha-table tbody td:nth-child(2){color:var(--slate);width:20%}
+
+    .consume-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:12px}
+    .consume-table thead tr{background:var(--slate);color:var(--cream)}
+    .consume-table thead th{padding:12px 14px;text-align:left;font-weight:400;letter-spacing:2px;font-size:10px;text-transform:uppercase}
+    .consume-table tbody tr:nth-child(even){background:var(--parchment)}
+    .consume-table tbody tr:nth-child(odd){background:var(--snow)}
+    .consume-table tbody td{padding:11px 14px;color:var(--ink);border-bottom:1px solid rgba(61,80,104,.08)}
+    .consume-table tbody td:first-child{font-weight:400;color:var(--slate);width:22%}
+
+    .benefits-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:rgba(61,80,104,.12);border:1px solid rgba(61,80,104,.12);margin:8px 0}
+    .benefit-card{background:var(--snow);padding:24px 22px;transition:background .3s;position:relative;overflow:hidden}
+    .benefit-card:hover{background:#d8dfe8}
+    .benefit-card::before{content:'';position:absolute;bottom:0;left:0;width:0;height:2px;background:var(--amber);transition:width .4s}
+    .benefit-card:hover::before{width:100%}
+    .benefit-title{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:600;color:var(--glacier);margin-bottom:8px}
+    .benefit-desc{font-size:11.5px;font-weight:300;line-height:1.75;color:var(--ink);opacity:.85}
+    .benefit-card.primary .benefit-title::after{content:' ✦';font-size:10px;color:var(--amber);vertical-align:top}
+
+    .precaution-list{list-style:none;margin:8px 0}
+    .precaution-list li{display:flex;gap:12px;align-items:flex-start;padding:10px 14px;font-size:12px;font-weight:300;line-height:1.7;color:var(--ink);border-bottom:1px solid rgba(61,80,104,.08)}
+    .precaution-list li:last-child{border-bottom:none}
+    .precaution-list li::before{content:'▸';color:var(--amber);flex-shrink:0;margin-top:1px}
+
+    .nutrition-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(61,80,104,.12);border:1px solid rgba(61,80,104,.12);margin:20px 0}
+    .nutrition-cell{background:var(--snow);padding:22px 16px;text-align:center;transition:background .3s}
+    .nutrition-cell:hover{background:var(--parchment)}
+    .nutrition-num{font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:300;color:var(--glacier);line-height:1;margin-bottom:4px}
+    .nutrition-unit{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--amber);font-weight:300}
+    .nutrition-label{font-size:11px;font-weight:300;color:var(--ink);margin-top:5px}
+
+    /* aconitum comparison strip */
+    .compare-strip{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:rgba(61,80,104,.12);border:1px solid rgba(61,80,104,.12);margin:20px 0}
+    .compare-cell{padding:20px 22px}
+    .compare-cell.safe{background:rgba(45,74,56,.06)}
+    .compare-cell.toxic{background:rgba(123,94,167,.05)}
+    .compare-head{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:600;margin-bottom:5px}
+    .compare-head.green{color:var(--pine)}
+    .compare-head.purple{color:var(--violet)}
+    .compare-sub{font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px}
+    .compare-sub.green{color:var(--pine)}
+    .compare-sub.purple{color:var(--violet)}
+    .compare-body{font-size:11.5px;font-weight:300;line-height:1.7;color:var(--ink);opacity:.85}
+
+    .sources{border-top:1px solid rgba(61,80,104,.15);padding-top:24px;margin-top:20px}
+    .sources-title{font-size:10px;letter-spacing:4px;text-transform:uppercase;color:var(--glacier);margin-bottom:12px;font-weight:300}
+    .sources ul{list-style:none}
+    .sources ul li{font-family:'Cormorant Garamond',serif;font-size:13px;font-style:italic;color:var(--slate);padding:5px 0;border-bottom:1px solid rgba(61,80,104,.06)}
+    .sources ul li::before{content:'· ';color:var(--glacier)}
+
+    footer{position:relative;z-index:10;text-align:center;padding:24px 20px 44px;border-top:1px solid rgba(61,80,104,.12);max-width:860px;margin:0 auto}
+    footer p{font-size:11px;letter-spacing:4px;text-transform:uppercase;color:var(--glacier);font-weight:300}
+
+    @keyframes fadeUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
+
+    @media(max-width:700px){
+      .hero-photos{grid-template-columns:1fr}
+      .hero-photos img,.photo-placeholder{height:260px}
+      .benefits-grid,.compare-strip{grid-template-columns:1fr}
+      .nutrition-bar{grid-template-columns:1fr 1fr}
+      .content{padding:0 18px 60px}
+    }
+  </style>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+</head>
+<body>
+  <button type="button" id="open3D">View in 3D</button>
+
+
+<div class="bg-circle bg-circle-1"></div>
+<div class="bg-circle bg-circle-2"></div>
+
+<!-- Mountain silhouette background -->
+<svg class="mountain-bg" viewBox="0 0 1440 320" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+  <path d="M0 320 L0 240 L120 180 L200 210 L300 130 L400 170 L520 80 L620 140 L700 60 L800 120 L900 50 L1000 110 L1100 70 L1200 130 L1320 90 L1440 160 L1440 320 Z" fill="#3d5068"/>
+</svg>
+
+<!-- Botanical SVG — Aconitum/monkshood plant with helmet flowers -->
+<svg class="botanical-svg botanical-tl" viewBox="0 0 320 340" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M28 330 Q 70 260 105 200 Q 140 138 165 70" stroke="#3d5068" stroke-width="2" fill="none"/>
+  <!-- palmate leaves -->
+  <path d="M80 225 Q 48 205 35 215" stroke="#3d5068" stroke-width="1.2" fill="none"/>
+  <path d="M80 225 Q 112 205 122 220" stroke="#3d5068" stroke-width="1.2" fill="none"/>
+  <path d="M115 175 Q 83 158 70 168" stroke="#3d5068" stroke-width="1.2" fill="none"/>
+  <path d="M115 175 Q 147 158 158 170" stroke="#3d5068" stroke-width="1.2" fill="none"/>
+  <!-- palmate leaf blades — deeply lobed -->
+  <path d="M35 215 Q 25 205 28 195 Q 35 200 42 205 Q 38 195 44 190 Q 48 200 45 208 Z" fill="#3d5068" opacity="0.7"/>
+  <path d="M122 220 Q 132 210 128 200 Q 122 205 116 210 Q 120 200 114 195 Q 110 205 114 212 Z" fill="#3d5068" opacity="0.7"/>
+  <path d="M70 168 Q 58 158 62 148 Q 68 155 75 158 Q 70 148 78 143 Q 80 153 78 162 Z" fill="#5b7fa6" opacity="0.65"/>
+  <path d="M158 170 Q 168 160 164 150 Q 158 157 152 160 Q 156 150 150 145 Q 146 155 150 163 Z" fill="#5b7fa6" opacity="0.65"/>
+  <!-- Aconitum helmet flowers at top -->
+  <path d="M165 68 Q 155 50 160 38 Q 170 30 178 40 Q 185 30 190 42 Q 192 55 182 65 Z" fill="#7b5ea7" opacity="0.75"/>
+  <path d="M148 82 Q 138 64 143 52 Q 153 44 161 54 Q 168 44 173 56 Q 175 69 165 79 Z" fill="#7b5ea7" opacity="0.6"/>
+  <path d="M178 72 Q 188 56 195 52 Q 202 44 208 56 Q 210 68 202 76 Q 194 80 183 75 Z" fill="#5b7fa6" opacity="0.55"/>
+  <!-- stamen detail -->
+  <circle cx="173" cy="55" r="3" fill="#b07d2a" opacity="0.8"/>
+  <circle cx="163" cy="68" r="2.5" fill="#b07d2a" opacity="0.7"/>
+</svg>
+<svg class="botanical-svg botanical-br" viewBox="0 0 320 340" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M28 330 Q 70 260 105 200 Q 140 138 165 70" stroke="#3d5068" stroke-width="2" fill="none"/>
+  <path d="M80 225 Q 48 205 35 215" stroke="#3d5068" stroke-width="1.2" fill="none"/>
+  <path d="M80 225 Q 112 205 122 220" stroke="#3d5068" stroke-width="1.2" fill="none"/>
+  <path d="M35 215 Q 25 205 28 195 Q 35 200 42 205 Q 38 195 44 190 Q 48 200 45 208 Z" fill="#3d5068" opacity="0.7"/>
+  <path d="M122 220 Q 132 210 128 200 Q 122 205 116 210 Q 120 200 114 195 Q 110 205 114 212 Z" fill="#3d5068" opacity="0.7"/>
+  <path d="M165 68 Q 155 50 160 38 Q 170 30 178 40 Q 185 30 190 42 Q 192 55 182 65 Z" fill="#7b5ea7" opacity="0.65"/>
+  <path d="M148 82 Q 138 64 143 52 Q 153 44 161 54 Q 168 44 173 56 Q 175 69 165 79 Z" fill="#7b5ea7" opacity="0.55"/>
+</svg>
+
+<div class="hero">
+  <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+  <div class="logo-rule"><span></span><div class="logo-ornament">✦</div><span></span></div>
+  <div class="hero-title">Ativisha</div>
+  <div class="hero-title-alt">Atis</div>
+  <div class="hero-subtitle">The Himalayan Atis Root — The Safe Aconite</div>
+  <div class="hero-sci">Aconitum heterophyllum Wall. ex Royle &nbsp;·&nbsp; Ranunculaceae</div>
+  <div class="altitude-badge">Alpine Himalayan Herb &nbsp;·&nbsp; 2,500 – 5,000 m Elevation</div>
+</div>
+
+<div class="endangered-banner">
+  <span>⚠</span>
+  <p>Endangered Species — IUCN Red Listed · Over-harvested from wild Himalayan populations · Use only cultivated or certified sustainable sources</p>
+</div>
+
+<div class="hero-photos">
+  <div class="photo-placeholder">
+    <svg width="72" height="72" viewBox="0 0 72 72" fill="none">
+      <path d="M36 62 Q 36 62 36 20" stroke="#3d5068" stroke-width="2"/>
+      <path d="M36 48 Q 24 42 20 50" stroke="#3d5068" stroke-width="1.4" fill="none"/>
+      <path d="M36 38 Q 48 32 52 40" stroke="#3d5068" stroke-width="1.4" fill="none"/>
+      <path d="M20 50 Q 12 44 15 36 Q 22 42 26 44 Q 20 36 26 31 Q 30 40 26 48 Z" fill="#3d5068" opacity="0.65"/>
+      <path d="M52 40 Q 60 34 57 26 Q 50 32 46 34 Q 52 26 46 21 Q 42 30 46 38 Z" fill="#3d5068" opacity="0.65"/>
+      <path d="M36 20 Q 28 8 32 2 Q 38 6 40 14 Q 44 6 48 10 Q 46 18 40 20 Z" fill="#7b5ea7" opacity="0.75"/>
+      <path d="M26 22 Q 18 12 22 6 Q 28 10 30 18 Z" fill="#7b5ea7" opacity="0.6"/>
+      <circle cx="36" cy="14" r="3" fill="#b07d2a" opacity="0.8"/>
+    </svg>
+    <span>ativisha1.jpg</span>
+  </div>
+  <div class="photo-placeholder">
+    <svg width="72" height="72" viewBox="0 0 72 72" fill="none">
+      <!-- tuber/root illustration -->
+      <ellipse cx="36" cy="46" rx="16" ry="10" fill="#5b7fa6" opacity="0.2"/>
+      <ellipse cx="30" cy="50" rx="10" ry="7" fill="#3d5068" opacity="0.3" transform="rotate(-15 30 50)"/>
+      <ellipse cx="42" cy="52" rx="9" ry="6" fill="#3d5068" opacity="0.25" transform="rotate(10 42 52)"/>
+      <path d="M36 46 Q 36 46 36 20" stroke="#3d5068" stroke-width="1.5"/>
+      <path d="M36 36 Q 28 30 24 36" stroke="#3d5068" stroke-width="1.2" fill="none"/>
+      <path d="M36 28 Q 44 22 48 28" stroke="#3d5068" stroke-width="1.2" fill="none"/>
+      <path d="M24 36 Q 16 30 19 22 Q 26 28 28 32 Q 24 24 30 19 Q 32 28 28 34 Z" fill="#5b7fa6" opacity="0.6"/>
+      <path d="M48 28 Q 56 22 53 14 Q 46 20 44 24 Q 48 16 42 11 Q 40 20 44 26 Z" fill="#5b7fa6" opacity="0.6"/>
+    </svg>
+    <span>ativisha2.jpg</span>
+  </div>
+</div>
+<p class="photo-caption">Fig. 1 — Characteristic helmet-shaped violet-blue flowers of Aconitum heterophyllum on alpine meadow slopes &nbsp;·&nbsp; Fig. 2 — The paired, conical tuberous roots of Ativisha — the sole medicinal part used in Ayurveda</p>
+
+<div class="divider">
+  <div class="divider-line"></div>
+  <div class="divider-leaf">❧</div>
+  <div class="divider-line"></div>
+</div>
+
+<div class="content">
+  <p class="intro-text">High in the snow-line forests of the Himalayas — where most Aconitum species are deadly poisons — grows a singular exception: <em>Ativisha</em>, "the supremely poisonous one" whose supreme virtue lies precisely in being <em>non-toxic</em>. For millennia it has been the Ayurvedic physician's most trusted ally against childhood fever and diarrhoea — the first herb reached for when an infant burns with illness, or when the gut of a child refuses to be calmed.</p>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">01</span><h2 class="section-title">Botanical Profile</h2><div class="section-rule"></div></div>
+    <p class="section-body">Ativisha (<em>Aconitum heterophyllum</em>) is a small, erect perennial herb of the Ranunculaceae family — the buttercup family — growing 15 to 60 cm in height from a cluster of paired, ovoid-conical tuberous roots. The roots are the only part used medicinally: typically occurring in pairs — one year's old root (the "parent," exhausted and spongy) alongside the newer, firm, current-season root — and can vary from pale cream to brownish-grey in colour. The species name <em>heterophyllum</em> ("different-leaved") reflects a striking variability in leaf shape: lower leaves are long-stalked, deeply cordate, and palmate with 5–7 lobes; upper leaves progressively become smaller, sessile, and entire — appearing almost like a different plant altogether as you travel up the stem.</p>
+    <p class="section-body">The flowers — borne in a terminal raceme — are the instantly recognisable Aconitum form: a five-sepalled "helmet" or "monkshood" shape in shades of blue-violet to pale lilac, occasionally white. Pollination is primarily by bumblebees capable of forcing their way into the nectary under the helmet. The plant inhabits alpine meadows, shrubberies, and moist rocky slopes in the western and central Himalayas — Himachal Pradesh, Uttarakhand, Kashmir, and Nepal — at elevations of 2,500 to 5,000 metres, flowering July through September. Both altitude and ecological specificity make wild collection environmentally destructive; the species is now IUCN red-listed as endangered due to rampant over-harvesting.</p>
+
+    <div class="distinction-box">
+      <p><strong>Critical Distinction:</strong> Unlike the majority of Aconitum species — which contain the deadly diterpenoid alkaloid <em>aconitine</em> — Aconitum heterophyllum is notably free of aconitine and its toxic analogues. Its alkaloids (atisine, heteratisine, heterophylline) belong to the non-toxic <em>atisine</em> series of diterpene alkaloids. This pharmacological uniqueness is what earned it classical Ayurvedic use in paediatric medicine — a domain demanding extraordinary safety.</p>
+      <cite>— Mukherjee et al., Journal of Ethnopharmacology, 2010 · Shah &amp; Chauhan, Phytochemistry, 1976</cite>
+    </div>
+
+    <table class="data-table">
+      <thead><tr><th>PROPERTY</th><th>Detail</th></tr></thead>
+      <tbody>
+        <tr><td>Family</td><td>Ranunculaceae (Vatsanabha Kula)</td></tr>
+        <tr><td>Botanical Name</td><td>Aconitum heterophyllum Wall. ex Royle</td></tr>
+        <tr><td>Sanskrit Names</td><td>Ativisha, Ativisha, Vishva, Shringika, Aruna, Kashmirajaa, Shuklakandam, Ghunavallabha, Prativisha</td></tr>
+        <tr><td>Common Names</td><td>Indian Atis, Atis Root, Atees, Helmet Flower (Himalayan)</td></tr>
+        <tr><td>Regional Names</td><td>Atis (Hin/Kas), Atividayam (Tam), Ativasa (Tel), Ativaasa (Mal), Ativish (Ben)</td></tr>
+        <tr><td>Plant Type</td><td>Small erect perennial alpine herb (15–60 cm) with paired tuberous roots</td></tr>
+        <tr><td>Distribution</td><td>Western &amp; Central Himalayas — Himachal Pradesh, Uttarakhand, Kashmir, Nepal; 2,500–5,000 m</td></tr>
+        <tr><td>Flowering Season</td><td>July–September (violet-blue helmet flowers)</td></tr>
+        <tr><td>Medicinal Parts</td><td>Tuberous roots (exclusively) — firm current-season tuber preferred</td></tr>
+        <tr><td>Conservation Status</td><td>Endangered (IUCN) — Schedule VI, Wildlife Protection Act; cultivation encouraged</td></tr>
+        <tr><td>Taste Profile</td><td>Tikta (bitter), Katu (pungent)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">02</span><h2 class="section-title">The Aconite Distinction — Safe vs. Toxic</h2><div class="section-rule"></div></div>
+    <p class="section-body">The genus Aconitum is among the most pharmacologically bifurcated in nature — the same genus producing both some of the most lethal plant poisons known to mankind and, in the case of <em>A. heterophyllum</em>, one of Ayurveda's safest and most widely administered paediatric herbs. Understanding this distinction is essential for safe practice.</p>
+    <div class="compare-strip">
+      <div class="compare-cell safe">
+        <div class="compare-head green">Aconitum heterophyllum</div>
+        <div class="compare-sub green">Ativisha · The Safe Species</div>
+        <div class="compare-body">Contains atisine-series diterpene alkaloids — heteratisine, atisine, heterophylline, heterophyllisine. <strong>Aconitine-free.</strong> Classified as non-toxic in pharmacological screening. Safe for paediatric use at classical doses. Bitter, digestive, antipyretic action. Widely used in Ayurvedic paediatrics (Kaumarabhritya) for over 2,000 years. Generates no cardiac or neurotoxic effects at therapeutic doses.</div>
+      </div>
+      <div class="compare-cell toxic">
+        <div class="compare-head purple">Other Aconitum Species</div>
+        <div class="compare-sub purple">Vatsanabha &amp; Related · Toxic Species</div>
+        <div class="compare-body">Contain aconitine, mesaconitine, hypaconitine — potent sodium channel activators causing cardiac arrhythmia, paralysis, and death even in small doses. A. ferox (Bikh), A. napellus (Monkshood), and A. carmichaelii require elaborate detoxification (shodhana) before any use. Should NEVER be substituted for Ativisha. Morphologically similar — root authentication is critical.</div>
+      </div>
+    </div>
+    <p class="section-body">Adulteration of the Ativisha market with toxic Aconitum species is a documented and serious concern. Authenticated botanical identity — ideally with DNA barcoding or phytochemical screening — is essential when sourcing this herb.</p>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">03</span><h2 class="section-title">Phytochemistry Composition</h2><div class="section-rule"></div></div>
+    <p class="section-body">The tuberous roots of Ativisha contain a distinctive alkaloid profile centred on the non-toxic <em>atisine</em> series of C-20 diterpene alkaloids. These structurally complex molecules represent the principal pharmacologically active constituents, with heteratisine and atisine being the most abundant. Flavonoids, saponins, sterols, and phenolic acids constitute the secondary chemical matrix and contribute to the anti-inflammatory, antioxidant, and antimicrobial facets of the herb's activity.</p>
+    <div class="nutrition-bar">
+      <div class="nutrition-cell"><div class="nutrition-num">6+</div><div class="nutrition-unit">alkaloids</div><div class="nutrition-label">Atisine-series, aconitine-free</div></div>
+      <div class="nutrition-cell"><div class="nutrition-num">0</div><div class="nutrition-unit">aconitine</div><div class="nutrition-label">Not detected in A. heterophyllum</div></div>
+      <div class="nutrition-cell"><div class="nutrition-num">5000</div><div class="nutrition-unit">metres</div><div class="nutrition-label">Maximum natural altitude</div></div>
+      <div class="nutrition-cell"><div class="nutrition-num">2</div><div class="nutrition-unit">root tubers</div><div class="nutrition-label">Paired per plant (parent + new)</div></div>
+    </div>
+    <table class="data-table">
+      <thead><tr><th>Compound</th><th>Category</th><th>Primary Action</th></tr></thead>
+      <tbody>
+        <tr><td>Heteratisine</td><td>Diterpene alkaloid (atisine-series)</td><td>Major alkaloid; antidiarrheal, anti-inflammatory, antipyretic; non-toxic sodium channel modulator</td></tr>
+        <tr><td>Atisine</td><td>Diterpene alkaloid</td><td>Antispasmodic on smooth muscle; digestive stimulant; mild CNS sedative at higher doses</td></tr>
+        <tr><td>Heterophylline &amp; Heterophyllisine</td><td>Diterpene alkaloids</td><td>Antimicrobial; anti-secretory (reduces intestinal hypersecretion in diarrhoea)</td></tr>
+        <tr><td>Benzoylheteratisine &amp; Isoatisine</td><td>Ester diterpene alkaloids</td><td>Analgesic; antinociceptive; anti-inflammatory via COX pathway modulation</td></tr>
+        <tr><td>Hetisinone</td><td>Diterpene alkaloid (keto form)</td><td>Antipyretic; immune modulation; weak sedative activity</td></tr>
+        <tr><td>Quercetin &amp; Rutin</td><td>Flavonoid glycosides</td><td>Antioxidant, anti-inflammatory, capillary-stabilising, antihistaminic</td></tr>
+        <tr><td>β-Sitosterol &amp; Daucosterol</td><td>Phytosterols</td><td>Anti-inflammatory, immunomodulatory, antifungal</td></tr>
+        <tr><td>Saponins</td><td>Triterpenoid glycosides</td><td>Adaptogenic; mucosa-protective; immune-stimulating</td></tr>
+        <tr><td>Gallic Acid &amp; Protocatechuic Acid</td><td>Phenolic acids</td><td>Antioxidant, antimicrobial, anti-inflammatory</td></tr>
+        <tr><td>Starch &amp; Mucilage</td><td>Polysaccharides</td><td>Demulcent; gut mucosa protection; soothing in childhood diarrhoea</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">04</span><h2 class="section-title">Ayurvedic Significance</h2><div class="section-rule"></div></div>
+    <p class="section-body">Ativisha occupies a position of exceptional honour in Ayurvedic classics — particularly in paediatric medicine (<em>Kaumarabhritya</em>), one of the eight classical branches of Ayurveda. Charaka Samhita catalogues it in the <em>Trishna Nigrahana Mahakashaya</em> (thirst-controlling herbs) and in the <em>Jwarahara</em> (fever-relieving) group. Sushruta Samhita places it in the <em>Vachadi Gana</em> — digestive-stimulant herbs. Ashtanga Hridayam credits it with the broadest classical application, citing it in fevers, diarrhoea, vomiting, anorexia, anaemia, and childhood ailments. Kashyapa Samhita — the foremost classical text of Ayurvedic paediatrics — makes Ativisha the anchor herb of multiple children's formulations, praising it specifically for its safety in infants and young children.</p>
+
+    <div class="shloka">
+      <p>"Ativishaa tuvara tikta laghu ushna katu vipakaa · graahi deepani pachani krimijwara atisaaranashinii"</p>
+      <cite>— Bhavaprakasha Nighantu, Haritakyadi Varga — Properties of Ativisha</cite>
+    </div>
+
+    <p class="section-body">The shloka places Ativisha as astringent and bitter in taste, light in quality, hot in potency, and pungent in post-digestive effect — a <em>grahi</em> (absorbent, antidiarrheal), a <em>deepana-pachana</em> (digestive stimulant and digestant), and a destroyer of intestinal parasites, fever, and diarrhoea. The <em>Laghu-Ushna</em> combination is the classical signature of a powerful but fast-acting herb — ideal in acute paediatric illness where quick resolution is essential.</p>
+
+    <table class="dosha-table">
+      <thead><tr><th>Dosha</th><th>Effect</th><th>Mechanism &amp; Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Vata ↓</td><td>Pacifying</td><td>Ushna virya (hot potency) and digestive-stimulant action correct Vata-driven intestinal hypermobility — the primary mechanism in diarrhoea and IBS (Grahani); relieves colic and intestinal spasm in children</td></tr>
+        <tr><td>Pitta ↓</td><td>Pacifying</td><td>Tikta (bitter) rasa pacifies Pitta; antipyretic action directly reduces Pitta-driven fever; clears hepatic toxins and reduces bile-aggravation in diarrhoea</td></tr>
+        <tr><td>Kapha ↓</td><td>Strongly pacifying</td><td>Ushna, laghu, tikshna (hot, light, sharp) qualities strongly reduce Kapha accumulation; indicated in Kapha-type respiratory congestion in children and Kapha-mediated indigestion</td></tr>
+      </tbody>
+    </table>
+    <p class="section-body"><strong>Rasa:</strong> Tikta (bitter), Katu (pungent) &nbsp;·&nbsp; <strong>Guna:</strong> Laghu (light), Ruksha (dry) &nbsp;·&nbsp; <strong>Virya:</strong> Ushna (hot) &nbsp;·&nbsp; <strong>Vipaka:</strong> Katu (pungent) &nbsp;·&nbsp; <strong>Karma:</strong> Tridoshashamaka (primarily Kapha-Vatahara), Deepana, Pachana, Grahi, Jwaraghna, Krimighna, Chardinigraha, Ama-pachana</p>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">05</span><h2 class="section-title">Key Health Benefits</h2><div class="section-rule"></div></div>
+    <p class="section-body">Modern pharmacological research has validated the classical applications of Ativisha across antidiarrheal, antipyretic, digestive, antimicrobial, and anti-inflammatory domains. Animal and <em>in vitro</em> studies consistently confirm the safety profile that classical Ayurveda identified thousands of years ago, with no observed toxicity at classical therapeutic doses.</p>
+    <div class="benefits-grid">
+      <div class="benefit-card primary">
+        <div class="benefit-title">Antidiarrheal — Paediatric &amp; Adult</div>
+        <div class="benefit-desc">The definitive classical indication. Heteratisine and heterophylline significantly inhibit intestinal smooth muscle hypermobility and reduce secretory hyperstimulation of the gut epithelium. Multiple studies confirm significant reduction in stool frequency and consistency comparable to standard antidiarrheal agents — with particular documented use in infants and children in classical texts dating to Kashyapa Samhita.</div>
+      </div>
+      <div class="benefit-card primary">
+        <div class="benefit-title">Antipyretic — Fever Management</div>
+        <div class="benefit-desc">Classical texts list Ativisha as <em>Jwaraghna</em> (fever-destroying) and it features in numerous classical formulations for both exogenous and endogenous fevers. Animal studies demonstrate significant reduction of yeast-induced pyrexia. Its combination of direct antipyretic action with digestive stimulation makes it ideal in the classic pattern of childhood fever with concurrent anorexia and gastric disturbance.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Digestive Stimulant &amp; Ama-Pachana</div>
+        <div class="benefit-desc">As a <em>Deepana-Pachana</em> herb, Ativisha kindles the digestive fire (Agni) and digests unprocessed metabolic toxins (Ama) — the Ayurvedic concept encompassing partially digested material that obstructs channels and drives disease. Particularly effective in the pattern of low digestive fire, bloating, anorexia, and malabsorption that accompanies and follows febrile illness in children.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Antiemetic — Nausea &amp; Vomiting</div>
+        <div class="benefit-desc">Classical texts include Ativisha in <em>Chardi Nigrahana</em> (vomiting-controlling) formulations. The atisine series alkaloids reduce gastric hypermotility and dampen the vomiting reflex centrally. Particularly relevant in childhood gastroenteritis where simultaneous diarrhoea, fever, and vomiting create rapid dehydration risk — Ativisha's broad action addresses all three components.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Anthelmintic &amp; Krimighna</div>
+        <div class="benefit-desc">As a <em>Krimighna</em> (parasite-destroying) herb, Ativisha root powder creates a hostile gut environment for intestinal parasites through its bitter alkaloids and antimicrobial phenolic acids. Traditional use in childhood intestinal worm infestations is supported by documented anthelmintic activity of ethanolic extracts against common parasitic species.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Malabsorption &amp; Grahani</div>
+        <div class="benefit-desc">Grahani (chronic malabsorption / IBS) is Ativisha's most sustained classical indication — the root's Grahi (absorbent, binding) quality checks intestinal hypermotility while the Deepana-Pachana action rebuilds digestive capacity. The combination of starch and mucilage offers additional gut-mucosal protection in the inflamed intestine.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Anti-inflammatory &amp; Analgesic</div>
+        <div class="benefit-desc">Benzoylheteratisine exhibits significant analgesic activity comparable to morphine at relevant doses in animal models, without associated toxicity. Quercetin and rutin provide anti-inflammatory activity via COX-inhibition. The combination makes Ativisha useful in pain associated with inflammatory bowel conditions and febrile arthralgia.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Adaptogenic &amp; Immunomodulatory</div>
+        <div class="benefit-desc">Triterpenoid saponins from Ativisha demonstrate immune-modulatory activity, enhancing phagocytic activity and non-specific immunity — possibly contributing to classical claims of improving resistance to recurrent infections. This adaptogenic dimension aligns with its listing in Charaka's <em>Vayasthapana</em> and <em>Jeevaniya</em> (life-promoting) contexts.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">06</span><h2 class="section-title">Classical Paediatric Formulations</h2><div class="section-rule"></div></div>
+    <p class="section-body">Ativisha is the cornerstone of Ayurvedic paediatric (<em>Kaumarabhritya</em>) pharmacy. Its safety, broad action, and bitter palatability — which children's physiology (dominated by Kapha) can withstand — make it uniquely suited to this domain. The following are the most important classical preparations in which it features.</p>
+    <table class="consume-table">
+      <thead><tr><th>Formulation</th><th>Type</th><th>Key Ingredients</th><th>Indication</th></tr></thead>
+      <tbody>
+        <tr><td>Balchaturbhadra Churna</td><td>Powder (paediatric)</td><td>Ativisha, Musta, Pippali, Karkatashringi</td><td>The definitive paediatric compound for fever, cough, diarrhoea, and vomiting in children under 5</td></tr>
+        <tr><td>Ativishadi Kwatha</td><td>Decoction</td><td>Ativisha, Musta, Ginger, Pippali</td><td>Fever with diarrhoea and digestive disturbance; acute gastroenteritis in adults and older children</td></tr>
+        <tr><td>Kutajativisha Churna</td><td>Compound powder</td><td>Ativisha, Kutaja bark</td><td>Dysentery, infectious diarrhoea, amoebic colitis; combines antidiarrheal actions of both herbs</td></tr>
+        <tr><td>Shaddharana Churna</td><td>Six-herb compound</td><td>Ativisha, Chitrak, Pippali, Musta, Haritaki, Shunthi</td><td>Chronic Grahani (IBS/malabsorption), Ama-jana conditions; digestive rehabilitation</td></tr>
+        <tr><td>Jatiphaladi Churna</td><td>Compound powder</td><td>Ativisha, Jatiphala, Ela, Lavanga, Musta</td><td>Irritable bowel, chronic loose stools, infantile colic; warming digestive action</td></tr>
+        <tr><td>Single root powder</td><td>Mono-herb</td><td>Ativisha root only</td><td>1–3 g with honey or warm water; fever, diarrhoea, anorexia; simplest classical use</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">07</span><h2 class="section-title">Safety, Sourcing &amp; Precautions</h2><div class="section-rule"></div></div>
+    <p class="section-body">Ativisha is one of Ayurveda's safer herbs at classical doses — its non-toxic alkaloid profile is its defining characteristic. However, two categories of risk demand serious attention: <em>misidentification</em> with toxic Aconitum species, and <em>conservation</em> concerns arising from its endangered status. Both require the practitioner and patient to exercise exceptional diligence in sourcing.</p>
+    <ul class="precaution-list">
+      <li><strong>Botanical authentication — critical:</strong> The single greatest risk with Ativisha is adulteration or substitution with toxic Aconitum species (A. ferox, A. napellus), which are morphologically similar as dried roots but lethally different pharmacologically. Source only from certified botanical suppliers; prefer DNA-authenticated or government-approved sources.</li>
+      <li><strong>Conservation — endangered species:</strong> Aconitum heterophyllum is IUCN Red Listed as endangered. Wild collection is restricted under India's Wildlife Protection Act Schedule VI. Use only cultivated material or certified sustainable-harvest sources — wild-harvested Ativisha contributes to the species' collapse.</li>
+      <li><strong>Pregnancy:</strong> Avoid internal use. Classical texts do not recommend Ativisha in pregnancy; its uterine and digestive-stimulating alkaloids are potentially unsuitable in the pregnant state.</li>
+      <li><strong>Dose precision in children:</strong> While classically safe for paediatric use, dose must be carefully calibrated by body weight — typically 250–500 mg for infants, 500 mg–1 g for toddlers, and up to 3 g for older children. Always under Ayurvedic physician supervision for paediatric use.</li>
+      <li><strong>High-dose gastric irritation:</strong> Exceeding classical doses may cause nausea, gastric burning, or increased diarrhoea due to the bitter alkaloid concentration — paradoxically worsening the condition being treated. Always use within prescribed dose range.</li>
+      <li><strong>Combination with other Aconitum-based products:</strong> Avoid concurrent use with Vatsanabha (A. ferox) preparations, even in their processed (shodhita) form, without expert physician supervision — alkaloid accumulation risk.</li>
+      <li><strong>Liver impairment:</strong> Limited data; as a precaution, those with known hepatic conditions should seek physician advice before using Ativisha-based preparations beyond occasional short-course use.</li>
+      <li><strong>Storage:</strong> Dried Ativisha root must be stored away from moisture and other Aconitum species — cross-contamination in storage is a documented source of adulteration in herbal dispensaries.</li>
+    </ul>
+  </div>
+
+  <div class="sources">
+    <div class="sources-title">References &amp; Sources</div>
+    <ul>
+      <li>Charaka Samhita — Sutrasthana 4 — Trishna Nigrahana Mahakashaya and Jwarahara listings of Ativisha</li>
+      <li>Sushruta Samhita — Sutrasthana — Vachadi Gana classification</li>
+      <li>Ashtanga Hridayam — Sutrasthana and Chikitsasthana — multiple fever and diarrhoea formulations with Ativisha</li>
+      <li>Kashyapa Samhita (Vriddhajivakiya Tantra) — Kaumarabhritya section — paediatric formulations anchored on Ativisha</li>
+      <li>Bhavaprakasha Nighantu — Haritakyadi Varga — properties shloka and synonyms</li>
+      <li>Shah NC &amp; Chauhan J — "Alkaloids of Aconitum heterophyllum" — Phytochemistry, 1976</li>
+      <li>Mukherjee PK et al. — "Aconitum heterophyllum: ethnomedicinal, phytochemical and pharmacological profile" — Journal of Ethnopharmacology, 2010</li>
+      <li>Benn MH &amp; Jacyno JM — "The toxicology and pharmacology of diterpenoid alkaloids" — Alkaloids: Chemical and Biological Perspectives, 1983</li>
+      <li>Bhatt ID et al. — "IUCN Red List assessment of Aconitum heterophyllum" — IUCN, 2015</li>
+      <li>Nadkarni KM — Indian Materia Medica Vol. I — Aconitum heterophyllum entry</li>
+      <li>Priyavrat Sharma — Dravyaguna Vigyana Vol. II — Ativisha monograph</li>
+      <li>Wealth of India — Raw Materials Vol. I — CSIR, New Delhi — Aconitum heterophyllum</li>
+    </ul>
+  </div>
+</div>
+
+<footer>
+  <p>Swastha Herbal Garden &nbsp;·&nbsp; Entry 27 — Atis / Ativisha &nbsp;·&nbsp; For educational purposes only &nbsp;·&nbsp; Consult a qualified practitioner before therapeutic use</p>
+</footer>
+
+  <div id="viewerModal">
+    <div id="modal-topbar">
+      <span>3D Model — Ativisha</span>
+      <button type="button" id="close3D">✕</button>
+    </div>
+    <model-viewer src="ativisha3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+  </div>
+  <script>
+    (function() {
+      var open3D = document.getElementById('open3D');
+      var close3D = document.getElementById('close3D');
+      var modal = document.getElementById('viewerModal');
+      if (!open3D || !close3D || !modal) return;
+      function openModal() {
+        
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+      function closeModal() {
+        
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+      open3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); openModal();
+      });
+      close3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); closeModal();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+      });
+    })();
+  </script>
+
+</body>
+</html>

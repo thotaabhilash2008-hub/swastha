@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Malati | Jasmine | Swastha</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+  <style>
+    #open3D {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      padding: 10px 18px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: var(--forest);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      z-index: 1000;
+      transition: .3s;
+    }
+    #open3D:hover {
+      background: var(--gold);
+      color: var(--deep);
+    }
+    #viewerModal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+    }
+    #modal-topbar {
+      flex-shrink: 0;
+      height: 58px;
+      background: #111111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px 0 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      z-index: 99999;
+    }
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 4.5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.72);
+      user-select: none;
+    }
+    #close3D {
+      width: 38px;
+      height: 38px;
+      font-size: 15px;
+      font-weight: 300;
+      background: transparent;
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background .2s, color .2s, transform .22s;
+      outline: none;
+      flex-shrink: 0;
+    }
+    #close3D:hover {
+      background: #ffffff;
+      color: #111111;
+      border-color: #ffffff;
+      transform: rotate(90deg);
+    }
+    #viewerModal model-viewer {
+      flex: 1;
+      width: 100%;
+      display: block;
+      background: #ffffff;
+    }
+
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+    * { margin: 0; padding: 0; box-sizing: border-box }
+    html { scroll-behavior: smooth }
+    body {
+      font-family: 'Jost', sans-serif;
+      background: var(--cream);
+      color: var(--ink);
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity: .03;
+      pointer-events: none;
+      z-index: 100;
+    }
+
+    .bg-circle { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0 }
+    .bg-circle-1 { width: 700px; height: 700px; background: radial-gradient(circle, rgba(58,92,63,.09) 0%, transparent 70%); top: -200px; right: -150px }
+    .bg-circle-2 { width: 500px; height: 500px; background: radial-gradient(circle, rgba(201,168,76,.07) 0%, transparent 70%); bottom: -100px; left: -100px }
+
+    /* Jasmine petal SVG decorations */
+    .botanical-svg { position: fixed; pointer-events: none; z-index: 1; opacity: .12 }
+    .botanical-tl { top: -10px; left: -10px; width: 280px }
+    .botanical-br { bottom: -10px; right: -10px; width: 240px; transform: rotate(180deg) }
+
+    .hero {
+      position: relative; z-index: 10;
+      padding: 54px 40px 0;
+      text-align: center;
+      opacity: 0;
+      animation: fadeUp .9s ease .1s forwards;
+    }
+    .back-link {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+      color: var(--sage); text-decoration: none; margin-bottom: 36px;
+      transition: color .3s;
+    }
+    .back-link:hover { color: var(--gold) }
+
+    .logo-rule { display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 14px }
+    .logo-rule span { display: block; height: 1px; width: 70px; background: linear-gradient(to right, transparent, var(--gold)) }
+    .logo-rule span:last-child { background: linear-gradient(to left, transparent, var(--gold)) }
+    .logo-ornament { font-size: 13px; color: var(--gold) }
+
+    .hero-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(64px, 12vw, 110px);
+      font-weight: 300;
+      letter-spacing: 8px;
+      line-height: 1;
+      color: var(--deep);
+    }
+    .hero-subtitle {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 18px; font-style: italic; font-weight: 300;
+      color: var(--rose); letter-spacing: 2px; margin-top: 8px;
+    }
+    .hero-sci {
+      font-size: 11px; font-weight: 200; letter-spacing: 5px;
+      color: var(--sage); margin-top: 6px;
+    }
+
+    .hero-photos {
+      position: relative; z-index: 10;
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 2px; max-width: 900px; margin: 40px auto 0;
+      opacity: 0; animation: fadeUp .9s ease .35s forwards;
+    }
+    .hero-photos img {
+      width: 100%; height: 380px;
+      object-fit: cover; object-position: center; display: block;
+      background: var(--parchment);
+    }
+
+    .photo-caption {
+      text-align: center;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 12px; font-style: italic; color: var(--sage);
+      letter-spacing: 1px; padding: 10px 0 0;
+      max-width: 900px; margin: 0 auto;
+      position: relative; z-index: 10;
+      opacity: 0; animation: fadeUp .9s ease .5s forwards;
+    }
+
+    .divider {
+      display: flex; align-items: center; justify-content: center;
+      gap: 16px; margin: 50px auto; max-width: 600px;
+      opacity: 0; animation: fadeUp .9s ease .55s forwards;
+      position: relative; z-index: 10;
+    }
+    .divider-line { height: 1px; width: 120px; background: linear-gradient(to right, transparent, var(--sage)) }
+    .divider-line:last-child { background: linear-gradient(to left, transparent, var(--sage)) }
+    .divider-leaf { color: var(--forest); font-size: 18px }
+
+    .content {
+      position: relative; z-index: 10;
+      max-width: 860px; margin: 0 auto;
+      padding: 0 30px 80px;
+    }
+
+    .intro-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 20px; font-weight: 300; line-height: 1.75;
+      color: var(--ink); text-align: center;
+      max-width: 700px; margin: 0 auto 60px;
+      opacity: 0; animation: fadeUp .9s ease .6s forwards;
+    }
+    .intro-text em { color: var(--forest); font-style: italic }
+
+    .section { margin-bottom: 60px; opacity: 0; animation: fadeUp .9s ease forwards }
+    .section:nth-child(1) { animation-delay: .65s }
+    .section:nth-child(2) { animation-delay: .75s }
+    .section:nth-child(3) { animation-delay: .85s }
+    .section:nth-child(4) { animation-delay: .95s }
+    .section:nth-child(5) { animation-delay: 1.05s }
+    .section:nth-child(6) { animation-delay: 1.15s }
+    .section:nth-child(7) { animation-delay: 1.25s }
+
+    .section-header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px }
+    .section-num { font-family: 'Cormorant Garamond', serif; font-size: 11px; letter-spacing: 4px; color: var(--gold) }
+    .section-title { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 400; color: var(--deep); letter-spacing: 1px }
+    .section-rule { height: 1px; flex: 1; background: linear-gradient(to right, var(--gold), transparent) }
+    .section-body { font-size: 13px; font-weight: 300; line-height: 1.9; color: var(--ink); margin-bottom: 24px }
+
+    .data-table { width: 100%; border-collapse: collapse; margin: 16px 0 8px; font-size: 12px }
+    .data-table thead tr { background: var(--deep); color: var(--gold); font-size: 10px; letter-spacing: 3px; text-transform: uppercase }
+    .data-table thead th { padding: 12px 14px; text-align: left; font-weight: 400 }
+    .data-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .data-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .data-table tbody tr { transition: background .2s }
+    .data-table tbody tr:hover { background: rgba(200, 164, 93, 0.15) }
+    .data-table tbody td { padding: 10px 14px; color: var(--ink); border-bottom: 1px solid rgba(107,79,45,.08) }
+    .data-table tbody td:first-child { font-weight: 400; color: var(--deep); width: 28% }
+
+    .dosha-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .dosha-table thead tr { background: var(--forest); color: var(--cream) }
+    .dosha-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .dosha-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .dosha-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .dosha-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(107,79,45,.08) }
+    .dosha-table tbody td:first-child { font-weight: 400; color: var(--forest); width: 18% }
+    .dosha-table tbody td:nth-child(2) { color: var(--rose); width: 20% }
+
+    .consume-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .consume-table thead tr { background: var(--blush); color: var(--cream) }
+    .consume-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .consume-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .consume-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .consume-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(107,79,45,.08) }
+    .consume-table tbody td:first-child { font-weight: 400; color: var(--blush); width: 22% }
+
+    .benefits-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: rgba(107,79,45,.12); border: 1px solid rgba(107,79,45,.12); margin: 8px 0 }
+    .benefit-card { background: var(--cream); padding: 24px 22px; transition: background .3s; position: relative; overflow: hidden }
+    .benefit-card:hover { background: #ede4ce }
+    .benefit-card::before { content: ''; position: absolute; bottom: 0; left: 0; width: 0; height: 2px; background: var(--gold); transition: width .4s }
+    .benefit-card:hover::before { width: 100% }
+    .benefit-title { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 600; color: var(--forest); margin-bottom: 8px }
+    .benefit-desc { font-size: 11.5px; font-weight: 300; line-height: 1.75; color: var(--ink); opacity: .85 }
+
+    .precaution-list { list-style: none; margin: 8px 0 }
+    .precaution-list li { display: flex; gap: 12px; align-items: flex-start; padding: 10px 14px; font-size: 12px; font-weight: 300; line-height: 1.7; color: var(--ink); border-bottom: 1px solid rgba(107,79,45,.08) }
+    .precaution-list li:last-child { border-bottom: none }
+    .precaution-list li::before { content: '▸'; color: var(--gold); flex-shrink: 0; margin-top: 1px }
+
+    .nutrition-bar { display: grid; grid-template-columns: repeat(4,1fr); gap: 1px; background: rgba(107,79,45,.12); border: 1px solid rgba(107,79,45,.12); margin: 20px 0 }
+    .nutrition-cell { background: var(--cream); padding: 22px 16px; text-align: center; transition: background .3s }
+    .nutrition-cell:hover { background: var(--parchment) }
+    .nutrition-num { font-family: 'Cormorant Garamond', serif; font-size: 36px; font-weight: 300; color: var(--forest); line-height: 1; margin-bottom: 4px }
+    .nutrition-unit { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); font-weight: 300 }
+    .nutrition-label { font-size: 11px; font-weight: 300; color: var(--ink); margin-top: 5px }
+
+    .sources { border-top: 1px solid rgba(107,79,45,.15); padding-top: 24px; margin-top: 20px }
+    .sources-title { font-size: 10px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); margin-bottom: 12px; font-weight: 300 }
+    .sources ul { list-style: none }
+    .sources ul li { font-family: 'Cormorant Garamond', serif; font-size: 13px; font-style: italic; color: var(--blush); padding: 5px 0; border-bottom: 1px solid rgba(107,79,45,.06) }
+    .sources ul li::before { content: '· '; color: var(--sage) }
+
+    footer { position: relative; z-index: 10; text-align: center; padding: 24px 20px 44px; border-top: 1px solid rgba(107,79,45,.12); max-width: 860px; margin: 0 auto }
+    footer p { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); font-weight: 300 }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(28px) } to { opacity: 1; transform: translateY(0) } }
+
+    @media(max-width:700px) {
+      .hero-photos { grid-template-columns: 1fr }
+      .hero-photos img { height: 260px }
+      .benefits-grid { grid-template-columns: 1fr }
+      .nutrition-bar { grid-template-columns: 1fr 1fr }
+      .content { padding: 0 18px 60px }
+    }
+  </style>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+</head>
+<body>
+  <button type="button" id="open3D">View in 3D</button>
+
+
+  <div class="bg-circle bg-circle-1"></div>
+  <div class="bg-circle bg-circle-2"></div>
+
+  <!-- Botanical jasmine SVG decorations -->
+  <svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 290 Q 80 200 140 150 Q 200 100 260 20" stroke="#3a5c3f" stroke-width="1.5" fill="none"/>
+    <!-- Jasmine flower clusters -->
+    <g transform="translate(100,200)">
+      <circle cx="0" cy="0" r="5" fill="#fff" stroke="#c9a07a" stroke-width="1"/>
+      <ellipse cx="0" cy="-10" rx="4" ry="7" fill="#fff" stroke="#c9a07a" stroke-width="0.8"/>
+      <ellipse cx="9" cy="-5" rx="4" ry="7" fill="#fff" stroke="#c9a07a" stroke-width="0.8" transform="rotate(72 0 0)"/>
+      <ellipse cx="6" cy="8" rx="4" ry="7" fill="#fff" stroke="#c9a07a" stroke-width="0.8" transform="rotate(144 0 0)"/>
+      <ellipse cx="-6" cy="8" rx="4" ry="7" fill="#fff" stroke="#c9a07a" stroke-width="0.8" transform="rotate(216 0 0)"/>
+      <ellipse cx="-9" cy="-5" rx="4" ry="7" fill="#fff" stroke="#c9a07a" stroke-width="0.8" transform="rotate(288 0 0)"/>
+    </g>
+    <g transform="translate(160,145)">
+      <circle cx="0" cy="0" r="4" fill="#f9f0e0" stroke="#c9a07a" stroke-width="1"/>
+      <ellipse cx="0" cy="-8" rx="3" ry="5.5" fill="#f9f0e0" stroke="#c9a07a" stroke-width="0.8"/>
+      <ellipse cx="7" cy="-4" rx="3" ry="5.5" fill="#f9f0e0" stroke="#c9a07a" stroke-width="0.8" transform="rotate(72 0 0)"/>
+      <ellipse cx="5" cy="6" rx="3" ry="5.5" fill="#f9f0e0" stroke="#c9a07a" stroke-width="0.8" transform="rotate(144 0 0)"/>
+      <ellipse cx="-5" cy="6" rx="3" ry="5.5" fill="#f9f0e0" stroke="#c9a07a" stroke-width="0.8" transform="rotate(216 0 0)"/>
+      <ellipse cx="-7" cy="-4" rx="3" ry="5.5" fill="#f9f0e0" stroke="#c9a07a" stroke-width="0.8" transform="rotate(288 0 0)"/>
+    </g>
+    <ellipse cx="115" cy="195" rx="18" ry="9" fill="#3a5c3f" transform="rotate(-30 115 195)" opacity="0.6"/>
+    <ellipse cx="155" cy="155" rx="16" ry="8" fill="#3a5c3f" transform="rotate(-45 155 155)" opacity="0.6"/>
+  </svg>
+  <svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 290 Q 80 200 140 150 Q 200 100 260 20" stroke="#3a5c3f" stroke-width="1.5" fill="none"/>
+    <g transform="translate(100,200)">
+      <circle cx="0" cy="0" r="5" fill="#fff" stroke="#c9a07a" stroke-width="1"/>
+      <ellipse cx="0" cy="-10" rx="4" ry="7" fill="#fff" stroke="#c9a07a" stroke-width="0.8"/>
+      <ellipse cx="9" cy="-5" rx="4" ry="7" fill="#fff" stroke="#c9a07a" stroke-width="0.8" transform="rotate(72 0 0)"/>
+      <ellipse cx="6" cy="8" rx="4" ry="7" fill="#fff" stroke="#c9a07a" stroke-width="0.8" transform="rotate(144 0 0)"/>
+      <ellipse cx="-6" cy="8" rx="4" ry="7" fill="#fff" stroke="#c9a07a" stroke-width="0.8" transform="rotate(216 0 0)"/>
+      <ellipse cx="-9" cy="-5" rx="4" ry="7" fill="#fff" stroke="#c9a07a" stroke-width="0.8" transform="rotate(288 0 0)"/>
+    </g>
+    <ellipse cx="115" cy="195" rx="18" ry="9" fill="#3a5c3f" transform="rotate(-30 115 195)" opacity="0.6"/>
+  </svg>
+
+  <div class="hero">
+    <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+    <div class="logo-rule"><span></span><div class="logo-ornament">✦</div><span></span></div>
+    <div class="hero-title">Malati</div>
+    <div class="hero-subtitle">Jasmine — The Queen of Night Blossoms</div>
+    <div class="hero-sci">Jasminum grandiflorum &nbsp;·&nbsp; Jasminum officinale &nbsp;·&nbsp; Jasminum sambac</div>
+  </div>
+
+  <div class="hero-photos">
+    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/2/27/Jasminum_grandiflorum_%28Oleaceae%29.jpg/1280px-Jasminum_grandiflorum_%28Oleaceae%29.jpg" alt="White jasmine flowers clustered on vine" onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/e/e0/Jasminum_grandiflorum_1.jpg" alt="Jasmine garland and loose flowers in traditional Indian setting" onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+  </div>
+  <p class="photo-caption">Fig. 1 — Star-white blossoms of Jasminum grandiflorum unfurling at dusk &nbsp;·&nbsp; Fig. 2 — Malati garlands, a devotional and therapeutic tradition across the Indian subcontinent</p>
+
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-leaf">❧</div>
+    <div class="divider-line"></div>
+  </div>
+
+  <div class="content">
+    <p class="intro-text">Celebrated in Sanskrit as <em>Malati</em>, <em>Mallika</em>, and <em>Sumanasa</em> — "of beautiful fragrance" — Jasmine has perfumed India's temples, bridal chambers, and apothecaries for over 3,000 years. Cherished in <em>Charaka Samhita</em> as a wound-healer and mind-soother, and in <em>Sushruta Samhita</em> for its action on the eyes and skin, this luminous vine occupies a singular place at the crossroads of medicine, devotion, poetry, and perfumery.</p>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">01</span><h2 class="section-title">Botanical Profile</h2><div class="section-rule"></div></div>
+      <p class="section-body">Jasmine belongs to the genus <em>Jasminum</em> of the olive family Oleaceae, encompassing over 200 species native to tropical and warm-temperate regions of Eurasia and Africa. The three species of foremost Ayurvedic significance are <em>J. grandiflorum</em> (Spanish Jasmine / Jati), <em>J. sambac</em> (Arabian Jasmine / Mallika), and <em>J. officinale</em> (Common Jasmine / Malati). All three are twining or scrambling shrubs with opposite, pinnately compound or simple leaves and clusters of intensely fragrant, star-shaped white or pale-pink flowers.</p>
+      <p class="section-body">Flowers bloom predominantly at night or at dusk — releasing their highest concentration of volatile oils in the cooler hours — which accounts for both their distinctive fragrance profile and their Sanskrit epithets like <em>Nishapushpa</em> ("night flower") and <em>Chandrapushpa</em> ("moon flower"). The flower has 5–9 petals, a slender calyx tube, and two stamens enclosed within the corolla. Fruits are small black berries rarely observed in cultivation, as most jasmine is vegetatively propagated.</p>
+      <table class="data-table">
+        <thead><tr><th>Property</th><th>Detail</th></tr></thead>
+        <tbody>
+          <tr><td>Family</td><td>Oleaceae (Olive family)</td></tr>
+          <tr><td>Principal Species</td><td>J. grandiflorum (Jati), J. sambac (Mallika), J. officinale (Malati)</td></tr>
+          <tr><td>Sanskrit Names</td><td>Malati, Mallika, Jati, Sumanasa, Madaniya, Nishapushpa, Chandrapushpa</td></tr>
+          <tr><td>Regional Names</td><td>Chameli (Hindi), Mallige (Kan/Tel), Mullai (Tam), Jasminum (Mal)</td></tr>
+          <tr><td>Plant Type</td><td>Twining / scrambling shrub; perennial vine</td></tr>
+          <tr><td>Flowering Season</td><td>Year-round in tropics; peak June–November</td></tr>
+          <tr><td>Bloom Time</td><td>Dusk through night (peak volatile release 9 pm – 2 am)</td></tr>
+          <tr><td>Medicinal Parts</td><td>Flowers (primary), leaves, roots, bark, essential oil</td></tr>
+          <tr><td>Taste Profile</td><td>Tikta (bitter), Katu (pungent), Kashaya (astringent)</td></tr>
+          <tr><td>Origin</td><td>India, Himalayan foothills; widely naturalised across tropics</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">02</span><h2 class="section-title">Phytochemistry & Aroma</h2><div class="section-rule"></div></div>
+      <p class="section-body">Jasmine's pharmacological richness lies primarily in its volatile oil — obtained by solvent extraction or enfleurage — and in the glycosides, flavonoids, and phenolic acids concentrated in its flowers, leaves, and roots. Jasmine absolute from <em>J. grandiflorum</em> is one of the most complex floral oils known, containing over 100 identified constituents, with benzyl acetate, linalool, indole, methyl jasmonate, and phytol among the most abundant.</p>
+      <p class="section-body">Methyl jasmonate — the compound responsible for jasmine's characteristic warm, narcotic depth — was subsequently identified as a universal plant stress-signalling hormone, now used extensively in pharmacological and agricultural research. The roots contain iridoid glycosides (jasminin) and alkaloids with antimicrobial and antioxidant significance. Leaves are rich in flavonoids (rutin, quercetin) and hydroxycinnamic acids.</p>
+      <div class="nutrition-bar">
+        <div class="nutrition-cell"><div class="nutrition-num">100+</div><div class="nutrition-unit">volatiles</div><div class="nutrition-label">In jasmine absolute</div></div>
+        <div class="nutrition-cell"><div class="nutrition-num">28</div><div class="nutrition-unit">%</div><div class="nutrition-label">Benzyl acetate (key aroma)</div></div>
+        <div class="nutrition-cell"><div class="nutrition-num">3</div><div class="nutrition-unit">species</div><div class="nutrition-label">Primary Ayurvedic use</div></div>
+        <div class="nutrition-cell"><div class="nutrition-num">3000</div><div class="nutrition-unit">yr</div><div class="nutrition-label">Documented therapeutic use</div></div>
+      </div>
+      <table class="data-table">
+        <thead><tr><th>Compound</th><th>Category</th><th>Primary Action</th></tr></thead>
+        <tbody>
+          <tr><td>Benzyl Acetate</td><td>Aromatic ester</td><td>Anxiolytic, antispasmodic, main fragrance carrier</td></tr>
+          <tr><td>Methyl Jasmonate</td><td>Cyclopentanone</td><td>Anti-cancer signalling, wound healing, anti-inflammatory</td></tr>
+          <tr><td>Linalool</td><td>Monoterpene alcohol</td><td>Sedative, anxiolytic, analgesic, antimicrobial</td></tr>
+          <tr><td>Indole</td><td>Aromatic heterocycle</td><td>Mood-elevating at low doses; contributes narcotic depth</td></tr>
+          <tr><td>Phytol</td><td>Diterpene alcohol</td><td>Antioxidant, anticonvulsant, antinociceptive</td></tr>
+          <tr><td>Rutin &amp; Quercetin</td><td>Flavonoids</td><td>Capillary strengthening, anti-inflammatory, antioxidant</td></tr>
+          <tr><td>Jasminin</td><td>Iridoid glycoside (root)</td><td>Antimicrobial, bitter tonic, hepatoprotective</td></tr>
+          <tr><td>Benzyl Benzoate</td><td>Aromatic ester</td><td>Antiparasitic (scabies), antispasmodic</td></tr>
+          <tr><td>Eugenol</td><td>Phenylpropanoid</td><td>Analgesic, antibacterial, anti-inflammatory</td></tr>
+          <tr><td>Hydroxycinnamic Acids</td><td>Phenolic acids (leaves)</td><td>Antioxidant, antimicrobial, UV-protective</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">03</span><h2 class="section-title">Ayurvedic Significance</h2><div class="section-rule"></div></div>
+      <p class="section-body">Malati and Mallika are referenced extensively across the classical corpus. Charaka mentions jasmine flowers in formulations for <em>Kushtha</em> (skin disorders), <em>Vrana</em> (wound healing), and oral hygiene. Sushruta prescribes the leaf juice for eye diseases and the root for dental disorders and fever. Vagbhata endorses the flower as <em>Medhya</em> (intellect-promoting) and <em>Hridya</em> (cardiac tonic).</p>
+      <p class="section-body">Classical verse — <em>"Malati tikta kashaya katu sheetala vishapaham / Vranahara twakaprasada netrahita cha keshyam"</em> — describes Malati as bitter-astringent-pungent in taste, cooling in potency, poison-neutralising, wound-healing, skin-brightening, beneficial to the eyes, and promoter of hair growth.</p>
+      <table class="dosha-table">
+        <thead><tr><th>Dosha</th><th>Effect</th><th>Mechanism &amp; Notes</th></tr></thead>
+        <tbody>
+          <tr><td>Vata ↓</td><td>Mild pacifying</td><td>Nervine and antispasmodic properties relieve Vata-related anxiety, spasm, headache, and insomnia; the oil's sedative terpenes ground an agitated Vata mind</td></tr>
+          <tr><td>Pitta ↓</td><td>Strongly pacifying</td><td>Sheeta virya (cooling potency) is primary — relieves Pitta-type skin inflammations, burning sensations, fever, eye irritation, and excessive heat in body and mind</td></tr>
+          <tr><td>Kapha ↑</td><td>Mildly aggravating</td><td>Guru (heavy) quality of the flower and its sweet post-digestive taste may mildly increase Kapha; excessive use in Kapha-dominant individuals may cause heaviness or congestion</td></tr>
+        </tbody>
+      </table>
+      <p class="section-body"><strong>Rasa:</strong> Tikta (bitter), Katu (pungent), Kashaya (astringent) &nbsp;·&nbsp; <strong>Guna:</strong> Laghu (light), Snigdha (unctuous) &nbsp;·&nbsp; <strong>Virya:</strong> Sheeta (cooling) &nbsp;·&nbsp; <strong>Vipaka:</strong> Katu (pungent) &nbsp;·&nbsp; <strong>Karma:</strong> Pitta-Vata shamaka, Medhya, Hridya, Vranahara, Keshya</p>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">04</span><h2 class="section-title">Key Health Benefits</h2><div class="section-rule"></div></div>
+      <p class="section-body">Modern pharmacology has validated a wide spectrum of jasmine's classical indications, with studies in aromatherapy, dermatology, neuropsychopharmacology, and antimicrobial science confirming the efficacy of both the essential oil and plant extracts across multiple organ systems.</p>
+      <div class="benefits-grid">
+        <div class="benefit-card">
+          <div class="benefit-title">Anxiolytic &amp; Mood Elevating</div>
+          <div class="benefit-desc">Inhalation of jasmine essential oil has been shown in controlled human trials to elevate mood, reduce anxiety, and increase alertness — working through olfactory stimulation of the limbic system. Linalool and benzyl acetate modulate GABA-A receptor activity, producing mild sedation without drowsiness.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Skin Care &amp; Wound Healing</div>
+          <div class="benefit-desc">Jasmine's classical designation as <em>Twakaprasada</em> (skin-brightening) and <em>Vranahara</em> (wound-healer) is supported by demonstrated antimicrobial activity against skin pathogens and anti-inflammatory effects that reduce wound-site redness and accelerate tissue repair. The oil is used in dermatological preparations for dry, sensitive skin.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Uterine Tonic &amp; Labour Support</div>
+          <div class="benefit-desc">Jasmine oil applied as abdominal massage during labour has been clinically shown to reduce pain, shorten labour duration, and lower anxiety — its antispasmodic and oxytocin-like properties documented in obstetric aromatherapy research. Classically used as <em>Garbhashaya Shodana</em> (uterine purifier) post-partum.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Oral Health &amp; Dental Care</div>
+          <div class="benefit-desc">Root powder and decoction are classical remedies for toothache, mouth ulcers, and gum infections. Modern studies confirm antimicrobial activity of root extracts against <em>Streptococcus mutans</em>, <em>Candida albicans</em>, and periodontal pathogens, validating its use in traditional tooth powders.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Eye Care (Netra Hita)</div>
+          <div class="benefit-desc">Fresh leaf juice diluted and used as eyedrops — a practice recorded in Sushruta — is supported by anti-inflammatory and mild antimicrobial properties. Jasmine water has been used to relieve conjunctival redness, tired eyes, and mild infections across South Asian folk traditions.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Hair Growth &amp; Scalp Health</div>
+          <div class="benefit-desc">Jasmine's classical <em>Keshya</em> (hair-promoting) property is expressed in jasmine-infused oils for the scalp — documented antimicrobial effects combat dandruff and scalp infections, while the cooling Sheeta virya soothes scalp inflammation and may support hair follicle health through improved microcirculation.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Antimicrobial &amp; Antipyretic</div>
+          <div class="benefit-desc">Methanolic and aqueous extracts of jasmine leaves and roots exhibit broad-spectrum activity against bacteria and fungi. Decoction of the leaves is a classical remedy for fever (<em>jwara</em>) and is used to treat dengue and typhoid-associated fevers in folk medicine across southern India.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Cardiac &amp; Nervous System Tonic</div>
+          <div class="benefit-desc">Vagbhata's designation of jasmine as <em>Hridya</em> (heart-pleasing) reflects both its psychological calming effect on cardiac anxiety and mild antioxidant cardioprotective properties. Regular aromatherapy with jasmine oil has been shown to reduce heart rate, systolic blood pressure, and galvanic skin response in stressed subjects.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">05</span><h2 class="section-title">How to Use Malati</h2><div class="section-rule"></div></div>
+      <p class="section-body">Jasmine is used across an extraordinary range of therapeutic forms — from fresh flower garlands worn in the hair for psychological wellness, to decoctions, infused oils, powders, and steam inhalations. Topical and aromatic uses are generally safe for all; internal preparations of the root and leaf should be used under practitioner guidance.</p>
+      <table class="consume-table">
+        <thead><tr><th>Form</th><th>Preparation</th><th>Dosage</th><th>Best Use</th></tr></thead>
+        <tbody>
+          <tr><td>Essential Oil (Inhalation)</td><td>2–3 drops in diffuser or on pillow</td><td>20–30 min session</td><td>Anxiety, insomnia, mood elevation</td></tr>
+          <tr><td>Jasmine Tea</td><td>Steep 1 tsp dried flowers in hot water 5 min</td><td>1–2 cups daily</td><td>Stress relief, mild fever, digestion</td></tr>
+          <tr><td>Flower Infusion (Cold)</td><td>Soak fresh flowers overnight in cold water</td><td>30–50 ml, morning</td><td>Eye fatigue, skin brightening rinse</td></tr>
+          <tr><td>Infused Oil (Taila)</td><td>Flowers in sesame or coconut oil, sun-infused</td><td>As needed, topical</td><td>Hair care, scalp massage, skin</td></tr>
+          <tr><td>Root Decoction (Kwatha)</td><td>Boil dried root in water; reduce to ¼</td><td>20–30 ml twice daily</td><td>Oral infections, fever, toothache</td></tr>
+          <tr><td>Leaf Juice (Fresh)</td><td>Pound fresh leaves; strain and dilute</td><td>Eye: 1–2 drops diluted; skin: apply directly</td><td>Conjunctival redness, wounds, skin infections</td></tr>
+          <tr><td>Flower Powder (Topical)</td><td>Dried flower powder in rose water</td><td>Apply as face pack, 15 min</td><td>Oily skin, acne, uneven tone</td></tr>
+          <tr><td>Labour Massage Oil</td><td>2% jasmine oil in carrier, abdominal massage</td><td>With obstetric guidance</td><td>Labour pain, anxiety, duration</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">06</span><h2 class="section-title">Safety &amp; Precautions</h2><div class="section-rule"></div></div>
+      <p class="section-body">Jasmine used aromatically and topically in appropriate dilutions is among the safest of all botanical medicines with an exceptional record across millennia of use. Internal use of plant parts is generally well-tolerated at classical doses; the concentrated essential oil is never taken internally. Certain cautions apply.</p>
+      <ul class="precaution-list">
+        <li><strong>Pregnancy (first two trimesters):</strong> Jasmine oil has uterotonic properties — avoid therapeutic massage with jasmine essential oil during the first and second trimester. Aromatic use is generally considered safe in moderation.</li>
+        <li><strong>Essential oil — never ingest:</strong> Jasmine absolute and essential oil are highly concentrated and should never be taken orally. Aromatic and topical use (properly diluted in carrier oil) are the appropriate routes.</li>
+        <li><strong>Skin sensitivity:</strong> Always dilute jasmine essential oil to 1–2% in a carrier oil before topical application. Patch test first — rare contact dermatitis reactions have been reported, particularly with synthetic jasmine fragrance compounds.</li>
+        <li><strong>Kapha imbalance:</strong> Those with significant Kapha aggravation (excess mucus, congestion, lethargy) should use jasmine sparingly internally, as its Guru guna and sweet vipaka may increase Kapha.</li>
+        <li><strong>Children:</strong> Jasmine tea and topical use is generally safe; concentrated essential oil should not be used near the face of infants under 2 years.</li>
+        <li><strong>Sedative medications:</strong> Jasmine's linalool has mild GABA-A activity — avoid combining high-dose jasmine aromatherapy with strong sedatives, anxiolytics, or anaesthesia without medical advice.</li>
+        <li><strong>Fragrance sensitivity / headaches:</strong> Jasmine's intense fragrance can trigger headaches or nausea in fragrance-sensitive individuals — use in well-ventilated spaces and limit diffuser sessions to 30 minutes.</li>
+        <li><strong>Allergic individuals:</strong> Those with known Oleaceae allergies (olive pollen, privet) may cross-react with jasmine. Consult an allergist before therapeutic use if suspected.</li>
+      </ul>
+    </div>
+
+    <div class="sources">
+      <div class="sources-title">References &amp; Sources</div>
+      <ul>
+        <li>Charaka Samhita — Chikitsasthana, Kushtha Chikitsa &amp; Vrana Chikitsa — references to Malati and Mallika</li>
+        <li>Sushruta Samhita — Uttaratantra — Netra Chikitsa &amp; Danta Roga Chikitsa references to Jasminum</li>
+        <li>Bhavaprakasha Nighantu — Pushpavarga — Malati, Mallika, and Jati entries</li>
+        <li>Priyavrat Sharma — Dravyaguna Vigyana Vol. 2 — Malati, Mallika properties and formulations</li>
+        <li>Hongratanaworakit T — "Stimulating effect of aromatherapy massage with jasmine oil" — Natural Product Communications, 2010</li>
+        <li>Ou MC et al. — "Pain relief assessment by aromatic essential oil massage on outpatients with primary dysmenorrhea" — Journal of Obstetrics and Gynaecology Research, 2012</li>
+        <li>Rasheed A et al. — "Jasminum grandiflorum L. (Jati): A Review of its Traditional Uses, Phytochemistry and Pharmacology" — Asian Journal of Pharmaceutical and Clinical Research, 2014</li>
+        <li>Kaur R et al. — "Antimicrobial activity of Jasminum sambac essential oil and its major constituents" — Natural Product Research, 2018</li>
+        <li>Aoshima H &amp; Hamamoto K — "Potentiation of GABAA receptors by kava-kava and other plant-derived volatiles" — Bioscience, Biotechnology and Biochemistry, 1999</li>
+        <li>Ngan A &amp; Conduit R — "A double-blind, placebo-controlled investigation of the effects of Passiflora incarnata (Passionflower) herbal tea on subjective sleep quality" — Phytotherapy Research, 2011 (contextual on linalool)</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer>
+    <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a qualified practitioner before therapeutic use</p>
+  </footer>
+
+
+  <div id="viewerModal">
+    <div id="modal-topbar">
+      <span>3D Model — Malati</span>
+      <button type="button" id="close3D">✕</button>
+    </div>
+    <model-viewer src="malati3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+  </div>
+  <script>
+    (function() {
+      var open3D = document.getElementById('open3D');
+      var close3D = document.getElementById('close3D');
+      var modal = document.getElementById('viewerModal');
+      if (!open3D || !close3D || !modal) return;
+      function openModal() {
+        
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+      function closeModal() {
+        
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+      open3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); openModal();
+      });
+      close3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); closeModal();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+      });
+    })();
+  </script>
+
+</body>
+</html>

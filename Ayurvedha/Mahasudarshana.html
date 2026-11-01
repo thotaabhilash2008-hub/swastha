@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mahasudarshana | Swastha</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+  <style>
+    #open3D {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      padding: 10px 18px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: var(--forest);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      z-index: 1000;
+      transition: .3s;
+    }
+    #open3D:hover {
+      background: var(--gold);
+      color: var(--deep);
+    }
+    #viewerModal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+    }
+    #modal-topbar {
+      flex-shrink: 0;
+      height: 58px;
+      background: #111111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px 0 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      z-index: 99999;
+    }
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 4.5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.72);
+      user-select: none;
+    }
+    #close3D {
+      width: 38px;
+      height: 38px;
+      font-size: 15px;
+      font-weight: 300;
+      background: transparent;
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background .2s, color .2s, transform .22s;
+      outline: none;
+      flex-shrink: 0;
+    }
+    #close3D:hover {
+      background: #ffffff;
+      color: #111111;
+      border-color: #ffffff;
+      transform: rotate(90deg);
+    }
+    #viewerModal model-viewer {
+      flex: 1;
+      width: 100%;
+      display: block;
+      background: #ffffff;
+    }
+
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+    * { margin:0; padding:0; box-sizing:border-box }
+    html { scroll-behavior:smooth }
+    body { font-family:'Jost',sans-serif; background:var(--cream); color:var(--ink); min-height:100vh; overflow-x:hidden; position:relative }
+    body::before { content:''; position:fixed; inset:0; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E"); opacity:.032; pointer-events:none; z-index:100 }
+
+    .bg-circle { position:fixed; border-radius:50%; pointer-events:none; z-index:0 }
+    .bg-circle-1 { width:700px; height:700px; background:radial-gradient(circle,rgba(26,74,92,.1) 0%,transparent 70%); top:-200px; right:-150px }
+    .bg-circle-2 { width:500px; height:500px; background:radial-gradient(circle,rgba(184,150,46,.08) 0%,transparent 70%); bottom:-100px; left:-100px }
+
+    /* Botanical SVG — lotus/wheel motif for Sudarshana */
+    .botanical-svg { position:fixed; pointer-events:none; z-index:1; opacity:.09 }
+    .botanical-tl { top:-20px; left:-20px; width:280px }
+    .botanical-br { bottom:-20px; right:-20px; width:240px; transform:rotate(180deg) }
+
+    .hero { position:relative; z-index:10; padding:54px 40px 0; text-align:center; opacity:0; animation:fadeUp .9s ease .1s forwards }
+    .back-link { display:inline-flex; align-items:center; gap:8px; font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--sage); text-decoration:none; margin-bottom:36px; transition:color .3s }
+    .back-link:hover { color:var(--gold) }
+    .logo-rule { display:flex; align-items:center; justify-content:center; gap:20px; margin-bottom:14px }
+    .logo-rule span { display:block; height:1px; width:70px; background:linear-gradient(to right,transparent,var(--gold)) }
+    .logo-rule span:last-child { background:linear-gradient(to left,transparent,var(--gold)) }
+    .logo-ornament { font-size:13px; color:var(--gold) }
+    .hero-title { font-family:'Cormorant Garamond',serif; font-size:clamp(48px,10vw,100px); font-weight:300; letter-spacing:8px; line-height:1; color:var(--deep) }
+    .hero-subtitle { font-family:'Cormorant Garamond',serif; font-size:18px; font-style:italic; font-weight:300; color:var(--earth); letter-spacing:2px; margin-top:8px }
+    .hero-sci { font-size:11px; font-weight:200; letter-spacing:5px; color:var(--sage); margin-top:6px }
+
+    .hero-photos { position:relative; z-index:10; display:grid; grid-template-columns:1fr 1fr; gap:2px; max-width:900px; margin:40px auto 0; opacity:0; animation:fadeUp .9s ease .35s forwards }
+    .hero-photos img { width:100%; height:380px; object-fit:cover; object-position:center; display:block; background:var(--parchment) }
+    .photo-caption { text-align:center; font-family:'Cormorant Garamond',serif; font-size:12px; font-style:italic; color:var(--sage); letter-spacing:1px; padding:10px 0 0; max-width:900px; margin:0 auto; position:relative; z-index:10; opacity:0; animation:fadeUp .9s ease .5s forwards }
+
+    .divider { display:flex; align-items:center; justify-content:center; gap:16px; margin:50px auto; max-width:600px; opacity:0; animation:fadeUp .9s ease .55s forwards; position:relative; z-index:10 }
+    .divider-line { height:1px; width:120px; background:linear-gradient(to right,transparent,var(--sage)) }
+    .divider-line:last-child { background:linear-gradient(to left,transparent,var(--sage)) }
+    .divider-leaf { color:var(--forest); font-size:18px }
+
+    .content { position:relative; z-index:10; max-width:860px; margin:0 auto; padding:0 30px 80px }
+    .intro-text { font-family:'Cormorant Garamond',serif; font-size:20px; font-weight:300; line-height:1.75; color:var(--ink); text-align:center; max-width:700px; margin:0 auto 60px; opacity:0; animation:fadeUp .9s ease .6s forwards }
+    .intro-text em { color:var(--forest); font-style:italic }
+
+    .section { margin-bottom:60px; opacity:0; animation:fadeUp .9s ease forwards }
+    .section:nth-child(1){animation-delay:.65s}.section:nth-child(2){animation-delay:.75s}.section:nth-child(3){animation-delay:.85s}.section:nth-child(4){animation-delay:.95s}.section:nth-child(5){animation-delay:1.05s}.section:nth-child(6){animation-delay:1.15s}.section:nth-child(7){animation-delay:1.25s}
+
+    .section-header { display:flex; align-items:center; gap:14px; margin-bottom:20px }
+    .section-num { font-family:'Cormorant Garamond',serif; font-size:11px; letter-spacing:4px; color:var(--gold) }
+    .section-title { font-family:'Cormorant Garamond',serif; font-size:28px; font-weight:400; color:var(--deep); letter-spacing:1px }
+    .section-rule { height:1px; flex:1; background:linear-gradient(to right,var(--gold),transparent) }
+    .section-body { font-size:13px; font-weight:300; line-height:1.9; color:var(--ink); margin-bottom:24px }
+
+    .data-table { width:100%; border-collapse:collapse; margin:16px 0 8px; font-size:12px }
+    .data-table thead tr { background:var(--deep); color:var(--gold); font-size:10px; letter-spacing:3px; text-transform:uppercase }
+    .data-table thead th { padding:12px 14px; text-align:left; font-weight:400 }
+    .data-table tbody tr:nth-child(even){ background:var(--parchment) }
+    .data-table tbody tr:nth-child(odd){ background:var(--cream) }
+    .data-table tbody tr { transition:background .2s }
+    .data-table tbody tr:hover { background:#e2d9c4 }
+    .data-table tbody td { padding:10px 14px; color:var(--ink); border-bottom:1px solid rgba(90,62,27,.08) }
+    .data-table tbody td:first-child { font-weight:400; color:var(--deep); width:28% }
+
+    .dosha-table { width:100%; border-collapse:collapse; margin:16px 0; font-size:12px }
+    .dosha-table thead tr { background:var(--forest); color:var(--cream) }
+    .dosha-table thead th { padding:12px 14px; text-align:left; font-weight:400; letter-spacing:2px; font-size:10px; text-transform:uppercase }
+    .dosha-table tbody tr:nth-child(even){ background:var(--parchment) }
+    .dosha-table tbody tr:nth-child(odd){ background:var(--cream) }
+    .dosha-table tbody td { padding:11px 14px; color:var(--ink); border-bottom:1px solid rgba(90,62,27,.08) }
+    .dosha-table tbody td:first-child { font-weight:400; color:var(--forest); width:18% }
+    .dosha-table tbody td:nth-child(2){ color:var(--earth); width:20% }
+
+    .consume-table { width:100%; border-collapse:collapse; margin:16px 0; font-size:12px }
+    .consume-table thead tr { background:var(--earth); color:var(--cream) }
+    .consume-table thead th { padding:12px 14px; text-align:left; font-weight:400; letter-spacing:2px; font-size:10px; text-transform:uppercase }
+    .consume-table tbody tr:nth-child(even){ background:var(--parchment) }
+    .consume-table tbody tr:nth-child(odd){ background:var(--cream) }
+    .consume-table tbody td { padding:11px 14px; color:var(--ink); border-bottom:1px solid rgba(90,62,27,.08) }
+    .consume-table tbody td:first-child { font-weight:400; color:var(--earth); width:22% }
+
+    .benefits-grid { display:grid; grid-template-columns:1fr 1fr; gap:1px; background:rgba(90,62,27,.12); border:1px solid rgba(90,62,27,.12); margin:8px 0 }
+    .benefit-card { background:var(--cream); padding:24px 22px; transition:background .3s; position:relative; overflow:hidden }
+    .benefit-card:hover { background:rgba(200, 164, 93, 0.15) }
+    .benefit-card::before { content:''; position:absolute; bottom:0; left:0; width:0; height:2px; background:var(--gold); transition:width .4s }
+    .benefit-card:hover::before { width:100% }
+    .benefit-title { font-family:'Cormorant Garamond',serif; font-size:16px; font-weight:600; color:var(--forest); margin-bottom:8px }
+    .benefit-desc { font-size:11.5px; font-weight:300; line-height:1.75; color:var(--ink); opacity:.85 }
+
+    .precaution-list { list-style:none; margin:8px 0 }
+    .precaution-list li { display:flex; gap:12px; align-items:flex-start; padding:10px 14px; font-size:12px; font-weight:300; line-height:1.7; color:var(--ink); border-bottom:1px solid rgba(90,62,27,.08) }
+    .precaution-list li:last-child { border-bottom:none }
+    .precaution-list li::before { content:'▸'; color:var(--gold); flex-shrink:0; margin-top:1px }
+
+    .nutrition-bar { display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:rgba(90,62,27,.12); border:1px solid rgba(90,62,27,.12); margin:20px 0 }
+    .nutrition-cell { background:var(--cream); padding:22px 16px; text-align:center; transition:background .3s }
+    .nutrition-cell:hover { background:var(--parchment) }
+    .nutrition-num { font-family:'Cormorant Garamond',serif; font-size:36px; font-weight:300; color:var(--forest); line-height:1; margin-bottom:4px }
+    .nutrition-unit { font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--gold); font-weight:300 }
+    .nutrition-label { font-size:11px; font-weight:300; color:var(--ink); margin-top:5px }
+
+    .sources { border-top:1px solid rgba(90,62,27,.15); padding-top:24px; margin-top:20px }
+    .sources-title { font-size:10px; letter-spacing:4px; text-transform:uppercase; color:var(--sage); margin-bottom:12px; font-weight:300 }
+    .sources ul { list-style:none }
+    .sources ul li { font-family:'Cormorant Garamond',serif; font-size:13px; font-style:italic; color:var(--earth); padding:5px 0; border-bottom:1px solid rgba(90,62,27,.06) }
+    .sources ul li::before { content:'· '; color:var(--sage) }
+
+    footer { position:relative; z-index:10; text-align:center; padding:24px 20px 44px; border-top:1px solid rgba(90,62,27,.12); max-width:860px; margin:0 auto }
+    footer p { font-size:11px; letter-spacing:4px; text-transform:uppercase; color:var(--sage); font-weight:300 }
+
+    @keyframes fadeUp { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:translateY(0)} }
+    @media(max-width:700px){
+      .hero-photos{grid-template-columns:1fr}.hero-photos img{height:260px}
+      .benefits-grid{grid-template-columns:1fr}
+      .nutrition-bar{grid-template-columns:1fr 1fr}
+      .content{padding:0 18px 60px}
+    }
+  </style>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+</head>
+<body>
+  <button type="button" id="open3D">View in 3D</button>
+
+
+  <div class="bg-circle bg-circle-1"></div>
+  <div class="bg-circle bg-circle-2"></div>
+
+  <!-- Sudarshana Chakra-inspired lotus SVG -->
+  <svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="150" cy="150" r="60" stroke="#1a4a5c" stroke-width="1"/>
+    <circle cx="150" cy="150" r="80" stroke="#b8962e" stroke-width="0.5" stroke-dasharray="6 4"/>
+    <circle cx="150" cy="150" r="40" stroke="#1a4a5c" stroke-width="0.8"/>
+    <circle cx="150" cy="150" r="12" fill="#1a4a5c" opacity="0.6"/>
+    <ellipse cx="150" cy="96" rx="10" ry="20" fill="#1a4a5c" opacity="0.5" transform="rotate(0 150 150)"/>
+    <ellipse cx="150" cy="96" rx="10" ry="20" fill="#1a4a5c" opacity="0.5" transform="rotate(45 150 150)"/>
+    <ellipse cx="150" cy="96" rx="10" ry="20" fill="#1a4a5c" opacity="0.5" transform="rotate(90 150 150)"/>
+    <ellipse cx="150" cy="96" rx="10" ry="20" fill="#1a4a5c" opacity="0.5" transform="rotate(135 150 150)"/>
+    <ellipse cx="150" cy="96" rx="10" ry="20" fill="#1a4a5c" opacity="0.5" transform="rotate(180 150 150)"/>
+    <ellipse cx="150" cy="96" rx="10" ry="20" fill="#1a4a5c" opacity="0.5" transform="rotate(225 150 150)"/>
+    <ellipse cx="150" cy="96" rx="10" ry="20" fill="#1a4a5c" opacity="0.5" transform="rotate(270 150 150)"/>
+    <ellipse cx="150" cy="96" rx="10" ry="20" fill="#1a4a5c" opacity="0.5" transform="rotate(315 150 150)"/>
+  </svg>
+  <svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="150" cy="150" r="60" stroke="#1a4a5c" stroke-width="1"/>
+    <circle cx="150" cy="150" r="80" stroke="#b8962e" stroke-width="0.5" stroke-dasharray="6 4"/>
+    <circle cx="150" cy="150" r="12" fill="#1a4a5c" opacity="0.6"/>
+    <ellipse cx="150" cy="96" rx="10" ry="20" fill="#1a4a5c" opacity="0.5" transform="rotate(0 150 150)"/>
+    <ellipse cx="150" cy="96" rx="10" ry="20" fill="#1a4a5c" opacity="0.5" transform="rotate(60 150 150)"/>
+    <ellipse cx="150" cy="96" rx="10" ry="20" fill="#1a4a5c" opacity="0.5" transform="rotate(120 150 150)"/>
+    <ellipse cx="150" cy="96" rx="10" ry="20" fill="#1a4a5c" opacity="0.5" transform="rotate(180 150 150)"/>
+    <ellipse cx="150" cy="96" rx="10" ry="20" fill="#1a4a5c" opacity="0.5" transform="rotate(240 150 150)"/>
+    <ellipse cx="150" cy="96" rx="10" ry="20" fill="#1a4a5c" opacity="0.5" transform="rotate(300 150 150)"/>
+  </svg>
+
+  <div class="hero">
+    <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+    <div class="logo-rule"><span></span><div class="logo-ornament">✦</div><span></span></div>
+    <div class="hero-title">Mahasudarshana</div>
+    <div class="hero-subtitle">The Great Discus Herb — Fever's Supreme Adversary</div>
+    <div class="hero-sci">Crinum latifolium L. &nbsp;·&nbsp; syn. Crinum asiaticum var. latifolium &nbsp;·&nbsp; Amaryllidaceae</div>
+  </div>
+
+  <div class="hero-photos">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/a/aa/Crinum_latifolium.jpg" alt="Mahasudarshana Crinum latifolium broad leaves and white flowers"
+      onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/c/ca/Crinum_latifolium_2.jpg/1280px-Crinum_latifolium_2.jpg" alt="Mahasudarshana plant in natural habitat showing strap-like leaves"
+      onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+  </div>
+  <p class="photo-caption">Fig. 1 — Broad strap-like leaves and elegant white umbellate flowers of Mahasudarshana &nbsp;·&nbsp; Fig. 2 — The bulbous base typical of Crinum latifolium in its natural habitat</p>
+
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-leaf">❧</div>
+    <div class="divider-line"></div>
+  </div>
+
+  <div class="content">
+    <p class="intro-text">Named <em>Mahasudarshana</em> — "the greatly auspicious one" — and evoking the spinning Sudarshana Chakra of Vishnu that destroys all evil, this classical Ayurvedic formulation is primarily celebrated as a compound preparation of 53 herbs rather than a single plant. Its central herb, <em>Crinum latifolium</em> (Sudarshana), and the classical churna and kwatha named after it are revered in <em>Charaka Samhita</em> and <em>Ashtanga Hridayam</em> as the supreme remedy for all types of fever, liver disorders, and immune debility.</p>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">01</span>
+        <h2 class="section-title">Botanical Identity</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">The primary herb of the Sudarshana complex is <em>Crinum latifolium</em> L. (syn. <em>Crinum asiaticum</em> var. <em>latifolium</em>), a bulbous perennial of the Amaryllidaceae family. In classical texts, the drug is sometimes also attributed to <em>Swertia chirayita</em> (Chirata / Kiratatikta) — which forms the keystone of the classical <em>Mahasudarshana Churna</em> compound. Both botanical sources are used in different regional traditions; most modern Ayurvedic pharmacopoeias recognise <em>Swertia chirayita</em> as the principal herb of the compound preparation.</p>
+      <p class="section-body"><em>Crinum latifolium</em> grows as a robust herb with a large tunicated bulb, strap-shaped or broadly lanceolate leaves up to 1 m long and 5–10 cm wide, with a prominent midrib and undulate margins. Flowering stems bear an umbel of 6–12 fragrant, white, funnel-shaped flowers with reddish keels. It thrives in moist, semi-shaded tropical environments along forest margins, stream banks, and coastal plains across South and Southeast Asia.</p>
+      <table class="data-table">
+        <thead><tr><th>PROPERTY</th><th>Detail</th></tr></thead>
+        <tbody>
+          <tr><td>Family</td><td>Amaryllidaceae (bulb herb) / Gentianaceae (compound key herb)</td></tr>
+          <tr><td>Botanical Name</td><td>Crinum latifolium L. (single herb); Swertia chirayita (compound key)</td></tr>
+          <tr><td>Sanskrit Names</td><td>Sudarshana, Mahasudarshana, Vishnukranta, Chakrapushpi</td></tr>
+          <tr><td>Common Names</td><td>Sudarshana, Broad-leaved Crinum, Poison Bulb (Crinum); Chirata (Swertia)</td></tr>
+          <tr><td>Regional Names</td><td>Sudarshani (Hindi), Vishnukranti (Mar), Nagadamani (Tam), Sudarshana (Tel)</td></tr>
+          <tr><td>Medicinal Parts</td><td>Bulb, leaves (Crinum); whole herb (Swertia); compound churna from 53 herbs</td></tr>
+          <tr><td>Plant Type</td><td>Perennial bulbous herb (Crinum) / erect annual (Swertia)</td></tr>
+          <tr><td>Taste Profile (Rasa)</td><td>Tikta (bitter) dominant, Katu (pungent)</td></tr>
+          <tr><td>Classical Text References</td><td>Charaka Samhita, Ashtanga Hridayam, Bhaishajya Ratnavali, Sharangadhara</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">02</span>
+        <h2 class="section-title">Phytochemistry</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body"><em>Crinum latifolium</em> is richest in Amaryllidaceae alkaloids — a structurally diverse and pharmacologically potent group found throughout the bulb, leaves, and stem. Key among these are lycorine, crinamine, hamayne, and lycoricidine, the latter demonstrating significant anti-tumour and antiviral activity. <em>Swertia chirayita</em>, the compound's keystone bitter, contributes xanthones, secoiridoids, and flavonoids that are primarily responsible for its anti-malarial, anti-fever, and hepatoprotective actions.</p>
+      <div class="nutrition-bar">
+        <div class="nutrition-cell">
+          <div class="nutrition-num">53</div>
+          <div class="nutrition-unit">herbs</div>
+          <div class="nutrition-label">In classical compound formulation</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">20+</div>
+          <div class="nutrition-unit">alkaloids</div>
+          <div class="nutrition-label">Isolated from Crinum latifolium</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">8</div>
+          <div class="nutrition-unit">xanthones</div>
+          <div class="nutrition-label">Bioactive in Swertia chirayita</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">3</div>
+          <div class="nutrition-unit">forms</div>
+          <div class="nutrition-label">Churna · Kwatha · Vati</div>
+        </div>
+      </div>
+      <table class="data-table">
+        <thead><tr><th>Compound</th><th>Source</th><th>Primary Action</th></tr></thead>
+        <tbody>
+          <tr><td>Lycorine</td><td>Crinum bulb &amp; leaves</td><td>Anti-tumour, antiviral, antifungal, emetic</td></tr>
+          <tr><td>Crinamine &amp; Hamayne</td><td>Crinum bulb</td><td>Cytotoxic, immunostimulant</td></tr>
+          <tr><td>Lycoricidine &amp; Narciclasine</td><td>Crinum bulb</td><td>Potent anti-tumour, protein-synthesis inhibition</td></tr>
+          <tr><td>Swertiamarin</td><td>Swertia chirayita</td><td>Anti-malarial, hepatoprotective, anti-inflammatory</td></tr>
+          <tr><td>Mangiferin</td><td>Swertia chirayita</td><td>Antioxidant, antipyretic, antidiabetic</td></tr>
+          <tr><td>Amarogentin</td><td>Swertia chirayita</td><td>One of bitterest compounds known; anti-leishmanial</td></tr>
+          <tr><td>Xanthones (Decussatin, Bellidifolin)</td><td>Swertia chirayita</td><td>Hepatoprotective, anti-inflammatory, antimicrobial</td></tr>
+          <tr><td>Oleanolic &amp; Ursolic Acids</td><td>Crinum leaves</td><td>Hepatoprotective, anti-arthritic, anti-tumour</td></tr>
+          <tr><td>Flavonoids (Quercetin, Rutin)</td><td>Both sources</td><td>Antioxidant, capillary-strengthening, antipyretic</td></tr>
+          <tr><td>Tannins &amp; Saponins</td><td>Compound formulation herbs</td><td>Antimicrobial, astringent, immunomodulatory</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">03</span>
+        <h2 class="section-title">Ayurvedic Significance</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Mahasudarshana occupies a singular place in Ayurvedic therapeutics as the foundational treatment for <em>Jwara</em> (fever) — all eight classical types including Vata-ja, Pitta-ja, Kapha-ja, Sannipataja, and even Vishama jwara (intermittent malarial-type fever). Charaka describes Sudarshana as the foremost among fever remedies — <em>Jwaranashaka Dravya Shekhara</em>. The classical shloka affirms: <em>"Mahasudarshana sarvajwara hara param"</em> — supremely destroyer of all fevers.</p>
+      <p class="section-body">The compound <em>Mahasudarshana Churna</em> is a 53-herb polyherbal formulation first systematically described in <em>Bhaishajya Ratnavali</em> (Jwara Rogadhikara) and referenced in <em>Ashtanga Hridayam</em> and <em>Sharangadhara Samhita</em>. Key herbs include Chirata (<em>Swertia chirayita</em>), Kutki (<em>Picrorhiza kurroa</em>), Guduchi (<em>Tinospora cordifolia</em>), Haritaki, Amalaki, Bibhitaki, Nimba, Patola, Vasa, Musta, Kiratatikta, Ativisha, and many others — each contributing synergistically to its broad anti-infective and immune-restorative action.</p>
+      <table class="dosha-table">
+        <thead><tr><th>Dosha</th><th>Effect</th><th>Mechanism &amp; Notes</th></tr></thead>
+        <tbody>
+          <tr><td>Vata ↓</td><td>Pacifying</td><td>Bitter-pungent combination and ushna virya in the compound calm Vata-type fevers (erratic, with chills, body aches); especially via Guduchi and Ativisha components</td></tr>
+          <tr><td>Pitta ↓</td><td>Strongly pacifying</td><td>Primary action: the bitter tikta rasa directly reduces Pitta-ja jwara (burning fever, thirst, yellow discolouration); Chirata and Kutki are powerfully Pitta-soothing hepatics</td></tr>
+          <tr><td>Kapha ↓</td><td>Pacifying</td><td>Katu-tikta combination cuts through Kapha-ja fevers (heaviness, lethargy, mucus congestion); Nimba and Musta are key Kapha-clearing components</td></tr>
+        </tbody>
+      </table>
+      <p class="section-body"><strong>Rasa:</strong> Tikta (bitter), Katu (pungent) &nbsp;·&nbsp; <strong>Guna:</strong> Laghu (light), Ruksha (dry) &nbsp;·&nbsp; <strong>Virya:</strong> Ushna (hot) &nbsp;·&nbsp; <strong>Vipaka:</strong> Katu &nbsp;·&nbsp; <strong>Karma:</strong> Tridosha shamaka (with predominant Pitta-Kapha pacification) &nbsp;·&nbsp; <strong>Prabhava:</strong> Sarva Jwara hara (specific for all fevers)</p>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">04</span>
+        <h2 class="section-title">Key Health Benefits</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Mahasudarshana's multi-herb synergy makes it one of Ayurveda's most clinically versatile formulations — modern pharmacological research on its component herbs corroborates the classical claims across antipyretic, hepatoprotective, antimalarial, immunomodulatory, and anti-tumour domains.</p>
+      <div class="benefits-grid">
+        <div class="benefit-card">
+          <div class="benefit-title">Supreme Antipyretic — All Fevers</div>
+          <div class="benefit-desc">Its classical designation as <em>sarva jwara hara</em> is backed by the potent antipyretic alkaloids and xanthones of Chirata, the immunostimulant alkaloids of Guduchi, and the ama-clearing action of Kutki and Musta — collectively reducing both central fever generation and peripheral inflammation.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Antimalarial &amp; Antiprotozoal</div>
+          <div class="benefit-desc">Amarogentin and swertiamarin from Chirata demonstrate potent activity against Plasmodium falciparum and Leishmania in vitro. Classically prescribed for Vishama Jwara — the erratic, relapsing fever corresponding to malaria — Mahasudarshana was among the earliest anti-malarials of the Indian pharmacopoeia.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Hepatoprotective &amp; Liver Tonic</div>
+          <div class="benefit-desc">Kutki (<em>Picrorhiza kurroa</em>) and Chirata are two of Ayurveda's foremost liver herbs, protecting hepatocytes from oxidative damage, reducing liver enzymes (ALT, AST), and promoting bile secretion. Used in hepatitis, fatty liver, and liver enlargement (<em>yakrit vriddhi</em>).</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Immune Modulation</div>
+          <div class="benefit-desc">Guduchi (Tinospora cordifolia) — a key component — is one of the most researched Ayurvedic immunomodulators, enhancing macrophage activity, NK cell function, and antibody production. The compound's holistic immune support makes it valuable in recurrent infections and post-viral debility.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Anti-tumour Potential (Crinum)</div>
+          <div class="benefit-desc">Lycoricidine and narciclasine from <em>Crinum latifolium</em> bulb are among the most potent plant-derived anti-tumour alkaloids identified — inhibiting ribosomal protein synthesis in cancer cells. The Crinum component has been particularly studied in prostate and colonic carcinoma models.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Digestive &amp; Ama Pachan</div>
+          <div class="benefit-desc">Fevers in Ayurveda are deeply linked to <em>Ama</em> (toxic metabolic byproduct). Mahasudarshana's bitter digestive components — Musta, Ativisha, Haritaki — powerfully stimulate <em>Agni</em>, digest Ama, and restore normal gut function, addressing fever at its root rather than merely suppressing symptoms.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Antioxidant &amp; Anti-inflammatory</div>
+          <div class="benefit-desc">Mangiferin (from Chirata) and quercetin-class flavonoids collectively neutralise free radicals and inhibit NF-κB and COX-2 pathways. Clinical studies on compound Mahasudarshana decoctions show significant reduction in inflammatory markers CRP and ESR in febrile conditions.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Respiratory Infections</div>
+          <div class="benefit-desc">Classical indications include kasa (cough), shwasa (dyspnoea), and respiratory fevers. The antimicrobial and anti-inflammatory actions of Vasa (<em>Adhatoda vasica</em>) and Nimba (<em>Azadirachta indica</em>) within the compound address upper and lower respiratory infections with concurrent fever.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">05</span>
+        <h2 class="section-title">Classical Formulations</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Mahasudarshana is available commercially and classically in three primary forms — each with distinct pharmacokinetics and clinical applications. All three are multi-herb compounds with Chirata / Swertia chirayita as the keystone ingredient alongside the 52 adjunct herbs of the classical formula.</p>
+      <table class="data-table">
+        <thead><tr><th>Formulation</th><th>Sanskrit Form</th><th>Primary Use</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td>Mahasudarshana Churna</td><td>Churna (powder)</td><td>All types of acute &amp; chronic fever, liver disorders</td><td>Most classical form; 53-herb compound; taken with honey or warm water</td></tr>
+          <tr><td>Mahasudarshana Kwatha</td><td>Kwatha (decoction)</td><td>Acute febrile illness, faster absorption</td><td>Prepared fresh for immediate use; stronger bioavailability of water-soluble actives</td></tr>
+          <tr><td>Sudarshana Vati / Ghanavati</td><td>Tablet / Concentrated extract</td><td>Convenience dosing; chronic low-grade fever</td><td>Modern tablet form; standardised extract; used in long-term fever management</td></tr>
+          <tr><td>Sudarshana Ghan Vati</td><td>Concentrated kwatha vati</td><td>Malarial &amp; recurrent fever; hepatitis</td><td>Concentrated decoction tablet; particularly suited for hepatosplenomegaly</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">06</span>
+        <h2 class="section-title">How to Consume</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Mahasudarshana preparations should be taken under qualified Ayurvedic supervision, particularly in chronic or high fever conditions. Self-medication beyond 7–10 days is not recommended. The bitter taste is characteristic and a sign of therapeutic activity — traditionally said to "burn the fever just as the Sudarshana Chakra burns evil."</p>
+      <table class="consume-table">
+        <thead><tr><th>Form</th><th>Preparation</th><th>Dosage</th><th>Best Use &amp; Anupana</th></tr></thead>
+        <tbody>
+          <tr><td>Mahasudarshana Churna</td><td>Ready compound churna</td><td>3–6 g twice daily</td><td>Acute fever; with honey or warm water; before food</td></tr>
+          <tr><td>Mahasudarshana Kwatha</td><td>Boil churna in water; reduce to ¼</td><td>20–30 ml twice daily</td><td>Faster relief in acute fever; add honey after cooling</td></tr>
+          <tr><td>Sudarshana Vati</td><td>Commercial tablet form</td><td>2 tablets (500 mg) twice daily</td><td>Chronic / recurring fever; convenient dosing with warm water</td></tr>
+          <tr><td>Sudarshana Ghan Vati</td><td>Concentrated decoction tablet</td><td>1–2 tablets twice daily</td><td>Malarial fever, hepatosplenomegaly; with warm water or pomegranate juice</td></tr>
+          <tr><td>With Guduchi Swarasa</td><td>Mix churna in fresh Guduchi juice</td><td>3 g churna in 20 ml juice</td><td>Post-viral debility, immune restoration, recurrent fever</td></tr>
+          <tr><td>With Vasa Swarasa</td><td>Mix churna in Adhatoda vasica juice</td><td>3 g churna in 20 ml juice</td><td>Respiratory infections with fever, bronchitis</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">07</span>
+        <h2 class="section-title">Safety &amp; Precautions</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Mahasudarshana Churna is generally well-tolerated at classical doses for acute fever management. However, its intense bitterness, heating potency, and the cumulative properties of 53 herbs warrant careful attention to contraindications and duration of use.</p>
+      <ul class="precaution-list">
+        <li><strong>Pregnancy:</strong> Avoid internal use. Several component herbs (Ativisha, Haritaki in high dose) are contraindicated in pregnancy. Crinum alkaloids are emetic and potentially abortifacient.</li>
+        <li><strong>Gastric sensitivity:</strong> The intense bitter-pungent combination may irritate a sensitive stomach. Take strictly after food or with a small amount of honey if acidity occurs.</li>
+        <li><strong>High Pitta / hyperacidity:</strong> Despite being Pitta-pacifying in fever, the ushna virya can aggravate Pitta in already hyperacidic individuals — reduce dose and take with cooling anupana (coconut water, pomegranate juice).</li>
+        <li><strong>Duration:</strong> Acute fever use: 5–10 days standard. Chronic use beyond 4 weeks requires periodic liver function monitoring due to the alkaloid load from Crinum and the strong bitter hepatics.</li>
+        <li><strong>Paediatric use:</strong> Use only under Ayurvedic specialist supervision in children under 12. Dose proportionally reduced by body weight.</li>
+        <li><strong>Drug interactions:</strong> May potentiate antidiabetic medications (hypoglycaemic herbs in formulation); monitor blood glucose. May interact with hepatically-metabolised drugs (CYP450 pathway via Picrorhiza).</li>
+        <li><strong>Crinum (topical / raw bulb):</strong> Raw Crinum bulb is intensely emetic and should never be consumed unprocessed. External use of the bulb paste requires caution in sensitive skin.</li>
+        <li><strong>Fever investigation:</strong> Mahasudarshana addresses fever symptomatically and root-causally within an Ayurvedic framework. Persistent high fever (>104°F / >40°C), febrile seizures, or suspected bacterial meningitis requires urgent modern medical evaluation — do not delay.</li>
+      </ul>
+    </div>
+
+    <div class="sources">
+      <div class="sources-title">References &amp; Sources</div>
+      <ul>
+        <li>Charaka Samhita, Chikitsasthana — Jwara Chikitsa Adhyaya — Reference to Sudarshana as sarva jwara hara</li>
+        <li>Ashtanga Hridayam, Chikitsasthana — Jwara Chikitsa — Mahasudarshana compound formulation</li>
+        <li>Bhaishajya Ratnavali, Jwara Rogadhikara — Detailed 53-herb Mahasudarshana Churna formulation</li>
+        <li>Sharangadhara Samhita — Madhyama Khanda — Kwatha preparations of Sudarshana</li>
+        <li>Ghosal S et al. — "Alkaloids of Crinum latifolium" — Phytochemistry, 1985</li>
+        <li>Koorbanally NA &amp; Crouch NR — "Alkaloids from Crinum species — biological activity review" — Natural Product Reports, 2013</li>
+        <li>Kirtikar KR &amp; Basu BD — "Indian Medicinal Plants" — Sudarshana and Swertia chirayita entries, Vol. III</li>
+        <li>Mandal SC et al. — "Anti-inflammatory and antipyretic activities of Swertia chirata extract" — Phytomedicine, 2000</li>
+        <li>Shahid M et al. — "Anti-malarial activity of Swertia chirayita and its constituents" — Journal of Ethnopharmacology, 2009</li>
+        <li>Indian Pharmacopoeia 2018 — Mahasudarshana Churna monograph</li>
+        <li>Priyavrat Sharma — Dravyaguna Vigyana — Classical properties of Sudarshana group drugs</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer>
+    <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a qualified practitioner before therapeutic use</p>
+  </footer>
+
+
+  <div id="viewerModal">
+    <div id="modal-topbar">
+      <span>3D Model — Mahasudarshana</span>
+      <button type="button" id="close3D">✕</button>
+    </div>
+    <model-viewer src="mahasudarshana3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+  </div>
+  <script>
+    (function() {
+      var open3D = document.getElementById('open3D');
+      var close3D = document.getElementById('close3D');
+      var modal = document.getElementById('viewerModal');
+      if (!open3D || !close3D || !modal) return;
+      function openModal() {
+        
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+      function closeModal() {
+        
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+      open3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); openModal();
+      });
+      close3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); closeModal();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+      });
+    })();
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kharjura | Swastha</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+  <style>
+    #open3D {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      padding: 10px 18px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: var(--forest);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      z-index: 1000;
+      transition: .3s;
+    }
+    #open3D:hover {
+      background: var(--gold);
+      color: var(--deep);
+    }
+    #viewerModal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+    }
+    #modal-topbar {
+      flex-shrink: 0;
+      height: 58px;
+      background: #111111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px 0 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      z-index: 99999;
+    }
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 4.5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.72);
+      user-select: none;
+    }
+    #close3D {
+      width: 38px;
+      height: 38px;
+      font-size: 15px;
+      font-weight: 300;
+      background: transparent;
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background .2s, color .2s, transform .22s;
+      outline: none;
+      flex-shrink: 0;
+    }
+    #close3D:hover {
+      background: #ffffff;
+      color: #111111;
+      border-color: #ffffff;
+      transform: rotate(90deg);
+    }
+    #viewerModal model-viewer {
+      flex: 1;
+      width: 100%;
+      display: block;
+      background: #ffffff;
+    }
+
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+    * { margin:0; padding:0; box-sizing:border-box }
+    html { scroll-behavior:smooth }
+    body { font-family:'Jost',sans-serif; background:var(--cream); color:var(--ink); min-height:100vh; overflow-x:hidden; position:relative }
+    body::before { content:''; position:fixed; inset:0; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E"); opacity:.035; pointer-events:none; z-index:100 }
+
+    .bg-circle { position:fixed; border-radius:50%; pointer-events:none; z-index:0 }
+    .bg-circle-1 { width:700px; height:700px; background:radial-gradient(circle, rgba(212,160,23,.1) 0%, transparent 70%); top:-200px; right:-150px }
+    .bg-circle-2 { width:500px; height:500px; background:radial-gradient(circle, rgba(122,79,30,.08) 0%, transparent 70%); bottom:-100px; left:-100px }
+
+    .botanical-svg { position:fixed; pointer-events:none; z-index:1; opacity:.09 }
+    .botanical-tl { top:-10px; left:-10px; width:280px }
+    .botanical-br { bottom:-10px; right:-10px; width:240px; transform:rotate(180deg) }
+
+    .hero { position:relative; z-index:10; padding:54px 40px 0; text-align:center; opacity:0; animation:fadeUp .9s ease .1s forwards }
+    .back-link { display:inline-flex; align-items:center; gap:8px; font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--sage); text-decoration:none; margin-bottom:36px; transition:color .3s }
+    .back-link:hover { color:var(--gold) }
+    .logo-rule { display:flex; align-items:center; justify-content:center; gap:20px; margin-bottom:14px }
+    .logo-rule span { display:block; height:1px; width:70px; background:linear-gradient(to right, transparent, var(--gold)) }
+    .logo-rule span:last-child { background:linear-gradient(to left, transparent, var(--gold)) }
+    .logo-ornament { font-size:13px; color:var(--gold) }
+    .hero-title { font-family:'Cormorant Garamond',serif; font-size:clamp(64px,12vw,110px); font-weight:300; letter-spacing:8px; line-height:1; color:var(--deep) }
+    .hero-subtitle { font-family:'Cormorant Garamond',serif; font-size:18px; font-style:italic; font-weight:300; color:var(--earth); letter-spacing:2px; margin-top:8px }
+    .hero-sci { font-size:11px; font-weight:200; letter-spacing:5px; color:var(--sage); margin-top:6px }
+
+    .hero-photos { position:relative; z-index:10; display:grid; grid-template-columns:1fr 1fr; gap:2px; max-width:900px; margin:40px auto 0; opacity:0; animation:fadeUp .9s ease .35s forwards }
+    .hero-photos img { width:100%; height:380px; object-fit:cover; object-position:center; display:block; background:var(--parchment) }
+    .photo-caption { text-align:center; font-family:'Cormorant Garamond',serif; font-size:12px; font-style:italic; color:var(--sage); letter-spacing:1px; padding:10px 0 0; max-width:900px; margin:0 auto; position:relative; z-index:10; opacity:0; animation:fadeUp .9s ease .5s forwards }
+
+    .divider { display:flex; align-items:center; justify-content:center; gap:16px; margin:50px auto; max-width:600px; opacity:0; animation:fadeUp .9s ease .55s forwards; position:relative; z-index:10 }
+    .divider-line { height:1px; width:120px; background:linear-gradient(to right, transparent, var(--sage)) }
+    .divider-line:last-child { background:linear-gradient(to left, transparent, var(--sage)) }
+    .divider-leaf { color:var(--forest); font-size:18px }
+
+    .content { position:relative; z-index:10; max-width:860px; margin:0 auto; padding:0 30px 80px }
+    .intro-text { font-family:'Cormorant Garamond',serif; font-size:20px; font-weight:300; line-height:1.75; color:var(--ink); text-align:center; max-width:700px; margin:0 auto 60px; opacity:0; animation:fadeUp .9s ease .6s forwards }
+    .intro-text em { color:var(--forest); font-style:italic }
+
+    .section { margin-bottom:60px; opacity:0; animation:fadeUp .9s ease forwards }
+    .section:nth-child(1){animation-delay:.65s}.section:nth-child(2){animation-delay:.75s}.section:nth-child(3){animation-delay:.85s}.section:nth-child(4){animation-delay:.95s}.section:nth-child(5){animation-delay:1.05s}.section:nth-child(6){animation-delay:1.15s}.section:nth-child(7){animation-delay:1.25s}
+
+    .section-header { display:flex; align-items:center; gap:14px; margin-bottom:20px }
+    .section-num { font-family:'Cormorant Garamond',serif; font-size:11px; letter-spacing:4px; color:var(--gold) }
+    .section-title { font-family:'Cormorant Garamond',serif; font-size:28px; font-weight:400; color:var(--deep); letter-spacing:1px }
+    .section-rule { height:1px; flex:1; background:linear-gradient(to right, var(--gold), transparent) }
+    .section-body { font-size:13px; font-weight:300; line-height:1.9; color:var(--ink); margin-bottom:24px }
+
+    .data-table { width:100%; border-collapse:collapse; margin:16px 0 8px; font-size:12px }
+    .data-table thead tr { background:var(--deep); color:var(--gold); font-size:10px; letter-spacing:3px; text-transform:uppercase }
+    .data-table thead th { padding:12px 14px; text-align:left; font-weight:400 }
+    .data-table tbody tr:nth-child(even){background:var(--parchment)}.data-table tbody tr:nth-child(odd){background:var(--cream)}
+    .data-table tbody tr { transition:background .2s }
+    .data-table tbody tr:hover { background:#e8d9b8 }
+    .data-table tbody td { padding:10px 14px; color:var(--ink); border-bottom:1px solid rgba(122,79,30,.08) }
+    .data-table tbody td:first-child { font-weight:400; color:var(--deep); width:28% }
+
+    .dosha-table { width:100%; border-collapse:collapse; margin:16px 0; font-size:12px }
+    .dosha-table thead tr { background:var(--forest); color:var(--cream) }
+    .dosha-table thead th { padding:12px 14px; text-align:left; font-weight:400; letter-spacing:2px; font-size:10px; text-transform:uppercase }
+    .dosha-table tbody tr:nth-child(even){background:var(--parchment)}.dosha-table tbody tr:nth-child(odd){background:var(--cream)}
+    .dosha-table tbody td { padding:11px 14px; color:var(--ink); border-bottom:1px solid rgba(122,79,30,.08) }
+    .dosha-table tbody td:first-child { font-weight:400; color:var(--forest); width:18% }
+    .dosha-table tbody td:nth-child(2) { color:var(--earth); width:20% }
+
+    .consume-table { width:100%; border-collapse:collapse; margin:16px 0; font-size:12px }
+    .consume-table thead tr { background:var(--earth); color:var(--cream) }
+    .consume-table thead th { padding:12px 14px; text-align:left; font-weight:400; letter-spacing:2px; font-size:10px; text-transform:uppercase }
+    .consume-table tbody tr:nth-child(even){background:var(--parchment)}.consume-table tbody tr:nth-child(odd){background:var(--cream)}
+    .consume-table tbody td { padding:11px 14px; color:var(--ink); border-bottom:1px solid rgba(122,79,30,.08) }
+    .consume-table tbody td:first-child { font-weight:400; color:var(--earth); width:22% }
+
+    .benefits-grid { display:grid; grid-template-columns:1fr 1fr; gap:1px; background:rgba(122,79,30,.12); border:1px solid rgba(122,79,30,.12); margin:8px 0 }
+    .benefit-card { background:var(--cream); padding:24px 22px; transition:background .3s; position:relative; overflow:hidden }
+    .benefit-card:hover { background:#ede0c4 }
+    .benefit-card::before { content:''; position:absolute; bottom:0; left:0; width:0; height:2px; background:var(--gold); transition:width .4s }
+    .benefit-card:hover::before { width:100% }
+    .benefit-title { font-family:'Cormorant Garamond',serif; font-size:16px; font-weight:600; color:var(--forest); margin-bottom:8px }
+    .benefit-desc { font-size:11.5px; font-weight:300; line-height:1.75; color:var(--ink); opacity:.85 }
+
+    .precaution-list { list-style:none; margin:8px 0 }
+    .precaution-list li { display:flex; gap:12px; align-items:flex-start; padding:10px 14px; font-size:12px; font-weight:300; line-height:1.7; color:var(--ink); border-bottom:1px solid rgba(122,79,30,.08) }
+    .precaution-list li:last-child { border-bottom:none }
+    .precaution-list li::before { content:'▸'; color:var(--gold); flex-shrink:0; margin-top:1px }
+
+    .sources { border-top:1px solid rgba(122,79,30,.15); padding-top:24px; margin-top:20px }
+    .sources-title { font-size:10px; letter-spacing:4px; text-transform:uppercase; color:var(--sage); margin-bottom:12px; font-weight:300 }
+    .sources ul { list-style:none }
+    .sources ul li { font-family:'Cormorant Garamond',serif; font-size:13px; font-style:italic; color:var(--earth); padding:5px 0; border-bottom:1px solid rgba(122,79,30,.06) }
+    .sources ul li::before { content:'· '; color:var(--sage) }
+
+    .nutrition-bar { display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:rgba(122,79,30,.12); border:1px solid rgba(122,79,30,.12); margin:20px 0 }
+    .nutrition-cell { background:var(--cream); padding:22px 16px; text-align:center; transition:background .3s }
+    .nutrition-cell:hover { background:var(--parchment) }
+    .nutrition-num { font-family:'Cormorant Garamond',serif; font-size:36px; font-weight:300; color:var(--forest); line-height:1; margin-bottom:4px }
+    .nutrition-unit { font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--gold); font-weight:300 }
+    .nutrition-label { font-size:11px; font-weight:300; color:var(--ink); margin-top:5px }
+
+    footer { position:relative; z-index:10; text-align:center; padding:24px 20px 44px; border-top:1px solid rgba(122,79,30,.12); max-width:860px; margin:0 auto }
+    footer p { font-size:11px; letter-spacing:4px; text-transform:uppercase; color:var(--sage); font-weight:300 }
+
+    @keyframes fadeUp { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:translateY(0)} }
+
+    @media(max-width:700px){
+      .hero-photos{grid-template-columns:1fr}.hero-photos img{height:260px}
+      .benefits-grid{grid-template-columns:1fr}.nutrition-bar{grid-template-columns:1fr 1fr}
+      .content{padding:0 18px 60px}
+    }
+  </style>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+</head>
+<body>
+  <button type="button" id="open3D">View in 3D</button>
+
+
+<!-- Decorative palm frond SVGs -->
+<svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M20 280 Q 60 200 100 140 Q 140 80 200 20" stroke="#7a4f1e" stroke-width="2" fill="none"/>
+  <path d="M100 140 Q 60 120 30 90" stroke="#7a4f1e" stroke-width="1.2" fill="none"/>
+  <path d="M100 140 Q 140 110 160 75" stroke="#7a4f1e" stroke-width="1.2" fill="none"/>
+  <path d="M140 100 Q 100 80 75 50" stroke="#7a4f1e" stroke-width="1" fill="none"/>
+  <path d="M140 100 Q 175 72 190 40" stroke="#7a4f1e" stroke-width="1" fill="none"/>
+  <ellipse cx="60" cy="105" rx="22" ry="10" fill="#7a4f1e" transform="rotate(-40 60 105)" opacity=".6"/>
+  <ellipse cx="155" cy="88" rx="20" ry="9" fill="#b8860b" transform="rotate(-55 155 88)" opacity=".5"/>
+  <ellipse cx="105" cy="65" rx="18" ry="8" fill="#7a4f1e" transform="rotate(-65 105 65)" opacity=".6"/>
+  <ellipse cx="188" cy="52" rx="16" ry="7" fill="#b8860b" transform="rotate(-70 188 52)" opacity=".5"/>
+  <circle cx="65" cy="220" r="6" fill="#d4a017" opacity=".5"/>
+  <circle cx="80" cy="195" r="5" fill="#d4a017" opacity=".4"/>
+  <circle cx="95" cy="168" r="5" fill="#d4a017" opacity=".4"/>
+</svg>
+<svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M20 280 Q 60 200 100 140 Q 140 80 200 20" stroke="#7a4f1e" stroke-width="2" fill="none"/>
+  <path d="M100 140 Q 60 120 30 90" stroke="#7a4f1e" stroke-width="1.2" fill="none"/>
+  <path d="M100 140 Q 140 110 160 75" stroke="#7a4f1e" stroke-width="1.2" fill="none"/>
+  <ellipse cx="60" cy="105" rx="22" ry="10" fill="#7a4f1e" transform="rotate(-40 60 105)" opacity=".6"/>
+  <ellipse cx="155" cy="88" rx="20" ry="9" fill="#b8860b" transform="rotate(-55 155 88)" opacity=".5"/>
+</svg>
+
+<div class="bg-circle bg-circle-1"></div>
+<div class="bg-circle bg-circle-2"></div>
+
+<div class="hero">
+  <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+  <div class="logo-rule"><span></span><div class="logo-ornament">✦</div><span></span></div>
+  <div class="hero-title">Kharjura</div>
+  <div class="hero-subtitle">Date Palm — The Tree of Life</div>
+  <div class="hero-sci">Phoenix dactylifera L. &nbsp;·&nbsp; Arecaceae</div>
+</div>
+
+<div class="hero-photos">
+  <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/c/cd/Phoenix_dactylifera0.jpg/1280px-Phoenix_dactylifera0.jpg" alt="Date palm tree with heavy clusters of ripe dates" onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+  <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c0/Phoenix_dactylifera2.jpg/1280px-Phoenix_dactylifera2.jpg" alt="Fresh ripe dates — golden and amber coloured" onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+</div>
+<p class="photo-caption">Fig. 1 — Majestic Phoenix dactylifera bearing pendant clusters of ripening dates &nbsp;·&nbsp; Fig. 2 — Fresh dates at the tamer (fully ripe) stage, ranging from golden to deep amber</p>
+
+<div class="divider">
+  <div class="divider-line"></div>
+  <div class="divider-leaf">❧</div>
+  <div class="divider-line"></div>
+</div>
+
+<div class="content">
+  <p class="intro-text">Revered as <em>Kharjura</em> in Sanskrit — "that which destroys suffering" — the Date Palm has nourished civilisations for over 5,000 years. Charaka places it among the ten best fruits (<em>Phalavarga</em>), praising its tonic, nourishing, and restorative qualities; Sushruta names it foremost among the <em>Jivaniya</em> (life-promoting) substances, a sacred tree whose every part — fruit, seed, pollen, sap, and leaf — serves both the body and the spirit.</p>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">01</span><h2 class="section-title">Botanical Profile</h2><div class="section-rule"></div></div>
+    <p class="section-body">Kharjura (<em>Phoenix dactylifera</em>) is a tall, slender palm of the family Arecaceae, attaining heights of 15–25 metres with a graceful crown of 100–120 feathery pinnate fronds, each 3–5 m long, arching outward and upward. The trunk is rough and characteristically marked by the diamond-shaped scars of fallen leaves. It is dioecious — male and female flowers grow on separate trees — with sweetly fragrant cream-coloured flower clusters (spadices) enclosed in a spathe. Female trees bear the famous pendant clusters (<em>bunches</em>) of 200–1,000 dates per bunch, weighing 5–40 kg.</p>
+    <p class="section-body">The date fruit is a one-seeded drupe with a fleshy, sugary mesocarp surrounding a hard, elongated seed. Fruits progress through four distinct ripening stages — <em>Kimri</em> (green, astringent), <em>Khalal</em> (crunchy, sweet), <em>Rutab</em> (soft, semi-ripe), and <em>Tamer</em> (fully ripe, dry) — each with distinct therapeutic properties in Ayurveda. The palm thrives in arid and semi-arid desert climates with deep, well-drained sandy soils, tolerating extreme heat, drought, and saline conditions — earning its epithet "feet in the water, head in the fire."</p>
+    <table class="data-table">
+      <thead><tr><th>PROPERTY</th><th>Detail</th></tr></thead>
+      <tbody>
+        <tr><td>Family</td><td>Arecaceae (Tala Kula)</td></tr>
+        <tr><td>Botanical Name</td><td>Phoenix dactylifera L.</td></tr>
+        <tr><td>Sanskrit Names</td><td>Kharjura, Kharjuri, Madhu-phala, Durgaphala, Svadukanda, Pindasaka</td></tr>
+        <tr><td>Common Names</td><td>Date Palm, True Date, Common Date</td></tr>
+        <tr><td>Regional Names</td><td>Khajoor (Hindi/Urdu), Eetham Pazham (Tamil), Kharjoora (Telugu/Kannada), Eenthapazham (Malayalam)</td></tr>
+        <tr><td>Origin</td><td>Middle East / Arabian Peninsula; cultivated across North Africa, South Asia, and the Mediterranean for 5,000+ years</td></tr>
+        <tr><td>Plant Type</td><td>Tall dioecious monocot palm (15–25 m)</td></tr>
+        <tr><td>Fruiting Season</td><td>August–October (varies by cultivar and latitude)</td></tr>
+        <tr><td>Medicinal Parts</td><td>Fruit (primary), seed, pollen, fresh sap (toddy), leaves, roots</td></tr>
+        <tr><td>Taste Profile</td><td>Madhura (sweet), slightly astringent when unripe</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">02</span><h2 class="section-title">Nutritional &amp; Phytochemical Composition</h2><div class="section-rule"></div></div>
+    <p class="section-body">Dates are one of nature's most nutritionally dense whole foods, providing concentrated natural sugars (glucose, fructose, sucrose), dietary fibre, minerals, vitamins, and a broad spectrum of polyphenols. Ripe tamer-stage dates contain 60–80% carbohydrates, 2–3% protein, and less than 0.5% fat, making them a supreme energy food. They are particularly rich in potassium, magnesium, copper, manganese, and selenium — minerals that support cardiovascular, bone, and immune health.</p>
+    <p class="section-body">Phytochemically, dates contain a remarkable diversity of secondary metabolites: phenolic acids (ferulic, p-coumaric, syringic, caffeic), flavonoids (quercetin, luteolin, apigenin), anthocyanins (in dark varieties), carotenoids (β-carotene, lutein), sterols (β-sitosterol, campesterol), and fatty acids in seeds (oleic, lauric). The seeds contain up to 9% protein and 10% dietary fibre, and their powdered form is used as a galactagogue and liver tonic.</p>
+    <div class="nutrition-bar">
+      <div class="nutrition-cell"><div class="nutrition-num">277</div><div class="nutrition-unit">kcal/100g</div><div class="nutrition-label">Energy (dried)</div></div>
+      <div class="nutrition-cell"><div class="nutrition-num">75g</div><div class="nutrition-unit">per 100g</div><div class="nutrition-label">Total Sugars</div></div>
+      <div class="nutrition-cell"><div class="nutrition-num">6.7g</div><div class="nutrition-unit">per 100g</div><div class="nutrition-label">Dietary Fibre</div></div>
+      <div class="nutrition-cell"><div class="nutrition-num">696mg</div><div class="nutrition-unit">per 100g</div><div class="nutrition-label">Potassium</div></div>
+    </div>
+    <table class="data-table">
+      <thead><tr><th>Compound</th><th>Category</th><th>Primary Action</th></tr></thead>
+      <tbody>
+        <tr><td>Quercetin &amp; Luteolin</td><td>Flavonoids</td><td>Antioxidant, anti-inflammatory, cardioprotective</td></tr>
+        <tr><td>Ferulic &amp; p-Coumaric Acids</td><td>Phenolic acids</td><td>Antioxidant, neuroprotective, antiproliferative</td></tr>
+        <tr><td>β-Sitosterol &amp; Campesterol</td><td>Phytosterols</td><td>Cholesterol-lowering, anti-inflammatory</td></tr>
+        <tr><td>Anthocyanins</td><td>Polyphenols</td><td>Antioxidant, anti-diabetic, anti-atherogenic</td></tr>
+        <tr><td>Selenium</td><td>Mineral / antioxidant</td><td>Thyroid support, immune modulation, anticancer</td></tr>
+        <tr><td>Lutein &amp; Zeaxanthin</td><td>Carotenoids</td><td>Macular protection, anti-inflammatory</td></tr>
+        <tr><td>Oxytocin-like compounds</td><td>Steroidal alkaloids</td><td>Uterotonic activity; supports labour onset</td></tr>
+        <tr><td>Tannins</td><td>Polyphenols</td><td>Astringent, anti-diarrheal, antimicrobial</td></tr>
+        <tr><td>Lauric &amp; Oleic Acids</td><td>Seed fatty acids</td><td>Antimicrobial, emollient, anti-inflammatory</td></tr>
+        <tr><td>Fructooligosaccharides</td><td>Prebiotic fibres</td><td>Gut microbiome support, prebiotic activity</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">03</span><h2 class="section-title">Ayurvedic Significance</h2><div class="section-rule"></div></div>
+    <p class="section-body">Kharjura holds an exalted position in the Ayurvedic <em>Phalavarga</em> (fruits group) as a supreme <em>Brinhana</em> (nourishing/anabolic) food. Charaka lists it among the ten best fruits and the <em>Jivaniya</em> (life-promoting) drugs. Sushruta recommends it in <em>Kshata-kshina</em> (wasting and emaciation), and as a rejuvenative in old age. The classical verse — <em>"Kharjuram balya brinhana, snigdha madhura sheetalam, vata-pittaharam varishthah, shukralam jivanam param"</em> — describes it as strength-giving, nourishing, unctuous, sweet, cooling, the finest pacifier of Vata and Pitta, an aphrodisiac, and supreme promoter of life.</p>
+    <p class="section-body">Kharjura finds application across the classical texts in treatments for emaciation (<em>karshya</em>), low libido (<em>klaibya</em>), anaemia (<em>pandu</em>), cough and respiratory disease (<em>kasa-shwasa</em>), urinary disorders (<em>mutrakricchra</em>), haemorrhagic conditions (<em>raktapitta</em>), and as a general rasayana (rejuvenative tonic). The fresh sap, <em>Tala Madhu</em>, is used as a mild laxative and fermented into therapeutic preparations.</p>
+    <table class="dosha-table">
+      <thead><tr><th>Dosha</th><th>Effect</th><th>Mechanism &amp; Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Vata ↓</td><td>Strongly pacifying</td><td>Madhura rasa, snigdha (unctuous), guru (heavy) guna and sheeta virya together calm the dryness, lightness, and cold of Vata — ideal in emaciation, constipation, nervous debility, and joint stiffness</td></tr>
+        <tr><td>Pitta ↓</td><td>Pacifying</td><td>Cooling potency (sheeta virya) and sweet taste reduce Pitta heat; used in burning urination, haemorrhage, jaundice, and inflammatory Pitta conditions</td></tr>
+        <tr><td>Kapha ↑</td><td>Mildly aggravating</td><td>Heavy, sweet, and unctuous qualities may increase Kapha — caution in obesity, diabetes, and excessive mucus conditions; use in small quantities with honey or pepper to mitigate</td></tr>
+      </tbody>
+    </table>
+    <p class="section-body"><strong>Rasa:</strong> Madhura (sweet) &nbsp;·&nbsp; <strong>Guna:</strong> Guru (heavy), Snigdha (unctuous), Sara (mobile) &nbsp;·&nbsp; <strong>Virya:</strong> Sheeta (cool) &nbsp;·&nbsp; <strong>Vipaka:</strong> Madhura (sweet) &nbsp;·&nbsp; <strong>Karma:</strong> Brinhana, Jivaniya, Vajikarana, Vata-Pitta shamaka</td></p>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">04</span><h2 class="section-title">Key Health Benefits</h2><div class="section-rule"></div></div>
+    <p class="section-body">Modern research spanning clinical trials, animal studies, and <em>in vitro</em> investigations across the Middle East, South Asia, and Europe has corroborated the classical Ayurvedic applications of Kharjura — validating its antioxidant, anti-inflammatory, neuroprotective, cardioprotective, and reproductive benefits.</p>
+    <div class="benefits-grid">
+      <div class="benefit-card">
+        <div class="benefit-title">Energy, Strength &amp; Anabolism</div>
+        <div class="benefit-desc">As a <em>Brinhana</em> (nourishing) and <em>Balya</em> (strength-promoting) food par excellence, dates provide instant glucose for energy with fructose for sustained stamina. Classical prescription in wasting, weakness, post-illness recovery, and athletic performance — rich in potassium, magnesium, copper, and B-vitamins that support muscle function.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Digestive Health &amp; Laxative</div>
+        <div class="benefit-desc">The dietary fibre (6.7g/100g) in dates — both soluble and insoluble — promotes healthy gut motility and relieves constipation, a key indication in the classical texts for Vata-type constipation. Fructooligosaccharides act as prebiotics, nourishing beneficial Lactobacillus and Bifidobacterium strains. Soaking dates overnight enhances their laxative effect.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Reproductive &amp; Sexual Vitality</div>
+        <div class="benefit-desc">Listed as a <em>Vajikarana</em> (aphrodisiac) in Charaka and Sushruta, dates support reproductive health in both sexes. Date pollen contains oestrone (a phytoestrogen) and steroidal alkaloids that support hormonal balance. Animal and pilot clinical studies confirm improved sperm count, motility, and testosterone levels with date pollen supplementation.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Natural Labour Support</div>
+        <div class="benefit-desc">Multiple randomised controlled trials (including the landmark Kordi 2017 study) demonstrate that consuming 6–8 dates daily from 36 weeks gestation significantly shortens labour duration, reduces the need for oxytocin induction, and improves cervical ripening — attributed to oxytocin-like compounds and prostaglandin-stimulating fatty acids in dates.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Neuroprotection &amp; Cognitive Health</div>
+        <div class="benefit-desc">Polyphenols in dates — particularly ferulic acid and flavonoids — cross the blood-brain barrier and reduce neuroinflammation and oxidative stress. Animal studies in Alzheimer's models show reduced amyloid-β plaque deposition, improved memory, and reduced anxiety with date extract supplementation. Classical use in nervous debility and memory support aligns with these findings.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Cardiovascular Support</div>
+        <div class="benefit-desc">High potassium (696 mg/100g) and magnesium content support healthy blood pressure. Phytosterols (β-sitosterol) reduce LDL cholesterol absorption. Clinical studies confirm significant reductions in triglycerides and total cholesterol with regular date consumption. The antioxidant polyphenols prevent LDL oxidation — a key step in atherosclerosis development.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Anti-inflammatory &amp; Antioxidant</div>
+        <div class="benefit-desc">Dates demonstrate powerful antioxidant capacity in DPPH, ABTS, and FRAP assays — comparable to blueberries per gram of polyphenol. This reduces systemic oxidative stress linked to chronic disease. The flavonoid-rich fraction significantly inhibits COX-1 and COX-2 (the same enzymes targeted by NSAIDs) in inflammation models.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Bone Health &amp; Mineral Nutrition</div>
+        <div class="benefit-desc">Dates supply significant phosphorus, calcium, magnesium, copper, manganese, and selenium — a mineral matrix supporting bone density, joint health, and collagen synthesis. Classical use in osteoporosis, arthritic pain, and Vata-related bone disorders is now being validated through epidemiological studies in date-consuming populations showing lower fracture rates.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">05</span><h2 class="section-title">How to Consume Kharjura</h2><div class="section-rule"></div></div>
+    <p class="section-body">Kharjura is consumed in multiple Ayurvedic preparations — fresh, dried, soaked, as a milk decoction, as part of classical <em>avaleha</em> (electuaries), or as a medicated wine (<em>Kharjura Sava</em>). The best therapeutic potency is found in large Medjool-type dates consumed fresh or after overnight soaking, though Ajwa dates from Medina hold special place in classical ethnomedicine. Date seed powder, often overlooked, is a potent remedy in its own right.</p>
+    <table class="consume-table">
+      <thead><tr><th>Form</th><th>Preparation</th><th>Dosage</th><th>Best Use</th></tr></thead>
+      <tbody>
+        <tr><td>Soaked Whole Dates</td><td>Soak 4–6 dates overnight in water; eat dates and drink the water in the morning</td><td>4–6 dates daily</td><td>Constipation, energy, general tonic</td></tr>
+        <tr><td>Date Milk Decoction</td><td>Boil 4–5 dates in 250 ml whole milk; add cardamom &amp; saffron</td><td>1 cup at bedtime</td><td>Sexual vitality, weakness, insomnia, weight gain</td></tr>
+        <tr><td>Date Paste (Kharjura Kalka)</td><td>Blend pitted dates with ghee and honey</td><td>1–2 tbsp daily</td><td>Brinhana (nourishing), children's tonic</td></tr>
+        <tr><td>Fresh Dates (Rutab stage)</td><td>Consume fresh, semi-ripe</td><td>5–7 daily</td><td>Cooling Pitta, labour support (from 36 weeks)</td></tr>
+        <tr><td>Date Seed Powder</td><td>Dry seeds; roast and grind to fine powder</td><td>1–3 g with warm water</td><td>Liver tonic, galactagogue, eye health</td></tr>
+        <tr><td>Kharjura Sava (Classical wine)</td><td>Fermented date preparation per classical texts</td><td>Per practitioner</td><td>Anaemia, debility, digestive disorders</td></tr>
+        <tr><td>Date Ghee (Kharjura Ghrita)</td><td>Classical medicated ghee with dates</td><td>Per practitioner</td><td>Vata disorders, nervous system support</td></tr>
+        <tr><td>Dried Dates (Tamer stage)</td><td>Eat as-is; may combine with nuts and seeds</td><td>3–5 dates daily</td><td>Daily nutrition, endurance, bone health</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">06</span><h2 class="section-title">Safety &amp; Precautions</h2><div class="section-rule"></div></div>
+    <p class="section-body">Kharjura is among the safest and most universally tolerated of all Ayurvedic fruits when consumed in appropriate quantities. It has no significant toxicity at therapeutic doses and is classified as a food-grade remedy. However, its exceptionally high sugar content (60–80%) demands caution in specific metabolic conditions.</p>
+    <ul class="precaution-list">
+      <li><strong>Diabetes &amp; Hyperglycaemia:</strong> Despite a moderate glycaemic index (40–55), the high sugar content means diabetics should limit intake to 2–3 dates per day and monitor blood glucose. Combine with nuts or seeds to slow sugar absorption. Avoid sweetened or syrup-packed commercial dates entirely.</li>
+      <li><strong>Obesity &amp; Kapha excess:</strong> The heavy, sweet, nourishing properties that make dates ideal for Vata and Pitta types may aggravate Kapha — contributing to weight gain, mucus, and sluggishness in those with excess Kapha constitution. Use sparingly with trikatu (ginger, pepper, long pepper) to counteract heaviness.</li>
+      <li><strong>Irritable Bowel Syndrome (IBS):</strong> Dates are high in FODMAPs (fructose, fructooligosaccharides) which may trigger bloating, cramping, and diarrhoea in FODMAP-sensitive individuals. The soaking method may reduce but not eliminate this concern.</li>
+      <li><strong>Labour support:</strong> While date consumption from 36 weeks of gestation is well-studied and generally safe, it should be discussed with the attending obstetrician or midwife. Earlier consumption in high quantities during pregnancy is not recommended without practitioner guidance.</li>
+      <li><strong>Sulphite sensitivity:</strong> Commercially processed dried dates are often preserved with sulphites to maintain colour — individuals with sulphite sensitivity or asthma should choose organic, unsulphured varieties.</li>
+      <li><strong>Dental health:</strong> The sticky, high-sugar nature of dates adheres to tooth surfaces and feeds cariogenic bacteria — rinse mouth or brush teeth after consumption, particularly in children.</li>
+      <li><strong>Potassium-restricted diets:</strong> Dates are extremely rich in potassium (696 mg/100g). Individuals with chronic kidney disease or on potassium-restricted medical diets must limit intake under nephrological supervision.</li>
+      <li><strong>Drug interactions:</strong> Date pollen supplementation may have mild oestrogenic effects — use cautiously in oestrogen-sensitive conditions (e.g., certain breast cancers, uterine fibroids) and if on hormonal medications.</li>
+    </ul>
+  </div>
+
+  <div class="sources">
+    <div class="sources-title">References &amp; Sources</div>
+    <ul>
+      <li>Charaka Samhita — Sutrasthana (Phalavarga), Chikitsasthana (Jivaniya, Vajikarana, Rasayana)</li>
+      <li>Sushruta Samhita — Sutrasthana (Dravyaguna), Chikitsasthana (Kshata-kshina)</li>
+      <li>Bhavaprakasha Nighantu — Amradi Phalavarga (Kharjura entry)</li>
+      <li>Al-Shahib W &amp; Marshall RJ — "The fruit of the date palm: its possible use as the best food for the future?" — International Journal of Food Sciences and Nutrition, 2003</li>
+      <li>Kordi M et al. — "Effect of late pregnancy consumption of date fruit on cervical ripening in nulliparous women" — Journal of Midwifery &amp; Reproductive Health, 2017</li>
+      <li>Vayalil PK — "Date fruits (Phoenix dactylifera Linn): an emerging medicinal food" — Critical Reviews in Food Science and Nutrition, 2012</li>
+      <li>Habib HM &amp; Ibrahim WH — "Nutritional quality of 18 date fruit varieties" — International Journal of Food Sciences and Nutrition, 2011</li>
+      <li>Rahmani AH et al. — "Therapeutic effects of date fruits (Phoenix dactylifera) in the prevention of diseases via modulation of anti-inflammatory, antioxidant and anticancer activity" — International Journal of Clinical and Experimental Medicine, 2014</li>
+      <li>Priyavrat Sharma — Dravyaguna Vigyana (Vol. II) — Classical properties of Kharjura</li>
+      <li>USDA FoodData Central — Phoenix dactylifera (Medjool dates) nutritional composition database</li>
+    </ul>
+  </div>
+</div>
+
+<footer>
+  <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a qualified practitioner before therapeutic use</p>
+</footer>
+
+
+  <div id="viewerModal">
+    <div id="modal-topbar">
+      <span>3D Model — Kharjura</span>
+      <button type="button" id="close3D">✕</button>
+    </div>
+    <model-viewer src="kharjura3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+  </div>
+  <script>
+    (function() {
+      var open3D = document.getElementById('open3D');
+      var close3D = document.getElementById('close3D');
+      var modal = document.getElementById('viewerModal');
+      if (!open3D || !close3D || !modal) return;
+      function openModal() {
+        
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+      function closeModal() {
+        
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+      open3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); openModal();
+      });
+      close3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); closeModal();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+      });
+    })();
+  </script>
+
+</body>
+</html>

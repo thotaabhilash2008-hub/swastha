@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bayberry | Swastha</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+  <style>
+    #open3D {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      padding: 10px 18px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: var(--forest);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      z-index: 1000;
+      transition: .3s;
+    }
+    #open3D:hover {
+      background: var(--gold);
+      color: var(--deep);
+    }
+    #viewerModal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+    }
+    #modal-topbar {
+      flex-shrink: 0;
+      height: 58px;
+      background: #111111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px 0 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      z-index: 99999;
+    }
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 4.5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.72);
+      user-select: none;
+    }
+    #close3D {
+      width: 38px;
+      height: 38px;
+      font-size: 15px;
+      font-weight: 300;
+      background: transparent;
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background .2s, color .2s, transform .22s;
+      outline: none;
+      flex-shrink: 0;
+    }
+    #close3D:hover {
+      background: #ffffff;
+      color: #111111;
+      border-color: #ffffff;
+      transform: rotate(90deg);
+    }
+    #viewerModal model-viewer {
+      flex: 1;
+      width: 100%;
+      display: block;
+      background: #ffffff;
+    }
+
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+    * { margin:0; padding:0; box-sizing:border-box }
+    html { scroll-behavior:smooth }
+    body {
+      font-family:'Jost',sans-serif;
+      background:var(--cream);
+      color:var(--ink);
+      min-height:100vh;
+      overflow-x:hidden;
+      position:relative;
+    }
+    body::before {
+      content:'';
+      position:fixed;
+      inset:0;
+      background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity:.03;
+      pointer-events:none;
+      z-index:100;
+    }
+    .bg-circle { position:fixed; border-radius:50%; pointer-events:none; z-index:0 }
+    .bg-circle-1 {
+      width:700px; height:700px;
+      background:radial-gradient(circle,rgba(59,92,58,.1) 0%,transparent 70%);
+      top:-200px; right:-150px;
+    }
+    .bg-circle-2 {
+      width:500px; height:500px;
+      background:radial-gradient(circle,rgba(123,45,66,.07) 0%,transparent 70%);
+      bottom:-100px; left:-100px;
+    }
+
+    /* BOTANICAL SVG CORNERS */
+    .botanical-svg { position:fixed; pointer-events:none; z-index:1; opacity:.09 }
+    .botanical-tl { top:-10px; left:-10px; width:250px }
+    .botanical-br { bottom:-10px; right:-10px; width:220px; transform:rotate(180deg) }
+
+    /* HERO */
+    .hero {
+      position:relative; z-index:10;
+      padding:54px 40px 0;
+      text-align:center;
+      opacity:0; animation:fadeUp .9s ease .1s forwards;
+    }
+    .back-link {
+      display:inline-flex; align-items:center; gap:8px;
+      font-size:11px; letter-spacing:3px; text-transform:uppercase;
+      color:var(--sage); text-decoration:none; margin-bottom:36px;
+      transition:color .3s;
+    }
+    .back-link:hover { color:var(--gold) }
+    .logo-rule { display:flex; align-items:center; justify-content:center; gap:20px; margin-bottom:14px }
+    .logo-rule span { display:block; height:1px; width:70px; background:linear-gradient(to right,transparent,var(--gold)) }
+    .logo-rule span:last-child { background:linear-gradient(to left,transparent,var(--gold)) }
+    .logo-ornament { font-size:13px; color:var(--gold) }
+    .hero-number {
+      font-family:'Cormorant Garamond',serif;
+      font-size:13px; letter-spacing:6px; color:var(--berry);
+      text-transform:uppercase; margin-bottom:6px;
+    }
+    .hero-title {
+      font-family:'Cormorant Garamond',serif;
+      font-size:clamp(64px,12vw,108px);
+      font-weight:300; letter-spacing:8px; line-height:1;
+      color:var(--deep);
+    }
+    .hero-subtitle {
+      font-family:'Cormorant Garamond',serif;
+      font-size:18px; font-style:italic; font-weight:300;
+      color:var(--berry); letter-spacing:2px; margin-top:8px;
+    }
+    .hero-sci {
+      font-size:11px; font-weight:200; letter-spacing:5px;
+      color:var(--sage); margin-top:6px;
+    }
+
+    /* HERO PHOTOS */
+    .hero-photos {
+      position:relative; z-index:10;
+      display:grid; grid-template-columns:1fr 1fr; gap:2px;
+      max-width:900px; margin:40px auto 0;
+      opacity:0; animation:fadeUp .9s ease .35s forwards;
+    }
+    .hero-photos img {
+      width:100%; height:380px;
+      object-fit:cover; object-position:center;
+      display:block; background:var(--parchment);
+    }
+    .photo-caption {
+      text-align:center;
+      font-family:'Cormorant Garamond',serif;
+      font-size:12px; font-style:italic;
+      color:var(--sage); letter-spacing:1px;
+      padding:10px 0 0; max-width:900px; margin:0 auto;
+      position:relative; z-index:10;
+      opacity:0; animation:fadeUp .9s ease .5s forwards;
+    }
+
+    /* DIVIDER */
+    .divider {
+      display:flex; align-items:center; justify-content:center; gap:16px;
+      margin:50px auto; max-width:600px;
+      opacity:0; animation:fadeUp .9s ease .55s forwards;
+      position:relative; z-index:10;
+    }
+    .divider-line { height:1px; width:120px; background:linear-gradient(to right,transparent,var(--sage)) }
+    .divider-line:last-child { background:linear-gradient(to left,transparent,var(--sage)) }
+    .divider-leaf { color:var(--forest); font-size:18px }
+
+    /* CONTENT */
+    .content {
+      position:relative; z-index:10;
+      max-width:860px; margin:0 auto;
+      padding:0 30px 80px;
+    }
+    .intro-text {
+      font-family:'Cormorant Garamond',serif;
+      font-size:20px; font-weight:300; line-height:1.75;
+      color:var(--ink); text-align:center;
+      max-width:700px; margin:0 auto 60px;
+      opacity:0; animation:fadeUp .9s ease .6s forwards;
+    }
+    .intro-text em { color:var(--berry); font-style:italic }
+
+    /* SECTIONS */
+    .section { margin-bottom:60px; opacity:0; animation:fadeUp .9s ease forwards }
+    .section:nth-child(1){animation-delay:.65s}
+    .section:nth-child(2){animation-delay:.75s}
+    .section:nth-child(3){animation-delay:.85s}
+    .section:nth-child(4){animation-delay:.95s}
+    .section:nth-child(5){animation-delay:1.05s}
+    .section:nth-child(6){animation-delay:1.15s}
+    .section:nth-child(7){animation-delay:1.25s}
+
+    .section-header { display:flex; align-items:center; gap:14px; margin-bottom:20px }
+    .section-num { font-family:'Cormorant Garamond',serif; font-size:11px; letter-spacing:4px; color:var(--gold) }
+    .section-title { font-family:'Cormorant Garamond',serif; font-size:28px; font-weight:400; color:var(--deep); letter-spacing:1px }
+    .section-rule { height:1px; flex:1; background:linear-gradient(to right,var(--gold),transparent) }
+    .section-body { font-size:13px; font-weight:300; line-height:1.9; color:var(--ink); margin-bottom:24px }
+
+    /* TABLES */
+    .data-table { width:100%; border-collapse:collapse; margin:16px 0 8px; font-size:12px }
+    .data-table thead tr { background:var(--deep); color:var(--gold); font-size:10px; letter-spacing:3px; text-transform:uppercase }
+    .data-table thead th { padding:12px 14px; text-align:left; font-weight:400 }
+    .data-table tbody tr:nth-child(even){background:var(--parchment)} .data-table tbody tr:nth-child(odd){background:var(--cream)}
+    .data-table tbody tr { transition:background .2s }
+    .data-table tbody tr:hover { background:#e2d8c4 }
+    .data-table tbody td { padding:10px 14px; color:var(--ink); border-bottom:1px solid rgba(90,62,40,.08) }
+    .data-table tbody td:first-child { font-weight:400; color:var(--deep); width:28% }
+
+    .dosha-table { width:100%; border-collapse:collapse; margin:16px 0; font-size:12px }
+    .dosha-table thead tr { background:var(--forest); color:var(--cream) }
+    .dosha-table thead th { padding:12px 14px; text-align:left; font-weight:400; letter-spacing:2px; font-size:10px; text-transform:uppercase }
+    .dosha-table tbody tr:nth-child(even){background:var(--parchment)} .dosha-table tbody tr:nth-child(odd){background:var(--cream)}
+    .dosha-table tbody td { padding:11px 14px; color:var(--ink); border-bottom:1px solid rgba(90,62,40,.08) }
+    .dosha-table tbody td:first-child { font-weight:400; color:var(--forest); width:18% }
+    .dosha-table tbody td:nth-child(2) { color:var(--berry); width:20% }
+
+    .consume-table { width:100%; border-collapse:collapse; margin:16px 0; font-size:12px }
+    .consume-table thead tr { background:var(--berry); color:var(--cream) }
+    .consume-table thead th { padding:12px 14px; text-align:left; font-weight:400; letter-spacing:2px; font-size:10px; text-transform:uppercase }
+    .consume-table tbody tr:nth-child(even){background:var(--parchment)} .consume-table tbody tr:nth-child(odd){background:var(--cream)}
+    .consume-table tbody td { padding:11px 14px; color:var(--ink); border-bottom:1px solid rgba(90,62,40,.08) }
+    .consume-table tbody td:first-child { font-weight:400; color:var(--berry); width:22% }
+
+    /* BENEFITS GRID */
+    .benefits-grid {
+      display:grid; grid-template-columns:1fr 1fr; gap:1px;
+      background:rgba(90,62,40,.12);
+      border:1px solid rgba(90,62,40,.12); margin:8px 0;
+    }
+    .benefit-card {
+      background:var(--cream); padding:24px 22px;
+      transition:background .3s; position:relative; overflow:hidden;
+    }
+    .benefit-card:hover { background:#e8decb }
+    .benefit-card::before {
+      content:''; position:absolute; bottom:0; left:0;
+      width:0; height:2px; background:var(--berry); transition:width .4s;
+    }
+    .benefit-card:hover::before { width:100% }
+    .benefit-title { font-family:'Cormorant Garamond',serif; font-size:16px; font-weight:600; color:var(--berry); margin-bottom:8px }
+    .benefit-desc { font-size:11.5px; font-weight:300; line-height:1.75; color:var(--ink); opacity:.85 }
+
+    /* NUTRITION BAR */
+    .nutrition-bar {
+      display:grid; grid-template-columns:repeat(4,1fr); gap:1px;
+      background:rgba(90,62,40,.12); border:1px solid rgba(90,62,40,.12); margin:20px 0;
+    }
+    .nutrition-cell { background:var(--cream); padding:22px 16px; text-align:center; transition:background .3s }
+    .nutrition-cell:hover { background:var(--parchment) }
+    .nutrition-num { font-family:'Cormorant Garamond',serif; font-size:36px; font-weight:300; color:var(--berry); line-height:1; margin-bottom:4px }
+    .nutrition-unit { font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--gold); font-weight:300 }
+    .nutrition-label { font-size:11px; font-weight:300; color:var(--ink); margin-top:5px }
+
+    /* PRECAUTIONS */
+    .precaution-list { list-style:none; margin:8px 0 }
+    .precaution-list li {
+      display:flex; gap:12px; align-items:flex-start;
+      padding:10px 14px; font-size:12px; font-weight:300; line-height:1.7;
+      color:var(--ink); border-bottom:1px solid rgba(90,62,40,.08);
+    }
+    .precaution-list li:last-child { border-bottom:none }
+    .precaution-list li::before { content:'▸'; color:var(--gold); flex-shrink:0; margin-top:1px }
+
+    /* SOURCES */
+    .sources { border-top:1px solid rgba(90,62,40,.15); padding-top:24px; margin-top:20px }
+    .sources-title { font-size:10px; letter-spacing:4px; text-transform:uppercase; color:var(--sage); margin-bottom:12px; font-weight:300 }
+    .sources ul { list-style:none }
+    .sources ul li { font-family:'Cormorant Garamond',serif; font-size:13px; font-style:italic; color:var(--earth); padding:5px 0; border-bottom:1px solid rgba(90,62,40,.06) }
+    .sources ul li::before { content:'· '; color:var(--sage) }
+
+    /* FOOTER */
+    footer {
+      position:relative; z-index:10;
+      text-align:center; padding:24px 20px 44px;
+      border-top:1px solid rgba(90,62,40,.12);
+      max-width:860px; margin:0 auto;
+    }
+    footer p { font-size:11px; letter-spacing:4px; text-transform:uppercase; color:var(--sage); font-weight:300 }
+
+    @keyframes fadeUp {
+      from{opacity:0;transform:translateY(28px)}
+      to{opacity:1;transform:translateY(0)}
+    }
+    @media(max-width:700px){
+      .hero-photos{grid-template-columns:1fr}
+      .hero-photos img{height:260px}
+      .benefits-grid{grid-template-columns:1fr}
+      .nutrition-bar{grid-template-columns:1fr 1fr}
+      .content{padding:0 18px 60px}
+    }
+  </style>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+</head>
+<body>
+  <button type="button" id="open3D">View in 3D</button>
+
+
+<div class="bg-circle bg-circle-1"></div>
+<div class="bg-circle bg-circle-2"></div>
+
+<svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#3b5c3a" stroke-width="1.5" fill="none"/>
+  <circle cx="90" cy="210" r="8" fill="#7b2d42" opacity="0.8"/>
+  <circle cx="130" cy="175" r="10" fill="#7b2d42" opacity="0.6"/>
+  <circle cx="170" cy="135" r="7" fill="#7b2d42" opacity="0.8"/>
+  <circle cx="210" cy="95" r="9" fill="#7b2d42" opacity="0.5"/>
+  <circle cx="145" cy="165" r="5" fill="#a64d62" opacity="0.6"/>
+  <ellipse cx="115" cy="195" rx="20" ry="10" fill="#3b5c3a" transform="rotate(-30 115 195)"/>
+  <ellipse cx="155" cy="155" rx="18" ry="9" fill="#3b5c3a" transform="rotate(-45 155 155)"/>
+  <ellipse cx="195" cy="115" rx="16" ry="8" fill="#7a9e7e" transform="rotate(-60 195 115)"/>
+</svg>
+<svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#3b5c3a" stroke-width="1.5" fill="none"/>
+  <circle cx="90" cy="210" r="7" fill="#7b2d42" opacity="0.7"/>
+  <circle cx="130" cy="175" r="9" fill="#7b2d42" opacity="0.6"/>
+  <circle cx="170" cy="135" r="6" fill="#7b2d42" opacity="0.7"/>
+  <ellipse cx="115" cy="195" rx="20" ry="10" fill="#3b5c3a" transform="rotate(-30 115 195)"/>
+</svg>
+
+<div class="hero">
+  <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+  <div class="logo-rule"><span></span><div class="logo-ornament">✦</div><span></span></div>
+  <div class="hero-number">No. 35</div>
+  <div class="hero-title">Bayberry</div>
+  <div class="hero-subtitle">Kafal — The Himalayan Wax Myrtle</div>
+  <div class="hero-sci">Myrica esculenta Buch.-Ham. ex D. Don &nbsp;·&nbsp; Myricaceae</div>
+</div>
+
+<div class="hero-photos">
+  <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fc/Unripe_and_half_ripe_fruits_of_Myrica_esculenta_Box_myrtle_tree_JEG5546.jpg/1280px-Unripe_and_half_ripe_fruits_of_Myrica_esculenta_Box_myrtle_tree_JEG5546.jpg" alt="Bayberry fruit cluster — deep crimson drupes on Myrica esculenta" onerror="this.style.minHeight='380px';this.style.background='var(--parchment)';">
+  <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/3/30/Myrica_esculenta.jpg/1280px-Myrica_esculenta.jpg" alt="Bayberry tree bark and leaves in Himalayan habitat" onerror="this.style.minHeight='380px';this.style.background='var(--parchment)';">
+</div>
+<p class="photo-caption">Fig. 1 — Brilliant crimson drupes of Myrica esculenta ripening in clusters along the branch &nbsp;·&nbsp; Fig. 2 — Distinctive aromatic bark of Bayberry used extensively in classical formulations</p>
+
+<div class="divider">
+  <div class="divider-line"></div>
+  <div class="divider-leaf">❧</div>
+  <div class="divider-line"></div>
+</div>
+
+<div class="content">
+  <p class="intro-text">Revered as <em>Katphala</em> in Sanskrit — "the fruit of the rough bark" — Bayberry has been a foundational medicine of the Himalayan foothills for over two millennia. Mentioned in Charaka Samhita among the <em>Lekhaniya Mahakashayas</em> and celebrated in Sushruta Samhita as a prime ingredient of <em>Dashana Samskara Churna</em>, this vermilion-fruited myrtle bridges the traditions of Ayurveda, Unani, and Siddha with remarkable pharmacological depth.</p>
+
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">01</span>
+      <h2 class="section-title">Botanical Profile</h2>
+      <div class="section-rule"></div>
+    </div>
+    <p class="section-body">Bayberry (<em>Myrica esculenta</em>) is a large evergreen shrub or small tree of the Myricaceae family, growing to 6–12 metres in height across the subtropical Himalayan belt — from Himachal Pradesh and Uttarakhand through Nepal, Bhutan, and into northeastern India — at altitudes of 900 to 2,100 metres. It also occurs naturally in southern China and Southeast Asia. The plant is popularly known as <em>Kafal</em> in the Kumaon and Garhwal hills, where its fruit is a beloved seasonal delicacy sold by roadside vendors each spring.</p>
+    <p class="section-body">The bark — the primary medicinal part — is dark grey-brown, rough, and highly aromatic when cut, exuding a characteristic spicy resinous scent. Leaves are simple, alternate, obovate-oblong, leathery, and dotted with golden resin glands on both surfaces that release a balsamic fragrance when crushed. The plant is dioecious — male and female flowers borne on separate trees — with catkin-type inflorescences appearing January to March. The fruit is a small globose drupe, 8–12 mm in diameter, initially green ripening to a deep scarlet-crimson, with a fleshy, waxy, sweet-acidic mesocarp covering a hard nutlet. The fruits ripen from April to June, giving Kumaon its spring calling.</p>
+    <table class="data-table">
+      <thead><tr><th>Property</th><th>Detail</th></tr></thead>
+      <tbody>
+        <tr><td>Family</td><td>Myricaceae</td></tr>
+        <tr><td>Botanical Name</td><td>Myrica esculenta Buch.-Ham. ex D. Don</td></tr>
+        <tr><td>Sanskrit Names</td><td>Katphala, Kattphala, Kaidarya, Mahavalkala, Sthira</td></tr>
+        <tr><td>Hindi / Folk Names</td><td>Kafal, Kaphal, Katphala</td></tr>
+        <tr><td>Other Regional Names</td><td>Mayana (Nep), Deyumasi (Bhu), Sohryngkir (Meg), Aina (Garhwal)</td></tr>
+        <tr><td>Related Species</td><td>M. rubra (Chinese Bayberry), M. cerifera (American Wax Myrtle)</td></tr>
+        <tr><td>Plant Type</td><td>Evergreen shrub or tree (6–12 m)</td></tr>
+        <tr><td>Altitude Range</td><td>900–2,100 m (subtropical Himalayan belt)</td></tr>
+        <tr><td>Fruiting Season</td><td>April–June (peak May)</td></tr>
+        <tr><td>Medicinal Parts</td><td>Bark (primary), root bark, fruit, leaves, seeds</td></tr>
+        <tr><td>Taste Profile</td><td>Katu (pungent), Tikta (bitter), Kashaya (astringent)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">02</span>
+      <h2 class="section-title">Phytochemistry &amp; Composition</h2>
+      <div class="section-rule"></div>
+    </div>
+    <p class="section-body">Bayberry yields a rich and complex chemistry spanning flavonoids, triterpenoids, tannins, myricitrin, phenolic acids, and volatile essential oils. The bark is especially dense in bioactive content, containing the signature compound <em>myricitrin</em> (a flavonoid glycoside), along with taraxerol, taraxerone, and myricadiol — pentacyclic triterpenoids responsible for the plant's potent anti-inflammatory and antimicrobial properties. The fruit mesocarp contains anthocyanins (cyanidin glycosides) that account for its vivid colour and antioxidant activity.</p>
+    <p class="section-body">The essential oil from bark and leaves is dominated by α-pinene, β-pinene, limonene, and myrcene, lending the plant its distinctive balsamic-spicy fragrance and contributing to its fumigant, antibacterial, and carminative effects. The waxy coating on fruits (rich in myristic acid) has historically been used to manufacture candles — a tradition common to the North American relative <em>M. cerifera</em> (Wax Myrtle).</p>
+    <div class="nutrition-bar">
+      <div class="nutrition-cell">
+        <div class="nutrition-num">45+</div>
+        <div class="nutrition-unit">compounds</div>
+        <div class="nutrition-label">Identified in bark</div>
+      </div>
+      <div class="nutrition-cell">
+        <div class="nutrition-num">8</div>
+        <div class="nutrition-unit">anthocyanins</div>
+        <div class="nutrition-label">In ripe fruit</div>
+      </div>
+      <div class="nutrition-cell">
+        <div class="nutrition-num">28%</div>
+        <div class="nutrition-unit">tannin</div>
+        <div class="nutrition-label">In bark extract</div>
+      </div>
+      <div class="nutrition-cell">
+        <div class="nutrition-num">58</div>
+        <div class="nutrition-unit">mg/100g</div>
+        <div class="nutrition-label">Vitamin C in fruit</div>
+      </div>
+    </div>
+    <table class="data-table">
+      <thead><tr><th>Compound</th><th>Category</th><th>Primary Action</th></tr></thead>
+      <tbody>
+        <tr><td>Myricitrin</td><td>Flavonoid glycoside</td><td>Antioxidant, anti-inflammatory, antimicrobial, antiulcer</td></tr>
+        <tr><td>Taraxerol &amp; Taraxerone</td><td>Pentacyclic triterpenoids</td><td>Anti-inflammatory, hepatoprotective, antimicrobial</td></tr>
+        <tr><td>Myricadiol</td><td>Triterpenoid diol</td><td>Aldosterone-like diuretic; blood pressure-modulating</td></tr>
+        <tr><td>Cyanidin-3-glucoside</td><td>Anthocyanin</td><td>Antioxidant, cardioprotective, anti-inflammatory</td></tr>
+        <tr><td>α- &amp; β-Pinene</td><td>Monoterpenes (EO)</td><td>Antibacterial, anti-inflammatory, bronchodilatory</td></tr>
+        <tr><td>Myricetin</td><td>Flavonol</td><td>Antioxidant, antidiabetic, neuroprotective</td></tr>
+        <tr><td>Gallic &amp; Ellagic Acid</td><td>Hydrolysable tannins</td><td>Antioxidant, antimicrobial, antidiarrhoeal, antimutagenic</td></tr>
+        <tr><td>Myristic Acid</td><td>Saturated fatty acid (wax)</td><td>Emollient, fruit wax component, candle-wax precursor</td></tr>
+        <tr><td>β-Sitosterol</td><td>Phytosterol</td><td>Anti-inflammatory, hypolipidaemic, immunomodulatory</td></tr>
+        <tr><td>Saponins &amp; Glycosides</td><td>Secondary metabolites</td><td>Expectorant, surface-active, antifungal</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">03</span>
+      <h2 class="section-title">Ayurvedic Significance</h2>
+      <div class="section-rule"></div>
+    </div>
+    <p class="section-body">Katphala holds prominent status across all major classical texts. In Charaka Samhita it is placed among the <em>Lekhaniya Mahakashaya</em> (scraping/reducing group) and <em>Hridya Dravyas</em> (cardiac tonics). Sushruta Samhita employs it in <em>Dashana Samskara Churna</em> — the classical tooth powder for oral hygiene — and in ear disease (Karna Roga) formulations. Ashtanga Hridayam describes it in the context of Nasya (nasal therapy) preparations and as a key ingredient in <em>Katphala Taila</em> for tinnitus and ear pain.</p>
+    <p class="section-body">The classical verse from Bhavaprakasha Nighantu reads: <em>"Katphalam katu tikshnam cha kaphavataharam smritam, deepanam pachakam hridyam keshyam kanthyam rasayanam"</em> — declaring Katphala to be pungent, sharp, Kapha-Vata pacifying, digestive-fire stimulating, heart-nourishing, beneficial to hair and voice, and a rasayana (rejuvenating tonic). It is classified under <em>Amradi Varga</em> (group of medicinal fruits) in Bhavaprakasha.</p>
+    <table class="dosha-table">
+      <thead><tr><th>Dosha</th><th>Effect</th><th>Mechanism &amp; Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Vata ↓</td><td>Pacifying</td><td>Ushna virya (hot potency) relieves Vata-driven neuralgic pain, bloating, and irregular bowel. Used in earache and toothache — both Vata-dominant conditions</td></tr>
+        <tr><td>Pitta —</td><td>Neutral/mild ↑</td><td>Katu-tikta rasa may gently increase Pitta at high doses; fruit (madhura-amla in ripe form) is more Pitta-friendly than bark preparations</td></tr>
+        <tr><td>Kapha ↓↓</td><td>Strongly pacifying</td><td>Tikshna (sharp), ruksha (dry), ushna (hot) — the triad most effective against Kapha. Prime herb for Kapha-driven sinusitis, mucous congestion, and sluggish digestion</td></tr>
+      </tbody>
+    </table>
+    <p class="section-body"><strong>Rasa:</strong> Katu, Tikta, Kashaya &nbsp;·&nbsp; <strong>Guna:</strong> Laghu, Tikshna, Ruksha &nbsp;·&nbsp; <strong>Virya:</strong> Ushna (hot) &nbsp;·&nbsp; <strong>Vipaka:</strong> Katu &nbsp;·&nbsp; <strong>Karma:</strong> Kapha-Vata shamaka, Deepana, Pachana, Lekhana, Hridya, Keshya, Rasayana</p>
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">04</span>
+      <h2 class="section-title">Key Health Benefits</h2>
+      <div class="section-rule"></div>
+    </div>
+    <p class="section-body">Modern pharmacological research has validated and extended Bayberry's classical applications across a broad spectrum of biological activities, with bark extracts consistently demonstrating potent anti-inflammatory, antimicrobial, antioxidant, antidiabetic, and cardioprotective properties in preclinical models.</p>
+    <div class="benefits-grid">
+      <div class="benefit-card">
+        <div class="benefit-title">ENT &amp; Oral Health</div>
+        <div class="benefit-desc">Katphala's most celebrated Ayurvedic use: bark powder in Dashana Samskara Churna for gum disease, dental caries, and pyorrhoea; Katphala Taila instilled in the ear for chronic otitis, tinnitus, and earache. Bark decoction gargles for pharyngitis, tonsillitis, and laryngitis are validated by modern antimicrobial studies.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Respiratory &amp; Sinus Support</div>
+        <div class="benefit-desc">Among Ayurveda's foremost Kapha-clearing herbs — bark churna is used as errhine (nasya) for chronic sinusitis, nasal polyps, and allergic rhinitis. Expectorant saponins loosen tenacious mucus; volatile terpenes open airways. Historically smoked as a fumigant in respiratory conditions of the Himalayan hill communities.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Digestive &amp; Hepatic Aid</div>
+        <div class="benefit-desc">Deepana-Pachana (digestive stimulant and digestant) action confirmed by cholagogue activity — stimulating bile secretion to improve fat digestion. Myricitrin shows hepatoprotective activity in CCl₄-induced liver injury models. Used classically in loss of appetite, sluggish digestion, abdominal distension, and constipation.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Antioxidant &amp; Cardioprotective</div>
+        <div class="benefit-desc">Fruit anthocyanins and bark myricetin deliver high DPPH radical scavenging activity. The fruit of M. rubra (closely related) shows strong protection against LDL oxidation in vitro. Charaka's classification as <em>Hridya</em> (cardiac tonic) aligns with studies showing blood pressure-modulating triterpenoids and platelet anti-aggregatory flavonoids.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Antimicrobial &amp; Antifungal</div>
+        <div class="benefit-desc">Bark extracts show broad-spectrum inhibition of gram-positive and gram-negative bacteria including S. aureus, E. coli, and Klebsiella, and antifungal activity against Candida and Aspergillus. The essential oil's monoterpene-rich profile contributes a synergistic antibacterial action particularly relevant in oral and skin applications.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Anti-diabetic Potential</div>
+        <div class="benefit-desc">Myricetin — a major flavonol in the bark and leaves — is one of the most studied plant compounds for blood glucose management, acting through GLUT4 upregulation and alpha-glucosidase inhibition. Animal studies on M. esculenta extracts confirm significant hypoglycaemic activity in streptozotocin models, with promising effects on lipid profiles.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Hair &amp; Scalp Care</div>
+        <div class="benefit-desc">Classified as <em>Keshya</em> (beneficial to hair) in classical texts: bark powder in hair oils is used for dandruff, scalp infections, premature greying, and hair fall. Antimicrobial action combats Malassezia; astringent tannins tighten scalp follicles; mild Lekhana (reducing) action may help seborrhoeic dermatitis.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Uterine &amp; Fever Support</div>
+        <div class="benefit-desc">Traditional use as a uterine tonic postpartum across Kumaon hill communities — bark decoction is given to new mothers as a uterine contractile and general fortifier. Independently recognised as a febrifuge — hot decoction of bark promotes diaphoresis and reduces pyrexia, particularly in intermittent and malaria-type fevers.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">05</span>
+      <h2 class="section-title">How to Consume Bayberry</h2>
+      <div class="section-rule"></div>
+    </div>
+    <p class="section-body">Bayberry is used internally and externally across multiple Ayurvedic preparations. The bark and root bark are the most potent medicinal parts and should be consumed only under professional guidance. The ripe fruit, however, is a safe and nutritious food enjoyed freely as a seasonal delicacy across the Himalayan belt.</p>
+    <table class="consume-table">
+      <thead><tr><th>Form</th><th>Preparation</th><th>Dosage</th><th>Best Use</th></tr></thead>
+      <tbody>
+        <tr><td>Bark Decoction (Kwatha)</td><td>Boil bark in water; reduce to ¼ volume</td><td>30–50 ml twice daily</td><td>Fever, dysentery, digestive stimulation</td></tr>
+        <tr><td>Bark Powder (Churna)</td><td>Dried bark powdered fine; with honey</td><td>1–3 g twice daily</td><td>Sinus congestion, oral hygiene (Dashana Churna)</td></tr>
+        <tr><td>Katphala Taila (Oil)</td><td>Bark-infused sesame oil (classical prep)</td><td>2–3 drops in each ear</td><td>Otitis, tinnitus, earache</td></tr>
+        <tr><td>Nasya (Nasal)</td><td>Fine bark powder insufflated or oil instilled</td><td>2–4 drops / physician-directed</td><td>Sinusitis, nasal polyps, headache</td></tr>
+        <tr><td>Gargle (Gandoosha)</td><td>Warm bark decoction, held in mouth</td><td>30–50 ml for 3–5 min, 2× daily</td><td>Pharyngitis, gum disease, tonsillitis</td></tr>
+        <tr><td>Hair Oil Application</td><td>Bark powder infused in coconut/sesame oil</td><td>Apply to scalp; leave 1–2 hr</td><td>Dandruff, scalp infections, hair fall</td></tr>
+        <tr><td>Ripe Fruit (Fresh)</td><td>Eat fresh; or prepare sherbet with salt &amp; spices</td><td>50–100 g freely consumed</td><td>Nutrition, antioxidant, seasonal tonic</td></tr>
+        <tr><td>Classical Compound</td><td>Dashana Samskara Churna (multi-herb)</td><td>Per practitioner direction</td><td>Comprehensive oral health formulation</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">06</span>
+      <h2 class="section-title">Safety &amp; Precautions</h2>
+      <div class="section-rule"></div>
+    </div>
+    <p class="section-body">Bayberry bark preparations have a long history of safe classical use when taken at recommended doses for short therapeutic courses. The ripe fruit is entirely safe as a food. Primary caution centres on the bark's ushna (hot) potency, astringent-bitter properties, and the presence of tannins at high concentrations — warranting care in specific populations and conditions.</p>
+    <ul class="precaution-list">
+      <li><strong>Pregnancy:</strong> Internal bark preparations should be avoided — classical uterine-stimulant activity poses risk during pregnancy. Ripe fruit in dietary quantities is generally considered safe.</li>
+      <li><strong>High blood pressure / oedema:</strong> Myricadiol has aldosterone-like activity that can cause sodium retention and raise blood pressure with prolonged high-dose internal use. Monitor BP if using bark preparations longer than 2 weeks.</li>
+      <li><strong>Kidney disease:</strong> High tannin load from prolonged bark decoction use may stress renal tubules. Avoid in individuals with existing renal dysfunction.</li>
+      <li><strong>Pitta aggravation:</strong> Ushna virya may worsen hyperacidity, peptic ulcers, and active bleeding conditions. Combine with Pitta-pacifying herbs (licorice, amla) when necessary in such constitutions.</li>
+      <li><strong>Drug interactions:</strong> Possible additive effect with antihypertensive medications (due to myricadiol); caution with diuretics and mineralocorticoid drugs.</li>
+      <li><strong>Long-term internal use:</strong> Restrict bark decoction use to 4–6 week therapeutic courses. Continuous prolonged use of high-tannin extracts may impair iron absorption.</li>
+      <li><strong>Children under 10:</strong> Internal bark preparations not recommended without specialist paediatric Ayurvedic guidance. The fresh fruit is perfectly safe for children.</li>
+      <li><strong>Ecological note:</strong> Myrica esculenta is increasingly vulnerable in parts of its native range due to over-harvesting of bark for commercial Ayurvedic supply. Prefer sustainably sourced, certified material.</li>
+    </ul>
+  </div>
+
+  <div class="sources">
+    <div class="sources-title">References &amp; Sources</div>
+    <ul>
+      <li>Charaka Samhita — Sutrasthana, Lekhaniya Mahakashaya; Chikitsasthana</li>
+      <li>Sushruta Samhita — Kalpasthana, Dashana Samskara Churna; Uttaratantra, Karna Roga</li>
+      <li>Bhavaprakasha Nighantu — Amradi Varga, Katphala entry</li>
+      <li>Priyavrat Sharma — Dravyaguna Vigyana, Vol. II — Katphala dravya</li>
+      <li>Rawat S, Jugran AK et al. — "Myrica esculenta: A Review on Its Traditional Uses, Phytochemistry, and Pharmacology" — Journal of Ethnopharmacology, 2021</li>
+      <li>Bhatt ID, Rawat S, Rawal RS — "Temporal and Spatial Variation in Phenolics and Antioxidant Activity in Myrica esculenta" — Food Chemistry, 2012</li>
+      <li>Gogoi B, Gogoi D et al. — "Antimicrobial properties of Myrica esculenta bark extracts against clinical isolates" — Asian Pacific Journal of Tropical Biomedicine, 2018</li>
+      <li>Sekar S, Sivakumar S, Mariappan V — "Phytochemical Analysis and Antidiabetic Activity of Myrica esculenta" — International Journal of Pharmacognosy, 2014</li>
+      <li>Sati SC, Sati N — "Myricetin and Myricadiol from Myrica esculenta: Biological activities and therapeutic potential" — Medicinal Plants Research Review, 2011</li>
+      <li>Kaviarasan K et al. — "Myrica esculenta bark extract: Hepatoprotective and antioxidant activity against CCl₄-induced hepatotoxicity" — Pharmacognosy Journal, 2015</li>
+    </ul>
+  </div>
+</div>
+
+<footer>
+  <p>Swastha Herbal Garden &nbsp;·&nbsp; For educational purposes only &nbsp;·&nbsp; Consult a qualified practitioner before therapeutic use</p>
+</footer>
+
+  <div id="viewerModal">
+    <div id="modal-topbar">
+      <span>3D Model — Bayberry</span>
+      <button type="button" id="close3D">✕</button>
+    </div>
+    <model-viewer src="bayberry3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+  </div>
+  <script>
+    (function() {
+      var open3D = document.getElementById('open3D');
+      var close3D = document.getElementById('close3D');
+      var modal = document.getElementById('viewerModal');
+      if (!open3D || !close3D || !modal) return;
+      function openModal() {
+        
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+      function closeModal() {
+        
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+      open3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); openModal();
+      });
+      close3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); closeModal();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+      });
+    })();
+  </script>
+
+</body>
+</html>

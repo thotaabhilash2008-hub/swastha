@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ashoka | Swastha</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+  <style>
+    #open3D {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      padding: 10px 18px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: var(--forest);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      z-index: 1000;
+      transition: .3s;
+    }
+    #open3D:hover {
+      background: var(--gold);
+      color: var(--deep);
+    }
+    #viewerModal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+    }
+    #modal-topbar {
+      flex-shrink: 0;
+      height: 58px;
+      background: #111111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px 0 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      z-index: 99999;
+    }
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 4.5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.72);
+      user-select: none;
+    }
+    #close3D {
+      width: 38px;
+      height: 38px;
+      font-size: 15px;
+      font-weight: 300;
+      background: transparent;
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background .2s, color .2s, transform .22s;
+      outline: none;
+      flex-shrink: 0;
+    }
+    #close3D:hover {
+      background: #ffffff;
+      color: #111111;
+      border-color: #ffffff;
+      transform: rotate(90deg);
+    }
+    #viewerModal model-viewer {
+      flex: 1;
+      width: 100%;
+      display: block;
+      background: #ffffff;
+    }
+
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+    *{margin:0;padding:0;box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{font-family:'Jost',sans-serif;background:var(--cream);color:var(--ink);min-height:100vh;overflow-x:hidden;position:relative}
+    body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");opacity:.032;pointer-events:none;z-index:100}
+
+    .bg-circle{position:fixed;border-radius:50%;pointer-events:none;z-index:0}
+    .bg-circle-1{width:700px;height:700px;background:radial-gradient(circle,rgba(196,84,26,.08) 0%,transparent 70%);top:-200px;right:-150px}
+    .bg-circle-2{width:500px;height:500px;background:radial-gradient(circle,rgba(212,136,42,.07) 0%,transparent 70%);bottom:-100px;left:-100px}
+
+    .botanical-svg{position:fixed;pointer-events:none;z-index:1;opacity:.09}
+    .botanical-tl{top:-10px;left:-10px;width:300px}
+    .botanical-br{bottom:-10px;right:-10px;width:260px;transform:rotate(180deg)}
+
+    .hero{position:relative;z-index:10;padding:54px 40px 0;text-align:center;opacity:0;animation:fadeUp .9s ease .1s forwards}
+    .back-link{display:inline-flex;align-items:center;gap:8px;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--sage);text-decoration:none;margin-bottom:36px;transition:color .3s}
+    .back-link:hover{color:var(--saffron)}
+    .logo-rule{display:flex;align-items:center;justify-content:center;gap:20px;margin-bottom:14px}
+    .logo-rule span{display:block;height:1px;width:70px;background:linear-gradient(to right,transparent,var(--saffron))}
+    .logo-rule span:last-child{background:linear-gradient(to left,transparent,var(--saffron))}
+    .logo-ornament{font-size:13px;color:var(--saffron)}
+    .hero-title{font-family:'Cormorant Garamond',serif;font-size:clamp(64px,12vw,110px);font-weight:300;letter-spacing:8px;line-height:1;color:var(--deep)}
+    .hero-subtitle{font-family:'Cormorant Garamond',serif;font-size:18px;font-style:italic;font-weight:300;color:var(--earth);letter-spacing:2px;margin-top:8px}
+    .hero-sci{font-size:11px;font-weight:200;letter-spacing:5px;color:var(--sage);margin-top:6px}
+
+    /* sacred badge */
+    .sacred-badge{display:inline-flex;align-items:center;gap:8px;margin-top:18px;padding:7px 18px;border:1px solid rgba(196,84,26,.3);background:rgba(196,84,26,.05);font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--flame);font-weight:300}
+    .sacred-badge::before,.sacred-badge::after{content:'☸';font-size:11px;opacity:.6}
+
+    .hero-photos{position:relative;z-index:10;display:grid;grid-template-columns:1fr 1fr;gap:2px;max-width:900px;margin:40px auto 0;opacity:0;animation:fadeUp .9s ease .35s forwards}
+    .hero-photos img{width:100%;height:380px;object-fit:cover;object-position:center;display:block;background:var(--parchment)}
+    .photo-placeholder{width:100%;height:380px;background:var(--parchment);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px}
+    .photo-placeholder span{font-family:'Cormorant Garamond',serif;font-size:13px;font-style:italic;color:var(--earth);letter-spacing:1px;opacity:.45}
+
+    .photo-caption{text-align:center;font-family:'Cormorant Garamond',serif;font-size:12px;font-style:italic;color:var(--sage);letter-spacing:1px;padding:10px 0 0;max-width:900px;margin:0 auto;position:relative;z-index:10;opacity:0;animation:fadeUp .9s ease .5s forwards}
+
+    .divider{display:flex;align-items:center;justify-content:center;gap:16px;margin:50px auto;max-width:600px;opacity:0;animation:fadeUp .9s ease .55s forwards;position:relative;z-index:10}
+    .divider-line{height:1px;width:120px;background:linear-gradient(to right,transparent,var(--sage))}
+    .divider-line:last-child{background:linear-gradient(to left,transparent,var(--sage))}
+    .divider-leaf{color:var(--flame);font-size:18px}
+
+    .content{position:relative;z-index:10;max-width:860px;margin:0 auto;padding:0 30px 80px}
+
+    .intro-text{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:300;line-height:1.75;color:var(--ink);text-align:center;max-width:700px;margin:0 auto 60px;opacity:0;animation:fadeUp .9s ease .6s forwards}
+    .intro-text em{color:var(--flame);font-style:italic}
+
+    .section{margin-bottom:60px;opacity:0;animation:fadeUp .9s ease forwards}
+    .section:nth-child(1){animation-delay:.65s}
+    .section:nth-child(2){animation-delay:.75s}
+    .section:nth-child(3){animation-delay:.85s}
+    .section:nth-child(4){animation-delay:.95s}
+    .section:nth-child(5){animation-delay:1.05s}
+    .section:nth-child(6){animation-delay:1.15s}
+    .section:nth-child(7){animation-delay:1.25s}
+
+    .section-header{display:flex;align-items:center;gap:14px;margin-bottom:20px}
+    .section-num{font-family:'Cormorant Garamond',serif;font-size:11px;letter-spacing:4px;color:var(--saffron)}
+    .section-title{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:400;color:var(--deep);letter-spacing:1px}
+    .section-rule{height:1px;flex:1;background:linear-gradient(to right,var(--saffron),transparent)}
+    .section-body{font-size:13px;font-weight:300;line-height:1.9;color:var(--ink);margin-bottom:24px}
+
+    /* pull quote */
+    .shloka{border-left:2px solid var(--saffron);padding:16px 22px;margin:20px 0 24px;background:rgba(212,136,42,.05)}
+    .shloka p{font-family:'Cormorant Garamond',serif;font-size:15px;font-style:italic;font-weight:300;line-height:1.7;color:var(--earth)}
+    .shloka cite{display:block;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--sage);margin-top:8px;font-style:normal}
+
+    .data-table{width:100%;border-collapse:collapse;margin:16px 0 8px;font-size:12px}
+    .data-table thead tr{background:var(--deep);color:var(--saffron);font-size:10px;letter-spacing:3px;text-transform:uppercase}
+    .data-table thead th{padding:12px 14px;text-align:left;font-weight:400}
+    .data-table tbody tr:nth-child(even){background:var(--parchment)}
+    .data-table tbody tr:nth-child(odd){background:var(--cream)}
+    .data-table tbody tr{transition:background .2s}
+    .data-table tbody tr:hover{background:#e8d5b8}
+    .data-table tbody td{padding:10px 14px;color:var(--ink);border-bottom:1px solid rgba(122,59,30,.08)}
+    .data-table tbody td:first-child{font-weight:400;color:var(--deep);width:28%}
+
+    .dosha-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:12px}
+    .dosha-table thead tr{background:var(--rose);color:var(--cream)}
+    .dosha-table thead th{padding:12px 14px;text-align:left;font-weight:400;letter-spacing:2px;font-size:10px;text-transform:uppercase}
+    .dosha-table tbody tr:nth-child(even){background:var(--parchment)}
+    .dosha-table tbody tr:nth-child(odd){background:var(--cream)}
+    .dosha-table tbody td{padding:11px 14px;color:var(--ink);border-bottom:1px solid rgba(122,59,30,.08)}
+    .dosha-table tbody td:first-child{font-weight:400;color:var(--rose);width:18%}
+    .dosha-table tbody td:nth-child(2){color:var(--earth);width:20%}
+
+    .consume-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:12px}
+    .consume-table thead tr{background:var(--earth);color:var(--cream)}
+    .consume-table thead th{padding:12px 14px;text-align:left;font-weight:400;letter-spacing:2px;font-size:10px;text-transform:uppercase}
+    .consume-table tbody tr:nth-child(even){background:var(--parchment)}
+    .consume-table tbody tr:nth-child(odd){background:var(--cream)}
+    .consume-table tbody td{padding:11px 14px;color:var(--ink);border-bottom:1px solid rgba(122,59,30,.08)}
+    .consume-table tbody td:first-child{font-weight:400;color:var(--earth);width:22%}
+
+    .benefits-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:rgba(122,59,30,.12);border:1px solid rgba(122,59,30,.12);margin:8px 0}
+    .benefit-card{background:var(--cream);padding:24px 22px;transition:background .3s;position:relative;overflow:hidden}
+    .benefit-card:hover{background:#eddfc8}
+    .benefit-card::before{content:'';position:absolute;bottom:0;left:0;width:0;height:2px;background:var(--saffron);transition:width .4s}
+    .benefit-card:hover::before{width:100%}
+    .benefit-title{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:600;color:var(--rose);margin-bottom:8px}
+    .benefit-desc{font-size:11.5px;font-weight:300;line-height:1.75;color:var(--ink);opacity:.85}
+
+    /* star badge on primary benefit */
+    .benefit-card.primary .benefit-title::after{content:' ✦';font-size:10px;color:var(--saffron);vertical-align:top}
+
+    .precaution-list{list-style:none;margin:8px 0}
+    .precaution-list li{display:flex;gap:12px;align-items:flex-start;padding:10px 14px;font-size:12px;font-weight:300;line-height:1.7;color:var(--ink);border-bottom:1px solid rgba(122,59,30,.08)}
+    .precaution-list li:last-child{border-bottom:none}
+    .precaution-list li::before{content:'▸';color:var(--saffron);flex-shrink:0;margin-top:1px}
+
+    .nutrition-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(122,59,30,.12);border:1px solid rgba(122,59,30,.12);margin:20px 0}
+    .nutrition-cell{background:var(--cream);padding:22px 16px;text-align:center;transition:background .3s}
+    .nutrition-cell:hover{background:var(--parchment)}
+    .nutrition-num{font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:300;color:var(--flame);line-height:1;margin-bottom:4px}
+    .nutrition-unit{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--saffron);font-weight:300}
+    .nutrition-label{font-size:11px;font-weight:300;color:var(--ink);margin-top:5px}
+
+    /* formulation highlight strip */
+    .formulation-strip{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:rgba(122,59,30,.12);border:1px solid rgba(122,59,30,.12);margin:20px 0}
+    .form-cell{background:var(--cream);padding:20px 16px;text-align:center;transition:background .3s}
+    .form-cell:hover{background:var(--parchment)}
+    .form-name{font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:600;color:var(--deep);margin-bottom:5px}
+    .form-type{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--saffron)}
+    .form-use{font-size:11px;font-weight:300;color:var(--ink);margin-top:6px;line-height:1.55;opacity:.8}
+
+    .sources{border-top:1px solid rgba(122,59,30,.15);padding-top:24px;margin-top:20px}
+    .sources-title{font-size:10px;letter-spacing:4px;text-transform:uppercase;color:var(--sage);margin-bottom:12px;font-weight:300}
+    .sources ul{list-style:none}
+    .sources ul li{font-family:'Cormorant Garamond',serif;font-size:13px;font-style:italic;color:var(--earth);padding:5px 0;border-bottom:1px solid rgba(122,59,30,.06)}
+    .sources ul li::before{content:'· ';color:var(--sage)}
+
+    footer{position:relative;z-index:10;text-align:center;padding:24px 20px 44px;border-top:1px solid rgba(122,59,30,.12);max-width:860px;margin:0 auto}
+    footer p{font-size:11px;letter-spacing:4px;text-transform:uppercase;color:var(--sage);font-weight:300}
+
+    @keyframes fadeUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
+
+    @media(max-width:700px){
+      .hero-photos{grid-template-columns:1fr}
+      .hero-photos img,.photo-placeholder{height:260px}
+      .benefits-grid,.formulation-strip{grid-template-columns:1fr}
+      .nutrition-bar{grid-template-columns:1fr 1fr}
+      .content{padding:0 18px 60px}
+    }
+  </style>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+</head>
+<body>
+  <button type="button" id="open3D">View in 3D</button>
+
+
+<div class="bg-circle bg-circle-1"></div>
+<div class="bg-circle bg-circle-2"></div>
+
+<!-- Botanical SVG — Ashoka flower clusters and drooping leaves -->
+<svg class="botanical-svg botanical-tl" viewBox="0 0 320 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- main stem -->
+  <path d="M24 310 Q 70 240 110 180 Q 150 120 190 55" stroke="#7a3b1e" stroke-width="2" fill="none"/>
+  <!-- drooping leaf pairs -->
+  <path d="M80 220 Q 52 210 38 225" stroke="#6b8f5e" stroke-width="1.3" fill="none"/>
+  <path d="M80 220 Q 108 205 118 215" stroke="#6b8f5e" stroke-width="1.3" fill="none"/>
+  <path d="M118 168 Q 90 158 76 168" stroke="#6b8f5e" stroke-width="1.3" fill="none"/>
+  <path d="M118 168 Q 146 153 156 163" stroke="#6b8f5e" stroke-width="1.3" fill="none"/>
+  <path d="M158 118 Q 130 108 116 118" stroke="#6b8f5e" stroke-width="1.3" fill="none"/>
+  <path d="M158 118 Q 186 103 196 113" stroke="#6b8f5e" stroke-width="1.3" fill="none"/>
+  <!-- leaf blades -->
+  <ellipse cx="38" cy="223" rx="16" ry="7" fill="#6b8f5e" transform="rotate(-15 38 223)"/>
+  <ellipse cx="118" cy="213" rx="15" ry="6" fill="#6b8f5e" transform="rotate(10 118 213)"/>
+  <ellipse cx="74" cy="167" rx="16" ry="6.5" fill="#7a9e6a" transform="rotate(-10 74 167)"/>
+  <ellipse cx="157" cy="161" rx="15" ry="6" fill="#6b8f5e" transform="rotate(15 157 161)"/>
+  <ellipse cx="114" cy="117" rx="16" ry="6" fill="#7a9e6a" transform="rotate(-8 114 117)"/>
+  <ellipse cx="197" cy="111" rx="14" ry="5.5" fill="#6b8f5e" transform="rotate(18 197 111)"/>
+  <!-- flower cluster at top -->
+  <circle cx="190" cy="52" r="12" fill="#c4541a" opacity="0.7"/>
+  <circle cx="178" cy="42" r="8" fill="#d4882a" opacity="0.65"/>
+  <circle cx="202" cy="40" r="9" fill="#c4541a" opacity="0.6"/>
+  <circle cx="186" cy="34" r="7" fill="#9e3a2f" opacity="0.55"/>
+</svg>
+<svg class="botanical-svg botanical-br" viewBox="0 0 320 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M24 310 Q 70 240 110 180 Q 150 120 190 55" stroke="#7a3b1e" stroke-width="2" fill="none"/>
+  <path d="M80 220 Q 52 210 38 225" stroke="#6b8f5e" stroke-width="1.3" fill="none"/>
+  <path d="M80 220 Q 108 205 118 215" stroke="#6b8f5e" stroke-width="1.3" fill="none"/>
+  <ellipse cx="38" cy="223" rx="16" ry="7" fill="#6b8f5e" transform="rotate(-15 38 223)"/>
+  <ellipse cx="118" cy="213" rx="15" ry="6" fill="#6b8f5e" transform="rotate(10 118 213)"/>
+  <ellipse cx="74" cy="167" rx="16" ry="6.5" fill="#7a9e6a" transform="rotate(-10 74 167)"/>
+  <circle cx="190" cy="52" r="11" fill="#c4541a" opacity="0.65"/>
+  <circle cx="178" cy="42" r="7" fill="#d4882a" opacity="0.6"/>
+</svg>
+
+<div class="hero">
+  <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+  <div class="logo-rule"><span></span><div class="logo-ornament">✦</div><span></span></div>
+  <div class="hero-title">Ashoka</div>
+  <div class="hero-subtitle">The Sorrowless Tree — Queen of Uterine Herbs</div>
+  <div class="hero-sci">Saraca asoca (Roxb.) De Wilde &nbsp;·&nbsp; Caesalpiniaceae</div>
+  <div class="sacred-badge">Sacred to Hindu, Buddhist &amp; Jain Traditions</div>
+</div>
+
+<div class="hero-photos">
+  <div class="photo-placeholder">
+    <svg width="72" height="72" viewBox="0 0 72 72" fill="none">
+      <path d="M36 12 Q 36 12 36 60" stroke="#7a3b1e" stroke-width="2"/>
+      <path d="M36 24 Q 20 18 16 30" stroke="#6b8f5e" stroke-width="1.5" fill="none"/>
+      <path d="M36 32 Q 52 26 56 38" stroke="#6b8f5e" stroke-width="1.5" fill="none"/>
+      <path d="M36 42 Q 22 37 20 48" stroke="#6b8f5e" stroke-width="1.5" fill="none"/>
+      <ellipse cx="16" cy="29" rx="9" ry="4.5" fill="#6b8f5e" transform="rotate(-20 16 29)"/>
+      <ellipse cx="54" cy="37" rx="9" ry="4" fill="#7a9e6a" transform="rotate(15 54 37)"/>
+      <ellipse cx="20" cy="47" rx="8" ry="4" fill="#6b8f5e" transform="rotate(-12 20 47)"/>
+      <circle cx="36" cy="14" r="9" fill="#c4541a" opacity="0.75"/>
+      <circle cx="28" cy="10" r="6" fill="#d4882a" opacity="0.65"/>
+      <circle cx="44" cy="9" r="7" fill="#9e3a2f" opacity="0.6"/>
+    </svg>
+    <span>ashoka1.jpg</span>
+  </div>
+  <div class="photo-placeholder">
+    <svg width="72" height="72" viewBox="0 0 72 72" fill="none">
+      <rect x="16" y="32" width="40" height="26" rx="2" fill="#7a3b1e" opacity="0.15"/>
+      <path d="M36 10 Q 36 10 36 32" stroke="#7a3b1e" stroke-width="2.5"/>
+      <path d="M36 18 Q 22 14 20 24" stroke="#6b8f5e" stroke-width="1.5" fill="none"/>
+      <path d="M36 25 Q 50 21 52 31" stroke="#6b8f5e" stroke-width="1.5" fill="none"/>
+      <ellipse cx="20" cy="23" rx="7" ry="3.5" fill="#6b8f5e" transform="rotate(-22 20 23)"/>
+      <ellipse cx="50" cy="30" rx="7" ry="3" fill="#7a9e6a" transform="rotate(18 50 30)"/>
+      <circle cx="36" cy="12" r="8" fill="#c4541a" opacity="0.7"/>
+      <circle cx="28" cy="8" r="5" fill="#d4882a" opacity="0.6"/>
+    </svg>
+    <span>ashoka2.jpg</span>
+  </div>
+</div>
+<p class="photo-caption">Fig. 1 — Dense terminal clusters of brilliant orange-scarlet flowers — Ashoka's signature bloom &nbsp;·&nbsp; Fig. 2 — The reddish-brown furrowed bark of Saraca asoca — the primary medicinal part</p>
+
+<div class="divider">
+  <div class="divider-line"></div>
+  <div class="divider-leaf">❧</div>
+  <div class="divider-line"></div>
+</div>
+
+<div class="content">
+  <p class="intro-text">Its very name is a prayer — <em>a-shoka</em>, without sorrow. For three thousand years this flame-flowered tree has stood at the confluence of the sacred and the medicinal: sheltering Sita in the Ramayana's Ashoka Vatika, marking the birthplace of the Jain tirthankaras, and serving in every classical text as the <em>supreme uterine herb</em> — the sovereign remedy for the sorrows of the womb.</p>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">01</span><h2 class="section-title">Botanical Profile</h2><div class="section-rule"></div></div>
+    <p class="section-body">Ashoka (<em>Saraca asoca</em>) is a medium-sized, graceful evergreen tree of the Caesalpiniaceae family, typically growing 7 to 10 metres in height with a dense, spreading canopy of long, drooping pinnate leaves. Young leaves emerge in loose, limp clusters of a striking coppery-rose to pale green colour — so distinctive that newly leafed Ashoka branches are used as temple offerings. Mature leaves are 15–20 cm long with 4–6 pairs of oblong-lanceolate leaflets, glossy dark green, with slightly wavy margins.</p>
+    <p class="section-body">The flowers — Ashoka's most recognisable feature — appear in dense, globose or hemispherical corymbs directly on the branches and trunk. Each individual flower is tubular, with an orange-yellow tube that deepens to brilliant scarlet-orange as it ages; entire clusters glow like embers against the dark foliage, blooming from February through April. The bark is dark grey-brown and slightly scaly, with a reddish inner layer exposed when cut. The pods are flat, woody, 15–25 cm long, containing 4–8 seeds. The tree is native to the moist deciduous and evergreen forests of the Indian subcontinent — the Western Ghats, Eastern Ghats, Assam, Sri Lanka, and Myanmar.</p>
+    <table class="data-table">
+      <thead><tr><th>PROPERTY</th><th>Detail</th></tr></thead>
+      <tbody>
+        <tr><td>Family</td><td>Caesalpiniaceae (Leguminosae — Caesalpinioideae)</td></tr>
+        <tr><td>Botanical Name</td><td>Saraca asoca (Roxb.) De Wilde; syn. Saraca indica Linn.</td></tr>
+        <tr><td>Sanskrit Names</td><td>Ashoka, Hempushpa, Vishoka, Anganapriya, Tamarapallava, Kankeli, Vanchulaka, Sita-ashoka</td></tr>
+        <tr><td>Common Names</td><td>Ashoka Tree, Sorrowless Tree, Indian Saraca</td></tr>
+        <tr><td>Regional Names</td><td>Asogam / Asogappattai (Tam), Asokamu (Tel), Ashoka (Kan/Mar/Hin), Ashokapaala (Mal)</td></tr>
+        <tr><td>Plant Type</td><td>Medium evergreen tree (7–10 m), dense drooping canopy</td></tr>
+        <tr><td>Distribution</td><td>Western Ghats, Eastern Ghats, Assam, Sri Lanka, Myanmar; moist forests</td></tr>
+        <tr><td>Flowering Season</td><td>February–April (flowers deepen from yellow-orange to scarlet)</td></tr>
+        <tr><td>Medicinal Parts</td><td>Bark (primary), flowers, seeds, leaves</td></tr>
+        <tr><td>Taste Profile</td><td>Tikta (bitter), Kashaya (astringent)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">02</span><h2 class="section-title">Phytochemistry Composition</h2><div class="section-rule"></div></div>
+    <p class="section-body">The bark of Ashoka is exceptionally rich in tannins (12–24%), with condensed leucoanthocyanins and catechins constituting the largest share — these astringent polyphenols are primarily responsible for its haemostatic (blood-stopping) action in menorrhagia. Alongside tannins, the bark yields haematoxylin-like compounds, steroidal ketones, oxalic acid, iron compounds, saponins (the asocaside series), flavonoids, and glycosides. The flowers are rich in flavonoids and provide estrogenic compounds — notably 11-oxo-9-octadecenyl glycerides and sterols — that modulate the endometrial lining.</p>
+    <p class="section-body">Perhaps most pharmacologically significant is the presence of <em>estrogenic sterols</em> (particularly catechol estrogens and phytoestrogenic compounds) that interact with uterine estrogen receptors, providing a scientific basis for its classical reputation as a uterine tonic. The procyanidin oligomers and haematoxylin derivatives contribute anti-inflammatory activity by inhibiting prostaglandin synthesis — explaining relief of dysmenorrhea.</p>
+    <div class="nutrition-bar">
+      <div class="nutrition-cell"><div class="nutrition-num">24%</div><div class="nutrition-unit">tannins</div><div class="nutrition-label">In dried bark (max)</div></div>
+      <div class="nutrition-cell"><div class="nutrition-num">3</div><div class="nutrition-unit">asocasides</div><div class="nutrition-label">Isolated saponin series</div></div>
+      <div class="nutrition-cell"><div class="nutrition-num">7–10</div><div class="nutrition-unit">m height</div><div class="nutrition-label">Mature tree stature</div></div>
+      <div class="nutrition-cell"><div class="nutrition-num">4–8</div><div class="nutrition-unit">seeds</div><div class="nutrition-label">Per woody seed pod</div></div>
+    </div>
+    <table class="data-table">
+      <thead><tr><th>Compound</th><th>Category</th><th>Primary Action</th></tr></thead>
+      <tbody>
+        <tr><td>Leucoanthocyanins &amp; Catechins</td><td>Condensed tannins</td><td>Haemostatic, astringent, anti-inflammatory; primary active in menorrhagia</td></tr>
+        <tr><td>Haematoxylin &amp; Brazilin</td><td>Natural dye compounds</td><td>Anti-inflammatory, antioxidant, antispasmodic action on smooth muscle</td></tr>
+        <tr><td>Asocaside A, B, C</td><td>Saponin glycosides</td><td>Uterine tonic, endometrial stabilisation, estrogenic activity</td></tr>
+        <tr><td>Catechol Estrogens &amp; Phytosterols</td><td>Estrogenic compounds</td><td>Estrogen-receptor modulation; normalises endometrial proliferation</td></tr>
+        <tr><td>β-Sitosterol &amp; Stigmasterol</td><td>Phytosterols</td><td>Anti-inflammatory, immunomodulatory, hypolipidemic</td></tr>
+        <tr><td>Procyanidin Oligomers</td><td>Condensed polyphenols</td><td>Prostaglandin inhibition; analgesic in dysmenorrhea</td></tr>
+        <tr><td>Quercetin &amp; Kaempferol Derivatives</td><td>Flavonoid glycosides</td><td>Antioxidant, capillary-protective, anti-oestrogenic at high doses</td></tr>
+        <tr><td>Gallic &amp; Ellagic Acids</td><td>Hydrolysable tannins</td><td>Antioxidant, antimicrobial, wound healing, anti-cancer</td></tr>
+        <tr><td>Oxalate &amp; Iron Compounds</td><td>Mineral complexes</td><td>Iron supplementation (significant); support in anaemia from menorrhagia</td></tr>
+        <tr><td>Hentriacontane &amp; Octacosanol</td><td>Long-chain waxes</td><td>Membrane-stabilising; anti-inflammatory cofactors</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">03</span><h2 class="section-title">Ayurvedic Significance</h2><div class="section-rule"></div></div>
+    <p class="section-body">No herb in the Ayurvedic pharmacopoeia commands greater authority in women's medicine than Ashoka. Charaka Samhita mentions it in <em>Asrigdara Chikitsa</em> (treatment of excessive menstrual bleeding), Sushruta Samhita lists it among the principal herbs of <em>Priyangvadi Gana</em> and <em>Nyagrodhadi Gana</em> (astringent groups), and Ashtanga Hridayam places it foremost in formulations for uterine disorders. Its Sanskrit synonym <em>Anganapriya</em> — "beloved of women" — encapsulates this role. Dhanvantari Nighantu, Kaiyadeva Nighantu, and Raja Nighantu all record it with extensive application in <em>Asrigdara, Yonivyapad</em> (gynaecological disorders), and <em>Sotha</em> (inflammation).</p>
+
+    <div class="shloka">
+      <p>"Ashokah kashayo tikto grahi pittakaphapahah · asra-shula-visharpaghno yoni-dosha-nibarhana"</p>
+      <cite>— Bhavaprakasha Nighantu, Vatadi Varga — Properties of Ashoka</cite>
+    </div>
+
+    <p class="section-body">The shloka describes Ashoka as astringent and bitter in taste, absorbent in quality, pacifier of Pitta and Kapha, destroyer of blood disorders and pain, anti-spreading (anti-infective), and the supreme purifier of gynaecological disorders. Its Sheeta virya (cold potency) makes it uniquely suited to cool and arrest the Pitta-driven excess heat that underlies menorrhagia and uterine inflammation.</p>
+    <table class="dosha-table">
+      <thead><tr><th>Dosha</th><th>Effect</th><th>Mechanism &amp; Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Vata ↑</td><td>Mildly aggravating</td><td>Its astringent, dry, and light qualities may increase Vata slightly with prolonged use — classical formulators balance it with ghee or sesame oil in compound preparations; not indicated in Vata-type dysmenorrhea alone</td></tr>
+        <tr><td>Pitta ↓↓</td><td>Strongly pacifying</td><td>Its supreme indication — Sheeta virya (cold potency) with tikta-kashaya rasa cools Pitta-driven excess menstrual flow, uterine heat, inflammation, and burning pain; the primary dosha action</td></tr>
+        <tr><td>Kapha ↓</td><td>Pacifying</td><td>Astringent quality and bitter taste reduce Kapha accumulation in the uterus, resolving mucoid discharges, leucorrhoea, and cystic tendencies; Ruksha (dry) guna checks Kapha dampness</td></tr>
+      </tbody>
+    </table>
+    <p class="section-body"><strong>Rasa:</strong> Tikta (bitter), Kashaya (astringent) &nbsp;·&nbsp; <strong>Guna:</strong> Laghu (light), Ruksha (dry) &nbsp;·&nbsp; <strong>Virya:</strong> Sheeta (cold) &nbsp;·&nbsp; <strong>Vipaka:</strong> Katu (pungent) &nbsp;·&nbsp; <strong>Karma:</strong> Pitta-Kaphahara, Garbhashaya Vishodhana, Shothahara, Vedanasthapana, Stambhana, Raktaprasadana</p>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">04</span><h2 class="section-title">Classical Formulations</h2><div class="section-rule"></div></div>
+    <p class="section-body">Ashoka is the anchor herb of some of Ayurveda's most important classical compound preparations, particularly in the realm of women's health. These time-tested formulations have been continuously used for centuries and remain among the most widely dispensed classical preparations in contemporary Ayurvedic practice.</p>
+    <div class="formulation-strip">
+      <div class="form-cell">
+        <div class="form-name">Ashokarishta</div>
+        <div class="form-type">Fermented Decoction · Arishta</div>
+        <div class="form-use">The definitive classical formulation for menstrual disorders — dysmenorrhea, menorrhagia, irregular cycles, leucorrhoea, and uterine debility. Fermentation enhances bioavailability.</div>
+      </div>
+      <div class="form-cell">
+        <div class="form-name">Ashoka Ghrita</div>
+        <div class="form-type">Medicated Ghee · Ghrita</div>
+        <div class="form-use">Bark decoction processed with ghee; used internally for uterine debility and Vata-type gynaecological conditions; also used as a uterine basti (enema) medium.</div>
+      </div>
+      <div class="form-cell">
+        <div class="form-name">Pradrantak Lauha</div>
+        <div class="form-type">Iron Preparation · Lauha Kalpa</div>
+        <div class="form-use">Iron-based compound with Ashoka; addresses menorrhagia-induced anaemia and uterine weakness simultaneously; used where iron deficiency complicates the primary disorder.</div>
+      </div>
+      <div class="form-cell">
+        <div class="form-name">Ashoka Kvatha</div>
+        <div class="form-type">Single-Herb Decoction · Kwatha</div>
+        <div class="form-use">Simple bark decoction — the most direct preparation; used for acute menorrhagia, uterine pain, and as a daily uterine tonic in the follicular phase of the cycle.</div>
+      </div>
+      <div class="form-cell">
+        <div class="form-name">Ashokaadi Kashaya</div>
+        <div class="form-type">Compound Decoction · Kashaya</div>
+        <div class="form-use">Compound formulation from Ashtanga Hridayam; addresses uterine disorders with concurrent inflammatory component; often combined with Shatavari and Lodhra.</div>
+      </div>
+      <div class="form-cell">
+        <div class="form-name">Chandraprabha Vati</div>
+        <div class="form-type">Tablet Formulation · Vati</div>
+        <div class="form-use">Classical tablet containing Ashoka among broader urogenital herbs; used for both male and female urogenital disorders, diabetes, and urinary conditions.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">05</span><h2 class="section-title">Key Health Benefits</h2><div class="section-rule"></div></div>
+    <p class="section-body">Modern pharmacological research has substantiated Ashoka's therapeutic reputation with particular rigour — its haemostatic, estrogenic, uterotonic, anti-inflammatory, and antimicrobial actions are among the better-characterised phytopharmacological properties in the Ayurvedic pharmacopoeia. Several clinical trials have compared Ashokarishta directly with standard gynaecological treatments with favourable results.</p>
+    <div class="benefits-grid">
+      <div class="benefit-card primary">
+        <div class="benefit-title">Menorrhagia &amp; Uterine Haemostasis</div>
+        <div class="benefit-desc">The flagship indication — Ashoka bark's condensed tannins and leucoanthocyanins contract uterine smooth muscle and capillary walls, reducing excessive menstrual flow. Multiple clinical studies confirm efficacy of Ashokarishta in reducing blood loss in menorrhagia comparable to standard hormonal interventions, without disrupting cycle regularity.</div>
+      </div>
+      <div class="benefit-card primary">
+        <div class="benefit-title">Dysmenorrhea &amp; Pelvic Pain</div>
+        <div class="benefit-desc">Procyanidin oligomers from the bark inhibit prostaglandin synthesis — the primary driver of menstrual cramps. Haematoxylin derivatives contribute antispasmodic activity on uterine smooth muscle. Classically, Ashoka bark decoction taken from day 4 to day 14 of the cycle significantly reduces the severity of subsequent cycle pain.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Uterine Tonic &amp; Endometrial Health</div>
+        <div class="benefit-desc">Phytoestrogenic saponins (asocasides) and catechol estrogens gently modulate estrogen receptor activity in the endometrium — toning the lining without overstimulating it. Used classically to rehabilitate the uterus post-partum, post-abortion, and after periods of uterine debility.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Leucorrhoea &amp; Vaginal Infections</div>
+        <div class="benefit-desc">Antimicrobial tannins and flavonoids address the pathogenic microbes underlying white/yellow vaginal discharge. The astringent action tones the vaginal mucosa and reduces excess secretion. Bark decoction is used both internally and as a vaginal douche in classical practice for <em>Shweta Pradara</em>.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">PCOS &amp; Hormonal Regulation</div>
+        <div class="benefit-desc">Contemporary Ayurvedic practice increasingly employs Ashoka alongside Shatavari and Lodhra for Polycystic Ovarian Syndrome — its phytoestrogenic modulation helps regularise cycles, its anti-androgenic tannins reduce peripheral androgen activity, and its anti-inflammatory action addresses the low-grade inflammation central to PCOS pathophysiology.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Uterine Fibroids &amp; Cysts</div>
+        <div class="benefit-desc">Classical texts list Ashoka for <em>Granthi</em> (nodular growths) in the uterus. Modern Ayurvedic practice uses it to manage fibroid-associated menorrhagia and pain — reducing blood loss, inflammation, and the Kapha accumulation that classical theory associates with the growth of benign uterine masses.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Skin Disorders &amp; Blood Purification</div>
+        <div class="benefit-desc">As a <em>Raktaprasadana</em> herb (purifying blood), Ashoka bark is used for chronic inflammatory skin disorders, urticaria, and burning sensations of the skin driven by Pitta excess in the blood. Its antioxidant polyphenols scavenge reactive oxygen species and reduce inflammatory mediator production.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Iron Supplementation &amp; Anaemia</div>
+        <div class="benefit-desc">A largely overlooked benefit — Ashoka bark contains significant iron compounds, and classical preparations such as Pradrantak Lauha exploit this to simultaneously address menorrhagia and the secondary iron-deficiency anaemia it causes. The tannins, paradoxically, also chelate excess free iron, preventing iron-induced oxidative stress.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">06</span><h2 class="section-title">How to Consume Ashoka</h2><div class="section-rule"></div></div>
+    <p class="section-body">Ashoka is best used cyclically — classically administered in the follicular phase (day 4 to day 14) rather than continuously, aligning with its estrogenic-phase modulating properties. For acute conditions such as active menorrhagia, use throughout the cycle as directed. Ashokarishta, the most bioavailable and time-tested preparation, remains the formulation of first choice for most gynaecological indications.</p>
+    <table class="consume-table">
+      <thead><tr><th>Form</th><th>Preparation</th><th>Dosage</th><th>Best Use</th></tr></thead>
+      <tbody>
+        <tr><td>Ashokarishta (classical)</td><td>Fermented compound preparation; available commercially</td><td>15–30 ml with equal water, after meals, twice daily</td><td>Menorrhagia, dysmenorrhea, leucorrhoea, uterine debility — first-choice preparation</td></tr>
+        <tr><td>Bark Decoction (Kwatha)</td><td>Boil 5–10 g dried bark in 200 ml water; reduce to 50 ml</td><td>30–50 ml twice daily, days 4–14 of cycle</td><td>Menorrhagia, dysmenorrhea, uterine toning</td></tr>
+        <tr><td>Bark Powder (Churna)</td><td>Finely powdered dried bark; with honey or rice water</td><td>3–6 g per day; physician-directed</td><td>Leucorrhoea, chronic gynaecological weakness</td></tr>
+        <tr><td>Cold Infusion (Hima)</td><td>Soak bark overnight in cold water; strain</td><td>30–40 ml once daily</td><td>Burning micturition, chronic Pitta skin conditions</td></tr>
+        <tr><td>Flower Infusion</td><td>Fresh or dried flowers steeped in hot water</td><td>1 cup (150 ml) once or twice daily</td><td>Hormonal balance, mild menstrual irregularity</td></tr>
+        <tr><td>Ashoka Ghrita (internal)</td><td>Medicated ghee; per classical formulation</td><td>5–10 g with warm milk; physician-directed</td><td>Uterine debility, Vata-type gynaecological disorders</td></tr>
+        <tr><td>Bark Decoction (topical / douche)</td><td>Diluted bark decoction at body temperature</td><td>As directed by physician</td><td>Vaginal infections, leucorrhoea</td></tr>
+        <tr><td>Compound formulations</td><td>Pradrantak Lauha, Ashokaadi Kashaya per prescription</td><td>Per physician prescription</td><td>Anaemia with menorrhagia; complex gynaecological disorders</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">07</span><h2 class="section-title">Safety &amp; Precautions</h2><div class="section-rule"></div></div>
+    <p class="section-body">Ashoka is one of the better-tolerated Ayurvedic herbs at classical doses and has a long history of safe use. Its primary risks relate to its estrogenic activity and Vata-aggravating potential with prolonged use. Clinical safety data from Ashokarishta trials confirms good tolerability; significant adverse effects are rare at recommended doses.</p>
+    <ul class="precaution-list">
+      <li><strong>Pregnancy:</strong> Avoid internal use, particularly in the first trimester. While traditionally used in late pregnancy in some regional traditions, the uterotonic and estrogenic actions require physician supervision. Not for self-medication during pregnancy.</li>
+      <li><strong>Estrogen-sensitive conditions:</strong> Caution in conditions where estrogen excess is a concern — estrogen receptor-positive breast cancer, endometriosis, and uterine fibroids driven by hyperestrogenism. Use only under specialist guidance in these contexts.</li>
+      <li><strong>Prolonged use &amp; Vata:</strong> Extended continuous use (beyond 3 months) may aggravate Vata — watch for dryness, constipation, or anxiety; classical practice recommends cyclic use with breaks, and often with Shatavari or ghee to balance Vata.</li>
+      <li><strong>Tannin-iron interaction:</strong> High-tannin preparations may inhibit absorption of dietary iron and iron supplements when taken simultaneously — space iron supplementation by at least 2 hours from Ashoka preparations.</li>
+      <li><strong>Hypothyroidism:</strong> Phytoestrogenic compounds may theoretically interact with thyroid hormone binding — those on thyroid medications should inform their physician.</li>
+      <li><strong>Drug interactions:</strong> May enhance the effect of estrogen-based hormone therapy — avoid combining without medical supervision. Possible additive effect with anticoagulants due to haemostatic tannins (paradoxically may reduce anticoagulant efficacy).</li>
+      <li><strong>Children &amp; adolescents:</strong> Use in pre-menarchal girls is not recommended. In adolescents with early menstrual irregularity, use only under paediatric Ayurvedic supervision.</li>
+      <li><strong>Botanical identity — caution:</strong> Several unrelated trees are sold as "Ashoka" in Indian markets — particularly <em>Polyalthia longifolia</em> (Mast Tree / False Ashoka), which has very different properties. Ensure authentic <em>Saraca asoca</em> bark from a quality-verified source.</li>
+    </ul>
+  </div>
+
+  <div class="sources">
+    <div class="sources-title">References &amp; Sources</div>
+    <ul>
+      <li>Charaka Samhita — Chikitsasthana 30 — Asrigdara Chikitsa (Ashoka in menorrhagia treatment)</li>
+      <li>Sushruta Samhita — Sutrasthana — Priyangvadi Gana and Nyagrodhadi Gana listings</li>
+      <li>Ashtanga Hridayam — Chikitsasthana — Ashokaadi Kashaya formulation for yonivyapad</li>
+      <li>Bhavaprakasha Nighantu — Vatadi Varga — properties shloka and formulations</li>
+      <li>Priyavrat Sharma — Dravyaguna Vigyana Vol. II — Saraca asoca monograph</li>
+      <li>Thakur RS et al. — "Phytochemical investigation of the bark of Saraca asoca" — Planta Medica, 1987</li>
+      <li>Satyan KS et al. — "Haematoxylin from Saraca asoca: isolation and uterine smooth muscle activity" — Indian Journal of Pharmacology, 1998</li>
+      <li>Bhanu PS et al. — "Estrogenic activity of Saraca asoca bark extracts" — Journal of Ethnopharmacology, 2012</li>
+      <li>Rao PS &amp; Prasad AS — "Clinical trial of Ashokarishta vs standard therapy in DUB" — Ancient Science of Life, 2003</li>
+      <li>Nadkarni KM — Indian Materia Medica Vol. I — Saraca indica / Jonesia ashoka entry</li>
+      <li>Wealth of India — Raw Materials Vol. IX — CSIR, New Delhi — Saraca asoca</li>
+    </ul>
+  </div>
+</div>
+
+<footer>
+  <p>Swastha Herbal Garden &nbsp;·&nbsp; Entry 24 — Ashoka &nbsp;·&nbsp; For educational purposes only &nbsp;·&nbsp; Consult a qualified practitioner before therapeutic use</p>
+</footer>
+
+  <div id="viewerModal">
+    <div id="modal-topbar">
+      <span>3D Model — Ashoka</span>
+      <button type="button" id="close3D">✕</button>
+    </div>
+    <model-viewer src="ashoka3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+  </div>
+  <script>
+    (function() {
+      var open3D = document.getElementById('open3D');
+      var close3D = document.getElementById('close3D');
+      var modal = document.getElementById('viewerModal');
+      if (!open3D || !close3D || !modal) return;
+      function openModal() {
+        
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+      function closeModal() {
+        
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+      open3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); openModal();
+      });
+      close3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); closeModal();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+      });
+    })();
+  </script>
+
+</body>
+</html>

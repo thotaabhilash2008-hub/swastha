@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reetha | Swastha</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+  <style>
+    #open3D {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      padding: 10px 18px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: var(--forest);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      z-index: 1000;
+      transition: .3s;
+    }
+    #open3D:hover {
+      background: var(--gold);
+      color: var(--deep);
+    }
+    #viewerModal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+    }
+    #modal-topbar {
+      flex-shrink: 0;
+      height: 58px;
+      background: #111111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px 0 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      z-index: 99999;
+    }
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 4.5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.72);
+      user-select: none;
+    }
+    #close3D {
+      width: 38px;
+      height: 38px;
+      font-size: 15px;
+      font-weight: 300;
+      background: transparent;
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background .2s, color .2s, transform .22s;
+      outline: none;
+      flex-shrink: 0;
+    }
+    #close3D:hover {
+      background: #ffffff;
+      color: #111111;
+      border-color: #ffffff;
+      transform: rotate(90deg);
+    }
+    #viewerModal model-viewer {
+      flex: 1;
+      width: 100%;
+      display: block;
+      background: #ffffff;
+    }
+
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+    * { margin: 0; padding: 0; box-sizing: border-box }
+    html { scroll-behavior: smooth }
+    body {
+      font-family: 'Jost', sans-serif;
+      background: var(--cream);
+      color: var(--ink);
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity: .035;
+      pointer-events: none;
+      z-index: 100
+    }
+    .bg-circle { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0 }
+    .bg-circle-1 { width: 700px; height: 700px; background: radial-gradient(circle, rgba(42,92,63,.1) 0%, transparent 70%); top: -200px; right: -150px }
+    .bg-circle-2 { width: 500px; height: 500px; background: radial-gradient(circle, rgba(201,168,76,.08) 0%, transparent 70%); bottom: -100px; left: -100px }
+    .botanical-svg { position: fixed; pointer-events: none; z-index: 1; opacity: .1 }
+    .botanical-tl { top: -20px; left: -20px; width: 260px }
+    .botanical-br { bottom: -20px; right: -20px; width: 220px; transform: rotate(180deg) }
+    .hero {
+      position: relative; z-index: 10;
+      padding: 54px 40px 0;
+      text-align: center;
+      opacity: 0;
+      animation: fadeUp .9s ease .1s forwards
+    }
+    .back-link {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+      color: var(--sage); text-decoration: none; margin-bottom: 36px;
+      transition: color .3s
+    }
+    .back-link:hover { color: var(--gold) }
+    .logo-rule { display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 14px }
+    .logo-rule span { display: block; height: 1px; width: 70px; background: linear-gradient(to right, transparent, var(--gold)) }
+    .logo-rule span:last-child { background: linear-gradient(to left, transparent, var(--gold)) }
+    .logo-ornament { font-size: 13px; color: var(--gold) }
+    .hero-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(64px,12vw,110px); font-weight: 300; letter-spacing: 8px; line-height: 1; color: var(--deep) }
+    .hero-subtitle { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-style: italic; font-weight: 300; color: var(--earth); letter-spacing: 2px; margin-top: 8px }
+    .hero-sci { font-size: 11px; font-weight: 200; letter-spacing: 5px; color: var(--sage); margin-top: 6px }
+    .hero-photos {
+      position: relative; z-index: 10;
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 2px; max-width: 900px; margin: 40px auto 0;
+      opacity: 0; animation: fadeUp .9s ease .35s forwards
+    }
+    .hero-photos img { width: 100%; height: 380px; object-fit: cover; object-position: center; display: block; background: var(--parchment) }
+    .photo-caption {
+      text-align: center; font-family: 'Cormorant Garamond', serif;
+      font-size: 12px; font-style: italic; color: var(--sage); letter-spacing: 1px;
+      padding: 10px 0 0; max-width: 900px; margin: 0 auto;
+      position: relative; z-index: 10;
+      opacity: 0; animation: fadeUp .9s ease .5s forwards
+    }
+    .divider {
+      display: flex; align-items: center; justify-content: center; gap: 16px;
+      margin: 50px auto; max-width: 600px;
+      opacity: 0; animation: fadeUp .9s ease .55s forwards;
+      position: relative; z-index: 10
+    }
+    .divider-line { height: 1px; width: 120px; background: linear-gradient(to right, transparent, var(--sage)) }
+    .divider-line:last-child { background: linear-gradient(to left, transparent, var(--sage)) }
+    .divider-leaf { color: var(--forest); font-size: 18px }
+    .content { position: relative; z-index: 10; max-width: 860px; margin: 0 auto; padding: 0 30px 80px }
+    .intro-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 20px; font-weight: 300; line-height: 1.75;
+      color: var(--ink); text-align: center; max-width: 700px;
+      margin: 0 auto 60px;
+      opacity: 0; animation: fadeUp .9s ease .6s forwards
+    }
+    .intro-text em { color: var(--forest); font-style: italic }
+    .section { margin-bottom: 60px; opacity: 0; animation: fadeUp .9s ease forwards }
+    .section:nth-child(1) { animation-delay: .65s }
+    .section:nth-child(2) { animation-delay: .75s }
+    .section:nth-child(3) { animation-delay: .85s }
+    .section:nth-child(4) { animation-delay: .95s }
+    .section:nth-child(5) { animation-delay: 1.05s }
+    .section:nth-child(6) { animation-delay: 1.15s }
+    .section:nth-child(7) { animation-delay: 1.25s }
+    .section-header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px }
+    .section-num { font-family: 'Cormorant Garamond', serif; font-size: 11px; letter-spacing: 4px; color: var(--gold) }
+    .section-title { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 400; color: var(--deep); letter-spacing: 1px }
+    .section-rule { height: 1px; flex: 1; background: linear-gradient(to right, var(--gold), transparent) }
+    .section-body { font-size: 13px; font-weight: 300; line-height: 1.9; color: var(--ink); margin-bottom: 24px }
+    .data-table { width: 100%; border-collapse: collapse; margin: 16px 0 8px; font-size: 12px }
+    .data-table thead tr { background: var(--deep); color: var(--gold); font-size: 10px; letter-spacing: 3px; text-transform: uppercase }
+    .data-table thead th { padding: 12px 14px; text-align: left; font-weight: 400 }
+    .data-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .data-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .data-table tbody tr { transition: background .2s }
+    .data-table tbody tr:hover { background: rgba(200, 164, 93, 0.15) }
+    .data-table tbody td { padding: 10px 14px; color: var(--ink); border-bottom: 1px solid rgba(107,79,45,.08) }
+    .data-table tbody td:first-child { font-weight: 400; color: var(--deep); width: 28% }
+    .dosha-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .dosha-table thead tr { background: var(--forest); color: var(--cream) }
+    .dosha-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .dosha-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .dosha-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .dosha-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(107,79,45,.08) }
+    .dosha-table tbody td:first-child { font-weight: 400; color: var(--forest); width: 18% }
+    .dosha-table tbody td:nth-child(2) { color: var(--earth); width: 20% }
+    .consume-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .consume-table thead tr { background: var(--earth); color: var(--cream) }
+    .consume-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .consume-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .consume-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .consume-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(107,79,45,.08) }
+    .consume-table tbody td:first-child { font-weight: 400; color: var(--earth); width: 22% }
+    .benefits-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: rgba(107,79,45,.12); border: 1px solid rgba(107,79,45,.12); margin: 8px 0 }
+    .benefit-card { background: var(--cream); padding: 24px 22px; transition: background .3s; position: relative; overflow: hidden }
+    .benefit-card:hover { background: #ede4ce }
+    .benefit-card::before { content: ''; position: absolute; bottom: 0; left: 0; width: 0; height: 2px; background: var(--gold); transition: width .4s }
+    .benefit-card:hover::before { width: 100% }
+    .benefit-title { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 600; color: var(--forest); margin-bottom: 8px }
+    .benefit-desc { font-size: 11.5px; font-weight: 300; line-height: 1.75; color: var(--ink); opacity: .85 }
+    .precaution-list { list-style: none; margin: 8px 0 }
+    .precaution-list li { display: flex; gap: 12px; align-items: flex-start; padding: 10px 14px; font-size: 12px; font-weight: 300; line-height: 1.7; color: var(--ink); border-bottom: 1px solid rgba(107,79,45,.08) }
+    .precaution-list li:last-child { border-bottom: none }
+    .precaution-list li::before { content: '▸'; color: var(--gold); flex-shrink: 0; margin-top: 1px }
+    .sources { border-top: 1px solid rgba(107,79,45,.15); padding-top: 24px; margin-top: 20px }
+    .sources-title { font-size: 10px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); margin-bottom: 12px; font-weight: 300 }
+    .sources ul { list-style: none }
+    .sources ul li { font-family: 'Cormorant Garamond', serif; font-size: 13px; font-style: italic; color: var(--earth); padding: 5px 0; border-bottom: 1px solid rgba(107,79,45,.06) }
+    .sources ul li::before { content: '· '; color: var(--sage) }
+    .nutrition-bar { display: grid; grid-template-columns: repeat(4,1fr); gap: 1px; background: rgba(107,79,45,.12); border: 1px solid rgba(107,79,45,.12); margin: 20px 0 }
+    .nutrition-cell { background: var(--cream); padding: 22px 16px; text-align: center; transition: background .3s }
+    .nutrition-cell:hover { background: var(--parchment) }
+    .nutrition-num { font-family: 'Cormorant Garamond', serif; font-size: 36px; font-weight: 300; color: var(--forest); line-height: 1; margin-bottom: 4px }
+    .nutrition-unit { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); font-weight: 300 }
+    .nutrition-label { font-size: 11px; font-weight: 300; color: var(--ink); margin-top: 5px }
+    footer { position: relative; z-index: 10; text-align: center; padding: 24px 20px 44px; border-top: 1px solid rgba(107,79,45,.12); max-width: 860px; margin: 0 auto }
+    footer p { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); font-weight: 300 }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(28px) } to { opacity: 1; transform: translateY(0) } }
+    @media(max-width:700px) {
+      .hero-photos { grid-template-columns: 1fr }
+      .hero-photos img { height: 260px }
+      .benefits-grid { grid-template-columns: 1fr }
+      .nutrition-bar { grid-template-columns: 1fr 1fr }
+      .content { padding: 0 18px 60px }
+    }
+  </style>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+</head>
+<body>
+  <button type="button" id="open3D">View in 3D</button>
+
+
+  <div class="bg-circle bg-circle-1"></div>
+  <div class="bg-circle bg-circle-2"></div>
+
+  <svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#2a5c3f" stroke-width="1.5" fill="none"/>
+    <circle cx="90" cy="210" r="8" fill="#2a5c3f" opacity="0.7"/>
+    <circle cx="130" cy="175" r="10" fill="#7a9e7e" opacity="0.6"/>
+    <circle cx="170" cy="135" r="7" fill="#2a5c3f" opacity="0.8"/>
+    <circle cx="210" cy="95" r="9" fill="#c9a84c" opacity="0.5"/>
+    <ellipse cx="115" cy="195" rx="20" ry="10" fill="#7a9e7e" transform="rotate(-30 115 195)"/>
+    <ellipse cx="155" cy="155" rx="18" ry="9" fill="#2a5c3f" transform="rotate(-45 155 155)"/>
+    <ellipse cx="195" cy="115" rx="16" ry="8" fill="#7a9e7e" transform="rotate(-60 195 115)"/>
+  </svg>
+  <svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#2a5c3f" stroke-width="1.5" fill="none"/>
+    <circle cx="90" cy="210" r="8" fill="#2a5c3f" opacity="0.7"/>
+    <circle cx="130" cy="175" r="10" fill="#7a9e7e" opacity="0.6"/>
+    <circle cx="170" cy="135" r="7" fill="#2a5c3f" opacity="0.8"/>
+    <ellipse cx="115" cy="195" rx="20" ry="10" fill="#7a9e7e" transform="rotate(-30 115 195)"/>
+  </svg>
+
+  <div class="hero">
+    <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+    <div class="logo-rule"><span></span><div class="logo-ornament">✦</div><span></span></div>
+    <div class="hero-title">Reetha</div>
+    <div class="hero-subtitle">Soapnut — Nature's Ancient Cleanser</div>
+    <div class="hero-sci">Sapindus mukorossi &nbsp;·&nbsp; Sapindus trifoliatus</div>
+  </div>
+
+  <div class="hero-photos">
+    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b4/Ritha_%28Sapindus_mukorossi%29_fruits.jpg/1280px-Ritha_%28Sapindus_mukorossi%29_fruits.jpg" alt="Reetha soapnut drupes ripening on the tree — golden-amber shells" onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/9/97/Sapindus_mukorossi1.jpg/1280px-Sapindus_mukorossi1.jpg" alt="Dried reetha shells used in Ayurvedic and hair care preparations" onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+  </div>
+  <p class="photo-caption">Fig. 1 — Ripe amber-brown drupes of Reetha hanging in clusters &nbsp;·&nbsp; Fig. 2 — Sun-dried Reetha shells ready for therapeutic and cosmetic use</p>
+
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-leaf">❧</div>
+    <div class="divider-line"></div>
+  </div>
+
+  <div class="content">
+    <p class="intro-text">Known in Sanskrit as <em>Aritha</em> — "that which cleanses" — Reetha has served the Indian subcontinent for over three millennia as a sacred soap, medicine, and pesticide. Its pericarp, extraordinarily rich in saponins, lathers in water like no other plant, earning its place in classical Ayurveda as a <em>Keshya</em> (hair tonic), <em>Shiro Virechana</em> (nasal errhine), and remedy in the <em>Phala Varga</em> of the Ashtanga Hridayam.</p>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">01</span><h2 class="section-title">Botanical Profile</h2><div class="section-rule"></div></div>
+      <p class="section-body">Reetha (<em>Sapindus mukorossi</em> Gaertn.) is a large, deciduous tree of the Sapindaceae family, growing to 15–25 m in height, native to the sub-Himalayan tract, Nepal, Bhutan, and China. A closely related species, <em>S. trifoliatus</em>, is native to peninsular India. The tree is long-lived (up to 90 years), with a dense spreading crown, pinnate leaves up to 45 cm long, and panicles of small white flowers in spring. Its most remarkable feature is its drupe — a translucent, amber to dark-brown, fleshy pericarp enclosing a single hard, jet-black seed. This pericarp, the "soapnut shell," foams vigorously in water due to extraordinary saponin content (7–10%), and has been harvested for millennia as a natural surfactant for washing hair, silk, jewellery, and skin.</p>
+      <table class="data-table">
+        <thead><tr><th>Property</th><th>Detail</th></tr></thead>
+        <tbody>
+          <tr><td>Family</td><td>Sapindaceae (Soapberry family)</td></tr>
+          <tr><td>Botanical Name</td><td>Sapindus mukorossi Gaertn. (N. India); S. trifoliatus L. (S. India)</td></tr>
+          <tr><td>Sanskrit Names</td><td>Aritha, Phenila, Krimi-ghna, Shleshmaghna, Rishtha, Phenadhya</td></tr>
+          <tr><td>Hindi / Common</td><td>Reetha, Ritha, Dodan, Soapnut, Soapberry, Washnut</td></tr>
+          <tr><td>Regional Names</td><td>Kumkudukaya (Tel), Puvam (Tam), Antuwala (Kan), Kunkudukai (Mal)</td></tr>
+          <tr><td>Plant Type</td><td>Large deciduous tree (15–25 m)</td></tr>
+          <tr><td>Distribution</td><td>Sub-Himalayan foothills, Nepal, Bhutan, Central & South India, Sri Lanka</td></tr>
+          <tr><td>Flowering Season</td><td>March–May; fruiting October–February</td></tr>
+          <tr><td>Medicinal Parts</td><td>Pericarp (shell), seeds, leaves, bark, roots</td></tr>
+          <tr><td>Taste Profile</td><td>Katu (pungent), Tikta (bitter), Kashaya (astringent)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">02</span><h2 class="section-title">Phytochemistry Composition</h2><div class="section-rule"></div></div>
+      <p class="section-body">The pericarp of Reetha is among the richest natural sources of triterpenoid saponins in the plant kingdom. Saponins (7–10% dry weight) — predominantly mukoroside, sapindoside A–G, and hederagenin glycosides — are responsible for its lathering, emulsifying, antibacterial, and anti-inflammatory activities. Beyond saponins, the pericarp contains polyphenols, flavonoids, fatty acids, and minerals. The seeds contain a fixed oil rich in erucic and gadoleic acids; the leaves contain quercetin, kaempferol, and rutin.</p>
+      <div class="nutrition-bar">
+        <div class="nutrition-cell">
+          <div class="nutrition-num">7–10</div>
+          <div class="nutrition-unit">% saponins</div>
+          <div class="nutrition-label">In dried pericarp</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">25</div>
+          <div class="nutrition-unit">% seed oil</div>
+          <div class="nutrition-label">Yield by weight</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">90</div>
+          <div class="nutrition-unit">years</div>
+          <div class="nutrition-label">Tree lifespan</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">3000+</div>
+          <div class="nutrition-unit">years</div>
+          <div class="nutrition-label">Of documented use</div>
+        </div>
+      </div>
+      <table class="data-table">
+        <thead><tr><th>Compound</th><th>Category</th><th>Primary Action</th></tr></thead>
+        <tbody>
+          <tr><td>Saponins (Mukoroside, Sapindosides A–G)</td><td>Triterpenoid glycosides</td><td>Surfactant, antimicrobial, anti-inflammatory, expectorant</td></tr>
+          <tr><td>Hederagenin & Oleanolic Acid</td><td>Triterpenoid aglycones</td><td>Hepatoprotective, antifungal, anti-inflammatory</td></tr>
+          <tr><td>Quercetin & Kaempferol</td><td>Flavonoids (leaves)</td><td>Antioxidant, anti-allergic, capillary-strengthening</td></tr>
+          <tr><td>Rutin</td><td>Flavonol glycoside</td><td>Anti-haemorrhagic, antioxidant, venous tonic</td></tr>
+          <tr><td>Gallic Acid & Ellagic Acid</td><td>Hydrolysable tannins</td><td>Astringent, antimicrobial, antitumour</td></tr>
+          <tr><td>Erucic & Gadoleic Acids</td><td>Seed fatty acids</td><td>Emollient, lubricant; industrial applications</td></tr>
+          <tr><td>Carbohydrates (Sucrose, Fructose)</td><td>Simple sugars (pericarp)</td><td>Humectant, foaming co-agent</td></tr>
+          <tr><td>Alkaloids (trace)</td><td>Nitrogen compounds</td><td>Mild pesticidal, antimicrobial activity</td></tr>
+          <tr><td>Saponarin & Vitexin</td><td>C-glycosylflavones</td><td>Antioxidant, antispasmodic, mild sedative</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">03</span><h2 class="section-title">Ayurvedic Significance</h2><div class="section-rule"></div></div>
+      <p class="section-body">Reetha is classified in the <em>Phala Varga</em> (fruit group) of the Ashtanga Hridayam and appears in the Dhanvantari Nighantu, Bhavaprakasha Nighantu, and Raja Nighantu. Vagbhata includes it in <em>Shiro Virechana dravyas</em> — substances used to induce sneezing and purge excess Kapha from the head. It is a primary ingredient in classical hair formulations (<em>Keshya dravyas</em>) and is employed in <em>Nasya</em> (nasal therapy) for sinusitis and epilepsy.</p>
+      <p class="section-body">Classical shloka describes Aritha as <em>"katu tikta kashaya ushna, kaphavataghna, shiro virechana, krimighna, vishaghna"</em> — pungent, bitter, and astringent in taste; hot in potency; pacifying Kapha and Vata; purging the head; destroys parasites and neutralises poisons. Its foam (<em>phena</em>) is the primary active form in classical application.</p>
+      <table class="dosha-table">
+        <thead><tr><th>Dosha</th><th>Effect</th><th>Mechanism &amp; Notes</th></tr></thead>
+        <tbody>
+          <tr><td>Vata ↓</td><td>Pacifying</td><td>Ushna virya (hot potency) and unctuous saponin foam soothe Vata; used in neurological conditions, epilepsy (apasmara), and joint formulations</td></tr>
+          <tr><td>Pitta ↑</td><td>Mildly aggravating</td><td>Ushna (hot) and katu (pungent) qualities may aggravate Pitta — use cautiously in bleeding disorders, hyperacidity, and inflammatory Pitta conditions; avoid internal use in Pitta excess</td></tr>
+          <tr><td>Kapha ↓↓</td><td>Strongly pacifying</td><td>Primary indication; tikshna (sharp), katu (pungent), and ruksha (dry) qualities dissolve Kapha; foundational in nasal congestion, bronchitis, sinusitis, and obesity treatments</td></tr>
+        </tbody>
+      </table>
+      <p class="section-body"><strong>Rasa:</strong> Katu, Tikta, Kashaya &nbsp;·&nbsp; <strong>Guna:</strong> Laghu, Ruksha, Tikshna &nbsp;·&nbsp; <strong>Virya:</strong> Ushna (hot) &nbsp;·&nbsp; <strong>Vipaka:</strong> Katu &nbsp;·&nbsp; <strong>Karma:</strong> Kapha-Vata shamaka, Shiro Virechana, Keshya, Krimighna</p>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">04</span><h2 class="section-title">Key Health Benefits</h2><div class="section-rule"></div></div>
+      <p class="section-body">Modern research has confirmed many of Reetha's classical applications — its saponins exhibit documented surfactant, antimicrobial, antifungal, anti-inflammatory, larvicidal, and hepatoprotective activities. It remains one of the most extensively used plants in Ayurvedic cosmetology and is gaining global recognition as a sustainable, biodegradable alternative to synthetic detergents.</p>
+      <div class="benefits-grid">
+        <div class="benefit-card">
+          <div class="benefit-title">Hair Care &amp; Scalp Health</div>
+          <div class="benefit-desc">Reetha's most celebrated application — its gentle saponin foam cleanses hair and scalp without stripping natural oils, unlike sulphate shampoos. Clinical studies confirm efficacy in reducing dandruff, scalp eczema, lice infestations, and seborrheic dermatitis. Combined with Amla and Shikakai, it forms the classic Ayurvedic hair wash trinity.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Antimicrobial &amp; Antifungal</div>
+          <div class="benefit-desc">Ethanolic extracts of the pericarp show broad-spectrum activity against S. aureus, E. coli, Candida albicans, Aspergillus, and dermatophytes responsible for ringworm and tinea. The saponin-surfactant action disrupts microbial cell membranes, offering both topical and internal antimicrobial potential.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Respiratory &amp; Expectorant</div>
+          <div class="benefit-desc">A key Kapha-clearing herb — classically used in bronchitis, asthma, and excess mucus. The saponins stimulate mucosal secretion and thin bronchial mucus, aiding expectoration. Nasya (nasal instillation) of Reetha decoction is a classical treatment for sinusitis, nasal polyps, and allergic rhinitis.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Antiparasitic &amp; Larvicidal</div>
+          <div class="benefit-desc">Among the strongest natural antiparasitic agents — extracts are highly toxic to Aedes aegypti and Culex quinquefasciatus mosquito larvae (used in WHO-recognised vector control research). Topically, it eliminates head lice, scabies mites, and skin parasites. Classical use as Krimighna (destroyer of parasites) is well-validated.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Neurological &amp; Anti-epileptic</div>
+          <div class="benefit-desc">A classical remedy for apasmara (epilepsy) — Nasya with Reetha powder in cow's ghee is referenced in Charaka Samhita. Animal studies on saponin fractions demonstrate anticonvulsant activity, possibly through GABA-modulating effects. Also used in hysteria, migraine with Kapha involvement, and fainting.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Skin &amp; Wound Care</div>
+          <div class="benefit-desc">Pericarp paste or wash is applied to eczema, psoriasis, scabies, and skin fungal infections. Its mild saponin foam acts as a gentle antiseptic wash for wounds and ulcers. The anti-inflammatory triterpenoids reduce redness and swelling; astringent tannins tighten and tone the skin.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Dental &amp; Oral Hygiene</div>
+          <div class="benefit-desc">Classical use as a tooth powder and gum cleanser — still practised in traditional communities. Saponins reduce oral bacterial load, while astringent tannins tighten gum tissue. Reetha-based tooth powders demonstrate activity against Streptococcus mutans, the primary caries-causing organism.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Hepatoprotective &amp; Antioxidant</div>
+          <div class="benefit-desc">Hederagenin and oleanolic acid from the pericarp demonstrate hepatoprotective activity in CCl₄-induced liver injury models, reducing ALT and AST enzyme elevations. Significant DPPH and ABTS radical scavenging activity of phenolic fractions supports its use in protecting cells from oxidative stress.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">05</span><h2 class="section-title">Traditional &amp; Folk Applications</h2><div class="section-rule"></div></div>
+      <p class="section-body">Beyond formal Ayurvedic medicine, Reetha pervades the folk traditions of the Indian subcontinent. In hill communities of Uttarakhand and Himachal Pradesh, the whole soapnut is used as a natural laundry wash, jewellery cleaner, and leather conditioner. In Nepal, it is a traditional offering in religious ceremonies. Fishermen use pounded soapnut shells to stun fish in ponds — an ancient ichthyotoxic practice. The wood is used for cricket bats and light construction; the seeds as beads, marbles, and buttons.</p>
+      <p class="section-body">In Unani medicine, Reetha (called <em>Aritha</em>) is used as an <em>Muqawwi Dimagh</em> (brain tonic) and for <em>Sara</em> (epilepsy). In Siddha, it appears as <em>Puvam</em> in external applications for skin diseases and hair loss. Its seeds contain a non-edible oil used in biopesticide and biofuel research, and the pericarp saponins are now investigated for their potential as natural adjuvants in vaccine formulations.</p>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">06</span><h2 class="section-title">How to Use Reetha</h2><div class="section-rule"></div></div>
+      <p class="section-body">Reetha is used primarily as an external application — hair wash, skin rinse, dental powder — and secondarily as an internal Ayurvedic preparation under supervision. Internal preparations require careful dosing due to the haemolytic potential of saponins at high concentrations. The pericarp is the primary medicinal part; seeds are generally discarded for therapeutic preparations.</p>
+      <table class="consume-table">
+        <thead><tr><th>Form</th><th>Preparation</th><th>Dosage</th><th>Best Use</th></tr></thead>
+        <tbody>
+          <tr><td>Reetha Hair Wash</td><td>Soak 4–5 shells overnight; simmer 20 min; strain and cool</td><td>2–3× weekly</td><td>Hair cleansing, dandruff, lice, scalp eczema</td></tr>
+          <tr><td>Reetha Powder (Topical)</td><td>Dried pericarp ground to fine powder; mix with water to paste</td><td>Apply as needed</td><td>Shampoo substitute, dental powder, skin wash</td></tr>
+          <tr><td>Decoction (Kwatha)</td><td>Boil pericarp in water; reduce; strain</td><td>20–30 ml (physician-directed)</td><td>Internal Kapha disorders, bronchitis</td></tr>
+          <tr><td>Nasya (Nasal Drops)</td><td>1 part Reetha powder in 8 parts ghee; instil warm</td><td>2–4 drops each nostril</td><td>Sinusitis, epilepsy, nasal polyps — practitioner only</td></tr>
+          <tr><td>Powder + Ghee (Internal)</td><td>Mix fine pericarp powder with cow's ghee</td><td>1–2 g, once daily (supervised)</td><td>Apasmara (epilepsy) — classical formulation</td></tr>
+          <tr><td>Tooth Powder</td><td>Calcined pericarp ash mixed with neem or clove powder</td><td>Use 2× daily</td><td>Dental hygiene, gum disease, oral bacteria</td></tr>
+          <tr><td>Skin Wash / Anti-lice</td><td>Strong decoction of shells; cooled and applied</td><td>Rinse and leave 10 min</td><td>Scabies, ringworm, head lice, eczema patches</td></tr>
+          <tr><td>Amla-Reetha-Shikakai Blend</td><td>Equal parts of three powders; mixed with water</td><td>Use as shampoo 2–3× weekly</td><td>Hair growth, scalp health, anti-greying</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">07</span><h2 class="section-title">Safety &amp; Precautions</h2><div class="section-rule"></div></div>
+      <p class="section-body">Reetha is safe for topical use at normal concentrations and has a long record of external application without adverse effects. However, internal use requires caution — saponins are mildly haemolytic at high doses and can irritate the gastrointestinal mucosa. The key is to respect classical dose limits and never self-medicate for serious conditions.</p>
+      <ul class="precaution-list">
+        <li><strong>Pregnancy:</strong> Avoid internal consumption. Some sources indicate uterotonic effects at higher doses. Topical hair and skin use at normal concentrations is generally considered safe.</li>
+        <li><strong>Breastfeeding:</strong> Internal use not recommended. Limit to external applications. Saponins can potentially transfer into breast milk.</li>
+        <li><strong>Eye contact:</strong> Strictly avoid — the saponin-rich water is a strong mucous membrane irritant. If contact occurs, flush immediately with copious clean water.</li>
+        <li><strong>Haemolytic potential:</strong> High-dose internal use can lyse red blood cells. Individuals with haemolytic anaemia or G6PD deficiency must avoid internal preparations.</li>
+        <li><strong>Open wounds:</strong> Avoid applying soapnut decoction directly to deep or bleeding wounds — saponins irritate exposed tissue. Use only on intact or superficially broken skin.</li>
+        <li><strong>Children under 5:</strong> Do not use Reetha decoction as a baby shampoo or near infants' eyes or mouths. Use diluted, mild preparations only under supervision for older children.</li>
+        <li><strong>Pitta-dominant constitutions:</strong> Internal use may aggravate Pitta — contraindicated in peptic ulcer, hyperacidity, and inflammatory bowel conditions.</li>
+        <li><strong>Drug interactions:</strong> May theoretically interact with blood-thinning medications (warfarin, aspirin) and drugs with narrow therapeutic indices due to surfactant effects on mucosal absorption.</li>
+        <li><strong>Allergic contact dermatitis:</strong> Though rare, some individuals develop sensitisation to saponins on repeated topical exposure — discontinue if redness or itching develops.</li>
+      </ul>
+    </div>
+
+    <div class="sources">
+      <div class="sources-title">References &amp; Sources</div>
+      <ul>
+        <li>Bhuvaneswari P & Krishnakumari S — "Phytochemical studies and toxicity of Sapindus mukorossi fruit pericarp in rats" — Ancient Science of Life, 2012</li>
+        <li>Adzu B et al. — "Studies on the use of Sapindus rarak in the control of Culex mosquito larvae" — Fitoterapia, 2002</li>
+        <li>Srivastava V & Dubey A — "Sapindus mukorossi (Reetha): A review on pharmacological and phytochemical properties" — IJPBS, 2014</li>
+        <li>Ashtanga Hridayam — Sutrasthana, Chapter 15 — Shiro Virechana dravya classification of Aritha</li>
+        <li>Charaka Samhita — Chikitsasthana — Apasmara (epilepsy) formulations with Aritha Nasya</li>
+        <li>Bhavaprakasha Nighantu — Phala Varga — classical properties and uses of Aritha</li>
+        <li>Dhanvantari Nighantu — Shatapushpadi Varga — description of Phenila (Reetha)</li>
+        <li>Priyavrat Sharma — Dravyaguna Vigyana (Vol. II) — Sapindus mukorossi monograph</li>
+        <li>Górnaś P et al. — "Profiling of saponins from Sapindus mukorossi pericarp and their surfactant properties" — Industrial Crops and Products, 2019</li>
+        <li>WHO Traditional Medicine Strategy 2019–2023 — reference to saponin-bearing plants in vector control research</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer>
+    <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a qualified practitioner before therapeutic use</p>
+  </footer>
+
+
+  <div id="viewerModal">
+    <div id="modal-topbar">
+      <span>3D Model — Reetha</span>
+      <button type="button" id="close3D">✕</button>
+    </div>
+    <model-viewer src="reetha3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+  </div>
+  <script>
+    (function() {
+      var open3D = document.getElementById('open3D');
+      var close3D = document.getElementById('close3D');
+      var modal = document.getElementById('viewerModal');
+      if (!open3D || !close3D || !modal) return;
+      function openModal() {
+        
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+      function closeModal() {
+        
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+      open3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); openModal();
+      });
+      close3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); closeModal();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+      });
+    })();
+  </script>
+
+</body>
+</html>
