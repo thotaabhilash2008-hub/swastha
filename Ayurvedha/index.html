@@ -335,6 +335,254 @@ body {
   align-items: flex-start;
 }
 
+
+/* ==================== GARDEN SEARCH & MOBILE DRAWER STYLES ==================== */
+.nav-search-btn {
+  background: rgba(16, 59, 40, 0.6);
+  border: 1px solid var(--border-gold);
+  color: var(--gold-warm);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-right: 10px;
+}
+.nav-search-btn:hover {
+  background: rgba(20, 72, 49, 1);
+  border-color: var(--gold-light);
+  transform: scale(1.05);
+}
+
+.filter-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.filter-mobile-close {
+  display: none;
+  background: rgba(200, 164, 93, 0.15);
+  border: 1px solid rgba(200, 164, 93, 0.35);
+  color: var(--gold-warm);
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.filter-mobile-close:hover {
+  background: var(--gold-warm);
+  color: var(--forest-dark);
+}
+
+.filter-mobile-footer {
+  display: none;
+  position: sticky;
+  bottom: -24px;
+  margin: 20px -20px -24px -20px;
+  padding: 16px 20px;
+  background: rgba(7, 23, 15, 0.96);
+  border-top: 1px solid rgba(200, 164, 93, 0.25);
+  backdrop-filter: blur(16px);
+}
+.btn-filter-apply {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, var(--gold-warm), var(--gold-light));
+  color: var(--forest-dark);
+  font-family: 'Outfit', sans-serif;
+  font-size: 13.5px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: 0 4px 18px rgba(200, 164, 93, 0.35);
+  transition: transform 0.2s;
+}
+.btn-filter-apply:active {
+  transform: scale(0.98);
+}
+
+.filter-backdrop-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 9999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+.filter-backdrop-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.garden-search-container {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+.garden-search-box {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: rgba(16, 59, 40, 0.55);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--border-gold);
+  border-radius: 12px;
+  padding: 0 16px;
+  height: 48px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.garden-search-box:focus-within {
+  border-color: var(--gold-warm);
+  background: rgba(16, 59, 40, 0.85);
+  box-shadow: 0 0 0 2px rgba(200, 164, 93, 0.25), 0 8px 24px rgba(0, 0, 0, 0.45);
+}
+
+.garden-search-icon {
+  width: 18px;
+  height: 18px;
+  color: var(--gold-warm);
+  margin-right: 12px;
+  flex-shrink: 0;
+  opacity: 0.85;
+}
+
+.garden-search-input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: 'Outfit', sans-serif;
+  font-size: 14px;
+  color: var(--ivory);
+  letter-spacing: 0.3px;
+}
+
+.garden-search-input::placeholder {
+  color: rgba(199, 201, 185, 0.55);
+  font-size: 13.5px;
+}
+
+.search-clear-btn {
+  background: rgba(200, 164, 93, 0.2);
+  border: none;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  color: var(--gold-warm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 11px;
+  transition: all 0.2s;
+  flex-shrink: 0;
+  margin-left: 8px;
+}
+.search-clear-btn:hover {
+  background: var(--gold-warm);
+  color: var(--forest-dark);
+}
+
+.mobile-filter-btn {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  background: rgba(16, 59, 40, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-gold);
+  border-radius: 12px;
+  padding: 0 18px;
+  height: 48px;
+  color: var(--gold-warm);
+  font-family: 'Outfit', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.mobile-filter-btn:hover, .mobile-filter-btn:active {
+  background: rgba(20, 72, 49, 0.95);
+  border-color: var(--gold-light);
+  transform: translateY(-1px);
+}
+
+.filter-count-badge {
+  background: var(--botanical-glow);
+  color: #07170F;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 10px;
+  padding: 1px 7px;
+  min-width: 18px;
+  text-align: center;
+}
+
+.empty-garden-state {
+  text-align: center;
+  padding: 60px 20px;
+  background: rgba(16, 59, 40, 0.3);
+  border: 1px dashed var(--border-gold);
+  border-radius: 18px;
+  margin: 30px 0;
+}
+.empty-icon {
+  font-size: 42px;
+  margin-bottom: 12px;
+  filter: drop-shadow(0 0 15px rgba(74, 222, 128, 0.5));
+}
+.empty-garden-state h3 {
+  font-family: 'Cinzel', serif;
+  color: var(--gold-warm);
+  font-size: 20px;
+  margin-bottom: 8px;
+}
+.empty-garden-state p {
+  color: var(--sage);
+  font-size: 14px;
+  max-width: 440px;
+  margin: 0 auto 20px;
+}
+.empty-reset-btn {
+  background: linear-gradient(135deg, var(--gold-warm), var(--gold-light));
+  color: var(--forest-dark);
+  font-family: 'Outfit', sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  border: none;
+  border-radius: 20px;
+  padding: 10px 24px;
+  cursor: pointer;
+  transition: all 0.25s;
+}
+.empty-reset-btn:hover {
+  transform: scale(1.04);
+  box-shadow: 0 4px 18px rgba(200, 164, 93, 0.4);
+}
+
 /* ==================== LEFT FILTER SIDEBAR ==================== */
 .filter-card {
   background: rgba(16, 59, 40, 0.45);
@@ -762,17 +1010,85 @@ body {
 
 /* Responsive */
 @media (max-width: 1100px) {
-  .main-garden-layout { grid-template-columns: 1fr; }
-  .filter-card { position: static; max-height: none; margin-bottom: 24px; }
-  .plants-grid { grid-template-columns: repeat(2, 1fr); }
+  .main-garden-layout {
+    grid-template-columns: 1fr;
+    padding: 0 20px 60px;
+  }
+  
+  .mobile-filter-btn {
+    display: inline-flex;
+  }
+
+  /* Slide-in Mobile Filter Drawer */
+  .filter-card {
+    position: fixed !important;
+    top: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    left: auto !important;
+    width: 86vw;
+    max-width: 380px;
+    height: 100vh !important;
+    max-height: 100vh !important;
+    margin: 0 !important;
+    border-radius: 20px 0 0 20px !important;
+    z-index: 10001 !important;
+    background: rgba(7, 23, 15, 0.98) !important;
+    backdrop-filter: blur(28px) !important;
+    -webkit-backdrop-filter: blur(28px) !important;
+    border: 1px solid rgba(200, 164, 93, 0.35) !important;
+    border-right: none !important;
+    box-shadow: -15px 0 50px rgba(0, 0, 0, 0.9) !important;
+    padding: 24px 20px 90px !important;
+    overflow-y: auto !important;
+    transform: translateX(110%);
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .filter-card.mobile-open {
+    transform: translateX(0);
+  }
+
+  .filter-mobile-close {
+    display: flex !important;
+  }
+
+  .filter-mobile-footer {
+    display: block !important;
+  }
+
+  .filter-backdrop-overlay {
+    display: block;
+  }
+
+  .plants-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
 }
 
 @media (max-width: 768px) {
   .garden-hero-grid { grid-template-columns: 1fr; text-align: center; }
   .garden-nav-pills { justify-content: center; }
   .hero-leaf-container { display: none; }
-  .plants-grid { grid-template-columns: 1fr; max-width: 360px; margin: 0 auto; }
   .nav-links { display: none; }
+}
+
+@media (max-width: 650px) {
+  .garden-search-container {
+    flex-direction: column;
+    gap: 10px;
+    align-items: stretch;
+  }
+  .mobile-filter-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  .plants-grid {
+    grid-template-columns: 1fr;
+    max-width: 360px;
+    margin: 0 auto;
+  }
 }
 </style>
 </head>
@@ -800,6 +1116,12 @@ body {
     </ul>
 
     <div class="nav-actions" id="authContainer">
+      <button type="button" class="nav-search-btn" onclick="focusGardenSearch()" title="Search Garden" aria-label="Search Garden">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+      </button>
       <a href="login.html" class="auth-btn-pill">Sign In</a>
     </div>
   </div>
@@ -870,7 +1192,10 @@ body {
         </svg>
         Filter by Benefit
       </div>
-      <button class="filter-clear-btn" id="filterClearBtn" onclick="clearFilters()">Clear</button>
+      <div class="filter-header-actions">
+        <button type="button" class="filter-clear-btn" id="filterClearBtn" onclick="clearFilters()">Clear</button>
+        <button type="button" class="filter-mobile-close" onclick="toggleMobileFilters(false)" aria-label="Close filters">✕</button>
+      </div>
     </div>
 
     <!-- Accordion 1: Immunity & Protection -->
@@ -997,10 +1322,34 @@ body {
         </div>
       </div>
     </div>
+    <div class="filter-mobile-footer">
+      <button type="button" class="btn-filter-apply" onclick="toggleMobileFilters(false)">
+        Apply Filters (<span id="mobileApplyCount">183</span> Plants)
+      </button>
+    </div>
   </aside>
 
   <!-- Right Plant Cards Column -->
   <section class="plants-main-area">
+    <!-- Live Search & Mobile Filter Bar -->
+    <div class="garden-search-container">
+      <div class="garden-search-box">
+        <svg class="garden-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" id="gardenSearchInput" class="garden-search-input" placeholder="Search 183+ medicinal plants by name, botanical name, or benefit..." aria-label="Search medicinal plants" oninput="handleGardenSearch(event)">
+        <button type="button" id="searchClearBtn" class="search-clear-btn" onclick="clearSearch()" aria-label="Clear search" style="display:none;">✕</button>
+      </div>
+      <button type="button" class="mobile-filter-btn" id="mobileFilterBtn" onclick="toggleMobileFilters(true)" aria-label="Open Filter Options">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+        </svg>
+        <span>Filters</span>
+        <span class="filter-count-badge" id="mobileFilterBadge" style="display:none;">0</span>
+      </button>
+    </div>
+
     <div class="results-header-bar">
       <div class="results-title-group">
         <span class="results-main-tag">Featured Plants</span>
@@ -1012,6 +1361,14 @@ body {
         <button class="view-mode-btn active" title="Grid View" type="button">▦</button>
         <button class="view-mode-btn" title="List View" type="button">☰</button>
       </div>
+    </div>
+
+    <!-- Empty State -->
+    <div id="emptyGardenState" class="empty-garden-state" style="display:none;">
+      <div class="empty-icon">🌿</div>
+      <h3>No Medicinal Plants Found</h3>
+      <p>We couldn't find any medicinal plants matching your criteria. Try adjusting your search or clearing active filters.</p>
+      <button type="button" class="empty-reset-btn" onclick="clearSearch(); clearFilters();">Reset All Filters</button>
     </div>
 
     <!-- Cards Grid -->
@@ -4852,6 +5209,7 @@ body {
         </a>
     </div>
   </section>
+  <div class="filter-backdrop-overlay" id="filterOverlay" onclick="toggleMobileFilters(false)" aria-hidden="true"></div>
 </main>
 
 <div class="toast" id="toast"></div>
@@ -4904,24 +5262,100 @@ function clearFilters() {
   applyActiveFilters();
 }
 
+let currentSearchQuery = '';
+
+function handleGardenSearch(e) {
+  currentSearchQuery = (e.target.value || '').trim().toLowerCase();
+  const clearBtn = document.getElementById('searchClearBtn');
+  if (clearBtn) clearBtn.style.display = currentSearchQuery ? 'flex' : 'none';
+  applyActiveFilters();
+}
+
+function clearSearch() {
+  const input = document.getElementById('gardenSearchInput');
+  if (input) {
+    input.value = '';
+    currentSearchQuery = '';
+    input.focus();
+  }
+  const clearBtn = document.getElementById('searchClearBtn');
+  if (clearBtn) clearBtn.style.display = 'none';
+  applyActiveFilters();
+}
+
+function focusGardenSearch() {
+  const input = document.getElementById('gardenSearchInput');
+  if (input) {
+    input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    setTimeout(() => input.focus(), 350);
+  }
+}
+
+function toggleMobileFilters(open) {
+  const sidebar = document.getElementById('filterSidebar');
+  const overlay = document.getElementById('filterOverlay');
+  const shouldOpen = (open !== undefined) ? open : !sidebar.classList.contains('mobile-open');
+  
+  if (shouldOpen) {
+    sidebar.classList.add('mobile-open');
+    if (overlay) overlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  } else {
+    sidebar.classList.remove('mobile-open');
+    if (overlay) overlay.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+}
+
 function applyActiveFilters() {
   const cards = document.querySelectorAll('.plant-card');
   let visible = 0;
+  
   cards.forEach(card => {
-    if (activeBenefitFilters.size === 0) {
-      card.classList.remove('hidden');
-      visible++;
-    } else {
+    let matchesBenefits = true;
+    if (activeBenefitFilters.size > 0) {
       const bList = (card.dataset.benefits || '').split(',').map(s => s.trim());
-      const matchesAll = [...activeBenefitFilters].every(f => bList.includes(f));
-      card.classList.toggle('hidden', !matchesAll);
-      if (matchesAll) visible++;
+      matchesBenefits = [...activeBenefitFilters].every(f => bList.includes(f));
     }
+    
+    let matchesSearch = true;
+    if (currentSearchQuery) {
+      const name = (card.querySelector('.plant-name')?.textContent || '').toLowerCase();
+      const sci = (card.querySelector('.plant-sci')?.textContent || '').toLowerCase();
+      const benefits = (card.dataset.benefits || '').toLowerCase();
+      const key = (card.dataset.key || '').toLowerCase();
+      matchesSearch = name.includes(currentSearchQuery) || 
+                      sci.includes(currentSearchQuery) || 
+                      benefits.includes(currentSearchQuery) ||
+                      key.includes(currentSearchQuery);
+    }
+    
+    const show = matchesBenefits && matchesSearch;
+    card.classList.toggle('hidden', !show);
+    if (show) visible++;
   });
 
-  document.getElementById('resultCount').textContent = visible;
+  const countEl = document.getElementById('resultCount');
+  if (countEl) countEl.textContent = visible;
+  
+  const applyCount = document.getElementById('mobileApplyCount');
+  if (applyCount) applyCount.textContent = visible;
+
   const clearBtn = document.getElementById('filterClearBtn');
-  clearBtn.classList.toggle('visible', activeBenefitFilters.size > 0);
+  if (clearBtn) clearBtn.classList.toggle('visible', activeBenefitFilters.size > 0);
+
+  // Badge count on mobile filter trigger
+  const badge = document.getElementById('mobileFilterBadge');
+  if (badge) {
+    badge.textContent = activeBenefitFilters.size;
+    badge.style.display = activeBenefitFilters.size > 0 ? 'inline-flex' : 'none';
+  }
+
+  // Empty state handling
+  const emptyEl = document.getElementById('emptyGardenState');
+  if (emptyEl) {
+    emptyEl.style.display = (visible === 0) ? 'block' : 'none';
+  }
 }
 
 // Bookmark Handler
