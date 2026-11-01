@@ -1,7 +1,7 @@
 [
   {
     "id": "aak-madar",
-    "name": "Aak \u2014 Madar",
+    "name": "Aak — Madar",
     "url": "Ayurvedha/aak-madar.html"
   },
   {
@@ -31,7 +31,7 @@
   },
   {
     "id": "Agastya",
-    "name": "Agastya \u2014 Vegetable Hummingbird",
+    "name": "Agastya — Vegetable Hummingbird",
     "url": "Ayurvedha/Agastya.html"
   },
   {
@@ -41,7 +41,7 @@
   },
   {
     "id": "Agnimantha",
-    "name": "Agnimantha \u2014 The Fire-Kindler",
+    "name": "Agnimantha — The Fire-Kindler",
     "url": "Ayurvedha/Agnimantha.html"
   },
   {
@@ -51,12 +51,12 @@
   },
   {
     "id": "Celery",
-    "name": "Ajmoda \u2014 Celery Seed",
+    "name": "Ajmoda — Celery Seed",
     "url": "Ayurvedha/Celery.html"
   },
   {
     "id": "Ajwain",
-    "name": "Ajwain \u2014 Carom Seeds",
+    "name": "Ajwain — Carom Seeds",
     "url": "Ayurvedha/Ajwain.html"
   },
   {
@@ -66,7 +66,7 @@
   },
   {
     "id": "Akashbail",
-    "name": "Akash Bail \u2014 Love Vine",
+    "name": "Akash Bail — Love Vine",
     "url": "Ayurvedha/Akashbail.html"
   },
   {
@@ -86,7 +86,7 @@
   },
   {
     "id": "Alsi",
-    "name": "Alsi \u2014 Flaxseed",
+    "name": "Alsi — Flaxseed",
     "url": "Ayurvedha/Alsi.html"
   },
   {
@@ -101,12 +101,13 @@
   },
   {
     "id": "amla",
-    "name": "Amla \u2014 Indian Gooseberry",
-    "url": "Ayurvedha/amla.html"
+    "name": "Amla — Indian Gooseberry",
+    "url": "Ayurvedha/amla.html",
+    "aliases": "amla, amalaki, indian gooseberry, emblica officinalis, phyllanthus emblica"
   },
   {
     "id": "Anantmool",
-    "name": "Anantmool \u2014 Indian Sarsaparilla",
+    "name": "Anantmool — Indian Sarsaparilla",
     "url": "Ayurvedha/Anantmool.html"
   },
   {
@@ -121,7 +122,7 @@
   },
   {
     "id": "Aparajita",
-    "name": "Aparajita \u2014 Butterfly Pea",
+    "name": "Aparajita — Butterfly Pea",
     "url": "Ayurvedha/Aparajita.html"
   },
   {
@@ -136,7 +137,7 @@
   },
   {
     "id": "Arni",
-    "name": "Arni \u2014 Tarkari",
+    "name": "Arni — Tarkari",
     "url": "Ayurvedha/Arni.html"
   },
   {
@@ -146,12 +147,12 @@
   },
   {
     "id": "ashwagandha",
-    "name": "Ashwagandha \u2014 Indian Ginseng",
+    "name": "Ashwagandha — Indian Ginseng",
     "url": "Ayurvedha/ashwagandha.html"
   },
   {
     "id": "Atibala",
-    "name": "Atibala \u2014 Country Mallow",
+    "name": "Atibala — Country Mallow",
     "url": "Ayurvedha/Atibala.html"
   },
   {
@@ -161,7 +162,7 @@
   },
   {
     "id": "Ayapan",
-    "name": "Ayapan \u2014 Vishalyakarni",
+    "name": "Ayapan — Vishalyakarni",
     "url": "Ayurvedha/Ayapan.html"
   },
   {
@@ -171,7 +172,7 @@
   },
   {
     "id": "Bael",
-    "name": "Bael \u2014 Bilva",
+    "name": "Bael — Bilva",
     "url": "Ayurvedha/Bael.html"
   },
   {
@@ -181,7 +182,7 @@
   },
   {
     "id": "Bakula",
-    "name": "Bakula \u2014 Spanish Cherry",
+    "name": "Bakula — Spanish Cherry",
     "url": "Ayurvedha/Bakula.html"
   },
   {
@@ -211,7 +212,7 @@
   },
   {
     "id": "Bharangi",
-    "name": "Bharangi \u2014 Blue Glory",
+    "name": "Bharangi — Blue Glory",
     "url": "Ayurvedha/Bharangi.html"
   },
   {
@@ -221,8 +222,9 @@
   },
   {
     "id": "bhringraj",
-    "name": "Bhringraj \u2014 False Daisy",
-    "url": "Ayurvedha/bhringraj.html"
+    "name": "Bhringraj — False Daisy",
+    "url": "Ayurvedha/bhringraj.html",
+    "aliases": "bringraj, bhringraja, maka, karisalankanni, eclipta alba, eclipta prostrata, false daisy, hair herb"
   },
   {
     "id": "Bhumi Amla",
@@ -236,7 +238,7 @@
   },
   {
     "id": "Borage",
-    "name": "Borage \u2014 Starflower",
+    "name": "Borage — Starflower",
     "url": "Ayurvedha/Borage.html"
   },
   {
@@ -246,12 +248,12 @@
   },
   {
     "id": "brahmi",
-    "name": "Brahmi \u2014 Water Hyssop",
+    "name": "Brahmi — Water Hyssop",
     "url": "Ayurvedha/brahmi.html"
   },
   {
     "id": "Brihati",
-    "name": "Brihati \u2014 Poison Berry",
+    "name": "Brihati — Poison Berry",
     "url": "Ayurvedha/Brihati.html"
   },
   {
@@ -346,7 +348,7 @@
   },
   {
     "id": "Caraway",
-    "name": "Kala Jeera \u2014 Caraway",
+    "name": "Kala Jeera — Caraway",
     "url": "Ayurvedha/Caraway.html"
   },
   {
@@ -675,9 +677,9 @@
     "url": "Ayurvedha/Nimbuka  Lemon.html"
   },
   {
-    "id": "Nirgu\u1e47\u1e0d\u012b  Five-Leaved Chaste",
-    "name": "Nirgu\u1e47\u1e0d\u012b",
-    "url": "Ayurvedha/Nirgu\u1e47\u1e0d\u012b  Five-Leaved Chaste.html"
+    "id": "Nirguṇḍī  Five-Leaved Chaste",
+    "name": "Nirguṇḍī",
+    "url": "Ayurvedha/Nirguṇḍī  Five-Leaved Chaste.html"
   },
   {
     "id": "Nisha  Turmeric Night",
@@ -691,7 +693,7 @@
   },
   {
     "id": "Nip  Kadamba",
-    "name": "N\u012bpa",
+    "name": "Nīpa",
     "url": "Ayurvedha/Nip  Kadamba.html"
   },
   {
@@ -791,7 +793,7 @@
   },
   {
     "id": "Sala _ Sal Tree",
-    "name": "Sala \u2014 Sal Tree",
+    "name": "Sala — Sal Tree",
     "url": "Ayurvedha/Sala _ Sal Tree.html"
   },
   {
@@ -916,7 +918,7 @@
   },
   {
     "id": "Bea Leaves",
-    "name": "Tejpatta \u2014 Indian Bay Leaf",
+    "name": "Tejpatta — Indian Bay Leaf",
     "url": "Ayurvedha/Bea Leaves.html"
   },
   {
@@ -931,12 +933,13 @@
   },
   {
     "id": "neem",
-    "name": "Tulsi \u2014 Holy Basil",
-    "url": "Ayurvedha/neem.html"
+    "name": "Tulsi — Holy Basil",
+    "url": "Ayurvedha/neem.html",
+    "aliases": "neem, nimba, margosa, indian lilac, azadirachta indica"
   },
   {
     "id": "Tulsi",
-    "name": "Tulsi \u2014 Holy Basil",
+    "name": "Tulsi — Holy Basil",
     "url": "Ayurvedha/Tulsi.html"
   },
   {
@@ -976,7 +979,7 @@
   },
   {
     "id": "Garden_backup",
-    "name": "Virtual Herbal Garden \u2014 Swastha",
+    "name": "Virtual Herbal Garden — Swastha",
     "url": "Ayurvedha/Garden_backup.html"
   },
   {
