@@ -34,18 +34,23 @@
       box-sizing: border-box
     }
 
-    html {
-      scroll-behavior: smooth
-    }
-
-    body {
-      font-family: 'Jost', sans-serif;
-      background: var(--cream);
-      color: var(--ink);
-      min-height: 100vh;
-      overflow-x: hidden;
-      position: relative
-    }
+    *, *::before, *::after { box-sizing: border-box; }
+html, body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  position: relative;
+}
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+body {
+  font-family: 'Jost', sans-serif;
+  background: var(--cream);
+  color: var(--ink);
+  min-height: 100vh;
+}
 
     body::before {
       content: '';
