@@ -622,7 +622,14 @@
       font-size: .78rem;
       letter-spacing: .1em;
       text-align: center;
-      padding: 1rem
+      padding: 0;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .vid:empty,
+    .vid:not(:has(video)):not(:has(iframe)) {
+      padding: 1rem;
     }
 
     .vid video,
@@ -839,7 +846,16 @@
     const TODAY = { energise: ['stamina', 'mood'], relax: ['stress', 'sleep'], strength: ['strength'], flexibility: ['flex'], balance: ['balance', 'focus'] };
 
     /* Paste your Google Flow videos here: id -> 'videos/tadasana.mp4' (or a YouTube embed URL) */
-    const VIDEOS = {};
+    const VIDEOS = {
+      tadasana: 'videos/tadasana.mp4',
+      cat: 'videos/cat.mp4',
+      vrikshasana: 'videos/vrikshasana.mp4',
+      uttanasana: 'videos/uttanasana.mp4',
+      bhujangasana: 'videos/bhujangasana.mp4',
+      virabhadra2: 'videos/virabhadra2.mp4',
+      trikonasana: 'videos/trikonasana.mp4',
+      utkatasana: 'videos/utkatasana.mp4'
+    };
 
     /* id, name, sanskrit, english, level, role(W/M/C), helps, avoid (p=pregnancy b=BP/heart i=injury v=vertigo k=knee s=back pain w=wrist f=floor work), hold, benefit, steps */
     const A = [
@@ -923,7 +939,7 @@
     function media(id) {
       const u = VIDEOS[id];
       if (!u) return 'Video coming soon';
-      return /youtube\.com|youtu\.be/.test(u) ? `<iframe src="${u}" title="${id}" allowfullscreen></iframe>` : `<video src="${u}" loop muted playsinline controls></video>`;
+      return /youtube\.com|youtu\.be/.test(u) ? `<iframe src="${u}" title="${id}" allowfullscreen></iframe>` : `<video src="${u}" loop muted playsinline controls autoplay preload="metadata"></video>`;
     }
     function show({ plan, goals, maxLvl }) {
       const lv = ['', 'Beginner', 'Intermediate', 'Advanced'][maxLvl];
