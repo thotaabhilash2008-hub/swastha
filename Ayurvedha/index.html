@@ -5217,8 +5217,8 @@ body {
 <!-- ==================== CONTROLLER SCRIPT ==================== -->
 <script>
 // Supabase Configuration
-const SUPABASE_URL = 'https://tnqbbjtdrkgjtykrcxyt.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRucWJianRkcmtnanR5a3JjeHl0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY4ODgyODcsImV4cCI6MjA2MjQ2NDI4N30.0123456789abcdef';
+const SUPABASE_URL = 'https://yypvhggcauxhyeljjumh.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_tc95USCUy5sCeQfaZD1L_Q_DmzBFMZK';
 let sb = null;
 try {
   sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -5405,24 +5405,45 @@ function showToast(msg) {
 
 // Initialize Auth & Bookmarks
 async function initSession() {
-  if (!sb) return;
   try {
-    const { data: { session } } = await sb.auth.getSession();
-    if (session) {
-      currentUser = session.user;
-      renderAuthNavbar(true);
-      const { data: bm } = await sb.from('bookmarks').select('plant_key').eq('user_id', currentUser.id);
-      if (bm) {
-        bm.forEach(b => savedPlants.add(b.plant_key));
-        document.querySelectorAll('.btn-card-bookmark').forEach(btn => {
-          const onclickAttr = btn.getAttribute('onclick') || '';
-          const match = onclickAttr.match(/handleBookmark\(this,\s*'([^']+)'\)/);
-          if (match && savedPlants.has(match[1])) {
-            btn.classList.add('saved');
-          }
-        });
-        document.getElementById('bmPageLink').classList.toggle('visible', savedPlants.size > 0);
+    let sessionUser = null;
+    if (sb) {
+      try {
+        const { data: { session } } = await sb.auth.getSession();
+        if (session) sessionUser = session.user;
+      } catch(_) {}
+    }
+    if (!sessionUser) {
+      const stored = localStorage.getItem('swastha_user');
+      if (stored) {
+        sessionUser = JSON.parse(stored);
       }
+    }
+
+    if (sessionUser) {
+      currentUser = sessionUser;
+      renderAuthNavbar(true);
+      
+      // Load Supabase bookmarks if available
+      if (sb && currentUser.id) {
+        try {
+          const { data: bm } = await sb.from('bookmarks').select('plant_key').eq('user_id', currentUser.id);
+          if (bm) bm.forEach(b => savedPlants.add(b.plant_key));
+        } catch(_) {}
+      }
+      
+      // Also load local bookmarks
+      const localBm = JSON.parse(localStorage.getItem('swastha_bookmarks') || '[]');
+      localBm.forEach(k => savedPlants.add(k));
+
+      document.querySelectorAll('.btn-card-bookmark').forEach(btn => {
+        const onclickAttr = btn.getAttribute('onclick') || '';
+        const match = onclickAttr.match(/handleBookmark\(this,\s*'([^']+)'\)/);
+        if (match && savedPlants.has(match[1])) {
+          btn.classList.add('saved');
+        }
+      });
+      document.getElementById('bmPageLink').classList.toggle('visible', savedPlants.size > 0);
     }
   } catch(e) {
     console.log('Session check fallback', e);
@@ -5442,12 +5463,21 @@ function renderAuthNavbar(isLoggedIn) {
 }
 
 async function handleSignOut() {
-  if (sb) await sb.auth.signOut();
+  if (sb) { try { await sb.auth.signOut(); } catch(_) {} }
+  localStorage.removeItem('swastha_user');
   currentUser = null;
   savedPlants.clear();
   document.querySelectorAll('.btn-card-bookmark.saved').forEach(b => b.classList.remove('saved'));
   document.getElementById('bmPageLink').classList.remove('visible');
-  document.getElementById('authContainer').innerHTML = '<a href="login.html" class="auth-btn-pill">Sign In</a>';
+  document.getElementById('authContainer').innerHTML = `
+    <button type="button" class="nav-search-btn" onclick="focusGardenSearch()" title="Search Garden" aria-label="Search Garden">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+    </button>
+    <a href="login.html" class="auth-btn-pill">Sign In</a>
+  `;
   showToast('Signed out');
 }
 

@@ -396,13 +396,23 @@ let currentUser = null;
 
 // ── INIT ─────────────────────────────────────────────────────────
 (async () => {
-  const { data: { session } } = await sb.auth.getSession();
-  if (!session) {
+  let user = null;
+  if (sb) {
+    try {
+      const { data: { session } } = await sb.auth.getSession();
+      if (session) user = session.user;
+    } catch(_) {}
+  }
+  if (!user) {
+    const stored = localStorage.getItem('swastha_user');
+    if (stored) user = JSON.parse(stored);
+  }
+  if (!user) {
     window.location.href = 'login.html';
     return;
   }
-  currentUser = session.user;
-  const name = currentUser.user_metadata?.full_name || currentUser.email.split('@')[0];
+  currentUser = user;
+  const name = currentUser.user_metadata?.full_name || currentUser.full_name || currentUser.email.split('@')[0];
   document.getElementById('userName').textContent = name;
   await loadBookmarks();
 })();
@@ -488,7 +498,8 @@ async function removeBookmark(plantKey, btn) {
 
 // ── SIGN OUT ─────────────────────────────────────────────────────
 async function signOut() {
-  await sb.auth.signOut();
+  if (sb) { try { await sb.auth.signOut(); } catch(_) {} }
+  localStorage.removeItem('swastha_user');
   window.location.href = 'index.html';
 }
 
