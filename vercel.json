@@ -1,6 +1,11 @@
 {
   "version": 2,
   "cleanUrls": true,
-  "trailingSlash": false
+  "trailingSlash": true,
+  "rewrites": [
+    {
+      "source": "/:plant((?!Ayurvedha|Yoga|Unani|Sidhha|Homeopathy|assets|index).*)",
+      "destination": "/Ayurvedha/:plant"
+    }
+  ]
 }
-
