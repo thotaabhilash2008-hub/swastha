@@ -761,61 +761,108 @@ footer p { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; colo
   <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a qualified practitioner before therapeutic use</p>
 </footer>
 
-<!-- JS: modal logic -->
-<script>
-  (function() {
-    window.addEventListener('DOMContentLoaded', function() {
-      var open3D  = document.getElementById('open3D');
-      var close3D = document.getElementById('close3D');
-      var modal   = document.getElementById('viewerModal');
-
-      function openModal(e) {
-        var _aud = document.getElementById('bhringrajAudio'); if(_aud){ _aud.currentTime=0; var playPromise = _aud.play(); if (playPromise !== undefined) { playPromise.catch(function(e){ console.log(e); }); } }
-
-        if (e) { e.preventDefault(); e.stopPropagation(); }
-        modal.classList.add('is-open');
-        document.body.style.overflow = 'hidden';
-      }
-
-      function closeModal(e) {
-        var _aud = document.getElementById('bhringrajAudio'); if(_aud){ _aud.pause(); }
-
-        if (e) { e.preventDefault(); e.stopPropagation(); }
-        modal.classList.remove('is-open');
-        document.body.style.overflow = '';
-      }
-
-      open3D.addEventListener('click',  openModal,  false);
-      close3D.addEventListener('click', closeModal, false);
-
-      modal.addEventListener('click', function(e) {
-        if (e.target === modal) closeModal(e);
-      }, false);
-
-      document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' && modal.classList.contains('is-open')) closeModal();
-      });
-    });
-  })();
-</script>
-
 <!-- MODAL -->
 <div id="viewerModal">
-  <div class="modal-topbar">
-    <span class="modal-topbar-label">3D Model — Bhringraj</span>
-    <button type="button" id="close3D">✕</button>
+  <div id="modal-topbar">
+    <span>3D Botanical Specimen — Bhringraj</span>
+    <button type="button" id="close3D" title="Close 3D View">✕</button>
   </div>
   <div class="modal-viewer-wrap">
-    <model-viewer
-      src="bhringraj3d.glb"
-      auto-rotate
-      camera-controls
-      shadow-intensity="1"
-      exposure="1">
-    </model-viewer>
+    <div id="modelLoadingBadge" class="model-loading-overlay">
+      <div class="model-loading-card">
+        <div class="model-loading-spinner">✦</div>
+        <div class="model-loading-title">Materializing 3D Bhringraj</div>
+        <div class="model-loading-sub">Loading geometry &amp; textures...</div>
+        <div class="model-progress-bar-wrap">
+          <div id="modelProgressBar" class="model-progress-bar"></div>
+        </div>
+      </div>
+    </div>
+    <model-viewer id="plantModelViewer" src="bhringraj3d.glb" loading="eager" reveal="auto" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
   </div>
 </div>
 
+<script>
+  (function() {
+    var open3D  = document.getElementById('open3D');
+    var close3D = document.getElementById('close3D');
+    var modal   = document.getElementById('viewerModal');
+    var viewer  = document.getElementById('plantModelViewer');
+    var badge   = document.getElementById('modelLoadingBadge');
+    var pBar    = document.getElementById('modelProgressBar');
+    if (!open3D || !close3D || !modal) return;
+
+    var _aud = document.getElementById('bhringrajAudio');
+    var isModelLoaded = false;
+
+    function playAudioIfOpen() {
+      if (_aud && (modal.classList.contains('is-open') || modal.style.display === 'flex')) {
+        _aud.currentTime = 0;
+        var p = _aud.play();
+        if (p !== undefined) { p.catch(function(e) { console.log('Audio autoplay prevented:', e); }); }
+      }
+    }
+
+    function onModelLoaded() {
+      isModelLoaded = true;
+      if (badge) badge.classList.add('is-hidden');
+      if (pBar) pBar.style.width = '100%';
+      playAudioIfOpen();
+    }
+
+    if (viewer) {
+      if (viewer.loaded) {
+        isModelLoaded = true;
+        if (badge) badge.classList.add('is-hidden');
+      } else {
+        viewer.addEventListener('load', onModelLoaded);
+        viewer.addEventListener('progress', function(evt) {
+          if (evt.detail && evt.detail.totalProgress !== undefined) {
+            var pct = Math.round(evt.detail.totalProgress * 100);
+            if (pBar) pBar.style.width = Math.max(15, pct) + '%';
+          }
+        });
+      }
+    }
+
+    function openModal() {
+      modal.classList.add('is-open');
+      modal.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+
+      if (isModelLoaded || (viewer && viewer.loaded)) {
+        if (badge) badge.classList.add('is-hidden');
+        playAudioIfOpen();
+      } else {
+        if (_aud) { _aud.pause(); _aud.currentTime = 0; }
+        if (badge) badge.classList.remove('is-hidden');
+      }
+    }
+
+    function closeModal() {
+      modal.classList.remove('is-open');
+      modal.style.display = 'none';
+      document.body.style.overflow = '';
+      if (_aud) {
+        _aud.pause();
+        _aud.currentTime = 0;
+      }
+    }
+
+    open3D.addEventListener('click', function(e) {
+      e.preventDefault(); e.stopPropagation(); openModal();
+    });
+    close3D.addEventListener('click', function(e) {
+      e.preventDefault(); e.stopPropagation(); closeModal();
+    });
+    modal.addEventListener('click', function(e) {
+      if (e.target === modal) closeModal();
+    });
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && (modal.classList.contains('is-open') || modal.style.display === 'flex')) closeModal();
+    });
+  })();
+</script>
 
 <audio id="bhringrajAudio" src="bhringraj_benefits.mp3" loop preload="auto"></audio>
 </body>

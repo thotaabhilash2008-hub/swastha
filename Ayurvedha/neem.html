@@ -1,709 +1,526 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tulsi — Holy Basil | Swastha</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Neem — The Village Pharmacy | Swastha</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="preload" href="neem3d.glb" as="fetch" crossorigin="anonymous">
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+  <style>
+    :root {
+      --bg-primary: #07170F;
+      --bg-secondary: #103B28;
+      --botanical: #47734C;
+      --gold: #C8A45D;
+      --gold-warm: #E5C783;
+      --ivory: #F5F0E4;
+      --sage: #C7C9B9;
 
-<!-- Google Fonts -->
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
-
-<!-- 3D Model Viewer Script -->
-<link rel="preload" href="neem3d.glb" as="fetch" crossorigin="anonymous">
-<script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
-
-<style>
-:root {
-    --bg-primary: #07170F;
-    --bg-secondary: #103B28;
-    --botanical: #47734C;
-    --gold: #C8A45D;
-    --gold-warm: #E5C783;
-    --ivory: #F5F0E4;
-    --sage: #C7C9B9;
-
-    --cream: #07170F;
-    --parchment: #103B28;
-    --earth: #E5C783;
-    --forest: #47734C;
-    --deep: #F5F0E4;
-    --ink: #F5F0E4;
-}
-
-* { margin: 0; padding: 0; box-sizing: border-box; }
-html { scroll-behavior: smooth; }
-
-body {
-  font-family: 'Jost', sans-serif;
-  background-color: var(--cream);
-  color: var(--ink);
-  min-height: 100vh;
-  overflow-x: hidden;
-  position: relative;
-}
-
-body::before {
-  content: '';
-  position: fixed; inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
-  opacity: 0.035; pointer-events: none; z-index: 100;
-}
-
-#open3D {
-      position: fixed;
-      top: 25px;
-      right: 30px;
-      padding: 10px 20px;
-      font-size: 11px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      background: linear-gradient(135deg, #103B28, #184c34);
-      color: #F5F0E4;
-      border: 1px solid rgba(200, 164, 93, 0.4);
-      border-radius: 999px;
-      cursor: pointer;
-      z-index: 1000;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.4);
-      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
+      --cream: #07170F;
+      --parchment: #103B28;
+      --earth: #E5C783;
+      --forest: #47734C;
+      --deep: #F5F0E4;
+      --ink: #F5F0E4;
+    }
+    * { margin:0; padding:0; box-sizing:border-box }
+    html { scroll-behavior:smooth }
+    body {
+      font-family:'Jost',sans-serif;
+      background:var(--cream);
+      color:var(--ink);
+      min-height:100vh;
+      overflow-x:hidden;
+      position:relative;
+      line-height: 1.6;
+    }
+    body::before {
+      content:'';
+      position:fixed;
+      inset:0;
+      background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity:.035;
+      pointer-events:none;
+      z-index:100
+    }
+    #open3D {
+      position:fixed; top:25px; right:30px;
+      padding:10px 20px; font-size:11px; letter-spacing:2px;
+      text-transform:uppercase;
+      background:linear-gradient(135deg, #103B28, #184c34);
+      color:#F5F0E4;
+      border:1px solid rgba(200, 164, 93, 0.4);
+      border-radius:999px;
+      cursor:pointer; z-index:1000;
+      box-shadow:0 6px 20px rgba(0,0,0,0.4);
+      transition:all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      display:inline-flex; align-items:center; gap:8px;
     }
     #open3D:hover {
-      background: linear-gradient(135deg, #C8A45D, #E5C783);
-      color: #07170F;
-      border-color: #E5C783;
-      transform: translateY(-2px);
-      box-shadow: 0 10px 25px rgba(200, 164, 93, 0.35);
+      background:linear-gradient(135deg, #C8A45D, #E5C783);
+      color:#07170F;
+      border-color:#E5C783;
+      transform:translateY(-2px);
+      box-shadow:0 10px 25px rgba(200, 164, 93, 0.35);
     }
     #viewerModal {
-      position: fixed;
-      inset: 0;
-      z-index: 9000;
-      display: none;
-      flex-direction: column;
-      background: rgba(7, 23, 15, 0.96);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+      position:fixed; inset:0; z-index:9000;
+      display:none; flex-direction:column;
+      background:rgba(7, 23, 15, 0.96);
+      backdrop-filter:blur(12px);
+      -webkit-backdrop-filter:blur(12px);
     }
-    #viewerModal.is-open {
-      display: flex !important;
-    }
+    #viewerModal.is-open { display:flex !important; }
     #modal-topbar {
-      flex-shrink: 0;
-      height: 60px;
-      background: #07170F;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 32px;
-      border-bottom: 1px solid rgba(200, 164, 93, 0.2);
-      z-index: 99999;
+      flex-shrink:0; height:60px; background:#07170F;
+      display:flex; align-items:center; justify-content:space-between;
+      padding:0 32px; border-bottom:1px solid rgba(200, 164, 93, 0.2);
+      z-index:99999;
     }
     #modal-topbar span {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 16px;
-      font-weight: 500;
-      letter-spacing: 3px;
-      text-transform: uppercase;
-      color: #E5C783;
-      user-select: none;
+      font-family:'Cormorant Garamond', Georgia, serif;
+      font-size:16px; font-weight:500; letter-spacing:3px;
+      text-transform:uppercase; color:#E5C783; user-select:none;
     }
     #close3D {
-      width: 38px;
-      height: 38px;
-      background: rgba(255, 255, 255, 0.06);
-      color: #F5F0E4;
-      border: 1px solid rgba(200, 164, 93, 0.35);
-      border-radius: 50%;
-      cursor: pointer;
-      z-index: 99999;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      line-height: 1;
-      font-size: 16px;
-      font-weight: 300;
-      transition: all 0.25s ease;
-      outline: none;
-      flex-shrink: 0;
+      width:38px; height:38px;
+      background:rgba(255, 255, 255, 0.06);
+      color:#F5F0E4;
+      border:1px solid rgba(200, 164, 93, 0.35);
+      border-radius:50%;
+      cursor:pointer; z-index:99999;
+      display:flex; align-items:center; justify-content:center;
+      line-height:1; font-size:16px; font-weight:300;
+      transition:all 0.25s ease; outline:none; flex-shrink:0;
     }
     #close3D:hover {
-      background: #C8A45D;
-      color: #07170F;
-      border-color: #E5C783;
-      transform: rotate(90deg);
+      background:#C8A45D; color:#07170F; border-color:#E5C783;
+      transform:rotate(90deg);
     }
     .modal-viewer-wrap {
-      flex: 1;
-      width: 100%;
-      height: calc(100% - 60px);
-      position: relative;
-      background: #07170F;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
+      flex:1; width:100%; height:calc(100% - 60px);
+      position:relative; background:#07170F;
+      display:flex; align-items:center; justify-content:center;
+      overflow:hidden;
     }
     #viewerModal model-viewer {
-      width: 100%;
-      height: 100%;
-      display: block;
-      background: #07170F;
-      --poster-color: transparent;
+      width:100%; height:100%; display:block;
+      background:#07170F; --poster-color:transparent;
     }
     .model-loading-overlay {
-      position: absolute;
-      inset: 0;
-      background: rgba(7, 23, 15, 0.88);
-      backdrop-filter: blur(6px);
-      -webkit-backdrop-filter: blur(6px);
-      z-index: 40;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: opacity 0.4s ease, visibility 0.4s ease;
-      pointer-events: none;
+      position:absolute; inset:0;
+      background:rgba(7, 23, 15, 0.88);
+      backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);
+      display:flex; align-items:center; justify-content:center;
+      z-index:1000; transition:opacity 0.4s ease, visibility 0.4s ease;
     }
     .model-loading-overlay.is-hidden {
-      opacity: 0;
-      visibility: hidden;
+      opacity:0; visibility:hidden; pointer-events:none;
     }
     .model-loading-card {
-      text-align: center;
-      padding: 30px 36px;
-      background: rgba(16, 59, 40, 0.7);
-      border: 1px solid rgba(200, 164, 93, 0.3);
-      border-radius: 16px;
-      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.6);
-      max-width: 360px;
-      width: 88%;
+      background:rgba(16, 59, 40, 0.65);
+      border:1px solid rgba(200, 164, 93, 0.35);
+      border-radius:12px; padding:28px 36px; text-align:center;
+      box-shadow:0 12px 35px rgba(0,0,0,0.6); max-width:320px; width:90%;
     }
     .model-loading-spinner {
-      font-size: 26px;
-      color: #E5C783;
-      display: inline-block;
-      animation: pulseRotate 2s infinite linear;
-      margin-bottom: 12px;
+      font-size:24px; color:#E5C783; margin-bottom:12px;
+      animation:spinStar 2.5s infinite linear;
     }
-    @keyframes pulseRotate {
-      0% { transform: rotate(0deg) scale(0.9); opacity: 0.7; }
-      50% { transform: rotate(180deg) scale(1.15); opacity: 1; }
-      100% { transform: rotate(360deg) scale(0.9); opacity: 0.7; }
+    @keyframes spinStar {
+      0% { transform:rotate(0deg) scale(1); }
+      50% { transform:rotate(180deg) scale(1.15); }
+      100% { transform:rotate(360deg) scale(1); }
     }
     .model-loading-title {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 21px;
-      font-weight: 500;
-      color: #E5C783;
-      letter-spacing: 1px;
-      margin-bottom: 6px;
+      font-family:'Cormorant Garamond', Georgia, serif;
+      font-size:20px; color:#F5F0E4; letter-spacing:1px; margin-bottom:4px;
     }
     .model-loading-sub {
-      font-size: 11px;
-      color: #C7C9B9;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      margin-bottom: 16px;
+      font-size:11px; color:#C7C9B9; letter-spacing:1px;
+      text-transform:uppercase; margin-bottom:16px;
     }
     .model-progress-bar-wrap {
-      width: 100%;
-      height: 5px;
-      background: rgba(255, 255, 255, 0.08);
-      border-radius: 999px;
-      overflow: hidden;
-      border: 1px solid rgba(200, 164, 93, 0.2);
+      width:100%; height:3px; background:rgba(255,255,255,0.1);
+      border-radius:2px; overflow:hidden;
     }
     .model-progress-bar {
-      width: 15%;
-      height: 100%;
-      background: linear-gradient(90deg, #C8A45D, #E5C783);
-      border-radius: 999px;
-      transition: width 0.25s ease;
+      height:100%; width:15%;
+      background:linear-gradient(90deg, #C8A45D, #E5C783);
+      transition:width 0.2s ease;
     }
 
-.bg-circle { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0; }
-.bg-circle-1 { width: 700px; height: 700px; background: radial-gradient(circle, rgba(42,92,63,0.1) 0%, transparent 70%); top: -200px; right: -150px; }
-.bg-circle-2 { width: 500px; height: 500px; background: radial-gradient(circle, rgba(201,168,76,0.08) 0%, transparent 70%); bottom: -100px; left: -100px; }
+    .bg-circle { position:fixed; border-radius:50%; pointer-events:none; z-index:0 }
+    .bg-circle-1 {
+      width:700px; height:700px;
+      background:radial-gradient(circle, rgba(45,90,39,.18) 0%, transparent 70%);
+      top:-200px; right:-150px
+    }
+    .bg-circle-2 {
+      width:500px; height:500px;
+      background:radial-gradient(circle, rgba(168,184,75,.12) 0%, transparent 70%);
+      bottom:-100px; left:-100px
+    }
+    .botanical-svg { position:fixed; pointer-events:none; z-index:1; opacity:.12 }
+    .botanical-tl { top:-20px; left:-20px; width:280px }
+    .botanical-br { bottom:-20px; right:-20px; width:240px; transform:rotate(180deg) }
 
-.botanical-svg { position: fixed; pointer-events: none; z-index: 1; opacity: 0.1; }
-.botanical-tl { top: -20px; left: -20px; width: 260px; }
-.botanical-br { bottom: -20px; right: -20px; width: 220px; transform: rotate(180deg); }
-
-.hero {
-  position: relative; z-index: 10; padding: 54px 40px 0;
-  text-align: center; opacity: 0; animation: fadeUp 0.9s ease 0.1s forwards;
-}
-.back-link {
-  display: inline-flex; align-items: center; gap: 8px;
-  font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
-  color: var(--sage); text-decoration: none; margin-bottom: 36px; transition: color 0.3s;
-}
-.back-link:hover { color: var(--gold); }
-.logo-rule { display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 14px; }
-.logo-rule span { display: block; height: 1px; width: 70px; background: linear-gradient(to right, transparent, var(--gold)); }
-.logo-rule span:last-child { background: linear-gradient(to left, transparent, var(--gold)); }
-.logo-ornament { font-size: 13px; color: var(--gold); }
-.hero-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(64px, 12vw, 110px); font-weight: 300; letter-spacing: 8px; line-height: 1; color: var(--deep); }
-.hero-subtitle { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-style: italic; font-weight: 300; color: var(--earth); letter-spacing: 2px; margin-top: 8px; }
-.hero-sci { font-size: 11px; font-weight: 200; letter-spacing: 5px; color: var(--sage); margin-top: 6px; }
-
-.hero-photos {
-  position: relative; z-index: 10; display: grid; grid-template-columns: 1fr 1fr;
-  gap: 2px; max-width: 900px; margin: 40px auto 0;
-  opacity: 0; animation: fadeUp 0.9s ease 0.35s forwards;
-}
-.hero-photos img {
-  width: 100%; height: 380px; object-fit: cover; object-position: center;
-  display: block; background: var(--parchment);
-}
-.hero-photos img:first-child { object-position: center 30%; }
-.photo-caption {
-  text-align: center; font-family: 'Cormorant Garamond', serif;
-  font-size: 12px; font-style: italic; color: var(--sage);
-  letter-spacing: 1px; padding: 10px 0 0; max-width: 900px; margin: 0 auto;
-  position: relative; z-index: 10; opacity: 0; animation: fadeUp 0.9s ease 0.5s forwards;
-}
-
-.divider {
-  display: flex; align-items: center; justify-content: center;
-  gap: 16px; margin: 50px auto 50px; max-width: 600px;
-  opacity: 0; animation: fadeUp 0.9s ease 0.55s forwards; position: relative; z-index: 10;
-}
-.divider-line { height: 1px; width: 120px; background: linear-gradient(to right, transparent, var(--sage)); }
-.divider-line:last-child { background: linear-gradient(to left, transparent, var(--sage)); }
-.divider-leaf { color: var(--forest); font-size: 18px; }
-
-.content { position: relative; z-index: 10; max-width: 860px; margin: 0 auto; padding: 0 30px 80px; }
-.intro-text {
-  font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 300; line-height: 1.75;
-  color: var(--ink); text-align: center; max-width: 700px; margin: 0 auto 60px;
-  opacity: 0; animation: fadeUp 0.9s ease 0.6s forwards;
-}
-.intro-text em { color: var(--forest); font-style: italic; }
-
-.section { margin-bottom: 60px; opacity: 0; animation: fadeUp 0.9s ease forwards; }
-.section:nth-child(1) { animation-delay: 0.65s; }
-.section:nth-child(2) { animation-delay: 0.75s; }
-.section:nth-child(3) { animation-delay: 0.85s; }
-.section:nth-child(4) { animation-delay: 0.95s; }
-.section:nth-child(5) { animation-delay: 1.05s; }
-.section:nth-child(6) { animation-delay: 1.15s; }
-
-.section-header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
-.section-num { font-family: 'Cormorant Garamond', serif; font-size: 11px; letter-spacing: 4px; color: var(--gold); font-weight: 400; }
-.section-title { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 400; color: var(--deep); letter-spacing: 1px; }
-.section-rule { height: 1px; flex: 1; background: linear-gradient(to right, var(--gold), transparent); }
-.section-body { font-size: 13px; font-weight: 300; line-height: 1.9; color: var(--ink); margin-bottom: 24px; }
-
-.photo-wide {
-  width: 100%; max-height: 420px; object-fit: cover; object-position: center;
-  margin: 20px 0 8px; border: 1px solid rgba(107,79,45,0.15); background: var(--parchment);
-}
-.fig-caption {
-  font-family: 'Cormorant Garamond', serif; font-size: 12px; font-style: italic;
-  color: var(--sage); letter-spacing: 1px; text-align: center; margin-bottom: 24px;
-}
-
-.data-table { width: 100%; border-collapse: collapse; margin: 16px 0 8px; font-size: 12px; }
-.data-table thead tr { background: var(--deep); color: var(--gold); font-size: 10px; letter-spacing: 3px; text-transform: uppercase; }
-.data-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; }
-.data-table tbody tr:nth-child(even) { background: var(--parchment); }
-.data-table tbody tr:nth-child(odd) { background: var(--cream); }
-.data-table tbody tr { transition: background 0.2s; }
-.data-table tbody tr:hover { background: rgba(200, 164, 93, 0.15); }
-.data-table tbody td { padding: 10px 14px; color: var(--ink); border-bottom: 1px solid rgba(107,79,45,0.08); }
-.data-table tbody td:first-child { font-weight: 400; color: var(--deep); width: 28%; }
-
-.dosha-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px; }
-.dosha-table thead tr { background: var(--forest); color: var(--cream); }
-.dosha-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase; }
-.dosha-table tbody tr:nth-child(even) { background: var(--parchment); }
-.dosha-table tbody tr:nth-child(odd) { background: var(--cream); }
-.dosha-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(107,79,45,0.08); }
-.dosha-table tbody td:first-child { font-weight: 400; color: var(--forest); width: 18%; }
-.dosha-table tbody td:nth-child(2) { color: var(--earth); width: 20%; }
-
-.consume-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px; }
-.consume-table thead tr { background: var(--earth); color: var(--cream); }
-.consume-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase; }
-.consume-table tbody tr:nth-child(even) { background: var(--parchment); }
-.consume-table tbody tr:nth-child(odd) { background: var(--cream); }
-.consume-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(107,79,45,0.08); }
-.consume-table tbody td:first-child { font-weight: 400; color: var(--earth); width: 22%; }
-
-.benefits-grid {
-  display: grid; grid-template-columns: 1fr 1fr;
-  gap: 1px; background: rgba(107,79,45,0.12);
-  border: 1px solid rgba(107,79,45,0.12); margin: 8px 0;
-}
-.benefit-card {
-  background: var(--cream); padding: 24px 22px;
-  transition: background 0.3s; position: relative; overflow: hidden;
-}
-.benefit-card:hover { background: #ede4ce; }
-.benefit-card::before {
-  content: ''; position: absolute; bottom: 0; left: 0;
-  width: 0; height: 2px; background: var(--gold); transition: width 0.4s;
-}
-.benefit-card:hover::before { width: 100%; }
-.benefit-title { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 600; color: var(--forest); margin-bottom: 8px; letter-spacing: 0.5px; }
-.benefit-desc { font-size: 11.5px; font-weight: 300; line-height: 1.75; color: var(--ink); opacity: 0.85; }
-
-.precaution-list { list-style: none; margin: 8px 0; }
-.precaution-list li {
-  display: flex; gap: 12px; align-items: flex-start;
-  padding: 10px 14px; font-size: 12px; font-weight: 300; line-height: 1.7; color: var(--ink);
-  border-bottom: 1px solid rgba(107,79,45,0.08);
-}
-.precaution-list li:last-child { border-bottom: none; }
-.precaution-list li::before { content: '▸'; color: var(--gold); flex-shrink: 0; margin-top: 1px; }
-
-.sources { border-top: 1px solid rgba(107,79,45,0.15); padding-top: 24px; margin-top: 20px; }
-.sources-title { font-size: 10px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); margin-bottom: 12px; font-weight: 300; }
-.sources ul { list-style: none; }
-.sources ul li { font-family: 'Cormorant Garamond', serif; font-size: 13px; font-style: italic; color: var(--earth); padding: 5px 0; border-bottom: 1px solid rgba(107,79,45,0.06); }
-.sources ul li::before { content: '· '; color: var(--sage); }
-
-footer {
-  position: relative; z-index: 10; text-align: center;
-  padding: 24px 20px 44px; border-top: 1px solid rgba(107,79,45,0.12);
-  max-width: 860px; margin: 0 auto;
-}
-footer p { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); font-weight: 300; }
-
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(28px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-@media (max-width: 700px) {
-  .hero-photos { grid-template-columns: 1fr; }
-  .hero-photos img { height: 260px; }
-  .benefits-grid { grid-template-columns: 1fr; }
-  .content { padding: 0 18px 60px; }
-}
-</style>
+    .hero { position:relative; z-index:10; padding:54px 40px 0; text-align:center; opacity:0; animation:fadeUp .9s ease .1s forwards }
+    .back-link { display:inline-flex; align-items:center; gap:8px; font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--sage); text-decoration:none; margin-bottom:36px; transition:color .3s }
+    .back-link:hover { color:var(--gold) }
+    .logo-rule { display:flex; align-items:center; justify-content:center; gap:20px; margin-bottom:14px }
+    .logo-rule span { display:block; height:1px; width:70px; background:linear-gradient(to right, transparent, var(--gold)) }
+    .logo-rule span:last-child { background:linear-gradient(to left, transparent, var(--gold)) }
+    .logo-ornament { font-size:13px; color:var(--gold) }
+    .hero-title { font-family:'Cormorant Garamond',serif; font-size:clamp(64px,12vw,110px); font-weight:300; letter-spacing:8px; line-height:1; color:var(--deep) }
+    .hero-subtitle { font-family:'Cormorant Garamond',serif; font-size:18px; font-style:italic; font-weight:300; color:var(--earth); letter-spacing:2px; margin-top:8px }
+    .hero-sci { font-size:11px; font-weight:200; letter-spacing:5px; color:var(--sage); margin-top:6px }
+    .hero-photos { position:relative; z-index:10; display:grid; grid-template-columns:1fr 1fr; gap:2px; max-width:900px; margin:40px auto 0; opacity:0; animation:fadeUp .9s ease .35s forwards }
+    .hero-photos img { width:100%; height:380px; object-fit:cover; object-position:center; display:block; background:var(--parchment) }
+    .hero-photos img:first-child { object-position:center 40% }
+    .photo-caption { text-align:center; font-family:'Cormorant Garamond',serif; font-size:12px; font-style:italic; color:var(--sage); letter-spacing:1px; padding:10px 0 0; max-width:900px; margin:0 auto; position:relative; z-index:10; opacity:0; animation:fadeUp .9s ease .5s forwards }
+    .divider { display:flex; align-items:center; justify-content:center; gap:16px; margin:50px auto; max-width:600px; opacity:0; animation:fadeUp .9s ease .55s forwards; position:relative; z-index:10 }
+    .divider-line { height:1px; width:120px; background:linear-gradient(to right, transparent, var(--sage)) }
+    .divider-line:last-child { background:linear-gradient(to left, transparent, var(--sage)) }
+    .divider-leaf { color:var(--forest); font-size:18px }
+    .content { position:relative; z-index:10; max-width:860px; margin:0 auto; padding:0 30px 80px }
+    .intro-text { font-family:'Cormorant Garamond',serif; font-size:20px; font-weight:300; line-height:1.75; color:var(--ink); text-align:center; max-width:700px; margin:0 auto 60px; opacity:0; animation:fadeUp .9s ease .6s forwards }
+    .intro-text em { color:var(--earth); font-style:italic }
+    .section { margin-bottom:60px; opacity:0; animation:fadeUp .9s ease forwards }
+    .section:nth-child(1){animation-delay:.65s}.section:nth-child(2){animation-delay:.75s}.section:nth-child(3){animation-delay:.85s}.section:nth-child(4){animation-delay:.95s}.section:nth-child(5){animation-delay:1.05s}.section:nth-child(6){animation-delay:1.15s}.section:nth-child(7){animation-delay:1.25s}
+    .section-header { display:flex; align-items:center; gap:14px; margin-bottom:20px }
+    .section-num { font-family:'Cormorant Garamond',serif; font-size:11px; letter-spacing:4px; color:var(--gold) }
+    .section-title { font-family:'Cormorant Garamond',serif; font-size:28px; font-weight:400; color:var(--deep); letter-spacing:1px }
+    .section-rule { height:1px; flex:1; background:linear-gradient(to right, var(--gold), transparent) }
+    .section-body { font-size:13px; font-weight:300; line-height:1.9; color:var(--ink); margin-bottom:24px }
+    .data-table { width:100%; border-collapse:collapse; margin:16px 0 8px; font-size:12px }
+    .data-table thead tr { background:var(--parchment); color:var(--gold); font-size:10px; letter-spacing:3px; text-transform:uppercase }
+    .data-table thead th { padding:12px 14px; text-align:left; font-weight:400 }
+    .data-table tbody tr:nth-child(even){background:rgba(16, 59, 40, 0.35)}.data-table tbody tr:nth-child(odd){background:rgba(7, 23, 15, 0.45)}
+    .data-table tbody tr { transition:background .2s }
+    .data-table tbody tr:hover { background:rgba(200, 164, 93, 0.12) }
+    .data-table tbody td { padding:10px 14px; color:var(--ink); border-bottom:1px solid rgba(200, 164, 93, 0.12) }
+    .data-table tbody td:first-child { font-weight:400; color:var(--earth); width:28% }
+    .dosha-table { width:100%; border-collapse:collapse; margin:16px 0; font-size:12px }
+    .dosha-table thead tr { background:var(--parchment); color:var(--gold) }
+    .dosha-table thead th { padding:12px 14px; text-align:left; font-weight:400; letter-spacing:2px; font-size:10px; text-transform:uppercase }
+    .dosha-table tbody tr:nth-child(even){background:rgba(16, 59, 40, 0.35)}.dosha-table tbody tr:nth-child(odd){background:rgba(7, 23, 15, 0.45)}
+    .dosha-table tbody td { padding:11px 14px; color:var(--ink); border-bottom:1px solid rgba(200, 164, 93, 0.12) }
+    .dosha-table tbody td:first-child { font-weight:400; color:var(--earth); width:18% }
+    .dosha-table tbody td:nth-child(2) { color:var(--gold); width:20% }
+    .consume-table { width:100%; border-collapse:collapse; margin:16px 0; font-size:12px }
+    .consume-table thead tr { background:var(--parchment); color:var(--gold) }
+    .consume-table thead th { padding:12px 14px; text-align:left; font-weight:400; letter-spacing:2px; font-size:10px; text-transform:uppercase }
+    .consume-table tbody tr:nth-child(even){background:rgba(16, 59, 40, 0.35)}.consume-table tbody tr:nth-child(odd){background:rgba(7, 23, 15, 0.45)}
+    .consume-table tbody td { padding:11px 14px; color:var(--ink); border-bottom:1px solid rgba(200, 164, 93, 0.12) }
+    .consume-table tbody td:first-child { font-weight:400; color:var(--earth); width:22% }
+    .benefits-grid { display:grid; grid-template-columns:1fr 1fr; gap:1px; background:rgba(200, 164, 93, 0.2); border:1px solid rgba(200, 164, 93, 0.2); margin:8px 0 }
+    .benefit-card { background:rgba(16, 59, 40, 0.45); padding:24px 22px; transition:background .3s; position:relative; overflow:hidden }
+    .benefit-card:hover { background:rgba(16, 59, 40, 0.75) }
+    .benefit-card::before { content:''; position:absolute; bottom:0; left:0; width:0; height:2px; background:var(--gold); transition:width .4s }
+    .benefit-card:hover::before { width:100% }
+    .benefit-title { font-family:'Cormorant Garamond',serif; font-size:16px; font-weight:600; color:var(--earth); margin-bottom:8px }
+    .benefit-desc { font-size:11.5px; font-weight:300; line-height:1.75; color:var(--ink); opacity:.85 }
+    .precaution-list { list-style:none; margin:8px 0 }
+    .precaution-list li { display:flex; gap:12px; align-items:flex-start; padding:10px 14px; font-size:12px; font-weight:300; line-height:1.7; color:var(--ink); border-bottom:1px solid rgba(200, 164, 93, 0.12) }
+    .precaution-list li:last-child { border-bottom:none }
+    .precaution-list li::before { content:'▸'; color:var(--gold); flex-shrink:0; margin-top:1px }
+    .sources { border-top:1px solid rgba(200, 164, 93, 0.25); padding-top:24px; margin-top:20px }
+    .sources-title { font-size:10px; letter-spacing:4px; text-transform:uppercase; color:var(--sage); margin-bottom:12px; font-weight:300 }
+    .sources ul { list-style:none }
+    .sources ul li { font-family:'Cormorant Garamond',serif; font-size:13px; font-style:italic; color:var(--earth); padding:5px 0; border-bottom:1px solid rgba(200, 164, 93, 0.08) }
+    .sources ul li::before { content:'· '; color:var(--sage) }
+    .nutrition-bar { display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:rgba(200, 164, 93, 0.2); border:1px solid rgba(200, 164, 93, 0.2); margin:20px 0 }
+    .nutrition-cell { background:rgba(16, 59, 40, 0.45); padding:22px 16px; text-align:center; transition:background .3s }
+    .nutrition-cell:hover { background:rgba(16, 59, 40, 0.75) }
+    .nutrition-num { font-family:'Cormorant Garamond',serif; font-size:36px; font-weight:300; color:var(--earth); line-height:1; margin-bottom:4px }
+    .nutrition-unit { font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--gold); font-weight:300 }
+    .nutrition-label { font-size:11px; font-weight:300; color:var(--ink); margin-top:5px }
+    footer { position:relative; z-index:10; text-align:center; padding:24px 20px 44px; border-top:1px solid rgba(200, 164, 93, 0.25); max-width:860px; margin:0 auto }
+    footer p { font-size:11px; letter-spacing:4px; text-transform:uppercase; color:var(--sage); font-weight:300 }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:translateY(0)} }
+    @media(max-width:700px) {
+      .hero-photos{grid-template-columns:1fr}.hero-photos img{height:260px}
+      .benefits-grid{grid-template-columns:1fr}.nutrition-bar{grid-template-columns:1fr 1fr}
+      .content{padding:0 18px 60px}
+      #modal-topbar{padding:0 16px 0 20px}
+      #modal-topbar span{font-size:9px;letter-spacing:3px}
+    }
+  </style>
 </head>
 <body>
 
 <button type="button" id="open3D">View in 3D</button>
 
+<div id="viewerModal">
+  <div id="modal-topbar">
+    <span>3D Botanical Specimen — Neem</span>
+    <button type="button" id="close3D" title="Close 3D View">✕</button>
+  </div>
+  <div class="modal-viewer-wrap">
+    <div id="modelLoadingBadge" class="model-loading-overlay">
+      <div class="model-loading-card">
+        <div class="model-loading-spinner">✦</div>
+        <div class="model-loading-title">Materializing 3D Neem</div>
+        <div class="model-loading-sub">Loading geometry &amp; textures...</div>
+        <div class="model-progress-bar-wrap">
+          <div id="modelProgressBar" class="model-progress-bar"></div>
+        </div>
+      </div>
+    </div>
+    <model-viewer id="plantModelViewer" src="neem3d.glb" loading="eager" reveal="auto" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+  </div>
+</div>
+
 <div class="bg-circle bg-circle-1"></div>
 <div class="bg-circle bg-circle-2"></div>
 
 <svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <path d="M10 290 Q 80 200 150 150 Q 200 110 260 20" stroke="#2a5c3f" stroke-width="1.5" fill="none"/>
-  <ellipse cx="150" cy="150" rx="28" ry="16" fill="#2a5c3f" transform="rotate(-40 150 150)"/>
-  <ellipse cx="200" cy="105" rx="22" ry="13" fill="#7a9e7e" transform="rotate(-55 200 105)"/>
-  <ellipse cx="100" cy="200" rx="20" ry="11" fill="#2a5c3f" transform="rotate(-20 100 200)"/>
-  <ellipse cx="250" cy="55" rx="18" ry="10" fill="#c9a84c" transform="rotate(-65 250 55)"/>
+  <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#2a5c3f" stroke-width="1.5" fill="none"/>
+  <circle cx="90" cy="210" r="8" fill="#2a5c3f" opacity="0.7"/>
+  <circle cx="130" cy="175" r="10" fill="#7a9e7e" opacity="0.6"/>
+  <circle cx="170" cy="135" r="7" fill="#2a5c3f" opacity="0.8"/>
+  <circle cx="210" cy="95" r="9" fill="#c9a84c" opacity="0.5"/>
 </svg>
 <svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <path d="M10 290 Q 80 200 150 150 Q 200 110 260 20" stroke="#2a5c3f" stroke-width="1.5" fill="none"/>
-  <ellipse cx="150" cy="150" rx="28" ry="16" fill="#2a5c3f" transform="rotate(-40 150 150)"/>
-  <ellipse cx="200" cy="105" rx="22" ry="13" fill="#7a9e7e" transform="rotate(-55 200 105)"/>
-  <ellipse cx="100" cy="200" rx="20" ry="11" fill="#2a5c3f" transform="rotate(-20 100 200)"/>
+  <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#2a5c3f" stroke-width="1.5" fill="none"/>
+  <circle cx="90" cy="210" r="8" fill="#2a5c3f" opacity="0.7"/>
+  <circle cx="130" cy="175" r="10" fill="#7a9e7e" opacity="0.6"/>
 </svg>
 
 <!-- HERO -->
 <div class="hero">
   <a href="index.html" class="back-link">← Back to Herbal Garden</a>
-  <div class="logo-rule">
-    <span></span><div class="logo-ornament">✦</div><span></span>
-  </div>
-  <div class="hero-title">Tulsi</div>
-  <div class="hero-subtitle">Holy Basil — The Queen of Herbs</div>
-  <div class="hero-sci">Ocimum tenuiflorum &nbsp;·&nbsp; Ocimum sanctum</div>
+  <div class="logo-rule"><span></span><div class="logo-ornament">✦</div><span></span></div>
+  <div class="hero-title">Neem</div>
+  <div class="hero-subtitle">The Village Pharmacy — Sarva Roga Nivarini</div>
+  <div class="hero-sci">Azadirachta indica &nbsp;·&nbsp; Meliaceae</div>
 </div>
 
-<!--
-  ✅ IMAGE FIX: Using lh3.googleusercontent.com/d/FILE_ID format.
-  Fig. 1 → ID: 1MTCwkGF3uM7KPrTfRTfdEgSHHhTEBTqI
-  Fig. 2 → ID: 1yQowOE1uR8362w0pX0Uz01ADht5hY0S7
-  IMPORTANT: Both images must be shared as "Anyone with the link can view" in Google Drive.
--->
 <div class="hero-photos">
-  <img
-    src="https://thumb.wikimedia.org/wikipedia/commons/thumb/4/44/Ocimum_tenuiflorum_3_09_2012.JPG/1280px-Ocimum_tenuiflorum_3_09_2012.JPG"
-    alt="Tulsi plant in sunlight"
-    onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';"
-  >
-  <img
-    src="https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1e/Ocimum_tenuiflorum_24_08_2012.JPG/1280px-Ocimum_tenuiflorum_24_08_2012.JPG"
-    alt="Tulsi flower spike"
-    onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';"
-  >
+  <img src="https://upload.wikimedia.org/wikipedia/commons/2/20/Neem_%28Azadirachta_indica%29_in_Hyderabad_W_IMG_6976.jpg" alt="Neem tree foliage" onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+  <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/7/72/Azadirachta_indica_-_Köhler–s_Medizinal-Pflanzen-019.jpg/1280px-Azadirachta_indica_-_Köhler–s_Medizinal-Pflanzen-019.jpg" alt="Botanical plate of Azadirachta indica" onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
 </div>
-<p class="photo-caption">Fig. 1 — Tulsi flower spike (Rama variety) &nbsp;·&nbsp; Fig. 2 — Tulsi plant in natural sunlight</p>
+<p class="photo-caption">Fig. 1 — Pinnate leaves and natural habit of Azadirachta indica &nbsp;·&nbsp; Fig. 2 — Classical botanical illustration showing flower and fruit anatomy</p>
 
-<!-- DIVIDER -->
 <div class="divider">
   <div class="divider-line"></div>
   <div class="divider-leaf">❧</div>
   <div class="divider-line"></div>
 </div>
 
-<!-- MAIN CONTENT -->
 <div class="content">
+  <p class="intro-text">Known as <em>Sarva Roga Nivarini</em> — "the curer of all ailments" — Neem has been an indispensable pillar of Indian domestic and Ayurvedic medicine for more than four millennia. Every part of the tree possesses therapeutic virtue, earning it the title of <em>The Village Pharmacy</em> across South Asia.</p>
 
-  <p class="intro-text">
-    Tulsi — derived from Sanskrit meaning <em>"matchless one"</em> — has been revered in India
-    for over 5,000 years. Known as the Queen of Herbs, this sacred aromatic plant is central to
-    Ayurvedic medicine, Hindu spiritual practice, and modern wellness science. Every part of the
-    plant — leaf, stem, flower, root and seed — carries profound therapeutic value.
-  </p>
-
-  <!-- SECTION 1: BOTANICAL PROFILE -->
   <div class="section">
-    <div class="section-header">
-      <span class="section-num">01</span>
-      <h2 class="section-title">Botanical Profile</h2>
-      <div class="section-rule"></div>
-    </div>
+    <div class="section-header"><span class="section-num">01</span><h2 class="section-title">Botanical Profile</h2><div class="section-rule"></div></div>
+    <p class="section-body">Azadirachta indica is a fast-growing, drought-resistant evergreen tree of the mahogany family (Meliaceae), reaching heights of 15–30 metres. Native to the Indian subcontinent, it thrives in arid regions and is characterised by a dense, rounded crown, deeply fissured grey-brown bark, and fragrant honey-scented white flowers borne in axillary panicles.</p>
+    <table class="data-table">
+      <thead><tr><th>PROPERTY</th><th>Detail</th></tr></thead>
+      <tbody>
+        <tr><td>Family</td><td>Meliaceae (Mahogany family)</td></tr>
+        <tr><td>Botanical Name</td><td>Azadirachta indica A. Juss.</td></tr>
+        <tr><td>Sanskrit Names</td><td>Nimba, Arishtha, Pichumarda, Nimbaka, Prabhadra, Sarvatobhadra</td></tr>
+        <tr><td>Common Names</td><td>Neem, Indian Lilac, Margosa Tree, Nim</td></tr>
+        <tr><td>Origin</td><td>Indian Subcontinent &amp; Burma; naturalised pan-tropically</td></tr>
+        <tr><td>Plant Type</td><td>Evergreen tree (15–30 m), drought-resistant</td></tr>
+        <tr><td>Medicinal Parts</td><td>Leaves, bark, seed oil, root bark, flowers, fruit</td></tr>
+        <tr><td>Taste Profile</td><td>Tikta (bitter, predominant), Kashaya (astringent)</td></tr>
+      </tbody>
+    </table>
+  </div>
 
-    <img
-      class="photo-wide"
-      src="https://thumb.wikimedia.org/wikipedia/commons/thumb/4/44/Ocimum_tenuiflorum_3_09_2012.JPG/1280px-Ocimum_tenuiflorum_3_09_2012.JPG"
-      alt="Close-up of Tulsi leaves"
-      onerror="this.src='';this.style.minHeight='200px';this.style.background='var(--parchment)';"
-    >
-    <p class="fig-caption">Fig. 3 — Close-up of Tulsi leaves showing serrated margins and prominent venation</p>
-
-    <div style="display:grid;grid-template-columns:1fr 200px;gap:24px;align-items:start;">
-      <table class="data-table">
-        <thead><tr><th>Property</th><th>Detail</th></tr></thead>
-        <tbody>
-          <tr><td>Kingdom</td><td>Plantae</td></tr>
-          <tr><td>Family</td><td>Lamiaceae</td></tr>
-          <tr><td>Genus</td><td>Ocimum</td></tr>
-          <tr><td>Species</td><td>O. tenuiflorum</td></tr>
-          <tr><td>Common Names</td><td>Tulsi, Holy Basil, Sacred Basil</td></tr>
-          <tr><td>Varieties</td><td>Rama (green), Krishna (purple), Vana (wild)</td></tr>
-          <tr><td>Height</td><td>30 – 60 cm at maturity</td></tr>
-          <tr><td>Origin</td><td>Tropical &amp; subtropical Asia</td></tr>
-          <tr><td>Habitat</td><td>Up to 1,800 m; naturalised globally</td></tr>
-        </tbody>
-      </table>
-      <div>
-        <img
-          src="https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1e/Ocimum_tenuiflorum_24_08_2012.JPG/1280px-Ocimum_tenuiflorum_24_08_2012.JPG"
-          alt="Tulsi in garden"
-          style="width:100%;border:1px solid rgba(107,79,45,0.15);background:var(--parchment);"
-          onerror="this.src='';this.style.minHeight='160px';this.style.background='var(--parchment)';"
-        >
-        <p class="fig-caption" style="margin-top:6px;">Fig. 4 — Garden setting</p>
+  <div class="section">
+    <div class="section-header"><span class="section-num">02</span><h2 class="section-title">Phytochemistry Composition</h2><div class="section-rule"></div></div>
+    <p class="section-body">Neem is among the most phytochemically complex medicinal plants known to science, containing over 400 structurally diverse bioactives. Its primary therapeutic metabolites are tetranortriterpenoids known as limonoids — notably azadirachtin, nimbin, nimbidin, and salannin — which exhibit potent antimicrobial, antidiabetic, and anti-inflammatory activities.</p>
+    <div class="nutrition-bar">
+      <div class="nutrition-cell">
+        <div class="nutrition-num">400+</div>
+        <div class="nutrition-unit">compounds</div>
+        <div class="nutrition-label">Total bioactives isolated</div>
+      </div>
+      <div class="nutrition-cell">
+        <div class="nutrition-num">135</div>
+        <div class="nutrition-unit">limonoids</div>
+        <div class="nutrition-label">Characteristic triterpenoids</div>
+      </div>
+      <div class="nutrition-cell">
+        <div class="nutrition-num">45%</div>
+        <div class="nutrition-unit">seed oil</div>
+        <div class="nutrition-label">Oleic acid content</div>
+      </div>
+      <div class="nutrition-cell">
+        <div class="nutrition-num">WHO</div>
+        <div class="nutrition-unit">recognized</div>
+        <div class="nutrition-label">Antimicrobial benchmark</div>
       </div>
     </div>
-
-    <p class="section-body" style="margin-top:18px;">
-      Tulsi is an erect, many-branched aromatic subshrub with hairy stems. Its leaves are simple,
-      ovate, petioled with slightly toothed margins, strongly scented, and arranged in a decussate
-      pattern. The purplish flowers appear in close whorls on elongated racemes. Fruits are small
-      nutlets containing reddish-yellow seeds.
-    </p>
   </div>
 
-  <!-- SECTION 2: PHYTOCHEMISTRY -->
   <div class="section">
-    <div class="section-header">
-      <span class="section-num">02</span>
-      <h2 class="section-title">Phytochemical Composition</h2>
-      <div class="section-rule"></div>
-    </div>
-    <p class="section-body">
-      Tulsi is a phytochemical powerhouse. Its essential oil is dominated by eugenol (up to 71%),
-      giving the herb its characteristic clove-like aroma and much of its medicinal action.
-    </p>
-    <table class="data-table">
-      <thead><tr><th>Compound</th><th>Type / Content</th><th>Key Actions</th></tr></thead>
-      <tbody>
-        <tr><td>Eugenol</td><td>~71% of essential oil</td><td>Antimicrobial, anti-inflammatory, analgesic</td></tr>
-        <tr><td>Ursolic Acid</td><td>Triterpene</td><td>Anti-cancer, liver-protective, anti-inflammatory</td></tr>
-        <tr><td>Rosmarinic Acid</td><td>Phenolic acid</td><td>Antioxidant, neuroprotective, anti-allergic</td></tr>
-        <tr><td>Flavonoids</td><td>Orientin, Vicenin, Luteolin</td><td>Antioxidant, immune-modulating</td></tr>
-        <tr><td>Camphor</td><td>~32% (some varieties)</td><td>Respiratory support, antiseptic</td></tr>
-        <tr><td>Carvacrol</td><td>Phenolic monoterpenoid</td><td>Antibacterial, antifungal</td></tr>
-        <tr><td>Vitamins</td><td>Vitamin C, Carotene</td><td>Antioxidant, immunity support</td></tr>
-        <tr><td>Minerals</td><td>Ca, Fe, Zn, Cu, Cr</td><td>Essential metabolic functions</td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- SECTION 3: AYURVEDIC SIGNIFICANCE -->
-  <div class="section">
-    <div class="section-header">
-      <span class="section-num">03</span>
-      <h2 class="section-title">Ayurvedic Significance</h2>
-      <div class="section-rule"></div>
-    </div>
-    <p class="section-body">
-      In Ayurveda, Tulsi holds the highest rank among herbs, classified as a <em>Rasayana</em> — a
-      category reserved for life-enhancing, rejuvenating herbs. Ancient texts call it
-      <em>"The Incomparable One"</em> and <em>"Mother Medicine of Nature."</em>
-      Tulsi is uniquely <strong>tridoshic</strong>, harmonising all three doshas:
-    </p>
+    <div class="section-header"><span class="section-num">03</span><h2 class="section-title">Ayurvedic Significance</h2><div class="section-rule"></div></div>
+    <p class="section-body">Classical Ayurveda classifies Nimba as the premier <em>Kaphapittashamaka</em> (pacifier of Kapha and Pitta doshas) and one of the supreme blood purifiers (<em>Raktashodhaka</em>). Charaka classifies it in the <em>Kandughna</em> (antipruritic) and <em>Kushtaghna</em> (antidermatosis) groups.</p>
     <table class="dosha-table">
-      <thead><tr><th>Dosha</th><th>Elements</th><th>Tulsi's Effect</th></tr></thead>
+      <thead><tr><th>Dosha</th><th>Effect</th><th>Clinical Action</th></tr></thead>
       <tbody>
-        <tr><td>Vata</td><td>Air + Space</td><td>Grounds and warms; reduces anxiety and restlessness</td></tr>
-        <tr><td>Pitta</td><td>Fire + Water</td><td>Cools and purifies; reduces inflammation and excess heat</td></tr>
-        <tr><td>Kapha</td><td>Earth + Water</td><td>Stimulates and lightens; clears congestion and mucus</td></tr>
+        <tr><td>Pitta ↓</td><td>Strongly pacifying</td><td>Tikta (bitter) rasa and Sheeta (cooling) virya rapidly clear systemic Pitta heat, inflammatory skin disorders, and hepatic congestion.</td></tr>
+        <tr><td>Kapha ↓</td><td>Strongly pacifying</td><td>Dry, light qualities (Laghu, Ruksha) and bitter-astringent tastes liquefy excess phlegm, reduce metabolic sluggishness, and balance blood sugar.</td></tr>
+        <tr><td>Vata ↑</td><td>Mildly aggravating in excess</td><td>Dryness and cold potency may elevate Vata over prolonged high doses; balance with warming adjuvants (sesame oil, honey) when indicated.</td></tr>
       </tbody>
     </table>
   </div>
 
-  <!-- SECTION 4: HEALTH BENEFITS -->
   <div class="section">
-    <div class="section-header">
-      <span class="section-num">04</span>
-      <h2 class="section-title">Key Health Benefits</h2>
-      <div class="section-rule"></div>
-    </div>
+    <div class="section-header"><span class="section-num">04</span><h2 class="section-title">Key Health Benefits</h2><div class="section-rule"></div></div>
     <div class="benefits-grid">
       <div class="benefit-card">
-        <div class="benefit-title">Immunity &amp; Infection Defence</div>
-        <div class="benefit-desc">Broad-spectrum antimicrobial action against bacteria, viruses and fungi. Regular consumption strengthens the innate immune system and provides natural protection against seasonal infections.</div>
+        <div class="benefit-title">Dermatological Healing &amp; Acne</div>
+        <div class="benefit-desc">Nimbidin and nimbolide inhibit Propionibacterium acnes and Staphylococcus aureus, reducing pustular lesions, eczema, psoriasis, and promoting collagen re-epithelialisation.</div>
       </div>
       <div class="benefit-card">
-        <div class="benefit-title">Adaptogenic &amp; Stress Relief</div>
-        <div class="benefit-desc">Classified as an adaptogen, Tulsi regulates cortisol levels, calms the nervous system and reduces symptoms of anxiety, fatigue and cognitive decline.</div>
+        <div class="benefit-title">Systemic Blood Purification</div>
+        <div class="benefit-desc">Acts on the liver-spleen axis to filter metabolic endotoxins (Ama), clearing circulating inflammatory cytokines and enhancing cutaneous radiance.</div>
       </div>
       <div class="benefit-card">
-        <div class="benefit-title">Respiratory Support</div>
-        <div class="benefit-desc">Expectorant properties loosen mucus while antimicrobial compounds address underlying infections. Extensively used for coughs, colds, bronchitis and asthma.</div>
+        <div class="benefit-title">Oral Hygiene &amp; Plaque Control</div>
+        <div class="benefit-desc">Azadirachtin binds bacterial cell membranes in oral Streptococcus mutans. Traditional chewing twigs (datun) prevent gingivitis, caries, and halitosis.</div>
       </div>
       <div class="benefit-card">
-        <div class="benefit-title">Anti-inflammatory &amp; Antioxidant</div>
-        <div class="benefit-desc">Ursolic acid and rosmarinic acid inhibit inflammatory pathways, while flavonoids neutralise free radicals — helping manage chronic inflammatory conditions.</div>
+        <div class="benefit-title">Glycemic &amp; Metabolic Balance</div>
+        <div class="benefit-desc">Ethanolic leaf extracts enhance peripheral glucose utilisation, stimulate insulin release from pancreatic beta-cells, and protect renal arterioles.</div>
       </div>
       <div class="benefit-card">
-        <div class="benefit-title">Blood Sugar Regulation</div>
-        <div class="benefit-desc">Studies indicate Tulsi improves insulin sensitivity and reduces fasting blood glucose, making it a valuable adjunct in managing Type 2 diabetes.</div>
+        <div class="benefit-title">Antifungal &amp; Antimicrobial</div>
+        <div class="benefit-desc">Broad-spectrum efficacy against Candida albicans, Trichophyton mentagrophytes (ringworm), and multi-drug resistant biofilm formers.</div>
       </div>
       <div class="benefit-card">
-        <div class="benefit-title">Digestive &amp; Liver Health</div>
-        <div class="benefit-desc">Promotes gastric mucosal health, reduces bloating and supports liver detoxification. Hepatoprotective compounds guard against liver damage from toxins.</div>
-      </div>
-      <div class="benefit-card">
-        <div class="benefit-title">Oral &amp; Dental Care</div>
-        <div class="benefit-desc">Antimicrobial properties help control harmful oral bacteria, prevent dental caries, reduce bad breath and support gum health.</div>
-      </div>
-      <div class="benefit-card">
-        <div class="benefit-title">Cardioprotective</div>
-        <div class="benefit-desc">Helps regulate blood pressure and cholesterol levels, reducing cardiovascular risk through anti-inflammatory and antioxidant mechanisms.</div>
+        <div class="benefit-title">Immunomodulation</div>
+        <div class="benefit-desc">Polysaccharides and polyphenols stimulate cell-mediated immune responses, increasing macrophage phagocytosis and CD4+/CD8+ lymphocyte populations.</div>
       </div>
     </div>
   </div>
 
-  <!-- SECTION 5: HOW TO CONSUME -->
   <div class="section">
-    <div class="section-header">
-      <span class="section-num">05</span>
-      <h2 class="section-title">How to Consume Tulsi</h2>
-      <div class="section-rule"></div>
-    </div>
+    <div class="section-header"><span class="section-num">05</span><h2 class="section-title">How to Use Nimba</h2><div class="section-rule"></div></div>
     <table class="consume-table">
-      <thead><tr><th>Form</th><th>Preparation</th><th>Primary Benefit</th></tr></thead>
+      <thead><tr><th>Preparation</th><th>Dose</th><th>Anupana (Carrier)</th><th>Best Indication</th></tr></thead>
       <tbody>
-        <tr><td>Fresh Leaves</td><td>Chew 4–5 leaves on empty stomach</td><td>Immunity, daily detox</td></tr>
-        <tr><td>Tulsi Tea</td><td>Boil leaves, strain, add honey</td><td>Cold, cough, stress relief</td></tr>
-        <tr><td>Essential Oil</td><td>Diluted topical or diffuser use</td><td>Antimicrobial, aromatherapy</td></tr>
-        <tr><td>Powder (Churna)</td><td>Mix 1 tsp in warm water or honey</td><td>Respiratory &amp; digestive health</td></tr>
-        <tr><td>Tulsi Drops</td><td>Concentrated liquid extract</td><td>Immunity, adaptogenic support</td></tr>
-        <tr><td>Kadha (Decoction)</td><td>Boil with ginger, pepper, cardamom</td><td>Fever, flu, immunity boost</td></tr>
+        <tr><td>Leaf Powder (Churna)</td><td>1–3 grams daily</td><td>Warm water or honey</td><td>Blood purification, skin detox</td></tr>
+        <tr><td>Fresh Leaf Juice (Swarasa)</td><td>5–10 ml</td><td>Diluted in warm water</td><td>Metabolic sluggishness, fever</td></tr>
+        <tr><td>Neem Seed Oil (Taila)</td><td>Topical application</td><td>Diluted in sesame/coconut oil</td><td>Scalp health, fungal infections</td></tr>
+        <tr><td>Decoction (Kwatha)</td><td>20–40 ml twice daily</td><td>Warm water</td><td>Inflammatory dermatosis, gut dysbiosis</td></tr>
       </tbody>
     </table>
   </div>
 
-  <!-- SECTION 6: SAFETY -->
   <div class="section">
-    <div class="section-header">
-      <span class="section-num">06</span>
-      <h2 class="section-title">Safety &amp; Precautions</h2>
-      <div class="section-rule"></div>
-    </div>
-    <p class="section-body">While Tulsi is widely regarded as safe in culinary amounts, the following precautions apply:</p>
+    <div class="section-header"><span class="section-num">06</span><h2 class="section-title">Safety &amp; Precautions</h2><div class="section-rule"></div></div>
     <ul class="precaution-list">
-      <li>Pregnant women should avoid medicinal doses (antifertility properties noted in animal studies).</li>
-      <li>May interact with anticoagulant medications such as warfarin — consult a physician.</li>
-      <li>Hypothyroid patients should exercise caution as eugenol may affect thyroid function.</li>
-      <li>High doses of essential oil are not recommended for internal use without guidance.</li>
-      <li>Diabetic patients on medication should monitor blood glucose closely.</li>
+      <li><strong>Pregnancy &amp; Lactation:</strong> Avoid internal consumption. Traditional texts and modern studies report emmenagogue properties and anti-implantation effects.</li>
+      <li><strong>Hypoglycemia:</strong> Potentiates insulin and oral hypoglycemic agents. Monitor blood glucose closely.</li>
+      <li><strong>Children:</strong> Internal use of raw neem seed oil is strictly contraindicated in infants due to risk of Reye-like hepatic stress.</li>
+      <li><strong>Autoimmune Conditions:</strong> Immune-stimulating bioactives may stimulate symptom flare-ups in lupus or rheumatoid arthritis if taken unmonitored.</li>
     </ul>
-
-    <div class="sources">
-      <p class="sources-title">Sources &amp; References</p>
-      <ul>
-        <li>Planet Ayurveda — Tulsi (Ocimum Sanctum): Uses, Benefits &amp; Properties. planetayurveda.com</li>
-        <li>Wikipedia — Ocimum tenuiflorum. en.wikipedia.org/wiki/Ocimum_tenuiflorum</li>
-        <li>Dr. Vaidya's — Tulsi Benefits: Why This Herb is a Daily Wellness Essential. drvaidyas.com</li>
-      </ul>
-    </div>
   </div>
 
+  <div class="sources">
+    <div class="sources-title">References &amp; Classical Authorities</div>
+    <ul>
+      <li>Charaka Samhita — Sutrasthana Ch. 4 (Kandughna and Kushtaghna Dashemani)</li>
+      <li>Sushruta Samhita — Sutrasthana Ch. 38 (Aragvadhadi Gana)</li>
+      <li>World Health Organization (WHO) Monograph on Selected Medicinal Plants — Folium et Cortex Azadirachti</li>
+      <li>Biswas K et al. — Biological activities and medicinal properties of Neem (Azadirachta indica). Current Science, 2002</li>
+    </ul>
+  </div>
 </div>
 
 <footer>
   <p>© 2026 Swastha &nbsp;·&nbsp; Virtual Herbal Garden &nbsp;·&nbsp; AYUSH Educational Platform</p>
 </footer>
 
-<!-- JS: modal logic -->
 <script>
   (function() {
-    window.addEventListener('DOMContentLoaded', function() {
-      var open3D  = document.getElementById('open3D');
-      var close3D = document.getElementById('close3D');
-      var modal   = document.getElementById('viewerModal');
+    var open3D = document.getElementById('open3D');
+    var close3D = document.getElementById('close3D');
+    var modal = document.getElementById('viewerModal');
+    var viewer = document.getElementById('plantModelViewer');
+    var badge = document.getElementById('modelLoadingBadge');
+    var pBar = document.getElementById('modelProgressBar');
+    if (!open3D || !close3D || !modal) return;
 
-      function openModal(e) {
-        var _aud = document.getElementById('tulsiAudio'); if(_aud){ _aud.currentTime=0; var playPromise = _aud.play(); if (playPromise !== undefined) { playPromise.catch(function(e){ console.log(e); }); } }
+    var _aud = document.getElementById('neemAudio');
+    var isModelLoaded = false;
 
-        if (e) { e.preventDefault(); e.stopPropagation(); }
-        modal.classList.add('is-open');
-        document.body.style.overflow = 'hidden';
+    function playAudioIfOpen() {
+      if (_aud && (modal.classList.contains('is-open') || modal.style.display === 'flex')) {
+        _aud.currentTime = 0;
+        var p = _aud.play();
+        if (p !== undefined) { p.catch(function(e) { console.log('Audio autoplay prevented:', e); }); }
       }
+    }
 
-      function closeModal(e) {
-        var _aud = document.getElementById('tulsiAudio'); if(_aud){ _aud.pause(); }
+    function onModelLoaded() {
+      isModelLoaded = true;
+      if (badge) badge.classList.add('is-hidden');
+      if (pBar) pBar.style.width = '100%';
+      playAudioIfOpen();
+    }
 
-        if (e) { e.preventDefault(); e.stopPropagation(); }
-        modal.classList.remove('is-open');
-        document.body.style.overflow = '';
+    if (viewer) {
+      if (viewer.loaded) {
+        isModelLoaded = true;
+        if (badge) badge.classList.add('is-hidden');
+      } else {
+        viewer.addEventListener('load', onModelLoaded);
+        viewer.addEventListener('progress', function(evt) {
+          if (evt.detail && evt.detail.totalProgress !== undefined) {
+            var pct = Math.round(evt.detail.totalProgress * 100);
+            if (pBar) pBar.style.width = Math.max(15, pct) + '%';
+          }
+        });
       }
+    }
 
-      open3D.addEventListener('click',  openModal,  false);
-      close3D.addEventListener('click', closeModal, false);
+    function openModal() {
+      modal.classList.add('is-open');
+      modal.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
 
-      modal.addEventListener('click', function(e) {
-        if (e.target === modal) closeModal(e);
-      }, false);
+      if (isModelLoaded || (viewer && viewer.loaded)) {
+        if (badge) badge.classList.add('is-hidden');
+        playAudioIfOpen();
+      } else {
+        if (_aud) { _aud.pause(); _aud.currentTime = 0; }
+        if (badge) badge.classList.remove('is-hidden');
+      }
+    }
 
-      document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' && modal.classList.contains('is-open')) closeModal();
-      });
+    function closeModal() {
+      modal.classList.remove('is-open');
+      modal.style.display = 'none';
+      document.body.style.overflow = '';
+      if (_aud) {
+        _aud.pause();
+        _aud.currentTime = 0;
+      }
+    }
+
+    open3D.addEventListener('click', function(e) {
+      e.preventDefault(); e.stopPropagation(); openModal();
+    });
+    close3D.addEventListener('click', function(e) {
+      e.preventDefault(); e.stopPropagation(); closeModal();
+    });
+    modal.addEventListener('click', function(e) {
+      if (e.target === modal) closeModal();
+    });
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && (modal.classList.contains('is-open') || modal.style.display === 'flex')) closeModal();
     });
   })();
 </script>
 
-<!-- MODAL -->
-<div id="viewerModal">
-  <div class="modal-topbar">
-    <span class="modal-topbar-label">3D Model — Tulsi</span>
-    <button type="button" id="close3D">✕</button>
-  </div>
-  <div class="modal-viewer-wrap">
-    <model-viewer
-      src="tulsi3d.glb"
-      auto-rotate
-      camera-controls
-      shadow-intensity="1"
-      exposure="1">
-    </model-viewer>
-  </div>
-</div>
-
-
-<audio id="tulsiAudio" src="tulsi_benefits.mp3" loop preload="auto"></audio>
+<audio id="neemAudio" src="nimba_benefits.mp3" loop preload="auto"></audio>
 </body>
 </html>
