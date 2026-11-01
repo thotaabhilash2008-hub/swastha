@@ -835,22 +835,142 @@ body {
 }
 
 .view-mode-btn {
-  background: rgba(16, 59, 40, 0.5);
+  background: rgba(16, 59, 40, 0.55);
   border: 1px solid rgba(200, 164, 93, 0.35);
-  border-radius: 6px;
+  border-radius: 8px;
   color: var(--sage);
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.25s ease;
+  outline: none;
 }
-.view-mode-btn.active {
-  background: rgba(20, 72, 49, 1);
+.view-mode-btn:hover {
   border-color: var(--gold-warm);
   color: var(--gold-warm);
+  background: rgba(20, 72, 49, 0.85);
+  transform: translateY(-1px);
+}
+.view-mode-btn.active {
+  background: linear-gradient(135deg, rgba(20, 72, 49, 1), rgba(16, 59, 40, 1));
+  border-color: var(--gold-warm);
+  color: var(--gold-warm);
+  box-shadow: 0 0 14px rgba(200, 164, 93, 0.35);
+}
+
+/* ==================== LIST VIEW STYLING ==================== */
+.plants-grid.list-view {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.plants-grid.list-view .plant-card {
+  display: grid;
+  grid-template-columns: 120px 1fr auto;
+  align-items: center;
+  gap: 22px;
+  padding: 16px 24px;
+  border-radius: 16px;
+  min-height: 110px;
+}
+
+.plants-grid.list-view .plant-card:hover {
+  transform: translateX(6px);
+  box-shadow:
+    0 16px 36px rgba(0, 0, 0, 0.65),
+    0 0 24px rgba(74, 222, 128, 0.22),
+    inset 0 1px 0 rgba(229, 199, 131, 0.35);
+}
+
+.plants-grid.list-view .card-image-stage {
+  width: 110px;
+  height: 90px;
+  margin-bottom: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgba(7, 23, 15, 0.55);
+  border: 1px solid rgba(200, 164, 93, 0.2);
+  flex-shrink: 0;
+}
+
+.plants-grid.list-view .card-image-stage img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  max-height: none;
+  max-width: none;
+}
+
+.plants-grid.list-view .card-content-area {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  min-width: 0;
+}
+
+.plants-grid.list-view .card-number {
+  margin-bottom: 2px;
+  font-size: 11px;
+}
+
+.plants-grid.list-view .plant-name {
+  font-size: 21px;
+  margin-bottom: 2px;
+}
+
+.plants-grid.list-view .plant-sci {
+  margin-bottom: 8px;
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.plants-grid.list-view .card-benefits-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.plants-grid.list-view .btn-card-bookmark {
+  position: static;
+  margin-left: 12px;
+  align-self: center;
+  padding: 8px;
+  background: rgba(16, 59, 40, 0.6);
+  border: 1px solid rgba(200, 164, 93, 0.3);
+  border-radius: 50%;
+  transition: all 0.25s ease;
+}
+
+.plants-grid.list-view .btn-card-bookmark:hover {
+  background: rgba(20, 72, 49, 0.95);
+  border-color: var(--gold-warm);
+  transform: scale(1.15);
+}
+
+@media (max-width: 768px) {
+  .plants-grid.list-view .plant-card {
+    grid-template-columns: 85px 1fr auto;
+    gap: 14px;
+    padding: 12px 14px;
+  }
+  .plants-grid.list-view .card-image-stage {
+    width: 85px;
+    height: 75px;
+  }
+  .plants-grid.list-view .plant-name {
+    font-size: 17px;
+  }
+  .plants-grid.list-view .card-benefits-wrapper {
+    display: none;
+  }
 }
 
 .bookmarks-link-pill {
@@ -1428,8 +1548,21 @@ body {
 
       <div class="results-controls">
         <a href="bookmarks.html" class="bookmarks-link-pill" id="bmPageLink">★ My Bookmarks</a>
-        <button class="view-mode-btn active" title="Grid View" type="button">▦</button>
-        <button class="view-mode-btn" title="List View" type="button">☰</button>
+        <button id="viewModeGrid" class="view-mode-btn active" title="Grid View" type="button" onclick="setGardenViewMode('grid')" aria-label="Grid View">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+            <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
+            <rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
+            <rect x="3" y="14" width="7" height="7" rx="1.5"></rect>
+            <rect x="14" y="14" width="7" height="7" rx="1.5"></rect>
+          </svg>
+        </button>
+        <button id="viewModeList" class="view-mode-btn" title="List View" type="button" onclick="setGardenViewMode('list')" aria-label="List View">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+            <line x1="4" y1="6" x2="20" y2="6"></line>
+            <line x1="4" y1="12" x2="20" y2="12"></line>
+            <line x1="4" y1="18" x2="20" y2="18"></line>
+          </svg>
+        </button>
       </div>
     </div>
 
@@ -6012,6 +6145,36 @@ if (document.readyState === 'loading') {
 } else {
   initEnchantedForest3D();
 }
+
+// ==================== VIEW MODE CONTROLLER (GRID VS LIST) ====================
+function setGardenViewMode(mode) {
+  const gridEl = document.getElementById('gardenGrid');
+  const btnGrid = document.getElementById('viewModeGrid');
+  const btnList = document.getElementById('viewModeList');
+  if (!gridEl) return;
+
+  if (mode === 'list') {
+    gridEl.classList.add('list-view');
+    if (btnGrid) btnGrid.classList.remove('active');
+    if (btnList) btnList.classList.add('active');
+    try { localStorage.setItem('swastha_garden_view', 'list'); } catch(_) {}
+  } else {
+    gridEl.classList.remove('list-view');
+    if (btnGrid) btnGrid.classList.add('active');
+    if (btnList) btnList.classList.remove('active');
+    try { localStorage.setItem('swastha_garden_view', 'grid'); } catch(_) {}
+  }
+}
+
+// Restore user view preference on startup
+(function initViewMode() {
+  try {
+    const saved = localStorage.getItem('swastha_garden_view');
+    if (saved === 'list') {
+      setGardenViewMode('list');
+    }
+  } catch(_) {}
+})();
 
 // Startup
 initEnchantedForest3D();
