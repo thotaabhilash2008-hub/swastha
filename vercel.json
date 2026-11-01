@@ -1,8 +1,24 @@
 {
   "version": 2,
   "cleanUrls": true,
-  "trailingSlash": true,
+  "trailingSlash": false,
   "rewrites": [
+    {
+      "source": "/login",
+      "destination": "/Ayurvedha/login.html"
+    },
+    {
+      "source": "/login.html",
+      "destination": "/Ayurvedha/login.html"
+    },
+    {
+      "source": "/bookmarks",
+      "destination": "/Ayurvedha/bookmarks.html"
+    },
+    {
+      "source": "/bookmarks.html",
+      "destination": "/Ayurvedha/bookmarks.html"
+    },
     {
       "source": "/:plant((?!Ayurvedha|Yoga|Unani|Sidhha|Homeopathy|assets|index).*)",
       "destination": "/Ayurvedha/:plant"
