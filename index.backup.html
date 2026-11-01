@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Swastha — Healing Paths</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --cream: #f5efe3;
+  --parchment: #ede4d0;
+  --earth: #6b4f2d;
+  --forest: #2a5c3f;
+  --sage: #7a9e7e;
+  --gold: #c9a84c;
+  --deep: #1a3326;
+  --ink: #1e1a12;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Jost', sans-serif;
+  color: var(--ink);
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+
+  background-image: url("https://lh3.googleusercontent.com/d/1bObhspc9E3KncwN2GtaSPYF--h9Y9BpU");
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: rgba(245, 239, 227, 0.72);
+  pointer-events: none;
+  z-index: 0;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  opacity: 0.035;
+  pointer-events: none;
+  z-index: 101;
+}
+
+.bg-circle { position: fixed; border-radius: 50%; pointer-events: none; z-index: 1; }
+.bg-circle-1 { width: 700px; height: 700px; background: radial-gradient(circle, rgba(42,92,63,0.12) 0%, transparent 70%); top: -200px; right: -150px; }
+.bg-circle-2 { width: 500px; height: 500px; background: radial-gradient(circle, rgba(201,168,76,0.1) 0%, transparent 70%); bottom: -100px; left: -100px; }
+.bg-circle-3 { width: 300px; height: 300px; background: radial-gradient(circle, rgba(122,158,126,0.15) 0%, transparent 70%); top: 50%; left: 30%; }
+
+.botanical-svg { position: fixed; pointer-events: none; z-index: 2; opacity: 0.12; }
+.botanical-tl { top: -20px; left: -20px; width: 320px; transform: rotate(0deg); }
+.botanical-br { bottom: -20px; right: -20px; width: 280px; transform: rotate(180deg); }
+
+header { position: relative; z-index: 10; padding: 70px 40px 0; text-align: center; }
+
+.logo-rule {
+  display: flex; align-items: center; justify-content: center;
+  gap: 20px; margin-bottom: 16px; opacity: 0;
+  animation: fadeUp 1s ease 0.1s forwards;
+}
+.logo-rule span { display: block; height: 1px; width: 80px; background: linear-gradient(to right, transparent, var(--gold)); }
+.logo-rule span:last-child { background: linear-gradient(to left, transparent, var(--gold)); }
+.logo-ornament { font-size: 14px; color: var(--gold); letter-spacing: 4px; }
+
+h1 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(64px, 10vw, 110px);
+  font-weight: 300; letter-spacing: 8px; line-height: 1;
+  color: var(--deep); opacity: 0; animation: fadeUp 1s ease 0.25s forwards;
+}
+
+.tagline {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 18px; font-style: italic; font-weight: 300;
+  color: var(--earth); letter-spacing: 2px; margin-top: 10px;
+  opacity: 0; animation: fadeUp 1s ease 0.4s forwards;
+}
+
+.devanagari {
+  font-size: 13px; font-weight: 200; letter-spacing: 6px;
+  color: var(--sage); margin-top: 8px;
+  opacity: 0; animation: fadeUp 1s ease 0.55s forwards;
+}
+
+.divider {
+  display: flex; align-items: center; justify-content: center;
+  gap: 16px; margin: 50px auto 60px;
+  opacity: 0; animation: fadeUp 1s ease 0.65s forwards;
+  position: relative; z-index: 10;
+}
+.divider-line { height: 1px; width: 120px; background: linear-gradient(to right, transparent, var(--sage)); }
+.divider-line:last-child { background: linear-gradient(to left, transparent, var(--sage)); }
+.divider-leaf { color: var(--forest); font-size: 18px; }
+
+.grid {
+  position: relative; z-index: 10;
+  display: grid; grid-template-columns: repeat(5, 1fr);
+  gap: 0; max-width: 1100px; margin: 0 auto; padding: 0 30px 80px;
+}
+
+.path {
+  position: relative; cursor: pointer;
+  padding: 48px 20px 44px; text-align: center;
+  border-right: 1px solid rgba(107, 79, 45, 0.15);
+  transition: background 0.5s ease;
+  opacity: 0; animation: fadeUp 0.9s ease forwards;
+  overflow: hidden;
+}
+
+.path:nth-child(1) { animation-delay: 0.5s; }
+.path:nth-child(2) { animation-delay: 0.65s; overflow: visible !important; z-index: 4; padding-top: 64px; }
+.path:nth-child(3) { animation-delay: 0.8s; overflow: visible !important; z-index: 4; padding-top: 64px; }
+.path:nth-child(4) { animation-delay: 0.95s; padding-top: 64px; z-index: 5; overflow: visible !important; }
+.path:nth-child(5) { animation-delay: 1.1s; border-right: none; overflow: visible !important; z-index: 4; padding-top: 64px; }
+
+/* Ayurveda path also needs overflow visible for burst-out effect */
+.path:nth-child(1) { overflow: visible !important; z-index: 4; padding-top: 64px; }
+
+.path:hover { background: transparent; }
+
+.path::before {
+  content: ''; position: absolute;
+  bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 0; height: 2px;
+  background: linear-gradient(to right, transparent, var(--gold), transparent);
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.path:hover::before { width: 70%; }
+
+.path::after {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 50% 80%, rgba(42,92,63,0.06) 0%, transparent 70%);
+  opacity: 0; transition: opacity 0.5s ease;
+}
+.path:hover::after { opacity: 1; }
+
+.path-number {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 11px; font-weight: 400; letter-spacing: 4px;
+  color: var(--gold); margin-bottom: 28px; display: block;
+}
+
+/* ── ICON CIRCLE ── */
+.path-icon {
+  width: 78px; height: 78px;
+  border-radius: 50%;
+  border: 1px solid rgba(42, 92, 63, 0.25);
+  margin: 0 auto 24px;
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+  overflow: hidden; /* clips image neatly to circle */
+  transition: border-color 0.4s ease, transform 0.4s ease, box-shadow 0.4s ease;
+  background: rgba(255,255,255,0.5);
+}
+.path:hover .path-icon {
+  border-color: var(--gold);
+  transform: scale(1.08);
+  box-shadow: 0 0 0 6px rgba(201,168,76,0.1);
+}
+
+/* Yoga-specific size match to Ayurveda */
+.path:nth-child(2) .path-icon--transparent img {
+  width: 170px !important;
+  height: 170px !important;
+  bottom: -40px !important;
+}
+
+/* Homeopathy-specific size match to Ayurveda */
+.path:nth-child(5) .path-icon--transparent img {
+  width: 170px !important;
+  height: 170px !important;
+  bottom: -40px !important;
+}
+
+/* Siddha-specific size match to Ayurveda */
+.path:nth-child(4) .path-icon--transparent img {
+  width: 170px !important;
+  height: 170px !important;
+  bottom: -40px !important;
+}
+
+/* Unani-specific size match to Ayurveda */
+.path:nth-child(3) .path-icon--transparent img {
+  width: 170px !important;
+  height: 170px !important;
+  bottom: -40px !important;
+}
+
+/* Transparent variant — 3D burst-out effect */
+.path-icon--transparent {
+  background: transparent !important;
+  border-color: transparent !important;
+  overflow: visible !important;
+  z-index: 5;
+}
+
+/* Image bursts OUT of the circle — bottom overflows for 3D feel */
+.path-icon--transparent img {
+  width: 130px !important;
+  height: 130px !important;
+  object-fit: contain !important;
+  position: absolute !important;
+  bottom: -28px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  border-radius: 0 !important;
+  filter: drop-shadow(0 10px 20px rgba(0,0,0,0.25)) drop-shadow(0 4px 8px rgba(0,0,0,0.15));
+  z-index: 20;
+  transition: transform 0.4s ease, filter 0.4s ease !important;
+}
+.path:hover .path-icon--transparent img {
+  transform: translateX(-50%) translateY(-8px) scale(1.07) !important;
+  filter: drop-shadow(0 18px 28px rgba(0,0,0,0.32)) drop-shadow(0 6px 12px rgba(0,0,0,0.18));
+}
+
+/* Image fills entire circle, no gaps */
+.path-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  border-radius: 50%;
+}
+
+.path-icon::before {
+  content: ''; position: absolute; inset: -8px;
+  border-radius: 50%;
+  border: 1px dashed rgba(122, 158, 126, 0.4);
+  transition: opacity 0.4s;
+  animation: spinSlow 20s linear infinite;
+  opacity: 0; z-index: 2;
+}
+.path:hover .path-icon::before { opacity: 1; }
+
+@keyframes spinSlow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.path-symbol {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 36px; font-weight: 600;
+  color: var(--forest); line-height: 1;
+  transition: color 0.3s ease;
+}
+.path:hover .path-symbol { color: var(--deep); }
+
+.path-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 22px; font-weight: 400; letter-spacing: 1px;
+  color: var(--deep); margin-bottom: 10px; transition: color 0.3s;
+}
+.path:hover .path-name { color: var(--forest); }
+
+.path-sub {
+  font-size: 10px; font-weight: 300; letter-spacing: 3px;
+  text-transform: uppercase; color: var(--sage); line-height: 1.6;
+}
+
+.path-arrow {
+  display: inline-block; margin-top: 22px;
+  font-size: 18px; color: var(--gold);
+  opacity: 0; transform: translateY(6px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.path:hover .path-arrow { opacity: 1; transform: translateY(0); }
+
+footer {
+  position: relative; z-index: 10; text-align: center;
+  padding: 20px 20px 50px;
+  border-top: 1px solid rgba(107, 79, 45, 0.12);
+  max-width: 1100px; margin: 0 auto;
+}
+footer p { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); font-weight: 300; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 900px) {
+  .grid { grid-template-columns: repeat(3, 1fr); max-width: 600px; }
+  .path:nth-child(3) { border-right: none; }
+  .path:nth-child(5) { border-right: 1px solid rgba(107, 79, 45, 0.15); }
+}
+@media (max-width: 560px) {
+  .grid { grid-template-columns: 1fr 1fr; max-width: 380px; gap: 0; }
+  .path:nth-child(2n) { border-right: none; }
+  .path:nth-child(5) { border-right: none; }
+  h1 { letter-spacing: 4px; }
+}
+
+/* ==================== INTRO VIDEO EXPERIENCE ==================== */
+.intro-overlay {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  min-height: 100dvh;
+  z-index: 999999;
+  background: #0d1712;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  touch-action: none;
+  overscroll-behavior: none;
+  transition: opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1),
+              visibility 0.85s ease;
+}
+
+.intro-logo-container {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.85s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1),
+              filter 0.85s ease;
+}
+
+.intro-video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  width: 100dvw;
+  height: 100dvh;
+  object-fit: cover;
+  pointer-events: none;
+  display: block;
+}
+
+.intro-controls {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+}
+
+/* Positioned directly over the watermark/logo to completely cover it */
+.intro-sound-button {
+  position: absolute;
+  z-index: 20;
+  bottom: max(72px, env(safe-area-inset-bottom, 72px));
+  right: max(24px, env(safe-area-inset-right, 24px));
+  min-width: 210px;
+  min-height: 60px;
+  padding: 16px 32px;
+  background: rgba(13, 23, 18, 0.96);
+  border: 1px solid rgba(201, 168, 76, 0.7);
+  border-radius: 9999px;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  color: #f5efe3;
+  font: 400 0.95rem 'Jost', sans-serif;
+  letter-spacing: 0.8px;
+  cursor: pointer;
+  pointer-events: auto;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7), 0 0 35px rgba(13, 23, 18, 0.95);
+  transition: all 0.25s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  user-select: none;
+}
+
+.intro-sound-button:hover {
+  background: rgba(42, 92, 63, 0.95);
+  border-color: var(--gold);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.intro-sound-button.active {
+  background: rgba(42, 92, 63, 0.9);
+  border-color: var(--gold);
+  color: #f5efe3;
+}
+
+.intro-skip-button {
+  position: absolute;
+  z-index: 10;
+  top: max(24px, env(safe-area-inset-top, 24px));
+  right: max(24px, env(safe-area-inset-right, 24px));
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 9999px;
+  padding: 8px 18px;
+  background: rgba(13, 23, 18, 0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #ede4d0;
+  font: 300 0.85rem 'Jost', sans-serif;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  pointer-events: auto;
+  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+.intro-skip-button:hover {
+  background: rgba(201, 168, 76, 0.25);
+  border-color: var(--gold);
+  color: #ffffff;
+}
+
+.intro-overlay.intro-exit {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.intro-overlay.intro-exit .intro-logo-container {
+  transform: scale(1.05);
+  opacity: 0;
+  filter: blur(16px);
+}
+</style>
+</head>
+<body>
+
+<!-- INTRO LOADING VIDEO -->
+<div id="intro-overlay" class="intro-overlay" role="dialog" aria-modal="true" aria-label="Swastha Intro">
+  <div id="intro-logo-container" class="intro-logo-container">
+    <video
+      id="intro-video"
+      class="intro-video"
+      autoplay
+      playsinline
+      webkit-playsinline
+      preload="auto"
+    >
+      <source src="swastha_intro.mp4" type="video/mp4">
+      <source src="assets/swastha_intro.mp4" type="video/mp4">
+    </video>
+  </div>
+  <div class="intro-controls">
+    <button id="intro-sound-button" class="intro-sound-button" type="button" aria-label="Toggle Audio">
+      🔊 Enable Audio
+    </button>
+    <button id="intro-skip-button" class="intro-skip-button" type="button" aria-label="Skip Intro">
+      Skip &rarr;
+    </button>
+  </div>
+</div>
+
+<div class="bg-circle bg-circle-1"></div>
+<div class="bg-circle bg-circle-2"></div>
+<div class="bg-circle bg-circle-3"></div>
+
+<svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M10 290 Q 80 200 150 150 Q 200 110 260 20" stroke="#2a5c3f" stroke-width="1.5" fill="none"/>
+  <path d="M30 280 Q 60 200 90 160" stroke="#2a5c3f" stroke-width="1" fill="none"/>
+  <ellipse cx="150" cy="150" rx="28" ry="16" fill="#2a5c3f" transform="rotate(-40 150 150)"/>
+  <ellipse cx="200" cy="105" rx="22" ry="13" fill="#7a9e7e" transform="rotate(-55 200 105)"/>
+  <ellipse cx="100" cy="200" rx="20" ry="11" fill="#2a5c3f" transform="rotate(-20 100 200)"/>
+  <ellipse cx="250" cy="55" rx="18" ry="10" fill="#c9a84c" transform="rotate(-65 250 55)"/>
+  <circle cx="260" cy="20" r="5" fill="#c9a84c" opacity="0.7"/>
+  <circle cx="10" cy="290" r="4" fill="#2a5c3f" opacity="0.6"/>
+</svg>
+
+<svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M10 290 Q 80 200 150 150 Q 200 110 260 20" stroke="#2a5c3f" stroke-width="1.5" fill="none"/>
+  <path d="M30 280 Q 60 200 90 160" stroke="#2a5c3f" stroke-width="1" fill="none"/>
+  <ellipse cx="150" cy="150" rx="28" ry="16" fill="#2a5c3f" transform="rotate(-40 150 150)"/>
+  <ellipse cx="200" cy="105" rx="22" ry="13" fill="#7a9e7e" transform="rotate(-55 200 105)"/>
+  <ellipse cx="100" cy="200" rx="20" ry="11" fill="#2a5c3f" transform="rotate(-20 100 200)"/>
+  <ellipse cx="250" cy="55" rx="18" ry="10" fill="#c9a84c" transform="rotate(-65 250 55)"/>
+</svg>
+
+<header>
+  <div class="logo-rule">
+    <span></span>
+    <div class="logo-ornament">✦</div>
+    <span></span>
+  </div>
+  <h1>Swastha</h1>
+  <p class="tagline">“Your Path to Holistic Health".</p>
+  <p class="devanagari">स्वस्थ</p>
+</header>
+
+<div class="divider">
+  <div class="divider-line"></div>
+  <div class="divider-leaf">❧</div>
+  <div class="divider-line"></div>
+</div>
+
+<div class="grid">
+
+  <!-- 01 · Ayurveda -->
+  <a href="Ayurvedha/index.html" style="text-decoration:none; color:inherit;">
+  <div class="path">
+    <span class="path-number">01</span>
+    <div class="path-icon path-icon--transparent">
+      <img
+        src="https://lh3.googleusercontent.com/d/1LnZSOCR7J_E1im6xonL9039NfMXtZSHl"
+        alt="Ayurveda"
+        onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<span class=\'path-symbol\'>अ</span>');"
+      >
+    </div>
+    <div class="path-name">Ayurveda</div>
+    <div class="path-sub">Science of<br>Life</div>
+    <div class="path-arrow">→</div>
+  </div>
+  </a>
+
+  <!-- 02 · Yoga -->
+  <a href="Yoga/index.html" style="text-decoration:none; color:inherit;">
+  <div class="path">
+    <span class="path-number">02</span>
+    <div class="path-icon path-icon--transparent">
+      <img
+        src="https://lh3.googleusercontent.com/d/1ghD3PzSs7ytgPnukt3-O4W7DzV_WBbOd"
+        alt="Yoga"
+        onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<span class=\'path-symbol\'>☽</span>');"
+      >
+    </div>
+    <div class="path-name">Yoga</div>
+    <div class="path-sub">Union of<br>Mind & Body</div>
+    <div class="path-arrow">→</div>
+  </div>
+  </a>
+
+  <!-- 03 · Unani -->
+  <a href="Unani/index.html" style="text-decoration:none; color:inherit;">
+  <div class="path">
+    <span class="path-number">03</span>
+    <div class="path-icon path-icon--transparent">
+      <img
+        src="https://lh3.googleusercontent.com/d/11yEn2ijBzz6PrmErIhe1QIBYYu_4h8BD"
+        alt="Unani"
+        onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<span class=\'path-symbol\'>◎</span>');"
+      >
+    </div>
+    <div class="path-name">Unani</div>
+    <div class="path-sub">Humoral<br>Medicine</div>
+    <div class="path-arrow">→</div>
+  </div>
+  </a>
+
+  <!-- 04 · Siddha — ⊕ replaced with Google Drive image, fills full circle -->
+  <a href="Sidhha/index.html" style="text-decoration:none; color:inherit;">
+  <div class="path">
+    <span class="path-number">04</span>
+    <div class="path-icon path-icon--transparent">
+      <img
+        src="https://lh3.googleusercontent.com/d/1xsYEG7ZxY-Rt3Jm6EiKJP0H1z4SiUFfX"
+        alt="Siddha"
+        onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<span class=\'path-symbol\'>⊕</span>');"
+      >
+    </div>
+    <div class="path-name">Siddha</div>
+    <div class="path-sub">Ancient Tamil<br>Wisdom</div>
+    <div class="path-arrow">→</div>
+  </div>
+  </a>
+
+  <!-- 05 · Homeopathy -->
+  <a href="Homeopathy/index.html" style="text-decoration:none; color:inherit;">
+  <div class="path">
+    <span class="path-number">05</span>
+    <div class="path-icon path-icon--transparent">
+      <img
+        src="https://lh3.googleusercontent.com/d/1ixTa-pljEecPZK6BsUmwtYxzr38Q0MXZ"
+        alt="Homeopathy"
+        onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<span class=\'path-symbol\'>✦</span>');"
+      >
+    </div>
+    <div class="path-name">Homeopathy</div>
+    <div class="path-sub">Like Cures<br>Like</div>
+    <div class="path-arrow">→</div>
+  </div>
+  </a>
+
+</div>
+
+<footer>
+  <p>Rooted in tradition &nbsp;·&nbsp; Guided by nature &nbsp;·&nbsp; Healing within</p>
+</footer>
+
+<script>
+(function() {
+  const introOverlay = document.getElementById('intro-overlay');
+  const introVideo = document.getElementById('intro-video');
+  const soundButton = document.getElementById('intro-sound-button');
+  const skipButton = document.getElementById('intro-skip-button');
+  let isFinished = false;
+  let introTimeout;
+
+  function lockScroll() {
+    document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
+    document.body.style.touchAction = 'none';
+  }
+
+  function unlockScroll() {
+    document.body.style.overflow = '';
+    document.documentElement.style.overflow = '';
+    document.body.style.touchAction = '';
+  }
+
+  function finishIntro() {
+    if (isFinished) return;
+    isFinished = true;
+    clearTimeout(introTimeout);
+    introOverlay.classList.add('intro-exit');
+    setTimeout(() => {
+      introOverlay.style.display = 'none';
+      if (introVideo) {
+        introVideo.pause();
+      }
+      unlockScroll();
+    }, 850);
+  }
+
+  function scheduleSafetyTimeout() {
+    clearTimeout(introTimeout);
+    let duration = 10;
+    if (introVideo && introVideo.duration && isFinite(introVideo.duration)) {
+      duration = introVideo.duration;
+    }
+    introTimeout = setTimeout(finishIntro, Math.ceil((duration + 1) * 1000));
+  }
+
+  function startIntro() {
+    isFinished = false;
+    introOverlay.style.display = 'flex';
+    introOverlay.classList.remove('intro-exit');
+    lockScroll();
+
+    if (introVideo) {
+      introVideo.currentTime = 0;
+      introVideo.muted = false;
+      const playPromise = introVideo.play();
+      if (playPromise !== undefined) {
+        playPromise.then(() => {
+          if (soundButton) {
+            soundButton.innerHTML = '🔊 Audio: On';
+            soundButton.classList.add('active');
+          }
+        }).catch(() => {
+          if (!isFinished) {
+            introVideo.muted = true;
+            if (soundButton) {
+              soundButton.innerHTML = '🔊 Enable Audio';
+              soundButton.classList.remove('active');
+            }
+            const mutedPlayPromise = introVideo.play();
+            if (mutedPlayPromise !== undefined) {
+              mutedPlayPromise.catch((mutedErr) => {
+                if (!isFinished) {
+                  console.error('Intro video could not play:', mutedErr);
+                  finishIntro();
+                }
+              });
+            }
+          }
+        });
+      }
+    }
+    scheduleSafetyTimeout();
+  }
+
+  if (skipButton) {
+    skipButton.addEventListener('click', (event) => {
+      event.stopPropagation();
+      finishIntro();
+    });
+  }
+
+  if (introOverlay) {
+    introOverlay.addEventListener('click', (event) => {
+      // Allow clicking anywhere outside control buttons to skip
+      if (!event.target.closest('button')) {
+        finishIntro();
+      }
+    });
+  }
+
+  if (soundButton && introVideo) {
+    soundButton.addEventListener('click', (event) => {
+      event.stopPropagation();
+      if (introVideo.muted) {
+        introVideo.muted = false;
+        soundButton.innerHTML = '🔊 Audio: On';
+        soundButton.classList.add('active');
+        const playPromise = introVideo.play();
+        if (playPromise !== undefined) {
+          playPromise.catch((err) => {
+            console.error('Intro video sound could not be enabled:', err);
+          });
+        }
+      } else {
+        introVideo.muted = true;
+        soundButton.innerHTML = '🔇 Enable Audio';
+        soundButton.classList.remove('active');
+      }
+    });
+  }
+
+  if (introVideo) {
+    introVideo.addEventListener('loadedmetadata', scheduleSafetyTimeout);
+    introVideo.addEventListener('ended', () => {
+      finishIntro();
+    });
+    introVideo.addEventListener('error', () => {
+      console.error('Intro video could not be loaded.');
+      finishIntro();
+    });
+  }
+
+  // Prevent scroll propagation on touch devices during intro
+  const preventScroll = (e) => {
+    if (!isFinished && introOverlay.style.display !== 'none') {
+      if (!e.target.closest('button')) {
+        if (e.cancelable) e.preventDefault();
+      }
+    }
+  };
+  window.addEventListener('touchmove', preventScroll, { passive: false });
+
+  // Escape, Enter or Space skips the intro
+  window.addEventListener('keydown', (e) => {
+    if (!isFinished && introOverlay && introOverlay.style.display !== 'none') {
+      if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        finishIntro();
+      }
+    }
+  });
+
+  // Initial startup
+  lockScroll();
+  startIntro();
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bhojpatra | Swastha</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+  <style>
+    #open3D {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      padding: 10px 18px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: var(--forest);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      z-index: 1000;
+      transition: .3s;
+    }
+    #open3D:hover {
+      background: var(--gold);
+      color: var(--deep);
+    }
+    #viewerModal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+    }
+    #modal-topbar {
+      flex-shrink: 0;
+      height: 58px;
+      background: #111111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px 0 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      z-index: 99999;
+    }
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 4.5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.72);
+      user-select: none;
+    }
+    #close3D {
+      width: 38px;
+      height: 38px;
+      font-size: 15px;
+      font-weight: 300;
+      background: transparent;
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background .2s, color .2s, transform .22s;
+      outline: none;
+      flex-shrink: 0;
+    }
+    #close3D:hover {
+      background: #ffffff;
+      color: #111111;
+      border-color: #ffffff;
+      transform: rotate(90deg);
+    }
+    #viewerModal model-viewer {
+      flex: 1;
+      width: 100%;
+      display: block;
+      background: #ffffff;
+    }
+
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+    * { margin: 0; padding: 0; box-sizing: border-box }
+    html { scroll-behavior: smooth }
+    body {
+      font-family: 'Jost', sans-serif;
+      background: var(--cream);
+      color: var(--ink);
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity: .035;
+      pointer-events: none;
+      z-index: 100
+    }
+    .bg-circle { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0 }
+    .bg-circle-1 { width: 700px; height: 700px; background: radial-gradient(circle, rgba(42,92,63,.1) 0%, transparent 70%); top: -200px; right: -150px }
+    .bg-circle-2 { width: 500px; height: 500px; background: radial-gradient(circle, rgba(201,168,76,.08) 0%, transparent 70%); bottom: -100px; left: -100px }
+    .botanical-svg { position: fixed; pointer-events: none; z-index: 1; opacity: .1 }
+    .botanical-tl { top: -20px; left: -20px; width: 260px }
+    .botanical-br { bottom: -20px; right: -20px; width: 220px; transform: rotate(180deg) }
+
+    /* Number badge */
+    .entry-badge {
+      position: fixed; top: 24px; left: 30px;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 12px; letter-spacing: 4px; color: var(--gold);
+      z-index: 1000; font-weight: 300
+    }
+
+    .hero {
+      position: relative; z-index: 10;
+      padding: 54px 40px 0;
+      text-align: center;
+      opacity: 0; animation: fadeUp .9s ease .1s forwards
+    }
+    .back-link {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+      color: var(--sage); text-decoration: none; margin-bottom: 36px; transition: color .3s
+    }
+    .back-link:hover { color: var(--gold) }
+    .logo-rule { display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 14px }
+    .logo-rule span { display: block; height: 1px; width: 70px; background: linear-gradient(to right, transparent, var(--gold)) }
+    .logo-rule span:last-child { background: linear-gradient(to left, transparent, var(--gold)) }
+    .logo-ornament { font-size: 13px; color: var(--gold) }
+    .hero-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(58px, 11vw, 105px);
+      font-weight: 300; letter-spacing: 8px; line-height: 1; color: var(--deep)
+    }
+    .hero-subtitle {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 18px; font-style: italic; font-weight: 300;
+      color: var(--earth); letter-spacing: 2px; margin-top: 8px
+    }
+    .hero-sci {
+      font-size: 11px; font-weight: 200; letter-spacing: 5px;
+      color: var(--sage); margin-top: 6px
+    }
+    .hero-photos {
+      position: relative; z-index: 10;
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 2px; max-width: 900px; margin: 40px auto 0;
+      opacity: 0; animation: fadeUp .9s ease .35s forwards
+    }
+    .hero-photos img {
+      width: 100%; height: 380px;
+      object-fit: cover; object-position: center; display: block;
+      background: var(--parchment)
+    }
+    .hero-photos img:first-child { object-position: center 40% }
+    .photo-caption {
+      text-align: center;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 12px; font-style: italic; color: var(--sage);
+      letter-spacing: 1px; padding: 10px 0 0;
+      max-width: 900px; margin: 0 auto;
+      position: relative; z-index: 10;
+      opacity: 0; animation: fadeUp .9s ease .5s forwards
+    }
+    .divider {
+      display: flex; align-items: center; justify-content: center;
+      gap: 16px; margin: 50px auto; max-width: 600px;
+      opacity: 0; animation: fadeUp .9s ease .55s forwards;
+      position: relative; z-index: 10
+    }
+    .divider-line { height: 1px; width: 120px; background: linear-gradient(to right, transparent, var(--sage)) }
+    .divider-line:last-child { background: linear-gradient(to left, transparent, var(--sage)) }
+    .divider-leaf { color: var(--forest); font-size: 18px }
+    .content { position: relative; z-index: 10; max-width: 860px; margin: 0 auto; padding: 0 30px 80px }
+    .intro-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 20px; font-weight: 300; line-height: 1.75;
+      color: var(--ink); text-align: center;
+      max-width: 700px; margin: 0 auto 60px;
+      opacity: 0; animation: fadeUp .9s ease .6s forwards
+    }
+    .intro-text em { color: var(--forest); font-style: italic }
+    .section { margin-bottom: 60px; opacity: 0; animation: fadeUp .9s ease forwards }
+    .section:nth-child(1) { animation-delay: .65s }
+    .section:nth-child(2) { animation-delay: .75s }
+    .section:nth-child(3) { animation-delay: .85s }
+    .section:nth-child(4) { animation-delay: .95s }
+    .section:nth-child(5) { animation-delay: 1.05s }
+    .section:nth-child(6) { animation-delay: 1.15s }
+    .section:nth-child(7) { animation-delay: 1.25s }
+    .section-header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px }
+    .section-num { font-family: 'Cormorant Garamond', serif; font-size: 11px; letter-spacing: 4px; color: var(--gold) }
+    .section-title { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 400; color: var(--deep); letter-spacing: 1px }
+    .section-rule { height: 1px; flex: 1; background: linear-gradient(to right, var(--gold), transparent) }
+    .section-body { font-size: 13px; font-weight: 300; line-height: 1.9; color: var(--ink); margin-bottom: 24px }
+    .data-table { width: 100%; border-collapse: collapse; margin: 16px 0 8px; font-size: 12px }
+    .data-table thead tr { background: var(--deep); color: var(--gold); font-size: 10px; letter-spacing: 3px; text-transform: uppercase }
+    .data-table thead th { padding: 12px 14px; text-align: left; font-weight: 400 }
+    .data-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .data-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .data-table tbody tr { transition: background .2s }
+    .data-table tbody tr:hover { background: rgba(200, 164, 93, 0.15) }
+    .data-table tbody td { padding: 10px 14px; color: var(--ink); border-bottom: 1px solid rgba(107,79,45,.08) }
+    .data-table tbody td:first-child { font-weight: 400; color: var(--deep); width: 28% }
+    .dosha-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .dosha-table thead tr { background: var(--forest); color: var(--cream) }
+    .dosha-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .dosha-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .dosha-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .dosha-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(107,79,45,.08) }
+    .dosha-table tbody td:first-child { font-weight: 400; color: var(--forest); width: 18% }
+    .dosha-table tbody td:nth-child(2) { color: var(--earth); width: 20% }
+    .consume-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .consume-table thead tr { background: var(--earth); color: var(--cream) }
+    .consume-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .consume-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .consume-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .consume-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(107,79,45,.08) }
+    .consume-table tbody td:first-child { font-weight: 400; color: var(--earth); width: 22% }
+    .benefits-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: rgba(107,79,45,.12); border: 1px solid rgba(107,79,45,.12); margin: 8px 0 }
+    .benefit-card { background: var(--cream); padding: 24px 22px; transition: background .3s; position: relative; overflow: hidden }
+    .benefit-card:hover { background: #ede4ce }
+    .benefit-card::before { content: ''; position: absolute; bottom: 0; left: 0; width: 0; height: 2px; background: var(--gold); transition: width .4s }
+    .benefit-card:hover::before { width: 100% }
+    .benefit-title { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 600; color: var(--forest); margin-bottom: 8px }
+    .benefit-desc { font-size: 11.5px; font-weight: 300; line-height: 1.75; color: var(--ink); opacity: .85 }
+    .precaution-list { list-style: none; margin: 8px 0 }
+    .precaution-list li { display: flex; gap: 12px; align-items: flex-start; padding: 10px 14px; font-size: 12px; font-weight: 300; line-height: 1.7; color: var(--ink); border-bottom: 1px solid rgba(107,79,45,.08) }
+    .precaution-list li:last-child { border-bottom: none }
+    .precaution-list li::before { content: '▸'; color: var(--gold); flex-shrink: 0; margin-top: 1px }
+    .nutrition-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: rgba(107,79,45,.12); border: 1px solid rgba(107,79,45,.12); margin: 20px 0 }
+    .nutrition-cell { background: var(--cream); padding: 22px 16px; text-align: center; transition: background .3s }
+    .nutrition-cell:hover { background: var(--parchment) }
+    .nutrition-num { font-family: 'Cormorant Garamond', serif; font-size: 36px; font-weight: 300; color: var(--forest); line-height: 1; margin-bottom: 4px }
+    .nutrition-unit { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); font-weight: 300 }
+    .nutrition-label { font-size: 11px; font-weight: 300; color: var(--ink); margin-top: 5px }
+
+    /* Sacred script highlight */
+    .script-box {
+      border-left: 3px solid var(--gold);
+      background: var(--parchment);
+      padding: 18px 22px;
+      margin: 18px 0 24px;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 15px;
+      font-style: italic;
+      color: var(--deep);
+      line-height: 1.8;
+    }
+    .script-box span {
+      display: block;
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-style: normal;
+      letter-spacing: 3px;
+      color: var(--sage);
+      margin-top: 8px;
+      text-transform: uppercase;
+    }
+
+    .sources { border-top: 1px solid rgba(107,79,45,.15); padding-top: 24px; margin-top: 20px }
+    .sources-title { font-size: 10px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); margin-bottom: 12px; font-weight: 300 }
+    .sources ul { list-style: none }
+    .sources ul li { font-family: 'Cormorant Garamond', serif; font-size: 13px; font-style: italic; color: var(--earth); padding: 5px 0; border-bottom: 1px solid rgba(107,79,45,.06) }
+    .sources ul li::before { content: '· '; color: var(--sage) }
+    footer { position: relative; z-index: 10; text-align: center; padding: 24px 20px 44px; border-top: 1px solid rgba(107,79,45,.12); max-width: 860px; margin: 0 auto }
+    footer p { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); font-weight: 300 }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(28px) } to { opacity: 1; transform: translateY(0) } }
+    @media(max-width:700px) {
+      .hero-photos { grid-template-columns: 1fr }
+      .hero-photos img { height: 260px }
+      .benefits-grid { grid-template-columns: 1fr }
+      .nutrition-bar { grid-template-columns: 1fr 1fr }
+      .content { padding: 0 18px 60px }
+    }
+  </style>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+</head>
+<body>
+  <button type="button" id="open3D">View in 3D</button>
+
+
+<div class="entry-badge">No. 39</div>
+<div class="bg-circle bg-circle-1"></div>
+<div class="bg-circle bg-circle-2"></div>
+
+<svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#2a5c3f" stroke-width="1.5" fill="none"/>
+  <circle cx="90" cy="210" r="8" fill="#2a5c3f" opacity="0.7"/>
+  <circle cx="130" cy="175" r="10" fill="#7a9e7e" opacity="0.6"/>
+  <circle cx="170" cy="135" r="7" fill="#2a5c3f" opacity="0.8"/>
+  <circle cx="210" cy="95" r="9" fill="#c9a84c" opacity="0.5"/>
+  <ellipse cx="115" cy="195" rx="20" ry="10" fill="#7a9e7e" transform="rotate(-30 115 195)"/>
+  <ellipse cx="155" cy="155" rx="18" ry="9" fill="#2a5c3f" transform="rotate(-45 155 155)"/>
+</svg>
+<svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#2a5c3f" stroke-width="1.5" fill="none"/>
+  <circle cx="90" cy="210" r="8" fill="#2a5c3f" opacity="0.7"/>
+  <circle cx="130" cy="175" r="10" fill="#7a9e7e" opacity="0.6"/>
+  <ellipse cx="115" cy="195" rx="20" ry="10" fill="#7a9e7e" transform="rotate(-30 115 195)"/>
+</svg>
+
+<div class="hero">
+  <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+  <div class="logo-rule"><span></span><div class="logo-ornament">✦</div><span></span></div>
+  <div class="hero-title">Bhojpatra</div>
+  <div class="hero-subtitle">Himalayan Birch — The Sacred Writing Bark</div>
+  <div class="hero-sci">Betula utilis D. Don &nbsp;·&nbsp; Betula bhojpattra</div>
+</div>
+
+<div class="hero-photos">
+  <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/a/af/Betula_utilis_-_Bhoj_Patra_Tree_on_way_from_Gangria_to_Hemkund_at_Valley_of_Flowers_National_Park_-_during_LGFC_-_VOF_2019_%283%29.jpg/1280px-Betula_utilis_-_Bhoj_Patra_Tree_on_way_from_Gangria_to_Hemkund_at_Valley_of_Flowers_National_Park_-_during_LGFC_-_VOF_2019_%283%29.jpg" alt="Peeling silver-white bark of Betula utilis Himalayan birch"
+    onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+  <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6c/Betula_utilis_-_Bhoj_Patra_Tree_on_way_from_Gangria_to_Valley_of_Flowers_National_Park_-_during_LGFC_-_VOF_2019_%282%29.jpg/1280px-Betula_utilis_-_Bhoj_Patra_Tree_on_way_from_Gangria_to_Valley_of_Flowers_National_Park_-_during_LGFC_-_VOF_2019_%282%29.jpg" alt="Bhojpatra tree growing at high Himalayan altitude"
+    onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+</div>
+<p class="photo-caption">Fig. 1 — Characteristic peeling silver-white papery bark of Betula utilis, used since antiquity as writing material &nbsp;·&nbsp; Fig. 2 — Bhojpatra grove in the high Himalayan subalpine zone (3,000–4,500 m)</p>
+
+<div class="divider">
+  <div class="divider-line"></div>
+  <div class="divider-leaf">❧</div>
+  <div class="divider-line"></div>
+</div>
+
+<div class="content">
+  <p class="intro-text">Among the most revered trees of the Himalayas, <em>Bhojpatra</em> — "the leaf for writing" — offered its pale papery bark to sages who inscribed the Vedas, the Charaka Samhita, and countless tantric manuscripts upon it. Long before paper, this birch bark was India's parchment; long before pharmacies, it was the physician's tonic, the pilgrim's warmth, and the surgeon's wound-dressing high in the mountain passes.</p>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">01</span><h2 class="section-title">Botanical Profile</h2><div class="section-rule"></div></div>
+    <p class="section-body">Bhojpatra (<em>Betula utilis</em> D. Don) is a deciduous tree of the Betulaceae family growing at altitudes of 3,000–4,500 m across the Himalayan arc — from Afghanistan and Kashmir through Nepal, Sikkim, Bhutan, and into southwestern China. It is the highest-altitude birch in the world, often forming the last tree line before the permanent snowfields, growing where few other trees survive. The tree typically reaches 10–20 m, though alpine specimens are often stunted and twisted by wind and cold.</p>
+    <p class="section-body">Its most recognisable feature is the bark: smooth, peeling in thin horizontal papery sheets that range from brilliant silvery white to creamy buff or reddish-brown depending on age and subspecies. Young bark is almost translucent; old bark becomes rough and dark at the base. The leaves are ovate to elliptic, with finely serrated margins and a distinctive network of impressed veins. Male flowers appear as long pendulous catkins; female catkins are erect and shorter. The tree enters dormancy through harsh winters and re-leafs in May–June.</p>
+    <table class="data-table">
+      <thead><tr><th>PROPERTY</th><th>Detail</th></tr></thead>
+      <tbody>
+        <tr><td>Family</td><td>Betulaceae (Birch Family)</td></tr>
+        <tr><td>Botanical Name</td><td>Betula utilis D. Don</td></tr>
+        <tr><td>Sanskrit Names</td><td>Bhurja, Bhurjapatra, Bahupatra, Chitrapatra, Lekhyapatra</td></tr>
+        <tr><td>Common Names</td><td>Himalayan Birch, Birch Bark, Indian Paper Birch</td></tr>
+        <tr><td>Regional Names</td><td>Bhojpatra (Hindi/Urdu), Bhurjapatra (Sanskrit), Burza (Kashmiri), Bhoja (Punjabi), Bhoj (Nepali)</td></tr>
+        <tr><td>Origin &amp; Range</td><td>Himalayan arc: Afghanistan, Pakistan, India, Nepal, Bhutan, SW China</td></tr>
+        <tr><td>Altitude Range</td><td>3,000–4,500 m (subalpine to alpine zone)</td></tr>
+        <tr><td>Plant Type</td><td>Deciduous tree, 10–20 m tall; highest-altitude birch</td></tr>
+        <tr><td>Bark Colour</td><td>Silvery-white to buff-cream; peeling in horizontal papery strips</td></tr>
+        <tr><td>Medicinal Parts</td><td>Bark (primary), leaves, young buds, resin, leaf oil</td></tr>
+        <tr><td>Taste Profile</td><td>Tikta (bitter), Kashaya (astringent)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">02</span><h2 class="section-title">Phytochemistry &amp; Composition</h2><div class="section-rule"></div></div>
+    <p class="section-body">The bark and leaves of Betula utilis are chemically rich in triterpenoids, flavonoids, phenolic glycosides, and volatile essential oils. Betulin and betulinic acid — the signature pentacyclic triterpenoids of the Betula genus — occur in concentrations of up to 20–30% in the outer bark, imparting the white colour and driving much of the tree's pharmacological activity. These compounds have attracted significant modern research interest for their antitumour, antiviral, and anti-inflammatory potential.</p>
+    <p class="section-body">The essential oil of leaves contains monoterpenes (α-pinene, β-pinene, limonene) and sesquiterpenes, while the bark resin yields betulinol, lupeol, and oleanolic acid. The catkins and young leaves are rich in quercetin, hyperoside, and myricetin glycosides — the antioxidant flavonoid backbone common across the Betulaceae family.</p>
+    <div class="nutrition-bar">
+      <div class="nutrition-cell">
+        <div class="nutrition-num">20–30%</div>
+        <div class="nutrition-unit">bark content</div>
+        <div class="nutrition-label">Betulin concentration</div>
+      </div>
+      <div class="nutrition-cell">
+        <div class="nutrition-num">4,500</div>
+        <div class="nutrition-unit">metres</div>
+        <div class="nutrition-label">Maximum altitude range</div>
+      </div>
+      <div class="nutrition-cell">
+        <div class="nutrition-num">3</div>
+        <div class="nutrition-unit">millennia</div>
+        <div class="nutrition-label">Of documented manuscript use</div>
+      </div>
+      <div class="nutrition-cell">
+        <div class="nutrition-num">40+</div>
+        <div class="nutrition-unit">compounds</div>
+        <div class="nutrition-label">Isolated from bark &amp; leaves</div>
+      </div>
+    </div>
+    <table class="data-table">
+      <thead><tr><th>Compound</th><th>Category</th><th>Primary Action</th></tr></thead>
+      <tbody>
+        <tr><td>Betulin (Betulinol)</td><td>Pentacyclic triterpene</td><td>Anti-inflammatory, antitumour, antiviral, anti-HIV; imparts white bark colour</td></tr>
+        <tr><td>Betulinic Acid</td><td>Pentacyclic triterpene</td><td>Apoptosis inducer in cancer cells, anti-malarial, anti-HIV, anti-inflammatory</td></tr>
+        <tr><td>Lupeol</td><td>Lupane-type triterpene</td><td>Hepatoprotective, anti-arthritic, antioxidant</td></tr>
+        <tr><td>Oleanolic Acid</td><td>Oleanane triterpene</td><td>Hepatoprotective, anti-inflammatory, anti-diabetic</td></tr>
+        <tr><td>Quercetin &amp; Hyperoside</td><td>Flavonoid glycosides</td><td>Antioxidant, anti-allergic, capillary-protective</td></tr>
+        <tr><td>Myricetin Glycosides</td><td>Flavonoids</td><td>Neuroprotective, antimicrobial, antioxidant</td></tr>
+        <tr><td>Platyphylloside</td><td>Phenolic glycoside</td><td>Anti-inflammatory, COX inhibition</td></tr>
+        <tr><td>α- &amp; β-Pinene, Limonene</td><td>Monoterpenes (leaf oil)</td><td>Antimicrobial, expectorant, analgesic</td></tr>
+        <tr><td>Methyl Salicylate</td><td>Phenolic ester</td><td>Analgesic, anti-rheumatic (topical)</td></tr>
+        <tr><td>Tannins &amp; Catechins</td><td>Polyphenols</td><td>Astringent, wound-healing, antimicrobial</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">03</span><h2 class="section-title">Ayurvedic Significance</h2><div class="section-rule"></div></div>
+    <p class="section-body">Bhurja occupies a position of singular cultural and therapeutic importance in Ayurveda. As a medicinal plant it appears in Charaka Samhita, Sushruta Samhita, and Ashtanga Hridaya as a drug for skin diseases, fevers, nervous disorders, and as a wound-healing agent for Himalayan conditions. Its primary classical indications are <em>kushtha</em> (skin diseases), <em>jwara</em> (fever), <em>vrana</em> (wounds), and <em>shiro-roga</em> (head diseases). The bark ash is mentioned as a hemostatic in Sushruta's surgical protocols.</p>
+    <div class="script-box">
+      "Bhurjo hima-vanartha-dharo, jvara-kushtha-vrana-nashana, tikto kashaya-laghu sheeto, vatapittahara smritah"
+      <span>— Bhavaprakasha Nighantu, Vatadivarya Varga — On the properties of Bhurja</span>
+    </div>
+    <p class="section-body">The verse describes Bhurja as growing in Himalayan forests, destroyer of fever, skin disease, and wounds — bitter and astringent in taste, light in quality, cold in potency, and pacifying both Vata and Pitta. Nighantu Ratnakara further notes its use in <em>yoni-roga</em> (gynaecological conditions) and as an ingredient in nasal insufflation preparations. In tantric traditions, sacred mantras were inscribed on Bhojpatra leaf and worn as protective yantras or burned in ritual fires — the tree itself considered a conduit between terrestrial medicine and divine knowledge.</p>
+    <table class="dosha-table">
+      <thead><tr><th>Dosha</th><th>Effect</th><th>Mechanism &amp; Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Vata ↓</td><td>Pacifying</td><td>Sheeta virya (cold potency) and laghu guna calm Vata's erratic movement; effective in neuralgic pain, tremors, and anxiety related to Vata excess</td></tr>
+        <tr><td>Pitta ↓</td><td>Pacifying</td><td>Cold potency and tikta-kashaya rasa specifically reduce Pitta-driven skin inflammation, fever, and burning sensations; one of the few cold-potency bark drugs in the classical repertoire</td></tr>
+        <tr><td>Kapha ↑</td><td>Mildly aggravating</td><td>Sheeta (cold) and kashaya (astringent) may slightly increase Kapha in already cold, damp constitutions; use cautiously in chronic Kapha conditions</td></tr>
+      </tbody>
+    </table>
+    <p class="section-body"><strong>Rasa:</strong> Tikta (bitter), Kashaya (astringent) &nbsp;·&nbsp; <strong>Guna:</strong> Laghu (light), Ruksha (dry) &nbsp;·&nbsp; <strong>Virya:</strong> Sheeta (cold) &nbsp;·&nbsp; <strong>Vipaka:</strong> Katu (pungent) &nbsp;·&nbsp; <strong>Karma:</strong> Vata-Pitta shamaka, Kaphakara</p>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">04</span><h2 class="section-title">Key Health Benefits</h2><div class="section-rule"></div></div>
+    <p class="section-body">Bhojpatra's pharmacological profile has been the subject of growing modern research, particularly focused on betulin and betulinic acid — two compounds with remarkable versatility in preclinical cancer, antiviral, and anti-inflammatory studies. Its traditional use across Himalayan folk medicine in skin conditions, fevers, headaches, and wound care finds substantial scientific corroboration.</p>
+    <div class="benefits-grid">
+      <div class="benefit-card">
+        <div class="benefit-title">Anti-inflammatory &amp; Analgesic</div>
+        <div class="benefit-desc">Betulin and betulinic acid potently inhibit pro-inflammatory cytokines (TNF-α, IL-6, NF-κB pathway). Bark decoction is traditionally used for headaches, body pain, and joint inflammation in Himalayan folk practice. Methyl salicylate in the oil provides additional topical analgesic action.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Skin Diseases &amp; Wound Healing</div>
+        <div class="benefit-desc">Classical designation as a <em>kushtha nashana</em> (skin-disease destroyer) is supported by antimicrobial and anti-inflammatory data. Bark paste is applied to eczema, psoriatic plaques, scabies, and infected wounds. Tannins and betulin promote granulation and haemostasis.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Antitumour &amp; Cytotoxic</div>
+        <div class="benefit-desc">Betulinic acid selectively induces apoptosis in melanoma, neuroblastoma, glioblastoma, and lung cancer cell lines while leaving normal cells relatively unaffected — a specificity rare among natural antitumour compounds. Multiple research groups have investigated it as a lead molecule for cancer drug development.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Antipyretic &amp; Antimicrobial</div>
+        <div class="benefit-desc">Classically used as <em>jvara nashana</em> (fever destroyer) — confirmed through bark extract inhibition of pyrogen-mediated thermogenic pathways. Extracts show broad-spectrum antimicrobial activity against E. coli, Staphylococcus aureus, and several dermatophytes responsible for fungal skin infections.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Neurological &amp; Adaptogenic</div>
+        <div class="benefit-desc">Used in high-altitude traditional medicine as a tonic for mental clarity, fatigue, and altitude sickness — conditions inherent to pilgrimage routes through the Himalayan passes where the tree grows. Myricetin and quercetin derivatives offer neuroprotective and mild adaptogenic activity.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Antiviral Activity</div>
+        <div class="benefit-desc">Betulinic acid and betulin have demonstrated anti-HIV activity by inhibiting HIV protease and gp-120–CD4 receptor binding. Activity has also been reported against herpes simplex virus and influenza strains. This remains an active area of pharmaceutical research with significant clinical implications.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Hepatoprotective</div>
+        <div class="benefit-desc">Lupeol and oleanolic acid in the bark protect hepatocytes against chemical- and oxidative stress-induced damage. Bark decoction is used in traditional Himalayan medicine for jaundice and liver complaints, with animal studies validating significant reduction in hepatic enzyme elevation after hepatotoxin exposure.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Diuretic &amp; Urinary Support</div>
+        <div class="benefit-desc">Birch bark and leaf preparations have a long European and Ayurvedic history as mild diuretics — used for dysuria, urinary tract infections, and oedema. The mechanism involves both aquaretic (water-promoting) and mild uricosuric action, making it useful in gout and hyperuricaemia management.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">05</span><h2 class="section-title">Sacred &amp; Cultural Heritage</h2><div class="section-rule"></div></div>
+    <p class="section-body">Bhojpatra's cultural significance rivals its medicinal importance. For over three millennia, the peeling bark of Betula utilis served as the primary writing material for Sanskrit manuscripts across the Indian subcontinent — before the adoption of palm leaf or paper. Birch-bark manuscripts survive from the 1st century BCE onward; the famed Bower Manuscript (discovered in Kucha, c. 450 CE), containing some of the oldest known Ayurvedic texts, was written on Bhojpatra.</p>
+    <p class="section-body">In Tantric Shaiva and Vaishnava traditions, a piece of Bhojpatra inscribed with yantra diagrams or protective mantras in saffron, red sandalwood paste, or pomegranate ink was worn in a copper or silver locket as a <em>raksha kavach</em> (protective amulet) — a practice that continues in Himalayan villages today. The tree features in the Ramayana and Mahabharata, and is described in the Arthashastra as a managed forest resource. In the Char Dham pilgrimage traditions, Bhojpatra groves mark the transition into the sacred alpine zone.</p>
+    <table class="data-table">
+      <thead><tr><th>Cultural Use</th><th>Description &amp; Period</th></tr></thead>
+      <tbody>
+        <tr><td>Manuscript Writing</td><td>Primary writing surface for Vedic, Ayurvedic &amp; Buddhist texts; documented use from c. 200 BCE onwards</td></tr>
+        <tr><td>Tantric Yantras</td><td>Protective talismans inscribed in sacred ink; worn in metal lockets as amulets across Himalayan Hindu &amp; Tantric traditions</td></tr>
+        <tr><td>Ritual Fire (Havan)</td><td>Bark offered in Vedic fire ceremonies; smoke considered purifying, bark used in Shiva puja</td></tr>
+        <tr><td>Royal Correspondence</td><td>Used for imperial edicts and administrative documents in Maurya, Gupta, and Himalayan kingdoms</td></tr>
+        <tr><td>Pilgrimage Markers</td><td>Groves at 3,500+ m mark transition to sacred alpine zones on Kedarnath, Badrinath, and Kailash routes</td></tr>
+        <tr><td>Folk Roofing &amp; Insulation</td><td>Layered under stone roofing tiles in Himalayan villages as waterproof insulation; used in boat-caulking</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">06</span><h2 class="section-title">How to Use Bhojpatra</h2><div class="section-rule"></div></div>
+    <p class="section-body">Medicinal preparations of Bhojpatra primarily use the bark — both inner and outer layers — along with leaves and occasionally buds. Internal preparations are gentle and well-tolerated; topical use is safe and widely practiced in traditional Himalayan medicine. Bark should be ethically sourced from sustainably harvested or cultivated trees, as wild Betula utilis populations face pressure from over-exploitation.</p>
+    <table class="consume-table">
+      <thead><tr><th>Form</th><th>Preparation</th><th>Dosage</th><th>Best Use</th></tr></thead>
+      <tbody>
+        <tr><td>Bark Decoction (Kwatha)</td><td>Boil dried bark pieces in water; strain</td><td>30–40 ml twice daily</td><td>Fever, skin disorders, urinary complaints</td></tr>
+        <tr><td>Bark Powder</td><td>Dry powdered inner bark; with honey or warm water</td><td>1–3 g with honey</td><td>Headache, skin diseases, liver support</td></tr>
+        <tr><td>Leaf Infusion</td><td>Steep fresh or dried leaves in hot water 10 min</td><td>1–2 cups daily</td><td>Diuretic, anti-inflammatory, mild fever</td></tr>
+        <tr><td>Bark Ash (Bhasma)</td><td>Burned bark ash; mixed with oil or ghee</td><td>Topical application</td><td>Wound haemostasis, infected sores (Sushrutian surgical)</td></tr>
+        <tr><td>Bark Paste (Topical)</td><td>Moistened bark ground to paste</td><td>Apply to affected area 1–2× daily</td><td>Eczema, psoriasis, fungal infections, wound care</td></tr>
+        <tr><td>Leaf Essential Oil</td><td>Steam-distilled; diluted in carrier oil (2–3%)</td><td>Topical use only</td><td>Joint pain, headaches (temples), antimicrobial scalp treatment</td></tr>
+        <tr><td>Bark Smoke Inhalation</td><td>Smouldering bark strips; classical insufflation</td><td>Brief exposure only</td><td>Nasal decongestion, <em>Shiro Virechana</em> therapies (supervised)</td></tr>
+        <tr><td>Churna in Compound</td><td>Ingredient in classical poly-herbal formulas</td><td>Per physician direction</td><td>Vata-Pitta skin disorders, neuro-conditions</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">07</span><h2 class="section-title">Safety &amp; Precautions</h2><div class="section-rule"></div></div>
+    <p class="section-body">Bhojpatra is one of the safer classical Ayurvedic drugs — with no known toxicity at standard doses and a very long history of safe human use. However, several important considerations apply, particularly for internal use and conservation-related sourcing.</p>
+    <ul class="precaution-list">
+      <li><strong>Pregnancy:</strong> Cold potency and astringent action are generally safe, but all internal herbal preparations should be cleared with an Ayurvedic physician during pregnancy as a precaution.</li>
+      <li><strong>Kapha constitutions:</strong> Sheeta virya (cold potency) may aggravate already cold, damp Kapha constitutions, potentially increasing mucous production, heaviness, or sluggishness.</li>
+      <li><strong>Birch allergy:</strong> Cross-reactivity between birch pollen and certain foods (apple, peach, carrot, hazelnut) is well documented in European birch species. Those with known birch pollen allergy should use Betula utilis preparations cautiously and watch for oral allergy syndrome.</li>
+      <li><strong>Drug interactions:</strong> Mild diuretic effect could theoretically potentiate prescription diuretics. Consult a physician if taking diuretic medications or drugs for hypertension.</li>
+      <li><strong>Sustainable sourcing:</strong> Betula utilis is listed as vulnerable in several Himalayan states due to over-harvesting for religious and medicinal use. Always source from certified, sustainably harvested suppliers or cultivated stock. Harvesting bark from wild trees without permits is illegal in protected forest areas.</li>
+      <li><strong>Smoke preparations:</strong> Bark smoke (Shiro Virechana) procedures should only be undertaken under qualified Ayurvedic supervision. Habitual inhalation of any wood smoke poses respiratory risks.</li>
+      <li><strong>Topical use:</strong> Essential oil should always be diluted in a carrier oil before skin application. Conduct a patch test 24 hours prior to use on a larger area.</li>
+      <li><strong>Antitumour applications:</strong> Despite strong preclinical data on betulinic acid, do not use Bhojpatra preparations as a substitute for evidence-based cancer treatment. Inform your oncologist of any herbal supplements.</li>
+    </ul>
+  </div>
+
+  <div class="sources">
+    <div class="sources-title">References &amp; Sources</div>
+    <ul>
+      <li>Alakananda B et al. — "Betula utilis D. Don: A Review of Its Traditional Uses, Phytochemistry, and Pharmacology" — Journal of Ethnopharmacology, 2018</li>
+      <li>Yogesh K et al. — "Betula utilis: Ethnobotany, Phytochemistry and Pharmacology of Himalayan Birch" — International Journal of Pharmaceutical Sciences, 2014</li>
+      <li>Drag M &amp; Salvesen GS — "Emerging roles of caspase-3 in apoptosis" — Betulinic acid review, Cell Death and Disease, 2010</li>
+      <li>Fulda S — "Betulinic Acid for Cancer Treatment and Prevention" — International Journal of Molecular Sciences, 2008</li>
+      <li>Huiling L et al. — "Betulin: A Triterpenoid from Betula — Biological Activities and Drug Delivery" — Molecules, 2016</li>
+      <li>Bhat GP &amp; Surolia N — "In vitro activity of betulinic acid against Plasmodium falciparum" — Antimicrobial Agents and Chemotherapy, 2001</li>
+      <li>Charaka Samhita — Chikitsasthana &amp; Kalpasthana — References to Bhurja in wound and skin protocols</li>
+      <li>Sushruta Samhita — Sutrasthana — Bark ash in surgical haemostasis</li>
+      <li>Bhavaprakasha Nighantu — Vatadivarya Varga — Bhurja properties and indications</li>
+      <li>Bower Manuscript — British Library, Or.15009 — Birch-bark Ayurvedic manuscript, c. 450 CE</li>
+      <li>Dhar U, Rawal RS &amp; Upreti J — "Setting priorities for conservation of medicinal plants in Kumaun Himalaya" — Biological Conservation, 2000</li>
+    </ul>
+  </div>
+</div>
+
+<footer>
+  <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a qualified practitioner before therapeutic use</p>
+</footer>
+
+  <div id="viewerModal">
+    <div id="modal-topbar">
+      <span>3D Model — Bhojpatra</span>
+      <button type="button" id="close3D">✕</button>
+    </div>
+    <model-viewer src="bhojpatra3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+  </div>
+  <script>
+    (function() {
+      var open3D = document.getElementById('open3D');
+      var close3D = document.getElementById('close3D');
+      var modal = document.getElementById('viewerModal');
+      if (!open3D || !close3D || !modal) return;
+      function openModal() {
+        
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+      function closeModal() {
+        
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+      open3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); openModal();
+      });
+      close3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); closeModal();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+      });
+    })();
+  </script>
+
+</body>
+</html>

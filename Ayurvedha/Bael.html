@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bael — Bilva | Swastha</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap"
+    rel="stylesheet">
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+  <style>
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box
+    }
+
+    html {
+      scroll-behavior: smooth
+    }
+
+    body {
+      font-family: 'Jost', sans-serif;
+      background: var(--cream);
+      color: var(--ink);
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity: .035;
+      pointer-events: none;
+      z-index: 100
+    }
+
+    #open3D {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      padding: 10px 18px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: var(--forest);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      z-index: 1000;
+      transition: .3s
+    }
+
+    #open3D:hover {
+      background: var(--gold);
+      color: var(--deep)
+    }
+
+    #viewerModal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+    }
+
+    #modal-topbar {
+      flex-shrink: 0;
+      height: 58px;
+      background: #111111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px 0 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      z-index: 99999;
+    }
+
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 4.5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.72);
+      user-select: none;
+    }
+
+    #close3D {
+      width: 38px;
+      height: 38px;
+      font-size: 15px;
+      font-weight: 300;
+      background: transparent;
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background .2s, color .2s, transform .22s;
+      outline: none;
+      flex-shrink: 0;
+    }
+
+    #close3D:hover {
+      background: #ffffff;
+      color: #111111;
+      border-color: #ffffff;
+      transform: rotate(90deg)
+    }
+
+    #viewerModal model-viewer {
+      flex: 1;
+      width: 100%;
+      display: block;
+      background: #ffffff;
+    }
+
+    .bg-circle {
+      position: fixed;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0
+    }
+
+    .bg-circle-1 {
+      width: 700px;
+      height: 700px;
+      background: radial-gradient(circle, rgba(42, 92, 63, .1) 0%, transparent 70%);
+      top: -200px;
+      right: -150px
+    }
+
+    .bg-circle-2 {
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(201, 168, 76, .08) 0%, transparent 70%);
+      bottom: -100px;
+      left: -100px
+    }
+
+    .botanical-svg {
+      position: fixed;
+      pointer-events: none;
+      z-index: 1;
+      opacity: .1
+    }
+
+    .botanical-tl {
+      top: -20px;
+      left: -20px;
+      width: 260px
+    }
+
+    .botanical-br {
+      bottom: -20px;
+      right: -20px;
+      width: 220px;
+      transform: rotate(180deg)
+    }
+
+    .hero {
+      position: relative;
+      z-index: 10;
+      padding: 54px 40px 0;
+      text-align: center;
+      opacity: 0;
+      animation: fadeUp .9s ease .1s forwards
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--sage);
+      text-decoration: none;
+      margin-bottom: 36px;
+      transition: color .3s
+    }
+
+    .back-link:hover {
+      color: var(--gold)
+    }
+
+    .logo-rule {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 14px
+    }
+
+    .logo-rule span {
+      display: block;
+      height: 1px;
+      width: 70px;
+      background: linear-gradient(to right, transparent, var(--gold))
+    }
+
+    .logo-rule span:last-child {
+      background: linear-gradient(to left, transparent, var(--gold))
+    }
+
+    .logo-ornament {
+      font-size: 13px;
+      color: var(--gold)
+    }
+
+    .hero-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(64px, 12vw, 110px);
+      font-weight: 300;
+      letter-spacing: 8px;
+      line-height: 1;
+      color: var(--deep)
+    }
+
+    .hero-subtitle {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 18px;
+      font-style: italic;
+      font-weight: 300;
+      color: var(--earth);
+      letter-spacing: 2px;
+      margin-top: 8px
+    }
+
+    .hero-sci {
+      font-size: 11px;
+      font-weight: 200;
+      letter-spacing: 5px;
+      color: var(--sage);
+      margin-top: 6px
+    }
+
+    .hero-photos {
+      position: relative;
+      z-index: 10;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2px;
+      max-width: 900px;
+      margin: 40px auto 0;
+      opacity: 0;
+      animation: fadeUp .9s ease .35s forwards
+    }
+
+    .hero-photos img {
+      width: 100%;
+      height: 380px;
+      object-fit: cover;
+      object-position: center;
+      display: block;
+      background: var(--parchment);
+    }
+
+    .hero-photos img:first-child {
+      object-position: center 40%
+    }
+
+    .photo-caption {
+      text-align: center;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 12px;
+      font-style: italic;
+      color: var(--sage);
+      letter-spacing: 1px;
+      padding: 10px 0 0;
+      max-width: 900px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 10;
+      opacity: 0;
+      animation: fadeUp .9s ease .5s forwards
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin: 50px auto;
+      max-width: 600px;
+      opacity: 0;
+      animation: fadeUp .9s ease .55s forwards;
+      position: relative;
+      z-index: 10
+    }
+
+    .divider-line {
+      height: 1px;
+      width: 120px;
+      background: linear-gradient(to right, transparent, var(--sage))
+    }
+
+    .divider-line:last-child {
+      background: linear-gradient(to left, transparent, var(--sage))
+    }
+
+    .divider-leaf {
+      color: var(--forest);
+      font-size: 18px
+    }
+
+    .content {
+      position: relative;
+      z-index: 10;
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 30px 80px
+    }
+
+    .intro-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 20px;
+      font-weight: 300;
+      line-height: 1.75;
+      color: var(--ink);
+      text-align: center;
+      max-width: 700px;
+      margin: 0 auto 60px;
+      opacity: 0;
+      animation: fadeUp .9s ease .6s forwards
+    }
+
+    .intro-text em {
+      color: var(--forest);
+      font-style: italic
+    }
+
+    .section {
+      margin-bottom: 60px;
+      opacity: 0;
+      animation: fadeUp .9s ease forwards
+    }
+
+    .section:nth-child(1) {
+      animation-delay: .65s
+    }
+
+    .section:nth-child(2) {
+      animation-delay: .75s
+    }
+
+    .section:nth-child(3) {
+      animation-delay: .85s
+    }
+
+    .section:nth-child(4) {
+      animation-delay: .95s
+    }
+
+    .section:nth-child(5) {
+      animation-delay: 1.05s
+    }
+
+    .section:nth-child(6) {
+      animation-delay: 1.15s
+    }
+
+    .section:nth-child(7) {
+      animation-delay: 1.25s
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 20px
+    }
+
+    .section-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 11px;
+      letter-spacing: 4px;
+      color: var(--gold)
+    }
+
+    .section-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 28px;
+      font-weight: 400;
+      color: var(--deep);
+      letter-spacing: 1px
+    }
+
+    .section-rule {
+      height: 1px;
+      flex: 1;
+      background: linear-gradient(to right, var(--gold), transparent)
+    }
+
+    .section-body {
+      font-size: 13px;
+      font-weight: 300;
+      line-height: 1.9;
+      color: var(--ink);
+      margin-bottom: 24px
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0 8px;
+      font-size: 12px
+    }
+
+    .data-table thead tr {
+      background: var(--deep);
+      color: var(--gold);
+      font-size: 10px;
+      letter-spacing: 3px;
+      text-transform: uppercase
+    }
+
+    .data-table thead th {
+      padding: 12px 14px;
+      text-align: left;
+      font-weight: 400
+    }
+
+    .data-table tbody tr:nth-child(even) {
+      background: var(--parchment)
+    }
+
+    .data-table tbody tr:nth-child(odd) {
+      background: var(--cream)
+    }
+
+    .data-table tbody tr {
+      transition: background .2s
+    }
+
+    .data-table tbody tr:hover {
+      background: rgba(200, 164, 93, 0.15)
+    }
+
+    .data-table tbody td {
+      padding: 10px 14px;
+      color: var(--ink);
+      border-bottom: 1px solid rgba(107, 79, 45, .08)
+    }
+
+    .data-table tbody td:first-child {
+      font-weight: 400;
+      color: var(--deep);
+      width: 28%
+    }
+
+    .dosha-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 12px
+    }
+
+    .dosha-table thead tr {
+      background: var(--forest);
+      color: var(--cream)
+    }
+
+    .dosha-table thead th {
+      padding: 12px 14px;
+      text-align: left;
+      font-weight: 400;
+      letter-spacing: 2px;
+      font-size: 10px;
+      text-transform: uppercase
+    }
+
+    .dosha-table tbody tr:nth-child(even) {
+      background: var(--parchment)
+    }
+
+    .dosha-table tbody tr:nth-child(odd) {
+      background: var(--cream)
+    }
+
+    .dosha-table tbody td {
+      padding: 11px 14px;
+      color: var(--ink);
+      border-bottom: 1px solid rgba(107, 79, 45, .08)
+    }
+
+    .dosha-table tbody td:first-child {
+      font-weight: 400;
+      color: var(--forest);
+      width: 18%
+    }
+
+    .dosha-table tbody td:nth-child(2) {
+      color: var(--earth);
+      width: 20%
+    }
+
+    .consume-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 12px
+    }
+
+    .consume-table thead tr {
+      background: var(--earth);
+      color: var(--cream)
+    }
+
+    .consume-table thead th {
+      padding: 12px 14px;
+      text-align: left;
+      font-weight: 400;
+      letter-spacing: 2px;
+      font-size: 10px;
+      text-transform: uppercase
+    }
+
+    .consume-table tbody tr:nth-child(even) {
+      background: var(--parchment)
+    }
+
+    .consume-table tbody tr:nth-child(odd) {
+      background: var(--cream)
+    }
+
+    .consume-table tbody td {
+      padding: 11px 14px;
+      color: var(--ink);
+      border-bottom: 1px solid rgba(107, 79, 45, .08)
+    }
+
+    .consume-table tbody td:first-child {
+      font-weight: 400;
+      color: var(--earth);
+      width: 22%
+    }
+
+    .benefits-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: rgba(107, 79, 45, .12);
+      border: 1px solid rgba(107, 79, 45, .12);
+      margin: 8px 0
+    }
+
+    .benefit-card {
+      background: var(--cream);
+      padding: 24px 22px;
+      transition: background .3s;
+      position: relative;
+      overflow: hidden
+    }
+
+    .benefit-card:hover {
+      background: #ede4ce
+    }
+
+    .benefit-card::before {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: var(--gold);
+      transition: width .4s
+    }
+
+    .benefit-card:hover::before {
+      width: 100%
+    }
+
+    .benefit-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--forest);
+      margin-bottom: 8px
+    }
+
+    .benefit-desc {
+      font-size: 11.5px;
+      font-weight: 300;
+      line-height: 1.75;
+      color: var(--ink);
+      opacity: .85
+    }
+
+    .precaution-list {
+      list-style: none;
+      margin: 8px 0
+    }
+
+    .precaution-list li {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      padding: 10px 14px;
+      font-size: 12px;
+      font-weight: 300;
+      line-height: 1.7;
+      color: var(--ink);
+      border-bottom: 1px solid rgba(107, 79, 45, .08)
+    }
+
+    .precaution-list li:last-child {
+      border-bottom: none
+    }
+
+    .precaution-list li::before {
+      content: '▸';
+      color: var(--gold);
+      flex-shrink: 0;
+      margin-top: 1px
+    }
+
+    .sources {
+      border-top: 1px solid rgba(107, 79, 45, .15);
+      padding-top: 24px;
+      margin-top: 20px
+    }
+
+    .sources-title {
+      font-size: 10px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--sage);
+      margin-bottom: 12px;
+      font-weight: 300
+    }
+
+    .sources ul {
+      list-style: none
+    }
+
+    .sources ul li {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 13px;
+      font-style: italic;
+      color: var(--earth);
+      padding: 5px 0;
+      border-bottom: 1px solid rgba(107, 79, 45, .06)
+    }
+
+    .sources ul li::before {
+      content: '· ';
+      color: var(--sage)
+    }
+
+    .nutrition-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: rgba(107, 79, 45, .12);
+      border: 1px solid rgba(107, 79, 45, .12);
+      margin: 20px 0
+    }
+
+    .nutrition-cell {
+      background: var(--cream);
+      padding: 22px 16px;
+      text-align: center;
+      transition: background .3s
+    }
+
+    .nutrition-cell:hover {
+      background: var(--parchment)
+    }
+
+    .nutrition-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 36px;
+      font-weight: 300;
+      color: var(--forest);
+      line-height: 1;
+      margin-bottom: 4px
+    }
+
+    .nutrition-unit {
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--gold);
+      font-weight: 300
+    }
+
+    .nutrition-label {
+      font-size: 11px;
+      font-weight: 300;
+      color: var(--ink);
+      margin-top: 5px
+    }
+
+    footer {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      padding: 24px 20px 44px;
+      border-top: 1px solid rgba(107, 79, 45, .12);
+      max-width: 860px;
+      margin: 0 auto
+    }
+
+    footer p {
+      font-size: 11px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--sage);
+      font-weight: 300
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(28px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
+
+    @media(max-width:700px) {
+      .hero-photos {
+        grid-template-columns: 1fr
+      }
+
+      .hero-photos img {
+        height: 260px
+      }
+
+      .benefits-grid {
+        grid-template-columns: 1fr
+      }
+
+      .nutrition-bar {
+        grid-template-columns: 1fr 1fr
+      }
+
+      .content {
+        padding: 0 18px 60px
+      }
+
+      #modal-topbar {
+        padding: 0 16px 0 20px
+      }
+
+      #modal-topbar span {
+        font-size: 9px;
+        letter-spacing: 3px
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <button id="open3D">View in 3D</button>
+
+  <div id="viewerModal">
+    <div id="modal-topbar">
+      <span>3D Model — Bael</span>
+      <button id="close3D">✕</button>
+    </div>
+    <model-viewer src="bael3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+  </div>
+
+  <div class="bg-circle bg-circle-1"></div>
+  <div class="bg-circle bg-circle-2"></div>
+
+  <svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#2a5c3f" stroke-width="1.5" fill="none" />
+    <circle cx="90" cy="210" r="8" fill="#2a5c3f" opacity="0.7" />
+    <circle cx="130" cy="175" r="10" fill="#7a9e7e" opacity="0.6" />
+    <circle cx="170" cy="135" r="7" fill="#2a5c3f" opacity="0.8" />
+    <circle cx="210" cy="95" r="9" fill="#c9a84c" opacity="0.5" />
+    <ellipse cx="115" cy="195" rx="20" ry="10" fill="#7a9e7e" transform="rotate(-30 115 195)" />
+    <ellipse cx="155" cy="155" rx="18" ry="9" fill="#2a5c3f" transform="rotate(-45 155 155)" />
+    <ellipse cx="195" cy="115" rx="16" ry="8" fill="#7a9e7e" transform="rotate(-60 195 115)" />
+  </svg>
+  <svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#2a5c3f" stroke-width="1.5" fill="none" />
+    <circle cx="90" cy="210" r="8" fill="#2a5c3f" opacity="0.7" />
+    <circle cx="130" cy="175" r="10" fill="#7a9e7e" opacity="0.6" />
+    <circle cx="170" cy="135" r="7" fill="#2a5c3f" opacity="0.8" />
+    <ellipse cx="115" cy="195" rx="20" ry="10" fill="#7a9e7e" transform="rotate(-30 115 195)" />
+  </svg>
+
+  <div class="hero">
+    <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+    <div class="logo-rule"><span></span>
+      <div class="logo-ornament">✦</div><span></span>
+    </div>
+    <div class="hero-title">Bael</div>
+    <div class="hero-subtitle">Bilva — Sriphal, The Tree of Lord Shiva</div>
+    <div class="hero-sci">Aegle marmelos &nbsp;·&nbsp; Rutaceae</div>
+  </div>
+
+  <div class="hero-photos">
+    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ee/Bael_%28Aegle_marmelos%29_leaf.jpg/1280px-Bael_%28Aegle_marmelos%29_leaf.jpg" alt="Ripe golden bael fruits"
+      onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/b/b2/Bael_%28Aegle_marmelos%29_tree_at_Narendrapur_W_IMG_4116.jpg" alt="Sacred trifoliate bilva leaves"
+      onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+  </div>
+  <p class="photo-caption">Fig. 1 — Hard-shelled golden ripe Bael fruit, cracked open to reveal its fragrant orange pulp &nbsp;·&nbsp; Fig. 2 — The sacred trifoliate Bilva leaves, offered to Lord Shiva for over five millennia</p>
+
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-leaf">❧</div>
+    <div class="divider-line"></div>
+  </div>
+
+  <div class="content">
+    <p class="intro-text">No medicinal tree of India sits as deeply in the spiritual imagination as Bilva — the <em>Shiva Druma</em>, the tree under which Lord Shiva is said to dwell. Its trifoliate leaves carry the symbolism of <em>Brahma, Vishnu, Mahesh</em>; of <em>Satva, Rajas, Tamas</em>; of past, present, and future. Yet alongside its sacred role lives a five-thousand-year-old medicinal heritage, named in the Yajurveda and validated by modern research from gut to glycaemia.</p>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">01</span>
+        <h2 class="section-title">Botanical Profile</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Bael (<em>Aegle marmelos</em> (L.) Corrêa) is a moderately-sized deciduous tree of the Rutaceae family — the citrus family — reaching 8–13 metres in height, with a gnarled, robust trunk, irregular branching, and characteristic sharp thorns up to 4 cm long. The bark is greyish-brown, deeply furrowed, and exudes a clear gum when wounded. Leaves are alternate, trifoliate, with three ovate-lanceolate leaflets — the central one larger — releasing an aromatic citrus-like fragrance when crushed.</p>
+      <p class="section-body">The greenish-white, fragrant flowers appear in lateral panicles between April and May. The signature fruit is the <em>Bilva</em> itself — hard, smooth, woody-shelled, 5–15 cm in diameter, ripening from green to golden yellow. Inside lies a fragrant orange pulp, sticky, sweet, and full of small woolly seeds embedded in mucilage. The tree is indigenous to the Eastern Ghats and central India, distributed throughout India, Bangladesh, Nepal, Sri Lanka, and Southeast Asia. It has been used for over 5,000 years and is one of the ten classical roots of the <em>Dashamoola</em> formulation.</p>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>PROPERTY</th>
+            <th>Detail</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Family</td>
+            <td>Rutaceae (Jambira Kula — citrus family)</td>
+          </tr>
+          <tr>
+            <td>Botanical Name</td>
+            <td>Aegle marmelos (L.) Corrêa</td>
+          </tr>
+          <tr>
+            <td>Sanskrit Names</td>
+            <td>Bilva, Sriphala, Maaloora, Shandilya, Shailusha, Gandhapatra, Shivadruma, Sadaaphala, Mahakapittha, Granthila, Atisara</td>
+          </tr>
+          <tr>
+            <td>Common Names</td>
+            <td>Bael, Bel, Bengal Quince, Indian Quince, Golden Apple, Holy Fruit, Stone Apple, Wood Apple, Belgiri, Maredu, Vilvam</td>
+          </tr>
+          <tr>
+            <td>Origin</td>
+            <td>Eastern Ghats &amp; central India; widespread across Indian subcontinent &amp; Southeast Asia</td>
+          </tr>
+          <tr>
+            <td>Plant Type</td>
+            <td>Medium-sized deciduous tree (8–13 m), thorny</td>
+          </tr>
+          <tr>
+            <td>Fruiting Season</td>
+            <td>Flowers April – May; fruits ripen October – December</td>
+          </tr>
+          <tr>
+            <td>Medicinal Parts</td>
+            <td>Fruit (primary), root, leaves, bark, seeds, flowers — entire plant</td>
+          </tr>
+          <tr>
+            <td>Taste Profile</td>
+            <td>Astringent (kashaya), bitter (tikta), pungent (katu) — unripe; sweet-astringent — ripe</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">02</span>
+        <h2 class="section-title">Phytochemistry Composition</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Bael is a treasure of phytochemicals. The plant's signature bioactive marker is <em>marmelosin</em> — a furocoumarin first isolated from its fruits and named after its scientific epithet. Alongside marmelosin, the plant produces a remarkable array of alkaloids (aegeline, aegelenine, fragrine, skimmianine), coumarins (marmin, psoralen, imperatorin, umbelliferone, scopoletin), terpenes (cineol, β-caryophyllene), tannins, and flavonoids (rutin, marmesin, marmesinin).</p>
+      <p class="section-body">The ripe fruit pulp is particularly rich in carotenoids, phenolics, pectins, mucilage, tannins, vitamin C, and the unique sticky polysaccharide that gives Bael Sharbat its characteristic body. The leaves additionally contain aegeline (responsible for hypoglycaemic action), while the root bark yields umbelliferone β-D-galactopyranoside (UFG) — a compound studied for antidiabetic activity in 2014–2018 STZ-diabetic rat research. Different plant parts have been mapped to distinct therapeutic uses based on this chemistry.</p>
+      <div class="nutrition-bar">
+        <div class="nutrition-cell">
+          <div class="nutrition-num">5000</div>
+          <div class="nutrition-unit">years of</div>
+          <div class="nutrition-label">Documented use</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">10</div>
+          <div class="nutrition-unit">roots of</div>
+          <div class="nutrition-label">Dashamoola group</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">3</div>
+          <div class="nutrition-unit">leaflets symbolise</div>
+          <div class="nutrition-label">Brahma · Vishnu · Mahesh</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">12+</div>
+          <div class="nutrition-unit">major</div>
+          <div class="nutrition-label">Bioactive compound classes</div>
+        </div>
+      </div>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Compound</th>
+            <th>Category</th>
+            <th>Primary Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Marmelosin (Imperatorin)</td>
+            <td>Furocoumarin</td>
+            <td>Plant-specific marker; gastroprotective, antidiabetic, anti-inflammatory</td>
+          </tr>
+          <tr>
+            <td>Aegeline &amp; Aegelenine</td>
+            <td>Alkaloids</td>
+            <td>Hypoglycaemic, lipid-lowering, antidiabetic</td>
+          </tr>
+          <tr>
+            <td>Marmin &amp; Marmesin</td>
+            <td>Coumarins</td>
+            <td>Anti-inflammatory, anti-ulcer, hepatoprotective</td>
+          </tr>
+          <tr>
+            <td>Psoralen &amp; Umbelliferone</td>
+            <td>Furanocoumarins</td>
+            <td>Antimicrobial, antiviral, photo-protective</td>
+          </tr>
+          <tr>
+            <td>Skimmianine &amp; Fragrine</td>
+            <td>Alkaloids</td>
+            <td>Antimicrobial, antifungal, anti-allergic</td>
+          </tr>
+          <tr>
+            <td>Mucilage &amp; Pectins</td>
+            <td>Polysaccharide fibre</td>
+            <td>Demulcent, gut-soothing, prebiotic, gastroprotective</td>
+          </tr>
+          <tr>
+            <td>Tannins (in unripe fruit)</td>
+            <td>Polyphenols</td>
+            <td>Astringent, antidiarrhoeal, antimicrobial</td>
+          </tr>
+          <tr>
+            <td>Cineol &amp; β-Caryophyllene</td>
+            <td>Terpenes (essential oil)</td>
+            <td>Bronchodilator, expectorant, anti-inflammatory</td>
+          </tr>
+          <tr>
+            <td>Rutin &amp; Carotenoids</td>
+            <td>Flavonol &amp; provitamin A</td>
+            <td>Antioxidant, capillary-strengthening, immune-supportive</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">03</span>
+        <h2 class="section-title">Ayurvedic Significance</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Charaka Samhita places Bilva in three classical groupings: <em>Shothahara Mahakashaya</em> (anti-inflammatory group), <em>Arshoghna Mahakashaya</em> (anti-haemorrhoidal group), and <em>Asthapanopaga Mahakashaya</em> (adjuvants in basti / enema therapy). The classical shloka declares: <em>"Bilvam tu kashaya tiktam, deepanam balyam ushnam, samgrahi vata-shleshma-haram, tatra-tikshnam tu pittakrit"</em> — Bilwa is astringent and bitter; kindles digestive fire; strengthens; hot in potency; absorbent; pacifies Vata and Kapha; piercing; increases Pitta.</p>
+      <p class="section-body">Different parts have different attributes. <em>Unripe (Bilva Shunthi) fruit</em>: tikshna (piercing), snigdha (unctuous), sangrahi (absorbent), deepana (digestive), katu-tikta-kashaya rasa, ushna virya — best of all for diarrhoea and dysentery. <em>Ripe fruit</em>: heavy, sweet-sour, slightly laxative, but causes diarrhoea, gas, and burning sensation if eaten in excess. <em>Leaf</em>: sangrahi, vatajit, balances tridosha, relieves vomiting and abdominal colic. <em>Root</em>: cornerstone of Dashamoola — anti-inflammatory and pain-relieving. The root, fruit, and leaves are used in some of the most beloved classical formulations: <em>Vilvadi Gulika</em> (insect bites, fever), <em>Bilva Tail</em> (ear diseases), <em>Astapatra Tail</em> (headache).</p>
+      <table class="dosha-table">
+        <thead>
+          <tr>
+            <th>Dosha</th>
+            <th>Effect</th>
+            <th>Mechanism &amp; Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Vata ↓</td>
+            <td>Pacifying</td>
+            <td>Hot potency (ushna virya), unctuous quality, and absorbent action calm Vata-related abdominal pain, colic, and bloating; root is part of Dashamoola for Vata-vyadhi</td>
+          </tr>
+          <tr>
+            <td>Pitta ↑</td>
+            <td>May aggravate (unripe) / Mild (ripe)</td>
+            <td>Tikshna and ushna qualities of unripe fruit may increase Pitta; avoid in acute hyperacidity, gastritis, or bleeding disorders. Ripe fruit is much gentler on Pitta</td>
+          </tr>
+          <tr>
+            <td>Kapha ↓</td>
+            <td>Pacifying</td>
+            <td>Bitter, astringent, dry, and light qualities reduce mucus, oedema, and metabolic heaviness; unripe fruit especially effective in Kapha-related digestive disorders</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">04</span>
+        <h2 class="section-title">Key Health Benefits</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Bilva is one of those rare herbs where every part works — root, bark, leaf, flower, unripe fruit, ripe fruit, seed — and modern research has confirmed activity across digestive, metabolic, hepatic, cardiovascular, antimicrobial, and even radioprotective domains. Few plants traverse so many systems with so much classical and clinical backing.</p>
+      <div class="benefits-grid">
+        <div class="benefit-card">
+          <div class="benefit-title">Digestive &amp; Anti-Diarrhoeal</div>
+          <div class="benefit-desc">The flagship classical use. Unripe Bael fruit's tannins and mucilage absorb intestinal toxins, normalise bowel motility, and soothe inflamed gut tissue — making it the single best Ayurvedic fruit for chronic diarrhoea (Atisara), dysentery, IBS, and ulcerative colitis. <em>Belgiri Powder</em> and <em>Kutaja-Bilva</em> formulations are based on this action.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Antidiabetic &amp; Glycaemic</div>
+          <div class="benefit-desc">Aegeline and umbelliferone β-D-galactopyranoside (UFG) reduce fasting blood glucose, improve insulin sensitivity, and protect pancreatic β-cells in STZ-induced diabetic rat research. Daily Bilva leaf juice or chewing fresh leaves is a classical folk remedy for diabetes mellitus, supported by modern hypoglycaemic studies.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Anti-inflammatory &amp; Joint Pain</div>
+          <div class="benefit-desc">Marmelosin, aegeline, and coumarins inhibit COX-2 and inflammatory cytokines (TNF-α, IL-1β, IL-6). Bilva root is one of the ten <em>Dashamoola</em> roots — Ayurveda's foundational anti-inflammatory pharmacy used for arthritis, sciatica, gout, and post-injury inflammation.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Haemorrhoid Relief (Arshoghna)</div>
+          <div class="benefit-desc">Charaka specifically lists Bilva in the <em>Arshoghna Mahakashaya</em> — herbs useful in haemorrhoids. Astringent tannins reduce swelling, control bleeding, and soothe inflamed tissue. Used both internally as fruit pulp and externally as decoction sitz bath.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Cardiovascular &amp; Lipid Health</div>
+          <div class="benefit-desc">Documented antihyperlipidemic activity — reduces total cholesterol, LDL, and triglycerides while supporting HDL. Cardioprotective coumarins improve circulation, support heart muscle function, and reduce oxidative stress. Useful in hypercholesterolaemia and metabolic syndrome.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Hepatoprotective &amp; Detoxifying</div>
+          <div class="benefit-desc">Marmelosin and umbelliferone compounds protect hepatocytes from toxic and oxidative damage. Modern reviews document hepatoprotective activity across multiple research models. Useful in liver enlargement, mild hepatic insufficiency, and as adjunct support during chemotherapy.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Antimicrobial &amp; Antiviral</div>
+          <div class="benefit-desc">Broad-spectrum activity demonstrated against bacteria, viruses, and fungi. Bael leaf juice with honey is a classical fever and cold remedy. Modern studies document antiviral activity, supporting traditional use in respiratory infections and chronic gastrointestinal infections.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Cooling Sharbat for Summer</div>
+          <div class="benefit-desc">In Northern India, ripe Bael fruit is blended into <em>Bael Sharbat</em> — a cooling summer drink with milk, jaggery, and cardamom — that prevents heat stroke, restores hydration, and aids in chronic constipation. The pulp's mucilage and electrolytes make it particularly well-suited to hot climates.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">06</span>
+        <h2 class="section-title">How to Consume Bael</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Each part of Bael serves a different therapeutic purpose. The unripe fruit (<em>Bilva Shunthi</em>) is best for digestive disorders; the ripe fruit makes summer's most cherished cooling drink; the leaves treat fever, diabetes, and respiratory issues; the root is Ayurveda's anti-inflammatory cornerstone in Dashamoola. Always pair the appropriate part with the matching condition, and prefer dried unripe fruit (<em>Belgiri</em>) over fresh in classical practice.</p>
+      <table class="consume-table">
+        <thead>
+          <tr>
+            <th>Form</th>
+            <th>Preparation</th>
+            <th>Dosage</th>
+            <th>Best Time</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Belgiri (Dried Unripe Fruit) Powder</td>
+            <td>Sun-dried unripe Bael powder with warm water</td>
+            <td>½–1 tsp (3–6 g) twice daily</td>
+            <td>After meals (for diarrhoea, IBS)</td>
+          </tr>
+          <tr>
+            <td>Bael Sharbat (Ripe Fruit Drink)</td>
+            <td>Pulp blended with water, jaggery, cardamom, milk</td>
+            <td>1 glass (200 ml) daily</td>
+            <td>Summer afternoons, for cooling</td>
+          </tr>
+          <tr>
+            <td>Bael Leaf Juice (Patra Swarasa)</td>
+            <td>Fresh leaves crushed and strained</td>
+            <td>10–20 ml daily, with honey</td>
+            <td>Morning, empty stomach (diabetes, fever)</td>
+          </tr>
+          <tr>
+            <td>Bael Leaf Powder (Patra Churna)</td>
+            <td>Dried leaves ground; mixed with warm water</td>
+            <td>1–3 g twice daily</td>
+            <td>Before meals</td>
+          </tr>
+          <tr>
+            <td>Root Decoction (Dashamoola Kwath)</td>
+            <td>Classical ten-root decoction (Bilva root included)</td>
+            <td>30–50 ml twice daily</td>
+            <td>Before meals (Vata pain, inflammation)</td>
+          </tr>
+          <tr>
+            <td>Vilvadi Gulika</td>
+            <td>Classical tablet with Bael as main ingredient</td>
+            <td>As prescribed</td>
+            <td>For insect bites, fever</td>
+          </tr>
+          <tr>
+            <td>Bilva Tail (Medicated Oil)</td>
+            <td>Bael root cooked in oil base</td>
+            <td>2–3 drops in ear</td>
+            <td>For ear diseases, hearing loss</td>
+          </tr>
+          <tr>
+            <td>Leaf Steam Fomentation</td>
+            <td>Bael leaves boiled; steam directed to eyes</td>
+            <td>Mild fomentation as needed</td>
+            <td>For conjunctivitis with discharge</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">07</span>
+        <h2 class="section-title">Safety &amp; Precautions</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Bael in its fruit form is widely consumed as food across India and Southeast Asia, with an excellent safety profile at culinary doses. However, medicinal use of unripe fruit, root, and concentrated extracts calls for thoughtful clinical context — particularly given Bilva's hot potency, Pitta-aggravating quality, and documented hypoglycaemic activity.</p>
+      <ul class="precaution-list">
+        <li><strong>Pregnancy:</strong> Avoid medicinal doses entirely. Bael has documented antifertility activity in research models, and concentrated extracts may affect uterine tone. Small culinary amounts of ripe fruit pulp are generally considered safe.</li>
+        <li><strong>Breastfeeding:</strong> Insufficient safety data for medicinal use during lactation; consult an Ayurvedic physician before therapeutic use.</li>
+        <li><strong>Antidiabetic medications:</strong> Documented hypoglycaemic activity may potentiate insulin and oral antidiabetics (glimepiride, glipizide, metformin). Monitor blood glucose closely if combining; do not stop prescribed diabetes medication without medical supervision.</li>
+        <li><strong>High Pitta &amp; Hyperacidity:</strong> Unripe Bael fruit's ushna virya (hot potency) and tikshna (piercing) qualities may aggravate hyperacidity, gastritis, peptic ulcer, or any active Pitta condition. Use ripe fruit instead, or pair with cooling anupanas.</li>
+        <li><strong>Excess ripe fruit:</strong> Consuming ripe Bael fruit in excess can cause diarrhoea, abdominal gas, burning sensation, and aggravation of bowel motility — even though the fruit is famous for treating diarrhoea in moderate doses. Stick to recommended quantities.</li>
+        <li><strong>Surgery:</strong> Discontinue concentrated extracts at least 2 weeks before scheduled surgery due to possible effects on blood glucose, blood pressure, and clotting time.</li>
+        <li><strong>Antifertility consideration:</strong> Couples actively trying to conceive should be aware of documented antifertility activity in animal models. Avoid concentrated extracts during conception attempts.</li>
+        <li><strong>Tree felling:</strong> The Bilva tree carries deep spiritual significance — cutting one is traditionally considered inauspicious. Worth noting for those gathering material from temple gardens or sacred groves; ethical sourcing is preferred.</li>
+      </ul>
+    </div>
+
+    <div class="sources">
+      <div class="sources-title">References &amp; Sources</div>
+      <ul>
+        <li>Baliga MS et al. — "Phytochemistry and medicinal uses of the bael fruit (Aegle marmelos Correa): A concise review" — Food Research International / ScienceDirect, 2011</li>
+        <li>"Phytochemical and biological review of Aegle marmelos Linn" — PubMed Central / PMC10072075, 2023</li>
+        <li>Maity P, Hansda D, Bandyopadhyay U, Mishra DK — "Biological activities of crude extracts and chemical constituents of Bael, Aegle marmelos (L.) Corr." — Indian Journal of Experimental Biology, 2009 (PMID: 20099522)</li>
+        <li>Kamalakkannan N &amp; Prince PS — "Antihyperglycaemic and antioxidant effect of rutin, a polyphenolic flavonoid, in streptozotocin-induced diabetic Wistar rats" — Basic &amp; Clinical Pharmacology &amp; Toxicology, 2006</li>
+        <li>Choudhary S et al. — "Aegle marmelos (Bael Patra): An Ayurvedic plant with ethnomedicinal value" — International Journal of Research in Ayurveda &amp; Pharmacy, 2021</li>
+        <li>Charaka Samhita — Shothahara, Arshoghna &amp; Asthapanopaga Mahakashayas (Sutrasthana 4)</li>
+        <li>Sushruta Samhita — Bilva descriptions in Dashamoola context</li>
+        <li>Bhavaprakasha Nighantu — Classical descriptions of Bilva (Sriphala) properties</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer>
+    <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a
+      qualified practitioner before therapeutic use</p>
+  </footer>
+
+  <audio id="baelAudio" src="bael_benefits.mp3" loop preload="auto"></audio>
+
+  <script>
+    const open3D = document.getElementById('open3D');
+    const close3D = document.getElementById('close3D');
+    const modal = document.getElementById('viewerModal');
+    const baelAudio = document.getElementById('baelAudio');
+
+    function openModal() {
+      modal.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+      history.pushState({ modal: 'bael3d' }, '', '#3d');
+      baelAudio.play().catch(e => console.log('Audio autoplay blocked', e));
+    }
+
+    function closeModal() {
+      modal.style.display = 'none';
+      document.body.style.overflow = '';
+      if (window.location.hash === '#3d') {
+        history.replaceState(null, '', window.location.pathname);
+      }
+      baelAudio.pause();
+      baelAudio.currentTime = 0;
+    }
+
+    open3D.addEventListener('click', function (e) {
+      e.preventDefault(); e.stopPropagation();
+      openModal();
+    });
+
+    close3D.addEventListener('click', function (e) {
+      e.preventDefault(); e.stopPropagation();
+      closeModal();
+    });
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+    });
+
+    window.addEventListener('popstate', function (e) {
+      if (modal.style.display === 'flex') {
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+    });
+  </script>
+</body>
+
+</html>

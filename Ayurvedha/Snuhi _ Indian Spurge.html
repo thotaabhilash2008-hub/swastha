@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Snuhi | Swastha</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+  <style>
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+    * { margin: 0; padding: 0; box-sizing: border-box }
+    html { scroll-behavior: smooth }
+    body {
+      font-family: 'Jost', sans-serif;
+      background: var(--cream);
+      color: var(--ink);
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative
+    }
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity: .03; pointer-events: none; z-index: 100
+    }
+
+    #open3D {
+      position: fixed; top: 25px; right: 30px;
+      padding: 10px 18px; font-size: 11px; letter-spacing: 2px;
+      text-transform: uppercase; background: var(--forest);
+      color: #fff; border: none; cursor: pointer; z-index: 1000; transition: .3s
+    }
+    #open3D:hover { background: var(--gold); color: var(--deep) }
+
+    #viewerModal { position: fixed; inset: 0; z-index: 2000; display: none; flex-direction: column }
+    #modal-topbar {
+      flex-shrink: 0; height: 58px; background: #111;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 28px 0 32px; border-bottom: 1px solid rgba(255,255,255,.07)
+    }
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif; font-size: 11px; font-weight: 300;
+      letter-spacing: 4.5px; text-transform: uppercase;
+      color: rgba(255,255,255,.72); user-select: none
+    }
+    #close3D {
+      width: 38px; height: 38px; font-size: 15px; font-weight: 300;
+      background: transparent; color: #fff;
+      border: 1.5px solid rgba(255,255,255,.7); border-radius: 50%;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: background .2s, color .2s, transform .22s; outline: none; flex-shrink: 0
+    }
+    #close3D:hover { background: #fff; color: #111; border-color: #fff; transform: rotate(90deg) }
+    #viewerModal model-viewer { flex: 1; width: 100%; display: block; background: #fff }
+
+    .bg-circle { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0 }
+    .bg-circle-1 {
+      width: 700px; height: 700px;
+      background: radial-gradient(circle, rgba(58,107,42,.1) 0%, transparent 70%);
+      top: -200px; right: -150px
+    }
+    .bg-circle-2 {
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(168,200,106,.07) 0%, transparent 70%);
+      bottom: -100px; left: -100px
+    }
+
+    /* Cactus/spurge botanical SVGs */
+    .botanical-svg { position: fixed; pointer-events: none; z-index: 1; opacity: .08 }
+    .botanical-tl { top: -10px; left: -10px; width: 220px }
+    .botanical-br { bottom: -10px; right: -10px; width: 200px; transform: rotate(180deg) }
+
+    .hero {
+      position: relative; z-index: 10;
+      padding: 54px 40px 0; text-align: center;
+      opacity: 0; animation: fadeUp .9s ease .1s forwards
+    }
+    .back-link {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+      color: var(--sage); text-decoration: none; margin-bottom: 36px; transition: color .3s
+    }
+    .back-link:hover { color: var(--gold) }
+    .logo-rule { display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 14px }
+    .logo-rule span { display: block; height: 1px; width: 70px; background: linear-gradient(to right, transparent, var(--gold)) }
+    .logo-rule span:last-child { background: linear-gradient(to left, transparent, var(--gold)) }
+    .logo-ornament { font-size: 13px; color: var(--gold) }
+
+    .hero-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(64px, 12vw, 110px);
+      font-weight: 300; letter-spacing: 8px; line-height: 1; color: var(--deep)
+    }
+    .hero-subtitle {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 18px; font-style: italic; font-weight: 300;
+      color: var(--earth); letter-spacing: 2px; margin-top: 8px
+    }
+    .hero-sci { font-size: 11px; font-weight: 200; letter-spacing: 5px; color: var(--sage); margin-top: 6px }
+
+    /* Toxicity banner */
+    .toxicity-banner {
+      position: relative; z-index: 10;
+      max-width: 860px; margin: 36px auto 0;
+      background: linear-gradient(135deg, #7a2e0e 0%, #5a1e06 100%);
+      border-left: 4px solid #e8a070;
+      padding: 18px 28px; display: flex; align-items: flex-start; gap: 16px;
+      opacity: 0; animation: fadeUp .9s ease .28s forwards
+    }
+    .toxicity-banner .warn-icon { font-size: 22px; flex-shrink: 0; margin-top: 1px }
+    .toxicity-banner .warn-text { font-size: 12px; font-weight: 300; line-height: 1.75; color: #f5d5c0 }
+    .toxicity-banner .warn-text strong { color: #e8a070; font-weight: 400; letter-spacing: 1px }
+
+    .hero-photos {
+      position: relative; z-index: 10;
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 2px; max-width: 900px; margin: 32px auto 0;
+      opacity: 0; animation: fadeUp .9s ease .38s forwards
+    }
+    .hero-photos img {
+      width: 100%; height: 380px;
+      object-fit: cover; object-position: center; display: block; background: var(--parchment)
+    }
+    .photo-caption {
+      text-align: center; font-family: 'Cormorant Garamond', serif;
+      font-size: 12px; font-style: italic; color: var(--sage);
+      letter-spacing: 1px; padding: 10px 0 0; max-width: 900px; margin: 0 auto;
+      position: relative; z-index: 10;
+      opacity: 0; animation: fadeUp .9s ease .5s forwards
+    }
+
+    .divider {
+      display: flex; align-items: center; justify-content: center;
+      gap: 16px; margin: 46px auto; max-width: 600px;
+      opacity: 0; animation: fadeUp .9s ease .55s forwards;
+      position: relative; z-index: 10
+    }
+    .divider-line { height: 1px; width: 120px; background: linear-gradient(to right, transparent, var(--sage)) }
+    .divider-line:last-child { background: linear-gradient(to left, transparent, var(--sage)) }
+    .divider-leaf { color: var(--earth); font-size: 18px }
+
+    .content { position: relative; z-index: 10; max-width: 860px; margin: 0 auto; padding: 0 30px 80px }
+
+    .intro-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 20px; font-weight: 300; line-height: 1.75;
+      color: var(--ink); text-align: center; max-width: 700px; margin: 0 auto 60px;
+      opacity: 0; animation: fadeUp .9s ease .6s forwards
+    }
+    .intro-text em { color: var(--forest); font-style: italic }
+
+    .section { margin-bottom: 60px; opacity: 0; animation: fadeUp .9s ease forwards }
+    .section:nth-child(1) { animation-delay: .65s }
+    .section:nth-child(2) { animation-delay: .75s }
+    .section:nth-child(3) { animation-delay: .85s }
+    .section:nth-child(4) { animation-delay: .95s }
+    .section:nth-child(5) { animation-delay: 1.05s }
+    .section:nth-child(6) { animation-delay: 1.15s }
+    .section:nth-child(7) { animation-delay: 1.25s }
+
+    .section-header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px }
+    .section-num { font-family: 'Cormorant Garamond', serif; font-size: 11px; letter-spacing: 4px; color: var(--gold) }
+    .section-title { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 400; color: var(--deep); letter-spacing: 1px }
+    .section-rule { height: 1px; flex: 1; background: linear-gradient(to right, var(--gold), transparent) }
+    .section-body { font-size: 13px; font-weight: 300; line-height: 1.9; color: var(--ink); margin-bottom: 24px }
+
+    .data-table { width: 100%; border-collapse: collapse; margin: 16px 0 8px; font-size: 12px }
+    .data-table thead tr { background: var(--deep); color: var(--gold); font-size: 10px; letter-spacing: 3px; text-transform: uppercase }
+    .data-table thead th { padding: 12px 14px; text-align: left; font-weight: 400 }
+    .data-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .data-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .data-table tbody tr { transition: background .2s }
+    .data-table tbody tr:hover { background: #d8e8c8 }
+    .data-table tbody td { padding: 10px 14px; color: var(--ink); border-bottom: 1px solid rgba(58,107,42,.1) }
+    .data-table tbody td:first-child { font-weight: 400; color: var(--deep); width: 28% }
+
+    .dosha-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .dosha-table thead tr { background: var(--forest); color: var(--cream) }
+    .dosha-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .dosha-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .dosha-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .dosha-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(58,107,42,.1) }
+    .dosha-table tbody td:first-child { font-weight: 400; color: var(--forest); width: 18% }
+    .dosha-table tbody td:nth-child(2) { color: var(--earth); width: 20% }
+
+    .consume-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .consume-table thead tr { background: var(--earth); color: var(--cream) }
+    .consume-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .consume-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .consume-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .consume-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(58,107,42,.1) }
+    .consume-table tbody td:first-child { font-weight: 400; color: var(--earth); width: 22% }
+
+    .benefits-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 1px; background: rgba(58,107,42,.12);
+      border: 1px solid rgba(58,107,42,.12); margin: 8px 0
+    }
+    .benefit-card {
+      background: var(--cream); padding: 24px 22px;
+      transition: background .3s; position: relative; overflow: hidden
+    }
+    .benefit-card:hover { background: #deebd0 }
+    .benefit-card::before {
+      content: ''; position: absolute; bottom: 0; left: 0;
+      width: 0; height: 2px; background: var(--gold); transition: width .4s
+    }
+    .benefit-card:hover::before { width: 100% }
+    .benefit-title { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 600; color: var(--forest); margin-bottom: 8px }
+    .benefit-desc { font-size: 11.5px; font-weight: 300; line-height: 1.75; color: var(--ink); opacity: .85 }
+
+    /* Warning-style precaution list */
+    .precaution-list { list-style: none; margin: 8px 0 }
+    .precaution-list li {
+      display: flex; gap: 12px; align-items: flex-start;
+      padding: 12px 14px; font-size: 12px; font-weight: 300;
+      line-height: 1.7; color: var(--ink);
+      border-bottom: 1px solid rgba(122,46,14,.1)
+    }
+    .precaution-list li:last-child { border-bottom: none }
+    .precaution-list li.red { background: #fdf0ea }
+    .precaution-list li.red::before { content: '⚠'; color: #c0401a; flex-shrink: 0; margin-top: 1px }
+    .precaution-list li::before { content: '▸'; color: var(--gold); flex-shrink: 0; margin-top: 1px }
+
+    .nutrition-bar {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 1px; background: rgba(58,107,42,.12);
+      border: 1px solid rgba(58,107,42,.12); margin: 20px 0
+    }
+    .nutrition-cell { background: var(--cream); padding: 22px 16px; text-align: center; transition: background .3s }
+    .nutrition-cell:hover { background: var(--parchment) }
+    .nutrition-num { font-family: 'Cormorant Garamond', serif; font-size: 36px; font-weight: 300; color: var(--forest); line-height: 1; margin-bottom: 4px }
+    .nutrition-unit { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); font-weight: 300 }
+    .nutrition-label { font-size: 11px; font-weight: 300; color: var(--ink); margin-top: 5px }
+
+    .sources { border-top: 1px solid rgba(58,107,42,.15); padding-top: 24px; margin-top: 20px }
+    .sources-title { font-size: 10px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); margin-bottom: 12px; font-weight: 300 }
+    .sources ul { list-style: none }
+    .sources ul li {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 13px; font-style: italic; color: var(--earth);
+      padding: 5px 0; border-bottom: 1px solid rgba(58,107,42,.07)
+    }
+    .sources ul li::before { content: '· '; color: var(--sage) }
+
+    footer {
+      position: relative; z-index: 10;
+      text-align: center; padding: 24px 20px 44px;
+      border-top: 1px solid rgba(58,107,42,.12);
+      max-width: 860px; margin: 0 auto
+    }
+    footer p { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); font-weight: 300 }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(28px) }
+      to { opacity: 1; transform: translateY(0) }
+    }
+    @media(max-width:700px) {
+      .hero-photos { grid-template-columns: 1fr }
+      .hero-photos img { height: 260px }
+      .benefits-grid { grid-template-columns: 1fr }
+      .nutrition-bar { grid-template-columns: 1fr 1fr }
+      .content { padding: 0 18px 60px }
+      .toxicity-banner { margin: 24px 18px 0 }
+    }
+  </style>
+</head>
+<body>
+
+<button id="open3D">View in 3D</button>
+
+<div id="viewerModal">
+  <div id="modal-topbar">
+    <span>3D Model — Snuhi</span>
+    <button id="close3D">✕</button>
+  </div>
+  <model-viewer src="snuhi3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+</div>
+
+<div class="bg-circle bg-circle-1"></div>
+<div class="bg-circle bg-circle-2"></div>
+
+<!-- Cactus-form botanical ornaments -->
+<svg class="botanical-svg botanical-tl" viewBox="0 0 300 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M60 310 L60 80" stroke="#1e4d10" stroke-width="8" stroke-linecap="round"/>
+  <path d="M60 180 Q 20 160 18 120" stroke="#1e4d10" stroke-width="6" stroke-linecap="round" fill="none"/>
+  <path d="M60 220 Q 100 200 102 155" stroke="#1e4d10" stroke-width="6" stroke-linecap="round" fill="none"/>
+  <path d="M60 140 Q 28 125 26 95" stroke="#3a6b2a" stroke-width="4" stroke-linecap="round" fill="none"/>
+  <circle cx="18" cy="120" r="5" fill="#a8c86a" opacity=".7"/>
+  <circle cx="102" cy="155" r="5" fill="#a8c86a" opacity=".7"/>
+  <circle cx="60" cy="80" r="7" fill="#6a9a55" opacity=".8"/>
+  <line x1="55" y1="200" x2="45" y2="195" stroke="#1e4d10" stroke-width="1.5"/>
+  <line x1="55" y1="240" x2="45" y2="235" stroke="#1e4d10" stroke-width="1.5"/>
+  <line x1="65" y1="160" x2="75" y2="155" stroke="#1e4d10" stroke-width="1.5"/>
+</svg>
+<svg class="botanical-svg botanical-br" viewBox="0 0 300 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M60 310 L60 80" stroke="#1e4d10" stroke-width="8" stroke-linecap="round"/>
+  <path d="M60 180 Q 20 160 18 120" stroke="#1e4d10" stroke-width="6" stroke-linecap="round" fill="none"/>
+  <path d="M60 220 Q 100 200 102 155" stroke="#1e4d10" stroke-width="6" stroke-linecap="round" fill="none"/>
+  <circle cx="18" cy="120" r="5" fill="#a8c86a" opacity=".7"/>
+  <circle cx="102" cy="155" r="5" fill="#a8c86a" opacity=".7"/>
+</svg>
+
+<div class="hero">
+  <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+  <div class="logo-rule"><span></span><div class="logo-ornament">✦</div><span></span></div>
+  <div class="hero-title">Snuhi</div>
+  <div class="hero-subtitle">Indian Spurge Tree — The Fence Euphorbia</div>
+  <div class="hero-sci">Euphorbia neriifolia L. &nbsp;·&nbsp; Euphorbiaceae</div>
+</div>
+
+<div class="toxicity-banner">
+  <div class="warn-icon">⚠</div>
+  <div class="warn-text">
+    <strong>Caution — Toxic Latex</strong> &nbsp;·&nbsp;
+    Snuhi produces a highly caustic milky latex containing diterpene esters that can cause severe skin burns, ocular damage, and systemic toxicity if ingested raw. All internal therapeutic use must be under the strict supervision of a qualified Ayurvedic physician using classically processed (shodhita) preparations. Self-medication is strongly discouraged.
+  </div>
+</div>
+
+<div class="hero-photos">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/e/e2/Habitus_of_Euphorbia_neriifolia.jpg" alt="Euphorbia neriifolia — columnar succulent stem with spines and fleshy leaves"
+    onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+  <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/3/31/Euphorbia_neriifolia_in_Krohn_Conservatory.jpg/1280px-Euphorbia_neriifolia_in_Krohn_Conservatory.jpg" alt="Snuhi plant used as a living fence hedge in rural India"
+    onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+</div>
+<p class="photo-caption">Fig. 1 — Columnar succulent stems of Euphorbia neriifolia bearing fleshy leaves and paired spines &nbsp;·&nbsp; Fig. 2 — Snuhi planted as a traditional living fence (hedgerow) in rural India</p>
+
+<div class="divider">
+  <div class="divider-line"></div>
+  <div class="divider-leaf">❧</div>
+  <div class="divider-line"></div>
+</div>
+
+<div class="content">
+  <p class="intro-text">Known in Sanskrit as <em>Snuhi</em> — "that which exudes readily" — and revered in Ayurvedic tradition as a potent Kapha-Vata pacifier and one of the most powerful purgatives in the classical materia medica, <em>Euphorbia neriifolia</em> straddles the boundary between poison and medicine. Its milky latex, while dangerously caustic in raw form, yields — through rigorous Shodhana (purification) — a remarkable therapeutic agent for deep-seated abdominal disorders, skin diseases, and nervous system conditions.</p>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">01</span>
+      <h2 class="section-title">Botanical Profile</h2>
+      <div class="section-rule"></div>
+    </div>
+    <p class="section-body">Euphorbia neriifolia is a large, erect, succulent shrub or small tree of the Euphorbiaceae family, typically reaching 2–6 metres in height. It presents as a cactus-like succulent with a cylindrical or 5-angled fleshy stem, deeply undulate margins, and paired stipular spines at each node. The leaves are thick, fleshy, obovate, and deciduous — appearing seasonally on young growth. Tiny cyathia (specialised Euphorbia flower structures) are borne in clusters at branch tips, pale yellow-green in colour.</p>
+    <p class="section-body">The plant is native to rocky hills and dry scrublands of peninsular India and is widely cultivated throughout the Indian subcontinent, Sri Lanka, and tropical Asia as a living fence or hedge — its spiny stems forming impenetrable barriers. It thrives in poor, rocky, well-drained soils with high heat and low rainfall, making it a characteristic plant of Deccan Plateau landscapes. In Maharashtra, Tamil Nadu, Andhra Pradesh, and Telangana it is one of the most recognisable boundary plants of agricultural fields.</p>
+    <table class="data-table">
+      <thead><tr><th>PROPERTY</th><th>Detail</th></tr></thead>
+      <tbody>
+        <tr><td>Family</td><td>Euphorbiaceae</td></tr>
+        <tr><td>Botanical Name</td><td>Euphorbia neriifolia L.</td></tr>
+        <tr><td>Sanskrit Names</td><td>Snuhi, Snuk, Sehunda, Vajra, Vajradru, Thohra, Sudha</td></tr>
+        <tr><td>Common Names</td><td>Indian Spurge Tree, Common Milk Hedge, Oleander-leaved Euphorbia</td></tr>
+        <tr><td>Regional Names</td><td>Jayamulli (Tel), Ilai Kalli (Tam), Ele Kalli (Kan), Thazha Kalli (Mal), Sehund (Hindi), Nivarung (Mar)</td></tr>
+        <tr><td>Origin</td><td>Peninsular India; cultivated across tropical Asia</td></tr>
+        <tr><td>Plant Type</td><td>Succulent shrub / small tree (2–6 m); cactiform</td></tr>
+        <tr><td>Habitat</td><td>Rocky hills, dry scrubland, agricultural hedgerows; Deccan Plateau</td></tr>
+        <tr><td>Medicinal Parts</td><td>Latex (primary), stem bark, root, leaves</td></tr>
+        <tr><td>Taste Profile</td><td>Katu (pungent), Tikta (bitter)</td></tr>
+        <tr><td>Key Distinction</td><td>Latex requires Shodhana (purification) before internal use; topical use also requires care</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">02</span>
+      <h2 class="section-title">Phytochemistry</h2>
+      <div class="section-rule"></div>
+    </div>
+    <p class="section-body">The latex of Euphorbia neriifolia is a pharmacologically dense mixture of diterpene esters, triterpenoids, sterols, and rubber-like hydrocarbons. The primary toxicants — ingenol and phorbol esters — are potent protein kinase C activators responsible for the severe inflammatory and co-carcinogenic effects of raw latex. Paradoxically, these same compounds are being investigated for selective antitumour activity at precisely calibrated micro-doses. The stem and root yield a broader range of sterols, flavonoids, and phenolics with less acute toxicity.</p>
+    <div class="nutrition-bar">
+      <div class="nutrition-cell">
+        <div class="nutrition-num">50+</div>
+        <div class="nutrition-unit">compounds</div>
+        <div class="nutrition-label">Identified in plant</div>
+      </div>
+      <div class="nutrition-cell">
+        <div class="nutrition-num">4</div>
+        <div class="nutrition-unit">euphorbol esters</div>
+        <div class="nutrition-label">Primary diterpenes</div>
+      </div>
+      <div class="nutrition-cell">
+        <div class="nutrition-num">2–6 m</div>
+        <div class="nutrition-unit">plant height</div>
+        <div class="nutrition-label">At maturity</div>
+      </div>
+      <div class="nutrition-cell">
+        <div class="nutrition-num">7</div>
+        <div class="nutrition-unit">ganas</div>
+        <div class="nutrition-label">Classical Ayurvedic groups</div>
+      </div>
+    </div>
+    <table class="data-table">
+      <thead><tr><th>Compound</th><th>Category</th><th>Primary Action</th></tr></thead>
+      <tbody>
+        <tr><td>Ingenol &amp; Phorbol Esters</td><td>Diterpene esters (latex)</td><td>PKC activators; caustic/co-carcinogenic raw; antitumour at micro-doses</td></tr>
+        <tr><td>Euphorbol Hexacosanoate</td><td>Triterpene ester</td><td>Anti-inflammatory, cytotoxic</td></tr>
+        <tr><td>Taraxerol &amp; Taraxerone</td><td>Pentacyclic triterpenes</td><td>Anti-inflammatory, hepatoprotective, antimicrobial</td></tr>
+        <tr><td>Friedelan-3β-ol (Friedelanol)</td><td>Triterpene</td><td>Analgesic, anti-inflammatory, anti-arthritic</td></tr>
+        <tr><td>β-Sitosterol &amp; Stigmasterol</td><td>Phytosterols</td><td>Anti-inflammatory, hypolipidemic, immunomodulatory</td></tr>
+        <tr><td>Nerifolione</td><td>Diterpenoid (stem)</td><td>Antimicrobial, anti-proliferative</td></tr>
+        <tr><td>Kaempferol &amp; Quercetin</td><td>Flavonoids</td><td>Antioxidant, anti-inflammatory, capillary-protective</td></tr>
+        <tr><td>Euphol</td><td>Tetracyclic triterpenoid</td><td>Antinociceptive, anti-inflammatory, anti-proliferative</td></tr>
+        <tr><td>Rubber hydrocarbons</td><td>Latex polyisoprenes</td><td>Structural component; contributes to irritant properties</td></tr>
+        <tr><td>Tannins &amp; Phenolic acids</td><td>Secondary metabolites</td><td>Astringent, antimicrobial, antioxidant</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">03</span>
+      <h2 class="section-title">Ayurvedic Significance</h2>
+      <div class="section-rule"></div>
+    </div>
+    <p class="section-body">Snuhi holds a prominent position in Ayurvedic classical literature as a <em>Virechana dravya</em> (purgative drug) of exceptional potency. Charaka places it in the <em>Bhedaniya</em> (bowel-breaking/cathartic) gana and mentions it among sharp (<em>tikshna</em>) purgatives suitable for Kapha and Vata-predominant conditions. Sushruta records it in the <em>Adhobhagahara</em> (downward-purging) category. Ashtanga Hridayam of Vagbhata describes its processed latex as a component of <em>Kshara</em> (alkali/caustic) preparations used for fistula-in-ano, haemorrhoids, and skin conditions.</p>
+    <p class="section-body">The classical preparatory method — <em>Snuhi Ksheera Shodhana</em> — involves processing the raw latex through a series of milk-boiling steps (boiling the latex repeatedly in cow's milk, discarding the milk), which hydrolyses the most acutely toxic diterpene esters while preserving therapeutic glycosides and triterpenoids. Snuhi is a key ingredient in <em>Jatyadi Taila</em> (wound-healing oil), <em>Nimbadi Churna</em>, and various <em>Kshara Sutra</em> preparations (medicated threads used in ano-rectal surgery).</p>
+    <table class="dosha-table">
+      <thead><tr><th>Dosha</th><th>Effect</th><th>Mechanism &amp; Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Vata ↓</td><td>Pacifying</td><td>Ushna (hot) virya and purgative action move stagnant Vata downward (Anulomana); used in obstipation, abdominal distension, and neurological Vata disorders after careful processing</td></tr>
+        <tr><td>Kapha ↓</td><td>Strongly pacifying</td><td>Katu-Tikta rasa and Tikshna (sharp) quality cut through excess Kapha; used in skin diseases with Kapha predominance, tumours, oedema, and deep-seated toxin accumulation</td></tr>
+        <tr><td>Pitta ↑</td><td>Aggravating</td><td>Ushna virya and tikshna guna strongly increase Pitta; strictly contraindicated in Pitta-dominant constitutions, inflammatory conditions, pregnancy, and bleeding disorders</td></tr>
+      </tbody>
+    </table>
+    <p class="section-body"><strong>Rasa:</strong> Katu (pungent), Tikta (bitter) &nbsp;·&nbsp; <strong>Guna:</strong> Laghu (light), Tikshna (sharp), Snigdha (unctuous) &nbsp;·&nbsp; <strong>Virya:</strong> Ushna (hot) &nbsp;·&nbsp; <strong>Vipaka:</strong> Katu (pungent) &nbsp;·&nbsp; <strong>Karma:</strong> Kapha-Vatahara, Bhedana, Virechana, Krimighna, Shothahara, Kusthaghna</p>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">04</span>
+      <h2 class="section-title">Key Health Benefits</h2>
+      <div class="section-rule"></div>
+    </div>
+    <p class="section-body">When properly processed and administered under expert supervision, Snuhi's therapeutic applications span gastroenterology, dermatology, ano-rectal surgery, and emerging oncology research. External applications on the skin carry their own considerations and require careful dilution and monitoring.</p>
+    <div class="benefits-grid">
+      <div class="benefit-card">
+        <div class="benefit-title">Powerful Cathartic &amp; Purgative</div>
+        <div class="benefit-desc">Processed Snuhi latex is one of the most potent Bhedana (cleaving) purgatives in classical Ayurveda — used in severe constipation, Udara Roga (abdominal disorders), and Gulma (abdominal masses). Even minute doses of properly processed latex stimulate strong peristaltic action, making precise dosing under physician guidance essential.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Kshara Sutra — Ano-rectal Surgery</div>
+        <div class="benefit-desc">Snuhi latex is a key ingredient of Kshara Sutra — the classical Ayurvedic medicated thread used in the minimally invasive surgical management of fistula-in-ano (Bhagandara) and haemorrhoids (Arsha). Clinical studies and Government of India AYUSH trials confirm its efficacy and safety in this specialised application, now performed in major Ayurvedic hospitals.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Skin Diseases &amp; Wound Healing</div>
+        <div class="benefit-desc">Topically, carefully diluted Snuhi preparations treat Kushtha (obstinate skin disorders), Vrana (chronic non-healing wounds), scabies, ringworm, and warts. Jatyadi Taila — containing Snuhi among other herbs — is a classical medicated oil for wound healing validated in multiple clinical studies for diabetic ulcers and post-surgical wounds.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Anti-tumour &amp; Anti-proliferative</div>
+        <div class="benefit-desc">Euphorbol, taraxerol, and friedelanol exhibit significant cytotoxicity against cancer cell lines (breast, colon, cervical, liver) in in vitro studies. Classical Ayurveda uses Snuhi-based preparations in Granthi (cysts/benign tumours) and Arbuda (malignant growths) — a classical application now receiving modern pharmacological attention.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Anti-inflammatory &amp; Analgesic</div>
+        <div class="benefit-desc">Taraxerol, euphol, and β-sitosterol from stem and root extracts demonstrate potent COX-inhibitory and anti-nociceptive activity. Root bark paste is a classical folk remedy for joint pain, lumbago, and neuralgia — applied topically with caution and appropriate carrier oils to create a counter-irritant and anti-inflammatory effect.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Antimicrobial &amp; Anti-parasitic</div>
+        <div class="benefit-desc">Methanol and ethanol extracts show significant activity against Staphylococcus, E. coli, Klebsiella, Candida, and dermatophytes. Classical use in Krimi (intestinal parasites) and skin infections leverages both the antimicrobial phenolics and the harsh purgative effect to expel gut pathogens. Leaf juice is applied to infected skin in traditional practice.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Respiratory — Asthma &amp; Cough</div>
+        <div class="benefit-desc">Small processed doses of Snuhi latex have been used in classical Ayurveda for Shwasa (asthma) and Kasa (chronic cough) with heavy Kapha involvement — functioning as an expectorant and Kapha-dissolving agent. Leaf decoction with black pepper is recorded in folk practice for bronchial congestion and croupy cough.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Snake Bite &amp; Ear Conditions (Folk)</div>
+        <div class="benefit-desc">Warmed Snuhi leaf juice instilled in the ear is a classical folk remedy for earache and otitis media. Application of the stem surface around snake bite sites (as a topical counterirritant) is recorded in rural ethnobotanical surveys — though this never substitutes for emergency antivenom treatment. Stem sap is also applied to insect stings as a vesicant counter-irritant.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">05</span>
+      <h2 class="section-title">Classical Formulations</h2>
+      <div class="section-rule"></div>
+    </div>
+    <p class="section-body">Snuhi features in a focused but important set of classical and folk formulations — primarily in ano-rectal surgery, skin disease, and cathartic therapy. Its inclusion always reflects careful processing and precise dosing by experienced practitioners.</p>
+    <table class="data-table">
+      <thead><tr><th>Formulation</th><th>Form</th><th>Primary Indication</th></tr></thead>
+      <tbody>
+        <tr><td>Kshara Sutra</td><td>Medicated thread</td><td>Fistula-in-ano (Bhagandara), haemorrhoids, pilonidal sinus — Ayurvedic minimally invasive surgery</td></tr>
+        <tr><td>Jatyadi Taila</td><td>Medicated oil</td><td>Chronic wound healing, diabetic ulcers, post-surgical wounds, infected ulcers</td></tr>
+        <tr><td>Snuhi Kshara</td><td>Alkali preparation</td><td>Skin tumours, warts, condylomata, hyperkeratosis — topical application only</td></tr>
+        <tr><td>Nimbadi Churna</td><td>Powder</td><td>Skin disorders (Kushtha), scabies, chronic dermatitis</td></tr>
+        <tr><td>Snuhi Ksheera (Shodhita)</td><td>Purified latex in milk</td><td>Severe constipation, Gulma, Udara Roga — strictly under supervision</td></tr>
+        <tr><td>Snuhi-Pippali preparation</td><td>Classical compound</td><td>Asthma, chronic cough with Kapha excess — used in small doses</td></tr>
+        <tr><td>Snuhi Taila (Topical)</td><td>Latex-infused oil</td><td>Joint pain, sciatica, neuralgia, skin infections — external use only</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">06</span>
+      <h2 class="section-title">How to Use Snuhi</h2>
+      <div class="section-rule"></div>
+    </div>
+    <p class="section-body">Unlike most Ayurvedic herbs, Snuhi should never be used in self-medication. Internal use is exclusively the domain of classically trained Ayurvedic physicians working with properly processed (Shodhita) preparations. External folk applications carry their own risks and require careful dilution, patch testing, and monitoring. The table below reflects classical and medically supervised usage only.</p>
+    <table class="consume-table">
+      <thead><tr><th>Form</th><th>Preparation</th><th>Dosage</th><th>Use / Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Shodhita Ksheera (Internal)</td><td>Latex purified by repeated milk boiling — 7× minimum</td><td>20–50 mg only, strictly physician-directed</td><td>Obstinate constipation, Gulma, Udara — NEVER self-medicate</td></tr>
+        <tr><td>Kshara Sutra</td><td>Thread soaked in Snuhi latex + turmeric + Apamarga Kshara</td><td>Applied by trained Ayurvedic surgeon only</td><td>Fistula-in-ano, haemorrhoids — clinical procedure</td></tr>
+        <tr><td>Snuhi Kshara (Topical)</td><td>Ash-alkaline extract from plant; paste</td><td>Apply to lesion only with applicator; avoid normal skin</td><td>Warts, skin tags, corns — clinician supervision required</td></tr>
+        <tr><td>Jatyadi Taila (Topical)</td><td>Classical polyherbal medicated oil</td><td>Apply 2–3× daily to wound surface</td><td>Safe for supervised wound care; widely commercially available</td></tr>
+        <tr><td>Leaf Juice (Ear drops — Folk)</td><td>Warm fresh leaf juice</td><td>2–3 drops in affected ear</td><td>Folk use for earache — consult ENT if symptoms persist</td></tr>
+        <tr><td>Diluted Stem Paste (Topical)</td><td>Fresh inner stem paste diluted 1:10 in coconut oil</td><td>Apply sparingly to warts, ringworm</td><td>Patch test essential; avoid broken skin, eyes, mucosa</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">07</span>
+      <h2 class="section-title">Safety, Toxicity &amp; Precautions</h2>
+      <div class="section-rule"></div>
+    </div>
+    <p class="section-body">Snuhi demands the highest level of caution among the herbs in this garden. Its raw latex is classified as a severe irritant, vesicant, and systemic toxin. The following precautions are non-negotiable.</p>
+    <ul class="precaution-list">
+      <li class="red"><strong>Raw latex — never ingest.</strong> The unpurified latex of Euphorbia neriifolia contains phorbol esters that cause severe gastroenteritis, oral/GI mucosa ulceration, haemorrhage, hypotension, and potentially fatal systemic toxicity. Death has been recorded from intentional and accidental ingestion of raw latex.</li>
+      <li class="red"><strong>Eye contact — medical emergency.</strong> Latex splashed in the eye causes acute chemical conjunctivitis, corneal damage, and, without immediate irrigation, permanent vision loss. Handle the plant with gloves; wash hands thoroughly; never touch eyes after contact.</li>
+      <li class="red"><strong>Skin burns.</strong> Direct contact of raw latex with skin causes chemical burns, blistering, and dermatitis. Wear protective gloves when handling the plant or its cut stems.</li>
+      <li class="red"><strong>Pregnancy — strictly contraindicated.</strong> Snuhi is a potent uterine stimulant and abortifacient. All forms — internal or topical over large areas — are absolutely contraindicated in pregnancy.</li>
+      <li><strong>Children:</strong> All internal preparations and strong topical applications are contraindicated in children without specialist supervision.</li>
+      <li><strong>Pitta-dominant constitutions:</strong> Ushna, tikshna qualities severely aggravate Pitta — contraindicated in bleeding disorders, peptic ulcers, inflammatory bowel disease, and high-Pitta states.</li>
+      <li><strong>Cardiac &amp; renal disease:</strong> Systemic absorption of diterpene esters can affect cardiac conduction and renal tubular function — contraindicated in known cardiac and kidney disease.</li>
+      <li><strong>Drug interactions:</strong> Potent purgative action may accelerate transit and reduce absorption of oral medications taken simultaneously — always allow a 2-hour gap from other medications.</li>
+      <li><strong>Shodhana is non-negotiable:</strong> Classical purification (minimum 7 cycles of latex boiled in milk) is not a tradition to be skipped — it is a toxicological necessity that hydrolyses acute-phase irritants. Only use preparations from qualified Ayurvedic pharmacies with documented Shodhana processes.</li>
+    </ul>
+  </div>
+
+  <div class="sources">
+    <div class="sources-title">References &amp; Sources</div>
+    <ul>
+      <li>Singla AK &amp; Pathak K — "Phytoconstituents of Euphorbia species" — Fitoterapia, 1990</li>
+      <li>Upadhyay RK — "Euphorbia neriifolia: A plant of tradition and modern medicine" — Journal of Medicinal Plant Research, 2011</li>
+      <li>Sharma PV — Dravyaguna Vigyana Vol. II — classical properties and Shodhana of Snuhi</li>
+      <li>Charaka Samhita, Kalpasthana — Bhedaniya gana and purgative drugs including Snuhi</li>
+      <li>Sushruta Samhita, Sutrasthana — Adhobhagahara category and Kshara preparations</li>
+      <li>Ashtanga Hridayam, Sutrasthana &amp; Chikitsasthana — Kshara Karma and Snuhi</li>
+      <li>Bhavaprakasha Nighantu — Guduchyadi Varga: properties of Sehunda</li>
+      <li>Joshi SG — Medicinal Plants, 2000 — Euphorbia neriifolia monograph</li>
+      <li>Datta A et al. — "Kshara Sutra therapy: a review of clinical studies" — Ancient Science of Life, 2015</li>
+      <li>Ahmad A et al. — "Pharmacological and phytochemical overview of genus Euphorbia" — International Journal of Pharma Sciences, 2014</li>
+      <li>Gupta MM et al. — "Jatyadi Taila in wound healing: a randomised clinical study" — Journal of Ayurveda and Integrative Medicine, 2019</li>
+    </ul>
+  </div>
+</div>
+
+<footer>
+  <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a qualified practitioner before therapeutic use</p>
+</footer>
+
+<script>
+  const open3D = document.getElementById('open3D');
+  const close3D = document.getElementById('close3D');
+  const modal = document.getElementById('viewerModal');
+
+  function openModal() {
+    var _aud = document.getElementById('snuhiAudio'); if(_aud){ _aud.currentTime=0; var playPromise = _aud.play(); if (playPromise !== undefined) { playPromise.catch(function(e){ console.log(e); }); } }
+
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    history.pushState({ modal: 'snuhi3d' }, '', '#3d');
+  }
+  function closeModal() {
+    var _aud = document.getElementById('snuhiAudio'); if(_aud){ _aud.pause(); }
+
+    modal.style.display = 'none';
+    document.body.style.overflow = '';
+    if (window.location.hash === '#3d') history.replaceState(null, '', window.location.pathname);
+  }
+
+  open3D.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); openModal(); });
+  close3D.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); closeModal(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && modal.style.display === 'flex') closeModal(); });
+  window.addEventListener('popstate', () => { if (modal.style.display === 'flex') { modal.style.display = 'none'; document.body.style.overflow = ''; } });
+</script>
+
+
+  <audio id="snuhiAudio" src="snuhi_benefits.mp3" loop preload="auto"></audio>
+</body>
+</html>

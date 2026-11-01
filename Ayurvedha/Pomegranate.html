@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pomegranate | Swastha</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+  <style>
+    #open3D {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      padding: 10px 18px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: var(--forest);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      z-index: 1000;
+      transition: .3s;
+    }
+    #open3D:hover {
+      background: var(--gold);
+      color: var(--deep);
+    }
+    #viewerModal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+    }
+    #modal-topbar {
+      flex-shrink: 0;
+      height: 58px;
+      background: #111111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px 0 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      z-index: 99999;
+    }
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 4.5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.72);
+      user-select: none;
+    }
+    #close3D {
+      width: 38px;
+      height: 38px;
+      font-size: 15px;
+      font-weight: 300;
+      background: transparent;
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background .2s, color .2s, transform .22s;
+      outline: none;
+      flex-shrink: 0;
+    }
+    #close3D:hover {
+      background: #ffffff;
+      color: #111111;
+      border-color: #ffffff;
+      transform: rotate(90deg);
+    }
+    #viewerModal model-viewer {
+      flex: 1;
+      width: 100%;
+      display: block;
+      background: #ffffff;
+    }
+
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+    * { margin: 0; padding: 0; box-sizing: border-box }
+    html { scroll-behavior: smooth }
+    body {
+      font-family: 'Jost', sans-serif;
+      background: var(--cream);
+      color: var(--ink);
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity: .035;
+      pointer-events: none;
+      z-index: 100
+    }
+    .bg-circle { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0 }
+    .bg-circle-1 { width: 700px; height: 700px; background: radial-gradient(circle, rgba(107,31,46,.09) 0%, transparent 70%); top: -200px; right: -150px }
+    .bg-circle-2 { width: 500px; height: 500px; background: radial-gradient(circle, rgba(201,97,76,.07) 0%, transparent 70%); bottom: -100px; left: -100px }
+    .botanical-svg { position: fixed; pointer-events: none; z-index: 1; opacity: .09 }
+    .botanical-tl { top: -20px; left: -20px; width: 260px }
+    .botanical-br { bottom: -20px; right: -20px; width: 220px; transform: rotate(180deg) }
+    .hero {
+      position: relative; z-index: 10;
+      padding: 54px 40px 0;
+      text-align: center;
+      opacity: 0;
+      animation: fadeUp .9s ease .1s forwards
+    }
+    .back-link {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+      color: var(--sage); text-decoration: none; margin-bottom: 36px; transition: color .3s
+    }
+    .back-link:hover { color: var(--gold) }
+    .logo-rule { display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 14px }
+    .logo-rule span { display: block; height: 1px; width: 70px; background: linear-gradient(to right, transparent, var(--gold)) }
+    .logo-rule span:last-child { background: linear-gradient(to left, transparent, var(--gold)) }
+    .logo-ornament { font-size: 13px; color: var(--gold) }
+    .hero-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(64px, 12vw, 110px);
+      font-weight: 300; letter-spacing: 8px; line-height: 1; color: var(--deep)
+    }
+    .hero-subtitle { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-style: italic; font-weight: 300; color: var(--earth); letter-spacing: 2px; margin-top: 8px }
+    .hero-sci { font-size: 11px; font-weight: 200; letter-spacing: 5px; color: var(--sage); margin-top: 6px }
+    .hero-photos {
+      position: relative; z-index: 10;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 2px;
+      max-width: 900px; margin: 40px auto 0;
+      opacity: 0; animation: fadeUp .9s ease .35s forwards
+    }
+    .hero-photos img { width: 100%; height: 380px; object-fit: cover; object-position: center; display: block; background: var(--parchment) }
+    .photo-caption {
+      text-align: center; font-family: 'Cormorant Garamond', serif;
+      font-size: 12px; font-style: italic; color: var(--sage); letter-spacing: 1px;
+      padding: 10px 0 0; max-width: 900px; margin: 0 auto;
+      position: relative; z-index: 10; opacity: 0; animation: fadeUp .9s ease .5s forwards
+    }
+    .divider {
+      display: flex; align-items: center; justify-content: center; gap: 16px;
+      margin: 50px auto; max-width: 600px;
+      opacity: 0; animation: fadeUp .9s ease .55s forwards;
+      position: relative; z-index: 10
+    }
+    .divider-line { height: 1px; width: 120px; background: linear-gradient(to right, transparent, var(--sage)) }
+    .divider-line:last-child { background: linear-gradient(to left, transparent, var(--sage)) }
+    .divider-leaf { color: var(--forest); font-size: 18px }
+    .content { position: relative; z-index: 10; max-width: 860px; margin: 0 auto; padding: 0 30px 80px }
+    .intro-text {
+      font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 300;
+      line-height: 1.75; color: var(--ink); text-align: center; max-width: 700px;
+      margin: 0 auto 60px; opacity: 0; animation: fadeUp .9s ease .6s forwards
+    }
+    .intro-text em { color: var(--forest); font-style: italic }
+    .section { margin-bottom: 60px; opacity: 0; animation: fadeUp .9s ease forwards }
+    .section:nth-child(1) { animation-delay: .65s }
+    .section:nth-child(2) { animation-delay: .75s }
+    .section:nth-child(3) { animation-delay: .85s }
+    .section:nth-child(4) { animation-delay: .95s }
+    .section:nth-child(5) { animation-delay: 1.05s }
+    .section:nth-child(6) { animation-delay: 1.15s }
+    .section:nth-child(7) { animation-delay: 1.25s }
+    .section-header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px }
+    .section-num { font-family: 'Cormorant Garamond', serif; font-size: 11px; letter-spacing: 4px; color: var(--gold) }
+    .section-title { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 400; color: var(--deep); letter-spacing: 1px }
+    .section-rule { height: 1px; flex: 1; background: linear-gradient(to right, var(--gold), transparent) }
+    .section-body { font-size: 13px; font-weight: 300; line-height: 1.9; color: var(--ink); margin-bottom: 24px }
+    .data-table { width: 100%; border-collapse: collapse; margin: 16px 0 8px; font-size: 12px }
+    .data-table thead tr { background: var(--deep); color: var(--gold); font-size: 10px; letter-spacing: 3px; text-transform: uppercase }
+    .data-table thead th { padding: 12px 14px; text-align: left; font-weight: 400 }
+    .data-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .data-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .data-table tbody tr { transition: background .2s }
+    .data-table tbody tr:hover { background: #e8cfc8 }
+    .data-table tbody td { padding: 10px 14px; color: var(--ink); border-bottom: 1px solid rgba(139,58,42,.08) }
+    .data-table tbody td:first-child { font-weight: 400; color: var(--deep); width: 28% }
+    .dosha-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .dosha-table thead tr { background: var(--forest); color: var(--cream) }
+    .dosha-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .dosha-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .dosha-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .dosha-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(139,58,42,.08) }
+    .dosha-table tbody td:first-child { font-weight: 400; color: var(--forest); width: 18% }
+    .dosha-table tbody td:nth-child(2) { color: var(--earth); width: 20% }
+    .consume-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .consume-table thead tr { background: var(--earth); color: var(--cream) }
+    .consume-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .consume-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .consume-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .consume-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(139,58,42,.08) }
+    .consume-table tbody td:first-child { font-weight: 400; color: var(--earth); width: 22% }
+    .benefits-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: rgba(139,58,42,.12); border: 1px solid rgba(139,58,42,.12); margin: 8px 0 }
+    .benefit-card { background: var(--cream); padding: 24px 22px; transition: background .3s; position: relative; overflow: hidden }
+    .benefit-card:hover { background: #ead8d0 }
+    .benefit-card::before { content: ''; position: absolute; bottom: 0; left: 0; width: 0; height: 2px; background: var(--gold); transition: width .4s }
+    .benefit-card:hover::before { width: 100% }
+    .benefit-title { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 600; color: var(--forest); margin-bottom: 8px }
+    .benefit-desc { font-size: 11.5px; font-weight: 300; line-height: 1.75; color: var(--ink); opacity: .85 }
+    .precaution-list { list-style: none; margin: 8px 0 }
+    .precaution-list li { display: flex; gap: 12px; align-items: flex-start; padding: 10px 14px; font-size: 12px; font-weight: 300; line-height: 1.7; color: var(--ink); border-bottom: 1px solid rgba(139,58,42,.08) }
+    .precaution-list li:last-child { border-bottom: none }
+    .precaution-list li::before { content: '▸'; color: var(--gold); flex-shrink: 0; margin-top: 1px }
+    .nutrition-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: rgba(139,58,42,.12); border: 1px solid rgba(139,58,42,.12); margin: 20px 0 }
+    .nutrition-cell { background: var(--cream); padding: 22px 16px; text-align: center; transition: background .3s }
+    .nutrition-cell:hover { background: var(--parchment) }
+    .nutrition-num { font-family: 'Cormorant Garamond', serif; font-size: 36px; font-weight: 300; color: var(--forest); line-height: 1; margin-bottom: 4px }
+    .nutrition-unit { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); font-weight: 300 }
+    .nutrition-label { font-size: 11px; font-weight: 300; color: var(--ink); margin-top: 5px }
+    .sources { border-top: 1px solid rgba(139,58,42,.15); padding-top: 24px; margin-top: 20px }
+    .sources-title { font-size: 10px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); margin-bottom: 12px; font-weight: 300 }
+    .sources ul { list-style: none }
+    .sources ul li { font-family: 'Cormorant Garamond', serif; font-size: 13px; font-style: italic; color: var(--earth); padding: 5px 0; border-bottom: 1px solid rgba(139,58,42,.06) }
+    .sources ul li::before { content: '· '; color: var(--sage) }
+    footer { position: relative; z-index: 10; text-align: center; padding: 24px 20px 44px; border-top: 1px solid rgba(139,58,42,.12); max-width: 860px; margin: 0 auto }
+    footer p { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); font-weight: 300 }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(28px) } to { opacity: 1; transform: translateY(0) } }
+    @media(max-width:700px) {
+      .hero-photos { grid-template-columns: 1fr }
+      .hero-photos img { height: 260px }
+      .benefits-grid { grid-template-columns: 1fr }
+      .nutrition-bar { grid-template-columns: 1fr 1fr }
+      .content { padding: 0 18px 60px }
+    }
+  </style>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+</head>
+<body>
+  <button type="button" id="open3D">View in 3D</button>
+
+
+  <div class="bg-circle bg-circle-1"></div>
+  <div class="bg-circle bg-circle-2"></div>
+
+  <!-- Pomegranate botanical SVG decoration -->
+  <svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M20 280 Q 70 200 120 150 Q 170 100 240 40" stroke="#6b1f2e" stroke-width="1.5" fill="none"/>
+    <circle cx="100" cy="170" r="22" fill="#8b3a2a" opacity="0.5"/>
+    <circle cx="100" cy="170" r="14" fill="#c9614c" opacity="0.4"/>
+    <path d="M90 148 Q 100 138 110 148" stroke="#6b1f2e" stroke-width="1.5" fill="none"/>
+    <path d="M94 146 L 96 136 L 100 134 L 104 136 L 106 146" stroke="#6b1f2e" stroke-width="1" fill="#8b3a2a" opacity="0.6"/>
+    <circle cx="155" cy="125" r="18" fill="#8b3a2a" opacity="0.4"/>
+    <circle cx="155" cy="125" r="11" fill="#c9614c" opacity="0.35"/>
+    <path d="M147 108 Q 155 100 163 108" stroke="#6b1f2e" stroke-width="1.2" fill="none"/>
+    <ellipse cx="75" cy="205" rx="16" ry="9" fill="#6b1f2e" transform="rotate(-35 75 205)" opacity="0.5"/>
+    <ellipse cx="130" cy="160" rx="14" ry="8" fill="#6b1f2e" transform="rotate(-50 130 160)" opacity="0.5"/>
+    <ellipse cx="185" cy="115" rx="13" ry="7" fill="#6b1f2e" transform="rotate(-65 185 115)" opacity="0.45"/>
+  </svg>
+  <svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M20 280 Q 70 200 120 150 Q 170 100 240 40" stroke="#6b1f2e" stroke-width="1.5" fill="none"/>
+    <circle cx="100" cy="170" r="20" fill="#8b3a2a" opacity="0.45"/>
+    <circle cx="100" cy="170" r="12" fill="#c9614c" opacity="0.35"/>
+    <path d="M90 148 Q 100 138 110 148" stroke="#6b1f2e" stroke-width="1.5" fill="none"/>
+    <path d="M94 146 L 96 136 L 100 134 L 104 136 L 106 146" stroke="#6b1f2e" stroke-width="1" fill="#8b3a2a" opacity="0.55"/>
+    <ellipse cx="75" cy="205" rx="16" ry="9" fill="#6b1f2e" transform="rotate(-35 75 205)" opacity="0.5"/>
+    <ellipse cx="130" cy="160" rx="14" ry="8" fill="#6b1f2e" transform="rotate(-50 130 160)" opacity="0.45"/>
+  </svg>
+
+  <div class="hero">
+    <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+    <div class="logo-rule"><span></span><div class="logo-ornament">✦</div><span></span></div>
+    <div class="hero-title">Pomegranate</div>
+    <div class="hero-subtitle">The Jewelled Fruit — Fruit of Paradise</div>
+    <div class="hero-sci">Punica granatum &nbsp;·&nbsp; Dadima (Sanskrit)</div>
+  </div>
+
+  <div class="hero-photos">
+    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e6/Punica_granatum_004.JPG/1280px-Punica_granatum_004.JPG" alt="Whole pomegranate fruit with crown calyx" onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/d/db/Illustration_Punica_granatum2.jpg/1280px-Illustration_Punica_granatum2.jpg" alt="Pomegranate cut open revealing ruby arils" onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+  </div>
+  <p class="photo-caption">Fig. 1 — Whole pomegranate fruit crowned with a persistent calyx &nbsp;·&nbsp; Fig. 2 — Cross-section revealing jewel-like ruby arils arranged in a honeycomb of white pith</p>
+
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-leaf">❧</div>
+    <div class="divider-line"></div>
+  </div>
+
+  <div class="content">
+    <p class="intro-text">Revered across four millennia of human civilisation — from the groves of ancient Persia to the temples of India — <em>Punica granatum</em> stands as one of the oldest cultivated fruits on earth. In Ayurveda it is called <em>Dadima</em>, celebrated by Charaka as a superior cardiac tonic and digestive, its every part — rind, seed, flower, bark, and juice — finding place in classical therapeutics as a symbol of fertility, abundance, and healing.</p>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">01</span><h2 class="section-title">Botanical Profile</h2><div class="section-rule"></div></div>
+      <p class="section-body">The pomegranate (<em>Punica granatum</em>) is a deciduous shrub or small tree of the family Lythraceae (formerly Punicaceae), native to the region from modern-day Iran through the Himalayas into northern India. It has been cultivated for so long — at least 4,000 years — that its precise wild range is difficult to determine. The tree grows to 5–10 m tall, with glossy, narrow oblong leaves and spectacular scarlet-orange flowers with crumpled petals, followed by the distinctive leathery-skinned fruit with its crown-like persistent calyx.</p>
+      <p class="section-body">The fruit is botanically a berry — a <em>balusta</em> — with a thick leathery outer rind (pericarp) enclosing hundreds of seeds (arils), each surrounded by a translucent, sweet-tart, ruby-red juice sac. The arils are arranged in compartments divided by white, bitter, astringent membranes. All parts of the plant — fruit rind, seeds, juice, flowers, bark, and root bark — have distinct and well-documented medicinal applications.</p>
+      <table class="data-table">
+        <thead><tr><th>PROPERTY</th><th>Detail</th></tr></thead>
+        <tbody>
+          <tr><td>Family</td><td>Lythraceae (formerly Punicaceae)</td></tr>
+          <tr><td>Botanical Name</td><td>Punica granatum L.</td></tr>
+          <tr><td>Sanskrit Names</td><td>Dadima, Dantabija, Lohitapushpa, Karaka, Raktapushpa, Shuklapushpa</td></tr>
+          <tr><td>Common Names</td><td>Pomegranate, Granada, Anar (Hindi/Urdu), Dalimba (Bengali/Kannada)</td></tr>
+          <tr><td>Regional Names</td><td>Matalam (Tam), Danimma (Tel), Mathalam (Mal), Dalimba (Odia)</td></tr>
+          <tr><td>Origin</td><td>Iran to northern India; now cultivated pantropically</td></tr>
+          <tr><td>Plant Type</td><td>Deciduous shrub / small tree (5–10 m)</td></tr>
+          <tr><td>Flowering Season</td><td>Spring–early summer; fruit ripens autumn</td></tr>
+          <tr><td>Medicinal Parts</td><td>Fruit (juice, arils, rind), flowers, bark, root bark, seeds</td></tr>
+          <tr><td>Taste Profile</td><td>Madhura (sweet), Amla (sour), Kashaya (astringent) — varies by variety</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">02</span><h2 class="section-title">Phytochemistry &amp; Nutrition</h2><div class="section-rule"></div></div>
+      <p class="section-body">The pomegranate is among the most phytochemically complex fruits known, containing a broad matrix of polyphenols, tannins, anthocyanins, alkaloids, and fatty acids distributed across different plant parts. The juice is dominated by hydrolysable tannins — especially ellagitannins such as punicalagin and punicalin — and anthocyanins (cyanidin, delphinidin, pelargonidin glycosides) that give the aril its deep ruby colour. The pericarp (fruit rind) contains the highest concentration of ellagic acid, tannins, and alkaloids, and is medicinally the most potent part.</p>
+      <p class="section-body">Punicalagin, found almost exclusively in pomegranate, is one of the most potent antioxidant polyphenols in the plant kingdom — more powerful than red wine or green tea by ORAC measure. It is metabolised in the gut to urolithins, which have independently documented anti-inflammatory and anti-cancer activity. Pomegranate seed oil contains a unique C18 fatty acid — punicic acid (conjugated linolenic acid) — with documented anti-proliferative and anti-inflammatory properties.</p>
+      <div class="nutrition-bar">
+        <div class="nutrition-cell">
+          <div class="nutrition-num">48</div>
+          <div class="nutrition-unit">kcal / 100g</div>
+          <div class="nutrition-label">Arils (juice sacs)</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">10.2</div>
+          <div class="nutrition-unit">g sugar</div>
+          <div class="nutrition-label">Per 100 g arils</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">4g</div>
+          <div class="nutrition-unit">fibre</div>
+          <div class="nutrition-label">Per 100 g (with seeds)</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">36%</div>
+          <div class="nutrition-unit">DV vitamin C</div>
+          <div class="nutrition-label">Per 100 g arils</div>
+        </div>
+      </div>
+      <table class="data-table">
+        <thead><tr><th>Compound</th><th>Category</th><th>Primary Action</th></tr></thead>
+        <tbody>
+          <tr><td>Punicalagin (A &amp; B)</td><td>Ellagitannin</td><td>Potent antioxidant, anti-inflammatory, anti-proliferative</td></tr>
+          <tr><td>Ellagic Acid</td><td>Phenolic acid</td><td>Antioxidant, anticancer, antimicrobial, wound healing</td></tr>
+          <tr><td>Punicic Acid</td><td>Conjugated C18 fatty acid (seed oil)</td><td>Anti-inflammatory, anti-proliferative, anti-obesity</td></tr>
+          <tr><td>Cyanidin-3-glucoside</td><td>Anthocyanin</td><td>Cardioprotective, anti-inflammatory, antioxidant</td></tr>
+          <tr><td>Delphinidin &amp; Pelargonidin</td><td>Anthocyanins</td><td>Antioxidant, anti-angiogenic, antimicrobial</td></tr>
+          <tr><td>Urolithins (A &amp; B)</td><td>Gut-derived metabolites</td><td>Anti-inflammatory, anti-cancer, mitophagy induction</td></tr>
+          <tr><td>Quercetin &amp; Kaempferol</td><td>Flavonols</td><td>Antioxidant, anti-allergic, vasoprotective</td></tr>
+          <tr><td>Pelletierine &amp; Pseudopelletierine</td><td>Piperidine alkaloids (bark)</td><td>Anthelmintic (tapeworm expulsion)</td></tr>
+          <tr><td>Ursolic &amp; Oleanolic Acids</td><td>Triterpenoids</td><td>Anti-inflammatory, hepatoprotective, antitumour</td></tr>
+          <tr><td>Vitamin C, Folate, Potassium</td><td>Micronutrients</td><td>Immune support, cardiovascular health, neural function</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">03</span><h2 class="section-title">Ayurvedic Significance</h2><div class="section-rule"></div></div>
+      <p class="section-body">In Ayurveda, Dadima occupies the rare distinction of being praised by Charaka as one of the best fruits for the heart (<em>Hridyaphala</em>) and by Sushruta as a superior Tridoshahara — balancing all three doshas, an achievement very few single plants attain. It is classified under the <em>Phala Varga</em> (fruit group) in Nighantu texts including Bhavaprakasha, Dhanvantari, and Raja Nighantu, where three primary varieties are distinguished by taste: sweet (<em>madhura dadima</em>), sour (<em>amla dadima</em>), and astringent-sweet (<em>madhura-amla dadima</em>).</p>
+      <p class="section-body">Classical shloka — <em>"Dadimam deepanam hridyam ruchyam grahi pittaghnam param, Vrushyam shukram balavardhanam tridoshaghnam rasayanam"</em> — extols its digestive-stimulating, cardiac-nourishing, taste-enhancing, astringent, Pitta-quenching, aphrodisiac, strength-giving, Tridosha-pacifying, and Rasayana (rejuvenating) actions in a single verse.</p>
+      <table class="dosha-table">
+        <thead><tr><th>Dosha</th><th>Effect</th><th>Mechanism &amp; Notes</th></tr></thead>
+        <tbody>
+          <tr><td>Vata ↓</td><td>Pacifying</td><td>Sweet, sour rasa with unctuous, nourishing quality pacifies dry, mobile Vata; indicated in weakness, emaciation, constipation, and neurological Vata conditions</td></tr>
+          <tr><td>Pitta ↓</td><td>Pacifying</td><td>Sweet variety is cooling and astringent; its Sheeta virya (cold potency) directly quenches excess Pitta — used in bleeding disorders, burning sensations, hyperacidity, and fever</td></tr>
+          <tr><td>Kapha ↓</td><td>Pacifying</td><td>Kashaya (astringent) rasa, laghu (light), and deepana (digestive) properties reduce Kapha accumulation; the sour variety especially stimulates Agni and clears Ama</td></tr>
+        </tbody>
+      </table>
+      <p class="section-body"><strong>Rasa:</strong> Madhura, Amla, Kashaya &nbsp;·&nbsp; <strong>Guna:</strong> Laghu (light), Snigdha (slightly unctuous) &nbsp;·&nbsp; <strong>Virya:</strong> Sheeta (cooling, sweet variety) / Ushna (sour variety) &nbsp;·&nbsp; <strong>Vipaka:</strong> Madhura &nbsp;·&nbsp; <strong>Karma:</strong> Tridoshahara, Hridya, Deepana, Grahi, Rasayana</p>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">04</span><h2 class="section-title">Key Health Benefits</h2><div class="section-rule"></div></div>
+      <p class="section-body">Pomegranate is among the most extensively studied fruits in modern pharmacology, with hundreds of clinical and pre-clinical studies validating its classical applications — from cardiovascular protection and anti-diabetic activity to anti-cancer and gut-microbiome support.</p>
+      <div class="benefits-grid">
+        <div class="benefit-card">
+          <div class="benefit-title">Cardiovascular Protection</div>
+          <div class="benefit-desc">Multiple RCTs demonstrate that daily pomegranate juice consumption reduces systolic blood pressure, improves carotid intima-media thickness, lowers LDL oxidation, and reduces atherosclerotic plaque progression — effects attributed to punicalagin, anthocyanins, and nitric-oxide-enhancing activity.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Potent Antioxidant</div>
+          <div class="benefit-desc">Pomegranate juice contains three times the antioxidant activity of red wine and green tea. Punicalagin and ellagic acid are the primary drivers — reducing systemic oxidative stress markers (MDA, 8-OHdG) and upregulating endogenous antioxidant enzymes in clinical studies.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Anti-inflammatory Action</div>
+          <div class="benefit-desc">Ellagitannins and their gut metabolite urolithins inhibit NF-κB signalling, COX-2, and pro-inflammatory cytokines (IL-1β, IL-6, TNF-α). Clinical trials in inflammatory bowel disease, arthritis, and metabolic syndrome show significant reductions in CRP and inflammatory markers.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Digestive &amp; Gut Health</div>
+          <div class="benefit-desc">Classical Ayurveda praises Dadima as a supreme Deepana (digestive stimulant) and Grahi (astringent that binds loose stools). Modern research shows pomegranate peel extract beneficially modulates gut microbiota, increases Bifidobacterium and Lactobacillus, and reduces intestinal permeability.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Anti-cancer Potential</div>
+          <div class="benefit-desc">Pre-clinical data shows pomegranate extracts inhibit proliferation and induce apoptosis in breast, prostate, colorectal, and lung cancer cell lines. A Phase II clinical trial in prostate cancer showed significantly prolonged PSA doubling time. Urolithins from ellagitannin metabolism are emerging as key bioactive drivers.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Anti-diabetic Activity</div>
+          <div class="benefit-desc">Pomegranate juice and peel extract lower fasting blood glucose, improve insulin sensitivity, and reduce HbA1c in type-2 diabetic patients in multiple RCTs. Mechanisms include alpha-glucosidase inhibition, PPAR-γ activation, and reduction of pancreatic beta-cell oxidative stress.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Antimicrobial &amp; Antiviral</div>
+          <div class="benefit-desc">Peel extract shows broad-spectrum antimicrobial activity against MRSA, E. coli, Salmonella, Candida, and drug-resistant pathogens. Ellagic acid and punicalagin inhibit HIV-1 reverse transcriptase and show activity against influenza — supporting traditional use in infections and fevers.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Skin &amp; Anti-ageing</div>
+          <div class="benefit-desc">Pomegranate extract stimulates collagen synthesis, inhibits matrix metalloproteinases, and protects skin fibroblasts from UV-induced oxidative damage. Topical application reduces hyperpigmentation, promotes wound healing, and has documented keratinocyte proliferation activity — reflected in classical use in Ayurvedic skin preparations.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">05</span><h2 class="section-title">How to Consume</h2><div class="section-rule"></div></div>
+      <p class="section-body">Every part of the pomegranate plant is used differently in Ayurveda and ethnomedicine. The fresh fruit and its juice are the most accessible forms; rind and bark preparations are more potent and should be used at appropriate doses under supervision.</p>
+      <table class="consume-table">
+        <thead><tr><th>Form</th><th>Preparation</th><th>Dosage</th><th>Best Use</th></tr></thead>
+        <tbody>
+          <tr><td>Fresh Arils</td><td>Eat directly from fruit</td><td>½–1 whole fruit daily</td><td>General tonic, antioxidant, digestive</td></tr>
+          <tr><td>Fresh Juice (Swarasa)</td><td>Press or blend arils; strain</td><td>100–200 ml once daily</td><td>Cardiac health, hypertension, anaemia</td></tr>
+          <tr><td>Peel Decoction (Kwatha)</td><td>Boil dried rind in water; reduce to ¼</td><td>30–50 ml twice daily</td><td>Diarrhoea, dysentery, worm infestation</td></tr>
+          <tr><td>Peel Powder (Churna)</td><td>Dried peel powdered fine</td><td>1–3 g with honey or warm water</td><td>Bleeding disorders, oral health, skin infections</td></tr>
+          <tr><td>Flower Decoction</td><td>Boil dried flowers in water</td><td>20–30 ml twice daily</td><td>Haemorrhage, leucorrhoea, nosebleed</td></tr>
+          <tr><td>Bark Decoction (Topical)</td><td>Boil stem/root bark; cool and strain</td><td>Apply as mouthwash or compress</td><td>Gum disease, tapeworm (supervised intake)</td></tr>
+          <tr><td>Seed Oil (Topical)</td><td>Cold-pressed seed oil</td><td>Apply to skin as needed</td><td>Anti-ageing, wound healing, dry skin</td></tr>
+          <tr><td>Anardana (Dried Arils)</td><td>Sun-dried whole arils</td><td>10–15 g as condiment or in formulations</td><td>Digestive stimulant, appetite enhancement</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">06</span><h2 class="section-title">Safety &amp; Precautions</h2><div class="section-rule"></div></div>
+      <p class="section-body">Pomegranate fruit and juice are safe for most people at normal food quantities. However, the more concentrated medicinal preparations — especially bark, root bark, and high-dose peel — require appropriate caution.</p>
+      <ul class="precaution-list">
+        <li><strong>Drug interactions:</strong> Pomegranate juice inhibits cytochrome P450 enzymes (CYP3A4, CYP2C9) — similar to grapefruit — and can raise blood levels of statins, warfarin, ACE inhibitors, and cyclosporine. Patients on these medications should consult a physician before regular consumption.</li>
+        <li><strong>Blood pressure medications:</strong> Pomegranate juice has documented antihypertensive activity. Combined with antihypertensive drugs, it may cause additive lowering of blood pressure — monitor regularly.</li>
+        <li><strong>Bark and root bark:</strong> The alkaloid pelletierine in stem and root bark is toxic at high doses, causing nausea, vomiting, dizziness, and in overdose, seizures. Bark preparations should be taken only under practitioner supervision and never self-administered for worm treatment.</li>
+        <li><strong>Allergy:</strong> Pomegranate allergy, though uncommon, exists — particularly in individuals with latex sensitisation or atopic conditions. Signs include oral allergy syndrome, urticaria, or in rare cases anaphylaxis.</li>
+        <li><strong>Diabetes medication:</strong> Due to significant hypoglycaemic activity, pomegranate may enhance the effect of antidiabetic drugs, risking hypoglycaemia — blood sugar should be monitored if consuming regularly alongside medication.</li>
+        <li><strong>Pregnancy — fruit (juice):</strong> Safe in normal food quantities. However, high-dose peel extracts and bark preparations are contraindicated in pregnancy due to potential uterine stimulant effects at medicinal doses.</li>
+        <li><strong>Dental enamel:</strong> The high organic acid content of pomegranate juice can erode dental enamel with frequent direct contact. Dilute the juice and rinse the mouth with water after consuming.</li>
+        <li><strong>Digestive sensitivity:</strong> The highly astringent tannins in peel preparations can cause constipation or gastrointestinal discomfort if overconsumed — limit peel powder to recommended doses.</li>
+      </ul>
+    </div>
+
+    <div class="sources">
+      <div class="sources-title">References &amp; Sources</div>
+      <ul>
+        <li>Lansky EP &amp; Newman RA — "Punica granatum (pomegranate) and its potential for prevention and treatment of inflammation and cancer" — Journal of Ethnopharmacology, 2007</li>
+        <li>Aviram M et al. — "Pomegranate juice consumption reduces oxidative stress, atherogenic modifications to LDL, and platelet aggregation" — American Journal of Clinical Nutrition, 2000</li>
+        <li>Arun N &amp; Nalini N — "Efficacy of turmeric and pomegranate rind in diabetic rats" — Plant Foods for Human Nutrition, 2002</li>
+        <li>Seeram NP et al. — "Pomegranate juice ellagitannin metabolites are present in human plasma and some persist in urine for up to 48 hours" — Journal of Nutrition, 2006</li>
+        <li>Pantuck AJ et al. — "Phase II study of pomegranate juice for men with rising PSA following surgery or radiation for prostate cancer" — Clinical Cancer Research, 2006</li>
+        <li>Bhandari PR — "Pomegranate (Punica granatum L): Ancient seeds for modern cure? Review of potential therapeutic applications" — IJNT, 2012</li>
+        <li>Charaka Samhita, Sutrasthana — Dadima under Hridyaphala Varga</li>
+        <li>Sushruta Samhita, Sutrasthana — Dadima as Tridoshahara phala</li>
+        <li>Bhavaprakasha Nighantu — Amradi Phala Varga — Dadima properties</li>
+        <li>Dymock W, Warden CJH &amp; Hooper D — Pharmacographia Indica — Punica granatum</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer>
+    <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a qualified practitioner before therapeutic use</p>
+  </footer>
+
+
+  <div id="viewerModal">
+    <div id="modal-topbar">
+      <span>3D Model — Pomegranate</span>
+      <button type="button" id="close3D">✕</button>
+    </div>
+    <model-viewer src="pomegranate3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+  </div>
+  <script>
+    (function() {
+      var open3D = document.getElementById('open3D');
+      var close3D = document.getElementById('close3D');
+      var modal = document.getElementById('viewerModal');
+      if (!open3D || !close3D || !modal) return;
+      function openModal() {
+        
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+      function closeModal() {
+        
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+      open3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); openModal();
+      });
+      close3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); closeModal();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+      });
+    })();
+  </script>
+
+</body>
+</html>

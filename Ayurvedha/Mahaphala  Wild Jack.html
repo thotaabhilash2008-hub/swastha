@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mahaphala | Swastha</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+  <style>
+    #open3D {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      padding: 10px 18px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: var(--forest);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      z-index: 1000;
+      transition: .3s;
+    }
+    #open3D:hover {
+      background: var(--gold);
+      color: var(--deep);
+    }
+    #viewerModal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+    }
+    #modal-topbar {
+      flex-shrink: 0;
+      height: 58px;
+      background: #111111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px 0 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      z-index: 99999;
+    }
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 4.5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.72);
+      user-select: none;
+    }
+    #close3D {
+      width: 38px;
+      height: 38px;
+      font-size: 15px;
+      font-weight: 300;
+      background: transparent;
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background .2s, color .2s, transform .22s;
+      outline: none;
+      flex-shrink: 0;
+    }
+    #close3D:hover {
+      background: #ffffff;
+      color: #111111;
+      border-color: #ffffff;
+      transform: rotate(90deg);
+    }
+    #viewerModal model-viewer {
+      flex: 1;
+      width: 100%;
+      display: block;
+      background: #ffffff;
+    }
+
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+    * { margin: 0; padding: 0; box-sizing: border-box }
+    html { scroll-behavior: smooth }
+    body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--ink); min-height: 100vh; overflow-x: hidden; position: relative }
+    body::before { content: ''; position: fixed; inset: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E"); opacity: .035; pointer-events: none; z-index: 100 }
+
+    .bg-circle { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0 }
+    .bg-circle-1 { width: 700px; height: 700px; background: radial-gradient(circle, rgba(42,92,63,.1) 0%, transparent 70%); top: -200px; right: -150px }
+    .bg-circle-2 { width: 500px; height: 500px; background: radial-gradient(circle, rgba(201,168,76,.08) 0%, transparent 70%); bottom: -100px; left: -100px }
+
+    .botanical-svg { position: fixed; pointer-events: none; z-index: 1; opacity: .09 }
+    .botanical-tl { top: -20px; left: -20px; width: 260px }
+    .botanical-br { bottom: -20px; right: -20px; width: 220px; transform: rotate(180deg) }
+
+    /* Entry number badge */
+    .entry-badge {
+      position: fixed; top: 25px; left: 30px;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 13px; letter-spacing: 4px;
+      color: var(--gold); z-index: 1000;
+      font-weight: 300;
+    }
+
+    .hero { position: relative; z-index: 10; padding: 54px 40px 0; text-align: center; opacity: 0; animation: fadeUp .9s ease .1s forwards }
+    .back-link { display: inline-flex; align-items: center; gap: 8px; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--sage); text-decoration: none; margin-bottom: 36px; transition: color .3s }
+    .back-link:hover { color: var(--gold) }
+    .logo-rule { display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 14px }
+    .logo-rule span { display: block; height: 1px; width: 70px; background: linear-gradient(to right, transparent, var(--gold)) }
+    .logo-rule span:last-child { background: linear-gradient(to left, transparent, var(--gold)) }
+    .logo-ornament { font-size: 13px; color: var(--gold) }
+    .hero-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(58px, 11vw, 104px); font-weight: 300; letter-spacing: 8px; line-height: 1; color: var(--deep) }
+    .hero-subtitle { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-style: italic; font-weight: 300; color: var(--earth); letter-spacing: 2px; margin-top: 8px }
+    .hero-sci { font-size: 11px; font-weight: 200; letter-spacing: 5px; color: var(--sage); margin-top: 6px }
+    .hero-num { font-family: 'Cormorant Garamond', serif; font-size: 13px; color: var(--gold); letter-spacing: 4px; margin-top: 10px; font-weight: 300 }
+
+    .hero-photos { position: relative; z-index: 10; display: grid; grid-template-columns: 1fr 1fr; gap: 2px; max-width: 900px; margin: 40px auto 0; opacity: 0; animation: fadeUp .9s ease .35s forwards }
+    .hero-photos img { width: 100%; height: 380px; object-fit: cover; object-position: center; display: block; background: var(--parchment) }
+    .photo-caption { text-align: center; font-family: 'Cormorant Garamond', serif; font-size: 12px; font-style: italic; color: var(--sage); letter-spacing: 1px; padding: 10px 0 0; max-width: 900px; margin: 0 auto; position: relative; z-index: 10; opacity: 0; animation: fadeUp .9s ease .5s forwards }
+
+    .divider { display: flex; align-items: center; justify-content: center; gap: 16px; margin: 50px auto; max-width: 600px; opacity: 0; animation: fadeUp .9s ease .55s forwards; position: relative; z-index: 10 }
+    .divider-line { height: 1px; width: 120px; background: linear-gradient(to right, transparent, var(--sage)) }
+    .divider-line:last-child { background: linear-gradient(to left, transparent, var(--sage)) }
+    .divider-leaf { color: var(--forest); font-size: 18px }
+
+    .content { position: relative; z-index: 10; max-width: 860px; margin: 0 auto; padding: 0 30px 80px }
+    .intro-text { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 300; line-height: 1.75; color: var(--ink); text-align: center; max-width: 700px; margin: 0 auto 60px; opacity: 0; animation: fadeUp .9s ease .6s forwards }
+    .intro-text em { color: var(--forest); font-style: italic }
+
+    .section { margin-bottom: 60px; opacity: 0; animation: fadeUp .9s ease forwards }
+    .section:nth-child(1) { animation-delay: .65s }
+    .section:nth-child(2) { animation-delay: .75s }
+    .section:nth-child(3) { animation-delay: .85s }
+    .section:nth-child(4) { animation-delay: .95s }
+    .section:nth-child(5) { animation-delay: 1.05s }
+    .section:nth-child(6) { animation-delay: 1.15s }
+    .section:nth-child(7) { animation-delay: 1.25s }
+
+    .section-header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px }
+    .section-num { font-family: 'Cormorant Garamond', serif; font-size: 11px; letter-spacing: 4px; color: var(--gold) }
+    .section-title { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 400; color: var(--deep); letter-spacing: 1px }
+    .section-rule { height: 1px; flex: 1; background: linear-gradient(to right, var(--gold), transparent) }
+    .section-body { font-size: 13px; font-weight: 300; line-height: 1.9; color: var(--ink); margin-bottom: 24px }
+
+    .data-table { width: 100%; border-collapse: collapse; margin: 16px 0 8px; font-size: 12px }
+    .data-table thead tr { background: var(--deep); color: var(--gold); font-size: 10px; letter-spacing: 3px; text-transform: uppercase }
+    .data-table thead th { padding: 12px 14px; text-align: left; font-weight: 400 }
+    .data-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .data-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .data-table tbody tr:hover { background: rgba(200, 164, 93, 0.15) }
+    .data-table tbody td { padding: 10px 14px; color: var(--ink); border-bottom: 1px solid rgba(107,79,45,.08) }
+    .data-table tbody td:first-child { font-weight: 400; color: var(--deep); width: 28% }
+
+    .dosha-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .dosha-table thead tr { background: var(--forest); color: var(--cream) }
+    .dosha-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .dosha-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .dosha-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .dosha-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(107,79,45,.08) }
+    .dosha-table tbody td:first-child { font-weight: 400; color: var(--forest); width: 18% }
+    .dosha-table tbody td:nth-child(2) { color: var(--earth); width: 20% }
+
+    .consume-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .consume-table thead tr { background: var(--earth); color: var(--cream) }
+    .consume-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .consume-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .consume-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .consume-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(107,79,45,.08) }
+    .consume-table tbody td:first-child { font-weight: 400; color: var(--earth); width: 22% }
+
+    .benefits-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: rgba(107,79,45,.12); border: 1px solid rgba(107,79,45,.12); margin: 8px 0 }
+    .benefit-card { background: var(--cream); padding: 24px 22px; transition: background .3s; position: relative; overflow: hidden }
+    .benefit-card:hover { background: #ede4ce }
+    .benefit-card::before { content: ''; position: absolute; bottom: 0; left: 0; width: 0; height: 2px; background: var(--gold); transition: width .4s }
+    .benefit-card:hover::before { width: 100% }
+    .benefit-title { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 600; color: var(--forest); margin-bottom: 8px }
+    .benefit-desc { font-size: 11.5px; font-weight: 300; line-height: 1.75; color: var(--ink); opacity: .85 }
+
+    .precaution-list { list-style: none; margin: 8px 0 }
+    .precaution-list li { display: flex; gap: 12px; align-items: flex-start; padding: 10px 14px; font-size: 12px; font-weight: 300; line-height: 1.7; color: var(--ink); border-bottom: 1px solid rgba(107,79,45,.08) }
+    .precaution-list li:last-child { border-bottom: none }
+    .precaution-list li::before { content: '▸'; color: var(--gold); flex-shrink: 0; margin-top: 1px }
+
+    .nutrition-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: rgba(107,79,45,.12); border: 1px solid rgba(107,79,45,.12); margin: 20px 0 }
+    .nutrition-cell { background: var(--cream); padding: 22px 16px; text-align: center; transition: background .3s }
+    .nutrition-cell:hover { background: var(--parchment) }
+    .nutrition-num { font-family: 'Cormorant Garamond', serif; font-size: 36px; font-weight: 300; color: var(--forest); line-height: 1; margin-bottom: 4px }
+    .nutrition-unit { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); font-weight: 300 }
+    .nutrition-label { font-size: 11px; font-weight: 300; color: var(--ink); margin-top: 5px }
+
+    .sources { border-top: 1px solid rgba(107,79,45,.15); padding-top: 24px; margin-top: 20px }
+    .sources-title { font-size: 10px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); margin-bottom: 12px; font-weight: 300 }
+    .sources ul { list-style: none }
+    .sources ul li { font-family: 'Cormorant Garamond', serif; font-size: 13px; font-style: italic; color: var(--earth); padding: 5px 0; border-bottom: 1px solid rgba(107,79,45,.06) }
+    .sources ul li::before { content: '· '; color: var(--sage) }
+
+    footer { position: relative; z-index: 10; text-align: center; padding: 24px 20px 44px; border-top: 1px solid rgba(107,79,45,.12); max-width: 860px; margin: 0 auto }
+    footer p { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); font-weight: 300 }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(28px) } to { opacity: 1; transform: translateY(0) } }
+
+    @media(max-width:700px) {
+      .hero-photos { grid-template-columns: 1fr }
+      .hero-photos img { height: 260px }
+      .benefits-grid { grid-template-columns: 1fr }
+      .nutrition-bar { grid-template-columns: 1fr 1fr }
+      .content { padding: 0 18px 60px }
+      .entry-badge { display: none }
+    }
+  </style>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+</head>
+<body>
+  <button type="button" id="open3D">View in 3D</button>
+
+
+  <div class="entry-badge">No. 510</div>
+
+  <div class="bg-circle bg-circle-1"></div>
+  <div class="bg-circle bg-circle-2"></div>
+
+  <svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#2a5c3f" stroke-width="1.5" fill="none"/>
+    <circle cx="90" cy="210" r="8" fill="#2a5c3f" opacity="0.7"/>
+    <circle cx="130" cy="175" r="10" fill="#7a9e7e" opacity="0.6"/>
+    <circle cx="170" cy="135" r="7" fill="#2a5c3f" opacity="0.8"/>
+    <circle cx="210" cy="95" r="9" fill="#c9a84c" opacity="0.5"/>
+    <ellipse cx="115" cy="195" rx="20" ry="10" fill="#7a9e7e" transform="rotate(-30 115 195)"/>
+    <ellipse cx="155" cy="155" rx="18" ry="9" fill="#2a5c3f" transform="rotate(-45 155 155)"/>
+  </svg>
+  <svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#2a5c3f" stroke-width="1.5" fill="none"/>
+    <circle cx="90" cy="210" r="8" fill="#2a5c3f" opacity="0.7"/>
+    <circle cx="130" cy="175" r="10" fill="#7a9e7e" opacity="0.6"/>
+    <ellipse cx="115" cy="195" rx="20" ry="10" fill="#7a9e7e" transform="rotate(-30 115 195)"/>
+  </svg>
+
+  <div class="hero">
+    <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+    <div class="logo-rule"><span></span><div class="logo-ornament">✦</div><span></span></div>
+    <div class="hero-title">Mahaphala</div>
+    <div class="hero-subtitle">Wild Jack — The Great Fruit</div>
+    <div class="hero-sci">Artocarpus hirsutus Lam. &nbsp;·&nbsp; Moraceae</div>
+    <div class="hero-num">Entry 510 &nbsp;·&nbsp; Swastha Herbal Garden</div>
+  </div>
+
+  <div class="hero-photos">
+    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8f/Artocarpus_hirsutus_8930.jpg/1280px-Artocarpus_hirsutus_8930.jpg" alt="Artocarpus hirsutus fruit on tree — Wild Jack"
+      onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ee/Artocarpus_hirsutus_373756256.jpg/1280px-Artocarpus_hirsutus_373756256.jpg" alt="Wild Jack leaves and bark — Artocarpus hirsutus"
+      onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+  </div>
+  <p class="photo-caption">Fig. 1 — Rough-skinned aggregate fruits of Mahaphala ripening on the trunk &nbsp;·&nbsp; Fig. 2 — Dense elliptic canopy leaves and fissured bark characteristic of Artocarpus hirsutus</p>
+
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-leaf">❧</div>
+    <div class="divider-line"></div>
+  </div>
+
+  <div class="content">
+    <p class="intro-text">Named in Sanskrit as <em>Mahaphala</em> — "the great fruit" — this towering rainforest giant of the Western Ghats has fed forest communities and healed their ailments for millennia. Revered by Ayurvedic physicians for its astringent bark and nutritious seeds, Wild Jack stands as a lesser-known cousin of the celebrated Jackfruit, yet surpasses it in ecological and ethnomedicinal significance across Kerala, Karnataka, and Goa.</p>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">01</span><h2 class="section-title">Botanical Profile</h2><div class="section-rule"></div></div>
+      <p class="section-body">Artocarpus hirsutus (Wild Jack / Aini) is a large evergreen tree of the Moraceae family — kin to Jackfruit (<em>A. heterophyllus</em>), Breadfruit (<em>A. altilis</em>), and Fig (<em>Ficus</em> spp.). Endemic to the semi-evergreen and moist deciduous forests of the Western Ghats, it towers to 25–38 metres with a spreading canopy and a buttressed trunk reaching 2–3 m in girth. The bark is dark grey-brown, deeply fissured, and exudes a milky, sticky latex when cut.</p>
+      <p class="section-body">Leaves are large (15–25 cm), broadly elliptic to obovate, coriaceous, glossy on the upper surface and densely hairy beneath — giving the species its name <em>hirsutus</em> (hairy). The fruits are cauliflorous (borne on the trunk and main branches), spherical to ellipsoid, 7–12 cm across, covered with soft, blunt spines, and ripen to yellowish-green. Each fruit contains 8–15 seeds embedded in sweet, fibrous, creamy-white arils. The heartwood — called <em>Aini</em> — is among the most prized timbers of peninsular India, golden-yellow to orange-brown with fine grain.</p>
+      <table class="data-table">
+        <thead><tr><th>Property</th><th>Detail</th></tr></thead>
+        <tbody>
+          <tr><td>Family</td><td>Moraceae (Mulberry family)</td></tr>
+          <tr><td>Botanical Name</td><td>Artocarpus hirsutus Lam.</td></tr>
+          <tr><td>Sanskrit Names</td><td>Mahaphala, Kantakiphala, Kantaki</td></tr>
+          <tr><td>Common Names</td><td>Wild Jack, Aini, Anjili, Ayini</td></tr>
+          <tr><td>Regional Names</td><td>Anjili / Aini (Mal, Kan), Savinmar (Kan), Wild Jack (Eng)</td></tr>
+          <tr><td>Origin</td><td>Western Ghats endemic — Kerala, Karnataka, Goa</td></tr>
+          <tr><td>Plant Type</td><td>Large evergreen rainforest tree (25–38 m)</td></tr>
+          <tr><td>Fruiting Season</td><td>March–May (pre-monsoon)</td></tr>
+          <tr><td>Medicinal Parts</td><td>Bark, seeds, leaves, latex, fruit pulp, heartwood</td></tr>
+          <tr><td>Taste Profile</td><td>Kashaya (astringent), Madhura (sweet — fruit)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">02</span><h2 class="section-title">Phytochemistry &amp; Composition</h2><div class="section-rule"></div></div>
+      <p class="section-body">Phytochemical investigations of Artocarpus hirsutus have identified a rich array of flavonoids, stilbenoids, isoprenylated flavones, and phenolic acids — the chemical signature shared across genus Artocarpus but with species-specific variations. The heartwood and bark are particularly rich in bioactive compounds, while the seeds offer significant nutritional value. Latex contains ficin-type proteases active against intestinal parasites.</p>
+      <div class="nutrition-bar">
+        <div class="nutrition-cell">
+          <div class="nutrition-num">38m</div>
+          <div class="nutrition-unit">height</div>
+          <div class="nutrition-label">Max tree stature</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">15</div>
+          <div class="nutrition-unit">seeds/fruit</div>
+          <div class="nutrition-label">Per aggregate fruit</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">3</div>
+          <div class="nutrition-unit">m girth</div>
+          <div class="nutrition-label">Trunk circumference</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">12cm</div>
+          <div class="nutrition-unit">fruit dia.</div>
+          <div class="nutrition-label">Average fruit size</div>
+        </div>
+      </div>
+      <table class="data-table">
+        <thead><tr><th>Compound</th><th>Category</th><th>Primary Action</th></tr></thead>
+        <tbody>
+          <tr><td>Artocarpin &amp; Isoartocarpin</td><td>Isoprenylated flavones</td><td>Antimicrobial, anti-inflammatory, antitumour</td></tr>
+          <tr><td>Cycloheterphyllin</td><td>Flavone</td><td>Antioxidant, hepatoprotective</td></tr>
+          <tr><td>Hirsutol &amp; Artohirsutol</td><td>Stilbenoids</td><td>Anti-inflammatory, anticancer</td></tr>
+          <tr><td>Oxyresveratrol</td><td>Stilbene polyphenol</td><td>Antioxidant, neuroprotective, anti-tyrosinase</td></tr>
+          <tr><td>β-Sitosterol &amp; Stigmasterol</td><td>Phytosterols</td><td>Anti-inflammatory, hypolipidaemic</td></tr>
+          <tr><td>Tannins (bark)</td><td>Polyphenols</td><td>Astringent, haemostatic, wound-healing</td></tr>
+          <tr><td>Ficin-type Proteases (latex)</td><td>Enzymes</td><td>Anthelmintic, digestive, anti-inflammatory</td></tr>
+          <tr><td>Seed Starch &amp; Proteins</td><td>Proximate</td><td>Nutritive, energy-dense, amino acid source</td></tr>
+          <tr><td>Flavonoid Glycosides</td><td>Flavonoids</td><td>Antioxidant, capillary-strengthening</td></tr>
+          <tr><td>Gallic &amp; Ellagic Acids</td><td>Phenolic acids</td><td>Antioxidant, antimicrobial, astringent</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">03</span><h2 class="section-title">Ayurvedic Significance</h2><div class="section-rule"></div></div>
+      <p class="section-body">Mahaphala is catalogued in classical Ayurvedic Nighantu texts under the fruit-drug (<em>phaladi varga</em>) category. Its fruit is described as <em>kashaya-madhura</em> (astringent-sweet), its bark as powerfully <em>kashaya</em> (astringent), and its overall action as cooling (<em>sheeta virya</em>) — making it particularly effective for Pitta and Rakta (blood) disorders. Classical indications include diarrhoea, dysentery, haemorrhage, skin diseases, and Kapha-related digestive sluggishness.</p>
+      <p class="section-body">The bark paste is described in tribal ethnobotany as a classical wound-dressing and skin-disease remedy. The latex is used in Keralite folk medicine as an anthelmintic and for healing cracked lips and tongue sores. Boiled seeds, mashed and seasoned, form a traditional medicinal food (<em>pathyam</em>) offered to the sick and convalescent across the Malabar region.</p>
+      <table class="dosha-table">
+        <thead><tr><th>Dosha</th><th>Effect</th><th>Mechanism &amp; Notes</th></tr></thead>
+        <tbody>
+          <tr><td>Vata ↔</td><td>Neutral</td><td>Kashaya rasa mildly aggravates Vata with long-term use; short-term astringent action is beneficial in Vata-type diarrhoea. Seeds' sweet heaviness pacifies Vata.</td></tr>
+          <tr><td>Pitta ↓</td><td>Pacifying</td><td>Sheeta virya (cold potency) and kashaya-madhura taste effectively reduce Pitta; indicated in bleeding, burning sensations, inflammatory skin conditions, and heat-type diarrhoea.</td></tr>
+          <tr><td>Kapha ↓</td><td>Mildly pacifying</td><td>Kashaya (astringent) quality reduces Kapha accumulation in the GI tract; fruit's madhura rasa may increase Kapha if consumed in excess.</td></tr>
+        </tbody>
+      </table>
+      <p class="section-body"><strong>Rasa:</strong> Kashaya (bark/seed), Madhura (fruit) &nbsp;·&nbsp; <strong>Guna:</strong> Guru (heavy), Snigdha (unctuous — seed) &nbsp;·&nbsp; <strong>Virya:</strong> Sheeta (cold) &nbsp;·&nbsp; <strong>Vipaka:</strong> Madhura &nbsp;·&nbsp; <strong>Karma:</strong> Grahi (absorbent), Rakta-sthambhana (haemostatic), Pittahara</p>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">04</span><h2 class="section-title">Key Health Benefits</h2><div class="section-rule"></div></div>
+      <p class="section-body">Modern ethnopharmacological and pharmacological studies on Artocarpus hirsutus and closely related Artocarpus species corroborate its traditional applications — demonstrating significant anti-inflammatory, antimicrobial, antioxidant, anthelmintic, and haemostatic activities through various extract assays and in vivo models.</p>
+      <div class="benefits-grid">
+        <div class="benefit-card">
+          <div class="benefit-title">Antidiarrhoeal &amp; GI Astringent</div>
+          <div class="benefit-desc">Bark decoction is the primary classical use — tannins and polyphenols constrict intestinal mucosa, reduce secretion, and combat enteric pathogens responsible for infective diarrhoea and dysentery. A traditional staple medicine in Western Ghats tribal practice.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Haemostatic &amp; Wound Healing</div>
+          <div class="benefit-desc">Bark paste applied directly to wounds accelerates coagulation through tannin-mediated protein precipitation. Internally, bark decoction is used for haematuria, menorrhagia, and haemorrhagic diarrhoea — classic Rakta-sthambhana (blood-arresting) applications.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Antimicrobial &amp; Antifungal</div>
+          <div class="benefit-desc">Isoprenylated flavones — artocarpin, isoartocarpin — exhibit potent activity against both Gram-positive and Gram-negative bacteria, and antifungal action against dermatophytes. Bark extract is applied to infected wounds, ringworm, and skin ulcers in folk tradition.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Antioxidant &amp; Anti-inflammatory</div>
+          <div class="benefit-desc">Oxyresveratrol and stilbenoids from heartwood show strong DPPH radical-scavenging and COX inhibitory activity in comparative assays. Gallic and ellagic acids further contribute to anti-inflammatory activity relevant in chronic disease prevention.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Anthelmintic (Deworming)</div>
+          <div class="benefit-desc">The milky latex contains ficin-type cysteine proteases that immobilise and digest intestinal parasitic worms — a well-documented mechanism across Moraceae. Traditional practice administers latex on an empty stomach for tapeworm and roundworm infestation.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Nutritive &amp; Convalescent Food</div>
+          <div class="benefit-desc">Seeds are calorie-dense, rich in starch and essential amino acids — boiled seeds form a traditional recovery food for the sick, post-partum women, and malnourished children in Malabar and coastal Karnataka. Fruit arils provide natural sugars and vitamins.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Skin Disease &amp; Dermatology</div>
+          <div class="benefit-desc">Leaf and bark paste applied to eczema, psoriasis, and fungal skin infections in tribal medicine of the Western Ghats. Oxyresveratrol's anti-tyrosinase activity suggests potential for hyperpigmentation treatment — an active area of cosmeceutical research.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Antitumour Potential</div>
+          <div class="benefit-desc">Artohirsutol and hirsutol — stilbenoids unique to A. hirsutus — have demonstrated cytotoxic activity against cancer cell lines in in vitro assays. Artocarpin has shown antiproliferative activity against breast and skin cancer cell models in related Artocarpus studies.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">05</span><h2 class="section-title">How to Use Mahaphala</h2><div class="section-rule"></div></div>
+      <p class="section-body">Mahaphala is primarily used through traditional preparation of its bark, latex, seeds, and fruit. Internal medicinal use of bark preparations should be supervised; the seeds and ripe fruit are safe as food. The tree is endemic and protected in several regions — wild harvesting of bark should be done sustainably or obtained from cultivated sources.</p>
+      <table class="consume-table">
+        <thead><tr><th>Form</th><th>Preparation</th><th>Dosage</th><th>Best Use</th></tr></thead>
+        <tbody>
+          <tr><td>Bark Decoction (Kwatha)</td><td>Boil bark pieces in water; reduce to ¼</td><td>30–40 ml twice daily</td><td>Diarrhoea, dysentery, bleeding</td></tr>
+          <tr><td>Bark Powder</td><td>Dried bark; with honey or buttermilk</td><td>2–4 g, physician-directed</td><td>Chronic diarrhoea, haemorrhage</td></tr>
+          <tr><td>Bark Paste (Topical)</td><td>Fresh bark ground with water</td><td>Apply to wounds, skin lesions</td><td>Wounds, infections, eczema</td></tr>
+          <tr><td>Latex (Topical)</td><td>Fresh latex from bark incision</td><td>Apply to affected area</td><td>Cracked lips, skin sores, ringworm</td></tr>
+          <tr><td>Latex (Internal)</td><td>Raw latex on empty stomach</td><td>Small quantity; practitioner direction</td><td>Intestinal worms (anthelmintic)</td></tr>
+          <tr><td>Boiled Seeds</td><td>Cook until soft; season and eat</td><td>50–100 g as food</td><td>Convalescent nutrition, energy</td></tr>
+          <tr><td>Ripe Fruit Arils</td><td>Consume fresh at peak ripeness</td><td>Moderate amount as seasonal food</td><td>General nourishment, cooling</td></tr>
+          <tr><td>Leaf Decoction</td><td>Boil leaves; cool and strain</td><td>20–30 ml twice daily</td><td>Skin disorders (internal support)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">06</span><h2 class="section-title">Ecological Note &amp; Conservation</h2><div class="section-rule"></div></div>
+      <p class="section-body">Artocarpus hirsutus is classified as <em>Near Threatened</em> on the IUCN Red List due to continued habitat loss from deforestation of the Western Ghats — a global biodiversity hotspot. The tree is among the tallest and most ecologically significant canopy trees of Malabar's rainforests, providing food and habitat for hornbills, Malabar giant squirrels, and fruit bats.</p>
+      <p class="section-body">Its heartwood — Aini — is heavily exploited for furniture, construction, and boat-building. This dual pressure on timber and habitat has drastically reduced wild populations. Several state forest departments now list it under protected species. Sustainable cultivation in homesteads (as part of the traditional <em>tharavadu</em> compound garden in Kerala) is actively encouraged as a conservation and food-security measure.</p>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">07</span><h2 class="section-title">Safety &amp; Precautions</h2><div class="section-rule"></div></div>
+      <p class="section-body">Mahaphala in its fruit and seed forms is a traditional safe food consumed for generations by forest communities. Medicinal bark preparations are generally well-tolerated at therapeutic doses, but caution is warranted in specific situations.</p>
+      <ul class="precaution-list">
+        <li><strong>Pregnancy:</strong> Medicinal bark preparations and latex should be avoided internally during pregnancy; the fruit in moderate dietary amounts is generally considered safe.</li>
+        <li><strong>Constipation &amp; Vata conditions:</strong> Kashaya (astringent) action may worsen constipation or dry-type bowel conditions; avoid prolonged internal bark use in such constitutions.</li>
+        <li><strong>Latex allergy:</strong> Individuals with latex allergy (rubber allergy) may cross-react with Artocarpus latex — topical or internal use should be avoided without prior evaluation.</li>
+        <li><strong>Diabetes:</strong> Seeds are starch-rich — individuals with diabetes should moderate seed consumption and monitor glycaemic response.</li>
+        <li><strong>Over-consumption of fruit:</strong> Eating large quantities of ripe fruit in one sitting may cause bloating, flatulence, and heaviness (guru guna) — especially in Kapha constitutions.</li>
+        <li><strong>Anthelmintic latex use:</strong> Internal latex use for deworming must be done under practitioner guidance — excessive dose may cause nausea, GI irritation, or purging.</li>
+        <li><strong>Wild harvesting:</strong> A. hirsutus is a protected species in parts of Kerala and Karnataka — obtain bark and plant material from licensed or cultivated sources only.</li>
+        <li><strong>Drug interactions:</strong> Strong astringents may reduce absorption of oral medications; space medicinal bark preparations at least two hours from pharmaceutical drugs.</li>
+      </ul>
+    </div>
+
+    <div class="sources">
+      <div class="sources-title">References &amp; Sources</div>
+      <ul>
+        <li>Babu KN et al. — "Artocarpus hirsutus: An Overview of Phytochemical and Pharmacological Properties" — Journal of Pharmacy Research, 2014</li>
+        <li>Sultanbawa MUS — "Xanthonoids and other constituents of plants of the genus Artocarpus" — Pure and Applied Chemistry, 1980</li>
+        <li>Hakim EH et al. — "Artoindonesianins and Stilbenoids from Artocarpus species" — Phytochemistry, 1999–2006</li>
+        <li>Ved DK &amp; Goraya GS — "Demand and Supply of Medicinal Plants in India" — FRLHT / NMPB, 2008</li>
+        <li>Warrier PK, Nambiar VPK &amp; Ramankutty C — "Indian Medicinal Plants: A Compendium of 500 Species" — Orient Longman, Vol. 1, 1993</li>
+        <li>Pullaiah T — "Encyclopaedia of World Medicinal Plants" — Regency Publications, Delhi</li>
+        <li>IUCN Red List — Artocarpus hirsutus assessment — iucnredlist.org</li>
+        <li>Bhavaprakasha Nighantu — Phala Varga — entries on Mahaphala / Kantakiphala</li>
+        <li>Kerala Forest Research Institute (KFRI) — Timber Species Database — Aini (Artocarpus hirsutus)</li>
+        <li>Ethnobotanical surveys — Kurumba, Irula, and Malai Pandaram tribal documentation — Western Ghats, 1990–2015</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer>
+    <p>Swastha Herbal Garden &nbsp;·&nbsp; Entry 510 &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a qualified practitioner before therapeutic use</p>
+  </footer>
+
+
+  <div id="viewerModal">
+    <div id="modal-topbar">
+      <span>3D Model — Mahaphala</span>
+      <button type="button" id="close3D">✕</button>
+    </div>
+    <model-viewer src="mahaphala3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+  </div>
+  <script>
+    (function() {
+      var open3D = document.getElementById('open3D');
+      var close3D = document.getElementById('close3D');
+      var modal = document.getElementById('viewerModal');
+      if (!open3D || !close3D || !modal) return;
+      function openModal() {
+        
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+      function closeModal() {
+        
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+      open3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); openModal();
+      });
+      close3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); closeModal();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+      });
+    })();
+  </script>
+
+</body>
+</html>

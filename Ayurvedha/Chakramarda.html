@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chakramarda / Sickle Senna | Swastha</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+  <style>
+    #open3D {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      padding: 10px 18px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: var(--forest);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      z-index: 1000;
+      transition: .3s;
+    }
+    #open3D:hover {
+      background: var(--gold);
+      color: var(--deep);
+    }
+    #viewerModal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+    }
+    #modal-topbar {
+      flex-shrink: 0;
+      height: 58px;
+      background: #111111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px 0 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      z-index: 99999;
+    }
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 4.5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.72);
+      user-select: none;
+    }
+    #close3D {
+      width: 38px;
+      height: 38px;
+      font-size: 15px;
+      font-weight: 300;
+      background: transparent;
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background .2s, color .2s, transform .22s;
+      outline: none;
+      flex-shrink: 0;
+    }
+    #close3D:hover {
+      background: #ffffff;
+      color: #111111;
+      border-color: #ffffff;
+      transform: rotate(90deg);
+    }
+    #viewerModal model-viewer {
+      flex: 1;
+      width: 100%;
+      display: block;
+      background: #ffffff;
+    }
+
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+    * { margin: 0; padding: 0; box-sizing: border-box }
+    html { scroll-behavior: smooth }
+    body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--ink); min-height: 100vh; overflow-x: hidden; position: relative }
+    body::before { content: ''; position: fixed; inset: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E"); opacity: .035; pointer-events: none; z-index: 100 }
+    .bg-circle { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0 }
+    .bg-circle-1 { width: 700px; height: 700px; background: radial-gradient(circle, rgba(42,92,63,.1) 0%, transparent 70%); top: -200px; right: -150px }
+    .bg-circle-2 { width: 500px; height: 500px; background: radial-gradient(circle, rgba(201,168,76,.08) 0%, transparent 70%); bottom: -100px; left: -100px }
+    .botanical-svg { position: fixed; pointer-events: none; z-index: 1; opacity: .1 }
+    .botanical-tl { top: -20px; left: -20px; width: 260px }
+    .botanical-br { bottom: -20px; right: -20px; width: 220px; transform: rotate(180deg) }
+    .entry-badge { position: fixed; top: 24px; left: 30px; font-family: 'Cormorant Garamond', serif; font-size: 12px; letter-spacing: 4px; color: var(--gold); z-index: 1000; font-weight: 300 }
+    .hero { position: relative; z-index: 10; padding: 54px 40px 0; text-align: center; opacity: 0; animation: fadeUp .9s ease .1s forwards }
+    .back-link { display: inline-flex; align-items: center; gap: 8px; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--sage); text-decoration: none; margin-bottom: 36px; transition: color .3s }
+    .back-link:hover { color: var(--gold) }
+    .logo-rule { display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 14px }
+    .logo-rule span { display: block; height: 1px; width: 70px; background: linear-gradient(to right, transparent, var(--gold)) }
+    .logo-rule span:last-child { background: linear-gradient(to left, transparent, var(--gold)) }
+    .logo-ornament { font-size: 13px; color: var(--gold) }
+    .hero-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(48px, 10vw, 98px); font-weight: 300; letter-spacing: 8px; line-height: 1; color: var(--deep) }
+    .hero-subtitle { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-style: italic; font-weight: 300; color: var(--earth); letter-spacing: 2px; margin-top: 8px }
+    .hero-sci { font-size: 11px; font-weight: 200; letter-spacing: 5px; color: var(--sage); margin-top: 6px }
+    .hero-photos { position: relative; z-index: 10; display: grid; grid-template-columns: 1fr 1fr; gap: 2px; max-width: 900px; margin: 40px auto 0; opacity: 0; animation: fadeUp .9s ease .35s forwards }
+    .hero-photos img { width: 100%; height: 380px; object-fit: cover; object-position: center; display: block; background: var(--parchment) }
+    .photo-caption { text-align: center; font-family: 'Cormorant Garamond', serif; font-size: 12px; font-style: italic; color: var(--sage); letter-spacing: 1px; padding: 10px 0 0; max-width: 900px; margin: 0 auto; position: relative; z-index: 10; opacity: 0; animation: fadeUp .9s ease .5s forwards }
+    .divider { display: flex; align-items: center; justify-content: center; gap: 16px; margin: 50px auto; max-width: 600px; opacity: 0; animation: fadeUp .9s ease .55s forwards; position: relative; z-index: 10 }
+    .divider-line { height: 1px; width: 120px; background: linear-gradient(to right, transparent, var(--sage)) }
+    .divider-line:last-child { background: linear-gradient(to left, transparent, var(--sage)) }
+    .divider-leaf { color: var(--forest); font-size: 18px }
+    .content { position: relative; z-index: 10; max-width: 860px; margin: 0 auto; padding: 0 30px 80px }
+    .intro-text { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 300; line-height: 1.75; color: var(--ink); text-align: center; max-width: 700px; margin: 0 auto 60px; opacity: 0; animation: fadeUp .9s ease .6s forwards }
+    .intro-text em { color: var(--forest); font-style: italic }
+    .section { margin-bottom: 60px; opacity: 0; animation: fadeUp .9s ease forwards }
+    .section:nth-child(1) { animation-delay: .65s } .section:nth-child(2) { animation-delay: .75s }
+    .section:nth-child(3) { animation-delay: .85s } .section:nth-child(4) { animation-delay: .95s }
+    .section:nth-child(5) { animation-delay: 1.05s } .section:nth-child(6) { animation-delay: 1.15s }
+    .section:nth-child(7) { animation-delay: 1.25s } .section:nth-child(8) { animation-delay: 1.35s }
+    .section-header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px }
+    .section-num { font-family: 'Cormorant Garamond', serif; font-size: 11px; letter-spacing: 4px; color: var(--gold) }
+    .section-title { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 400; color: var(--deep); letter-spacing: 1px }
+    .section-rule { height: 1px; flex: 1; background: linear-gradient(to right, var(--gold), transparent) }
+    .section-body { font-size: 13px; font-weight: 300; line-height: 1.9; color: var(--ink); margin-bottom: 24px }
+    .data-table { width: 100%; border-collapse: collapse; margin: 16px 0 8px; font-size: 12px }
+    .data-table thead tr { background: var(--deep); color: var(--gold); font-size: 10px; letter-spacing: 3px; text-transform: uppercase }
+    .data-table thead th { padding: 12px 14px; text-align: left; font-weight: 400 }
+    .data-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .data-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .data-table tbody tr { transition: background .2s }
+    .data-table tbody tr:hover { background: rgba(200, 164, 93, 0.15) }
+    .data-table tbody td { padding: 10px 14px; color: var(--ink); border-bottom: 1px solid rgba(107,79,45,.08) }
+    .data-table tbody td:first-child { font-weight: 400; color: var(--deep); width: 28% }
+    .dosha-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .dosha-table thead tr { background: var(--forest); color: var(--cream) }
+    .dosha-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .dosha-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .dosha-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .dosha-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(107,79,45,.08) }
+    .dosha-table tbody td:first-child { font-weight: 400; color: var(--forest); width: 18% }
+    .dosha-table tbody td:nth-child(2) { color: var(--earth); width: 20% }
+    .consume-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .consume-table thead tr { background: var(--earth); color: var(--cream) }
+    .consume-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .consume-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .consume-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .consume-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(107,79,45,.08) }
+    .consume-table tbody td:first-child { font-weight: 400; color: var(--earth); width: 22% }
+    .benefits-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: rgba(107,79,45,.12); border: 1px solid rgba(107,79,45,.12); margin: 8px 0 }
+    .benefit-card { background: var(--cream); padding: 24px 22px; transition: background .3s; position: relative; overflow: hidden }
+    .benefit-card:hover { background: #ede4ce }
+    .benefit-card::before { content: ''; position: absolute; bottom: 0; left: 0; width: 0; height: 2px; background: var(--gold); transition: width .4s }
+    .benefit-card:hover::before { width: 100% }
+    .benefit-title { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 600; color: var(--forest); margin-bottom: 8px }
+    .benefit-desc { font-size: 11.5px; font-weight: 300; line-height: 1.75; color: var(--ink); opacity: .85 }
+    .precaution-list { list-style: none; margin: 8px 0 }
+    .precaution-list li { display: flex; gap: 12px; align-items: flex-start; padding: 10px 14px; font-size: 12px; font-weight: 300; line-height: 1.7; color: var(--ink); border-bottom: 1px solid rgba(107,79,45,.08) }
+    .precaution-list li:last-child { border-bottom: none }
+    .precaution-list li::before { content: '▸'; color: var(--gold); flex-shrink: 0; margin-top: 1px }
+    .nutrition-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: rgba(107,79,45,.12); border: 1px solid rgba(107,79,45,.12); margin: 20px 0 }
+    .nutrition-cell { background: var(--cream); padding: 22px 16px; text-align: center; transition: background .3s }
+    .nutrition-cell:hover { background: var(--parchment) }
+    .nutrition-num { font-family: 'Cormorant Garamond', serif; font-size: 34px; font-weight: 300; color: var(--forest); line-height: 1; margin-bottom: 4px }
+    .nutrition-unit { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); font-weight: 300 }
+    .nutrition-label { font-size: 11px; font-weight: 300; color: var(--ink); margin-top: 5px }
+    .script-box { border-left: 3px solid var(--gold); background: var(--parchment); padding: 18px 22px; margin: 18px 0 24px; font-family: 'Cormorant Garamond', serif; font-size: 15px; font-style: italic; color: var(--deep); line-height: 1.8 }
+    .script-box span { display: block; font-family: 'Jost', sans-serif; font-size: 11px; font-style: normal; letter-spacing: 3px; color: var(--sage); margin-top: 8px; text-transform: uppercase }
+    .spotlight { background: linear-gradient(135deg, rgba(42,92,63,.07), rgba(201,168,76,.07)); border: 1px solid rgba(201,168,76,.3); padding: 20px 24px; margin: 20px 0 28px; position: relative }
+    .spotlight::before { content: '★'; position: absolute; top: -10px; left: 20px; background: var(--cream); padding: 0 8px; color: var(--gold); font-size: 14px }
+    .spotlight-title { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 600; color: var(--deep); margin-bottom: 8px }
+    .spotlight-body { font-size: 12px; font-weight: 300; line-height: 1.8; color: var(--ink) }
+    /* Name etymology strip */
+    .name-strip { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1px; background: rgba(107,79,45,.12); border: 1px solid rgba(107,79,45,.12); margin: 18px 0 26px }
+    .name-cell { background: var(--parchment); padding: 18px 20px }
+    .name-label { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); margin-bottom: 5px; font-weight: 300 }
+    .name-word { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 400; color: var(--deep); margin-bottom: 4px }
+    .name-meaning { font-size: 11.5px; font-weight: 300; line-height: 1.65; color: var(--ink) }
+    .sources { border-top: 1px solid rgba(107,79,45,.15); padding-top: 24px; margin-top: 20px }
+    .sources-title { font-size: 10px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); margin-bottom: 12px; font-weight: 300 }
+    .sources ul { list-style: none }
+    .sources ul li { font-family: 'Cormorant Garamond', serif; font-size: 13px; font-style: italic; color: var(--earth); padding: 5px 0; border-bottom: 1px solid rgba(107,79,45,.06) }
+    .sources ul li::before { content: '· '; color: var(--sage) }
+    footer { position: relative; z-index: 10; text-align: center; padding: 24px 20px 44px; border-top: 1px solid rgba(107,79,45,.12); max-width: 860px; margin: 0 auto }
+    footer p { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); font-weight: 300 }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(28px) } to { opacity: 1; transform: translateY(0) } }
+    @media(max-width:700px) {
+      .hero-photos { grid-template-columns: 1fr } .hero-photos img { height: 260px }
+      .benefits-grid { grid-template-columns: 1fr } .nutrition-bar { grid-template-columns: 1fr 1fr }
+      .name-strip { grid-template-columns: 1fr } .content { padding: 0 18px 60px }
+    }
+  </style>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+</head>
+<body>
+  <button type="button" id="open3D">View in 3D</button>
+
+
+<div class="entry-badge">No. 50</div>
+<div class="bg-circle bg-circle-1"></div>
+<div class="bg-circle bg-circle-2"></div>
+
+<svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#2a5c3f" stroke-width="1.5" fill="none"/>
+  <circle cx="90" cy="210" r="8" fill="#2a5c3f" opacity="0.7"/>
+  <circle cx="130" cy="175" r="10" fill="#7a9e7e" opacity="0.6"/>
+  <circle cx="170" cy="135" r="7" fill="#2a5c3f" opacity="0.8"/>
+  <circle cx="210" cy="95" r="9" fill="#c9a84c" opacity="0.5"/>
+  <ellipse cx="115" cy="195" rx="20" ry="10" fill="#7a9e7e" transform="rotate(-30 115 195)"/>
+  <ellipse cx="155" cy="155" rx="18" ry="9" fill="#2a5c3f" transform="rotate(-45 155 155)"/>
+</svg>
+<svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#2a5c3f" stroke-width="1.5" fill="none"/>
+  <circle cx="90" cy="210" r="8" fill="#2a5c3f" opacity="0.7"/>
+  <circle cx="130" cy="175" r="10" fill="#7a9e7e" opacity="0.6"/>
+  <ellipse cx="115" cy="195" rx="20" ry="10" fill="#7a9e7e" transform="rotate(-30 115 195)"/>
+</svg>
+
+<div class="hero">
+  <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+  <div class="logo-rule"><span></span><div class="logo-ornament">✦</div><span></span></div>
+  <div class="hero-title">Chakramarda</div>
+  <div class="hero-subtitle">Sickle Senna — The Wheel-Crusher of Skin Disease</div>
+  <div class="hero-sci">Senna obtusifolia (L.) H.S.Irwin &amp; Barneby &nbsp;·&nbsp; Cassia tora L. (syn.)</div>
+</div>
+
+<div class="hero-photos">
+  <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/8/87/Senna_obtusifolia_with_flower_and_pods.jpg/1280px-Senna_obtusifolia_with_flower_and_pods.jpg" alt="Senna obtusifolia plant with paired obovate leaflets and bright yellow flowers"
+    onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+  <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fa/Senna_obtusifolia3.jpg/1280px-Senna_obtusifolia3.jpg" alt="Characteristic sickle-shaped curved seed pods of Cassia tora hanging in clusters"
+    onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+</div>
+<p class="photo-caption">Fig. 1 — Senna obtusifolia bearing its paired obovate leaflets and vivid yellow flowers — a common roadside herb of tropical India &nbsp;·&nbsp; Fig. 2 — The defining feature: long, gracefully curved sickle-shaped seed pods that give the plant its common English name</p>
+
+<div class="divider">
+  <div class="divider-line"></div>
+  <div class="divider-leaf">❧</div>
+  <div class="divider-line"></div>
+</div>
+
+<div class="content">
+  <p class="intro-text">Its Sanskrit name tells the whole story: <em>Chakra</em> (wheel, disc) and <em>marda</em> (crusher, destroyer) — a plant that destroys ring-shaped skin diseases. Growing wild at every roadside and fallow field across tropical India, this bright-flowered weed has been Ayurveda's foremost remedy for ringworm, scabies, and fungal skin infections for over three thousand years — a classical indication so consistent and so well-supported by modern antifungal research that it stands as one of Ayurveda's most precisely validated ethnopharmacological correspondences.</p>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">01</span><h2 class="section-title">Botanical Profile</h2><div class="section-rule"></div></div>
+    <p class="section-body"><em>Senna obtusifolia</em> (L.) H.S.Irwin &amp; Barneby — more widely known by its synonym <em>Cassia tora</em> L. — is an erect, herbaceous annual or short-lived perennial of the Fabaceae (Leguminosae) family, subfamily Caesalpinioideae. It grows to 60–120 cm, branching from the base, with smooth, slightly glaucous stems. The leaves are paripinnate with 2–3 pairs of obovate leaflets arranged symmetrically; a distinctive clubbed or cylindrical gland sits between the lower pair of leaflets on the petiole — a taxonomic identification marker.</p>
+    <p class="section-body">The flowers are bright canary-yellow, five-petalled, and appear singly or in pairs from the leaf axils from August through November. The fruit — the plant's most memorable feature — is a long, slender, gracefully curved pod 10–20 cm in length, resembling a sickle or scythe, containing 20–30 small rhombic-oblong seeds separated by transverse septa. These seeds, called <em>Chakramarda beeja</em>, are the primary medicinal part alongside the leaves. The plant thrives in disturbed soils, roadsides, fallow agricultural land, and waste ground across the Indian plains, foothills, and coastal regions, often growing as a common agricultural weed in rice paddies.</p>
+
+    <div class="name-strip">
+      <div class="name-cell">
+        <div class="name-label">Sanskrit Etymology</div>
+        <div class="name-word">Chakramarda</div>
+        <div class="name-meaning">Chakra (wheel / ring) + Marda (crusher / destroyer) — named for its classical use in ring-shaped skin diseases such as ringworm and tinea</div>
+      </div>
+      <div class="name-cell">
+        <div class="name-label">Common English Name</div>
+        <div class="name-word">Sickle Senna</div>
+        <div class="name-meaning">From the characteristic long, curved sickle-shaped seed pods — one of the most distinctive identifying features of the plant in the field</div>
+      </div>
+      <div class="name-cell">
+        <div class="name-label">Synonyms in Use</div>
+        <div class="name-word">Cassia tora</div>
+        <div class="name-meaning">The older, widely used botanical synonym still found in most pharmacopeias, Ayurvedic texts, and pharmacological literature. Correctly reclassified as Senna obtusifolia.</div>
+      </div>
+    </div>
+
+    <table class="data-table">
+      <thead><tr><th>PROPERTY</th><th>Detail</th></tr></thead>
+      <tbody>
+        <tr><td>Family</td><td>Fabaceae — Caesalpinioideae (Legume family)</td></tr>
+        <tr><td>Botanical Name</td><td>Senna obtusifolia (L.) H.S.Irwin &amp; Barneby (syn. Cassia tora L.)</td></tr>
+        <tr><td>Sanskrit Names</td><td>Chakramarda, Dadrughna, Chakri, Prapunnata, Edagaja, Mesha Lochan</td></tr>
+        <tr><td>Common Names</td><td>Sickle Senna, Foetid Cassia, Tora, Wild Senna, Sicklepod</td></tr>
+        <tr><td>Regional Names</td><td>Chakunda / Chakavar (Hindi), Tagarai (Tam), Chakravarthi (Tel), Takla (Mar), Chakramarda (Ben/Ori)</td></tr>
+        <tr><td>Related Species</td><td>Cassia sophera (Chakramardaka), Senna tora, Senna alata (Ringworm Bush)</td></tr>
+        <tr><td>Origin &amp; Range</td><td>Pantropical; widely naturalised across tropical Asia, Africa, Americas</td></tr>
+        <tr><td>Habitat</td><td>Roadsides, fallow land, rice paddy margins, disturbed soils, wastelands</td></tr>
+        <tr><td>Plant Type</td><td>Erect annual herb or short-lived perennial, 60–120 cm</td></tr>
+        <tr><td>Flowering Season</td><td>August–November; fruiting October–January</td></tr>
+        <tr><td>Medicinal Parts</td><td>Seeds (primary), leaves, roots, whole plant</td></tr>
+        <tr><td>Taste Profile</td><td>Tikta (bitter), Kashaya (astringent)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">02</span><h2 class="section-title">Phytochemistry &amp; Composition</h2><div class="section-rule"></div></div>
+    <p class="section-body">Chakramarda's phytochemical profile is dominated by anthraquinone glycosides — the class of compounds responsible for both its powerful laxative and its antifungal actions. The seeds are particularly rich in chrysophanol, emodin, physcion, and obtusin — anthraquinones that disrupt fungal membrane integrity and inhibit fungal enzyme systems. These same compounds, at higher doses, act as stimulant laxatives by irritating the colonic mucosa and stimulating peristaltic contractions — the same mechanism used by senna (Cassia senna) and cascara.</p>
+    <p class="section-body">The seed gum of <em>Senna obtusifolia</em> — a galactomannan polysaccharide — has attracted significant commercial and pharmaceutical interest as a thickening and stabilising agent (sold commercially as Cassia Gum, E499 in Europe). This galactomannan is structurally similar to locust bean gum and has prebiotic and cholesterol-lowering properties distinct from the anthraquinone fraction. The essential oil from leaves and seeds contains predominantly fatty acid esters, while the root yields chrysarobin — a potent topical antifungal and keratolytic agent used in classical Ayurvedic skin preparations.</p>
+
+    <div class="nutrition-bar">
+      <div class="nutrition-cell">
+        <div class="nutrition-num">8</div>
+        <div class="nutrition-unit">anthraquinones</div>
+        <div class="nutrition-label">Characterised from seeds</div>
+      </div>
+      <div class="nutrition-cell">
+        <div class="nutrition-num">80%</div>
+        <div class="nutrition-unit">galactomannan</div>
+        <div class="nutrition-label">Seed endosperm (Cassia Gum)</div>
+      </div>
+      <div class="nutrition-cell">
+        <div class="nutrition-num">3,000+</div>
+        <div class="nutrition-unit">years</div>
+        <div class="nutrition-label">Documented skin disease use</div>
+      </div>
+      <div class="nutrition-cell">
+        <div class="nutrition-num">E499</div>
+        <div class="nutrition-unit">EU food additive</div>
+        <div class="nutrition-label">Cassia Gum (seed endosperm)</div>
+      </div>
+    </div>
+
+    <table class="data-table">
+      <thead><tr><th>Compound</th><th>Category</th><th>Primary Action</th></tr></thead>
+      <tbody>
+        <tr><td>Chrysophanol</td><td>Anthraquinone (seeds)</td><td>Primary antifungal agent; inhibits fungal spore germination and hyphal growth; laxative at higher doses; anti-inflammatory</td></tr>
+        <tr><td>Emodin</td><td>Anthraquinone glycoside</td><td>Antifungal, antibacterial, antiviral, anti-inflammatory; inhibits CK2 kinase; cytotoxic in cancer cell lines; stimulant laxative</td></tr>
+        <tr><td>Physcion</td><td>Anthraquinone</td><td>Antifungal, anti-inflammatory, antimicrobial; hepatoprotective in low doses</td></tr>
+        <tr><td>Obtusin &amp; Aurantio-obtusin</td><td>Anthraquinone (characteristic)</td><td>Specific to Senna obtusifolia; vasodilatory, antifungal, anti-inflammatory; chemical marker compounds for species authentication</td></tr>
+        <tr><td>Chrysarobin</td><td>Dithranol precursor (root)</td><td>Potent keratolytic and antifungal; precursor of pharmaceutical dithranol (anthralin) used in psoriasis treatment</td></tr>
+        <tr><td>Cassia Gum (Galactomannan)</td><td>Polysaccharide (seed endosperm)</td><td>Dietary fibre, prebiotic, cholesterol-lowering; thickening agent (E499); water-holding capacity 50× its weight</td></tr>
+        <tr><td>Sennoside A &amp; B</td><td>Dianthrone glycosides</td><td>Stimulant laxative (colonic peristalsis); same class as pharmaceutical senna preparations</td></tr>
+        <tr><td>Kaempferol &amp; Quercetin</td><td>Flavonoid glycosides</td><td>Antioxidant, anti-inflammatory, antimicrobial; hepatoprotective co-activity</td></tr>
+        <tr><td>β-Sitosterol &amp; Campesterol</td><td>Phytosterols</td><td>Anti-inflammatory, hypolipidaemic, immunomodulatory</td></tr>
+        <tr><td>Linoleic &amp; Palmitic Acids</td><td>Seed fixed oil fatty acids</td><td>Emollient base; keratinocyte membrane repair; topical skin-barrier activity</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">03</span><h2 class="section-title">Ayurvedic Significance</h2><div class="section-rule"></div></div>
+    <p class="section-body">Chakramarda is classified in all major classical Ayurvedic texts under <em>kushtha</em> (skin disease) management — its name itself encodes this identity. Charaka Samhita's Chikitsasthana lists it in the treatment of <em>dadrU</em> (ringworm/tinea), <em>kushtha</em> (skin diseases including psoriasis and eczema), and <em>kandu</em> (pruritus/itching). Sushruta Samhita includes it in <em>Aragvadhadi Gana</em> — a drug group specifically constituted for skin diseases — and describes topical seed paste as a treatment for <em>charma-kushtha</em> (skin-thickening conditions). Ashtanga Hridaya prescribes it for <em>kilasa</em> (leucoderma) and persistent skin eruptions.</p>
+
+    <div class="script-box">
+      "Chakramarda tikto kashayo ushno laghu, kandu-kushtha-dadrU-krimi-vatakaphanashana"
+      <span>— Dhanvantari Nighantu, Chandanadi Varga — Classical description of Chakramarda's properties</span>
+    </div>
+
+    <p class="section-body">The shloka describes Chakramarda as bitter and astringent in taste, hot in potency, light in quality — a destroyer of itching (kandu), skin diseases (kushtha), ringworm (dadru), parasites (krimi), and Vata-Kapha disorders. Bhavaprakasha Nighantu catalogues it in the Haritakyadi Varga, noting its specific activity in <em>pama</em> (scabies) and <em>vicharchika</em> (weeping eczema). In Siddha medicine it is known as <em>Tagarai</em> and prominently used in Tagarai Ennai (medicated oil) for chronic scalp infections and psoriasis.</p>
+
+    <table class="dosha-table">
+      <thead><tr><th>Dosha</th><th>Effect</th><th>Mechanism &amp; Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Vata ↓</td><td>Pacifying</td><td>Ushna virya (hot potency) warms and mobilises stagnant Vata; used in Vata-type skin conditions characterised by dryness, scaling, and rough texture; root preparations for Vata-neurological pain</td></tr>
+        <tr><td>Pitta ↑</td><td>Aggravating</td><td>Ushna virya (hot potency) and tikta rasa increase Pitta at excess doses; contraindicated in active Pitta skin conditions (burning, bleeding eczema, rosacea) and during Pitta-dominant fever states; use cautiously in inflamed, hot skin lesions</td></tr>
+        <tr><td>Kapha ↓</td><td>Strongly pacifying</td><td>Tikta-kashaya rasa and laghu-ruksha guna powerfully cut through Kapha accumulations — specifically the Kapha-driven weeping, oozing, and fungal-type skin conditions that are the plant's primary indication. Krimi (parasitic/microbial) conditions are classified as Kapha-Pitta in Ayurveda.</td></tr>
+      </tbody>
+    </table>
+    <p class="section-body"><strong>Rasa:</strong> Tikta (bitter), Kashaya (astringent) &nbsp;·&nbsp; <strong>Guna:</strong> Laghu (light), Ruksha (dry) &nbsp;·&nbsp; <strong>Virya:</strong> Ushna (hot) &nbsp;·&nbsp; <strong>Vipaka:</strong> Katu (pungent) &nbsp;·&nbsp; <strong>Karma:</strong> Vata-Kapha shamaka, Kushthaghna (skin-disease destroyer), Krimighna (antimicrobial/antiparasitic), Kandughna (anti-pruritic)</p>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">04</span><h2 class="section-title">Key Health Benefits</h2><div class="section-rule"></div></div>
+
+    <div class="spotlight">
+      <div class="spotlight-title">Dadrughna — The Ayurvedic Antifungal: A Three-Thousand-Year Clinical Correlation</div>
+      <div class="spotlight-body">Chakramarda's Sanskrit synonym <em>Dadrughna</em> means literally "destroyer of dadru" — dadru being the classical Ayurvedic term for tinea (ringworm), the fungal skin infection caused by dermatophytes. Modern pharmacological studies have confirmed that chrysophanol, emodin, and physcion from Chakramarda seeds demonstrate potent antifungal activity against the very organisms responsible for dadru — Trichophyton rubrum, T. mentagrophytes, Microsporum canis, and Epidermophyton floccosum — at minimum inhibitory concentrations comparable to pharmaceutical antifungal preparations. The correspondence between an ancient vernacular name and precisely validated molecular antifungal mechanisms against identified target organisms stands as one of the most satisfying validations in the entire Ayurvedic materia medica.</div>
+    </div>
+
+    <div class="benefits-grid">
+      <div class="benefit-card">
+        <div class="benefit-title">Antifungal — Ringworm &amp; Tinea</div>
+        <div class="benefit-desc">The paramount classical and modern indication. Seed paste and leaf juice applied topically to tinea corporis, tinea capitis, tinea pedis, and tinea versicolor. Chrysophanol disrupts ergosterol synthesis in fungal cell membranes; emodin inhibits fungal enzyme systems. Multiple studies confirm activity against T. rubrum, T. mentagrophytes, and M. canis at clinically achievable concentrations. Classical preparation: fresh seed paste with lemon juice or vinegar applied to ringworm lesions for 7–14 days.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Scabies &amp; Ectoparasites</div>
+        <div class="benefit-desc">Classical designation as <em>Krimighna</em> (parasite-destroyer) is directly applied to scabies (pama) in Charaka's Chikitsasthana. Seed oil and paste show acaricidal activity against Sarcoptes scabiei in traditional preparations. The combination of anthraquinone toxicity and the sulfur-like irritant quality makes it a classical topical scabicide used across tribal and folk medicine throughout tropical India, Southeast Asia, and East Africa independently.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Eczema &amp; Psoriasis (Topical)</div>
+        <div class="benefit-desc">Chrysarobin from the root is the natural precursor of dithranol (anthralin) — a pharmaceutical licensed for psoriasis treatment in Europe and North America. Topical seed preparations reduce the hyperproliferative keratinocyte response in psoriatic plaques. Classical use in <em>vicharchika</em> (weeping eczema) and <em>charma-kushtha</em> (skin thickening conditions) is validated through anti-inflammatory and anti-proliferative mechanisms of the anthraquinone and chrysarobin fraction.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Laxative &amp; Bowel Regulation</div>
+        <div class="benefit-desc">Sennosides A and B stimulate colonic peristalsis through the same mechanism as pharmaceutical senna preparations — prostaglandin-mediated smooth muscle contraction and reduced water absorption in the colon. Action onset 6–12 hours after ingestion. Classical internal use for <em>vibandha</em> (constipation) and <em>udara roga</em> (abdominal disorders). The dose-response distinction between antifungal topical doses and laxative internal doses is important — internal therapeutic doses are lower than topical concentrations.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Antimicrobial — Bacterial &amp; Viral</div>
+        <div class="benefit-desc">Emodin and chrysophanol demonstrate significant antibacterial activity against Staphylococcus aureus (including MRSA strains in some studies), Streptococcus pyogenes, Bacillus subtilis, and Pseudomonas aeruginosa. Emodin inhibits coronavirus replication by blocking the 3CL protease — a finding that gained attention during COVID-19 research. Antiviral activity has also been demonstrated against herpes simplex and hepatitis B virus replication.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Liver &amp; Digestive Protection</div>
+        <div class="benefit-desc">Seed extracts and isolated emodin show hepatoprotective activity against CCl₄-induced liver damage in animal models — paradoxically, as high doses of anthraquinones are hepatotoxic. At low therapeutic doses, the anti-inflammatory and antioxidant flavonoid fraction (kaempferol, quercetin) dominates, protecting hepatocytes. Cassia tora seed tea has been used in Korean and Chinese traditional medicine for liver complaints and poor digestion for centuries.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Anti-inflammatory &amp; Analgesic</div>
+        <div class="benefit-desc">Leaf and seed extracts inhibit COX-2 and 5-LOX pathways through emodin-mediated NF-κB suppression. Root decoctions are used in folk medicine across Jharkhand and tribal Odisha for joint pain, rheumatic conditions, and inflammatory fever. Emodin's anti-inflammatory potency has been the subject of multiple preclinical studies validating its potential in inflammatory arthritis and neuroinflammatory conditions.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Cholesterol &amp; Metabolic Support</div>
+        <div class="benefit-desc">The galactomannan seed gum (Cassia Gum) is a soluble dietary fibre that reduces LDL cholesterol absorption in the intestine through bile acid sequestration — similar to psyllium husk mechanism. Emodin has also shown anti-diabetic potential through α-glucosidase inhibition. Traditional folk food use of Chakramarda leaves as a cooked vegetable (in parts of West Africa and South Asia) is consistent with its metabolic support properties.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">05</span><h2 class="section-title">Traditional &amp; Ethnobotanical Uses</h2><div class="section-rule"></div></div>
+    <p class="section-body">Chakramarda occupies a unique position as a plant whose medicinal identity is remarkably consistent across independent traditional medicine systems on three continents — a convergent ethnopharmacological pattern that strongly signals genuine efficacy. The antifungal-skin application has been documented independently in Indian Ayurveda, Siddha medicine, tribal traditions of Jharkhand and Odisha, Chinese traditional medicine, East African folk medicine, and Brazilian folk botany — all arriving at the same plant for the same condition without cross-cultural communication.</p>
+    <table class="data-table">
+      <thead><tr><th>Tradition</th><th>Use &amp; Preparation</th></tr></thead>
+      <tbody>
+        <tr><td>Ayurveda (Classical)</td><td>Seed paste for dadru (ringworm), pama (scabies), kushtha (skin diseases); Aragvadhadi Gana membership; internal decoction for constipation and Kapha-skin disorders</td></tr>
+        <tr><td>Siddha (Tamil)</td><td>Tagarai Ennai (medicated seed oil) for scalp tinea, psoriasis, and hair loss; Tagarai leaves as blood-purifying vegetable; internal seed decoction for jaundice</td></tr>
+        <tr><td>Tribal (Jharkhand / Odisha)</td><td>Fresh leaf juice on infected wounds; seed paste for scabies; root decoction for fever and joint pain; young leaves boiled as famine food vegetable</td></tr>
+        <tr><td>Chinese Traditional Medicine</td><td>Jue Ming Zi (決明子) — seeds used for liver heat, eye redness, constipation, and hypertension; widely consumed as a health tea across East Asia</td></tr>
+        <tr><td>East African Folk</td><td>Leaf poultice for ringworm and fungal skin infections; seed paste for scabies in children — independently documented in Kenya, Tanzania, and Ethiopia</td></tr>
+        <tr><td>Brazilian / Amazonian</td><td>Known as Fedegoso; leaf tea for fever, malaria, and digestive complaints; topical application for skin fungal infections in rural northeastern Brazil</td></tr>
+        <tr><td>Food Use (Global)</td><td>Young leaves consumed as potherb in West Africa, Indonesia, and parts of India; seeds roasted as coffee substitute; Cassia Gum (E499) used as food thickener in ice cream, meat products, and bakery items globally</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">06</span><h2 class="section-title">How to Use Chakramarda</h2><div class="section-rule"></div></div>
+    <p class="section-body">Chakramarda's primary therapeutic application is topical — seed paste and leaf juice applied to fungal skin infections, scabies, and inflammatory skin conditions. Internal use is secondary and requires careful dosing given the stimulant laxative and potentially hepatotoxic effects of anthraquinones at high doses. Short-course internal use at appropriate doses is safe and classically validated; long-term daily internal use should be supervised.</p>
+    <table class="consume-table">
+      <thead><tr><th>Form</th><th>Preparation</th><th>Dosage</th><th>Best Use</th></tr></thead>
+      <tbody>
+        <tr><td>Seed Paste (Topical)</td><td>Grind seeds with water, lemon juice, or sesame oil to a paste</td><td>Apply to affected skin 1–2× daily; leave 20–30 min; rinse</td><td>Ringworm, tinea, scabies — primary classical antifungal application</td></tr>
+        <tr><td>Seed Oil (Topical)</td><td>Seeds boiled in sesame oil until oil turns yellow; strain and cool</td><td>Apply warm to scalp or skin lesions daily</td><td>Scalp tinea, psoriasis, chronic eczema, seborrhoeic dermatitis</td></tr>
+        <tr><td>Fresh Leaf Juice (Topical)</td><td>Squeeze fresh leaves; apply undiluted or diluted 1:1 with sesame oil</td><td>Apply 2× daily to fungal infections or infected wounds</td><td>Acute ringworm, bacterial skin infections, minor wounds</td></tr>
+        <tr><td>Seed Decoction (Internal)</td><td>5–10 g seeds boiled in 200 ml water, reduced to half; strain</td><td>30–50 ml once daily — short course of 5–7 days maximum without supervision</td><td>Constipation, intestinal parasites, mild liver support (Jue Ming Zi tradition)</td></tr>
+        <tr><td>Seed Powder (Churna)</td><td>Dried, powdered seeds; with honey or warm water</td><td>1–3 g once at bedtime for laxative effect</td><td>Constipation, Kapha-type skin disorders (internal support alongside topical)</td></tr>
+        <tr><td>Root Decoction (Internal)</td><td>10 g root in 200 ml water, reduce to 50 ml; strain</td><td>30–40 ml twice daily; physician-directed</td><td>Chronic skin disease, joint inflammation, fever (tribal / classical use)</td></tr>
+        <tr><td>Jue Ming Zi Tea</td><td>Roasted seeds steeped in hot water 5–8 min (Chinese tradition)</td><td>1–2 cups daily</td><td>Liver health, hypertension support, constipation, eye redness — East Asian folk-medicine use</td></tr>
+        <tr><td>Compound Skin Oil</td><td>Chakramarda + Nimba (neem) + Haridra (turmeric) in sesame base</td><td>Topical massage to affected area 1–2× daily</td><td>Chronic fungal infections, psoriasis, resistant scabies — classical poly-herbal approach</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">07</span><h2 class="section-title">Safety &amp; Precautions</h2><div class="section-rule"></div></div>
+    <p class="section-body">Chakramarda is safe for short-term topical use and short-course internal use at appropriate doses. The principal concerns relate to the anthraquinone content — the same compounds that make it therapeutically potent are dose-dependently hepatotoxic and can cause electrolyte imbalance with long-term internal use, paralleling the safety profile of pharmaceutical senna preparations.</p>
+    <ul class="precaution-list">
+      <li><strong>Long-term internal use:</strong> Anthraquinone-containing plants including Chakramarda should not be used internally for more than 8–10 consecutive days without medical supervision. Prolonged stimulant laxative use causes laxative dependence, colonic atony (cathartic colon), and potassium depletion. The classical Ayurvedic protocols use short, defined courses — not chronic daily supplementation.</li>
+      <li><strong>Hepatotoxicity at high doses:</strong> Emodin and chrysophanol are hepatotoxic at high or sustained doses in animal models. Keep internal doses within classical therapeutic ranges (seed powder 1–3 g; decoction 30–50 ml). Individuals with pre-existing liver disease should avoid internal use or use only under specialist supervision.</li>
+      <li><strong>Pregnancy:</strong> Strictly contraindicated internally. Anthraquinone glycosides stimulate intestinal and uterine smooth muscle — risk of uterine contractions and miscarriage. Classical texts contraindicate Chakramarda internally during pregnancy. Topical use on intact skin away from the abdomen is generally considered safe.</li>
+      <li><strong>Breastfeeding:</strong> Anthraquinones pass into breast milk and can cause diarrhoea and colic in infants — avoid internal use while breastfeeding.</li>
+      <li><strong>Children (internal):</strong> Internal stimulant laxative use in children under 12 is not recommended without paediatric Ayurvedic supervision. Topical use for ringworm in older children is safe and widely practised.</li>
+      <li><strong>Skin irritation (topical):</strong> Pure seed paste may cause localised skin irritation, redness, or contact dermatitis in sensitive individuals — particularly around the eyes and on mucous membranes. Dilute with sesame oil for sensitive skin; avoid contact with eyes. Patch test 24 hours before widespread application.</li>
+      <li><strong>Electrolyte monitoring:</strong> Patients on diuretics, cardiac glycosides (digoxin), or corticosteroids who use Chakramarda internally face additive potassium-depletion risk — inform treating physician and avoid concurrent use without supervision.</li>
+      <li><strong>Inflammatory bowel disease:</strong> Contraindicated internally in Crohn's disease, ulcerative colitis, irritable bowel syndrome, intestinal obstruction, or acute abdominal conditions — stimulant laxative action will aggravate these conditions.</li>
+    </ul>
+  </div>
+
+  <div class="sources">
+    <div class="sources-title">References &amp; Sources</div>
+    <ul>
+      <li>Parekh J &amp; Chanda S — "In vitro antimicrobial activity of Cassia tora seed extracts against selected pathogens" — Indian Journal of Pharmaceutical Sciences, 2007</li>
+      <li>Yen GC &amp; Chen HW — "Antioxidant activity of various tea extracts in relation to their antimutagenicity" — Journal of Agricultural and Food Chemistry, 1995 (Jue Ming Zi reference)</li>
+      <li>Kumar S et al. — "Antifungal activity of Cassia tora extracts against dermatophytes" — Asian Journal of Pharmaceutical and Clinical Research, 2012</li>
+      <li>Agarwal SK et al. — "Chemistry of Cassia species — a review" — Journal of Scientific and Industrial Research, 1998</li>
+      <li>Ho TY et al. — "Emodin blocks the SARS coronavirus spike protein and angiotensin-converting enzyme 2 interaction" — Antiviral Research, 2007</li>
+      <li>Lin SY et al. — "The inhibitory effect of emodin on the replication of herpes simplex virus" — Molecules, 2012</li>
+      <li>Charaka Samhita — Chikitsasthana, Kushtha Chikitsa — Chakramarda in dadru, pama, and Kapha-skin disease management</li>
+      <li>Sushruta Samhita — Sutrasthana, Aragvadhadi Gana — Chakramarda classification and skin disease indications</li>
+      <li>Bhavaprakasha Nighantu — Haritakyadi Varga — Chakramarda rasa-guna-virya-karma; pama and vicharchika indications</li>
+      <li>Dhanvantari Nighantu — Chandanadi Varga — Classical shloka on Chakramarda properties</li>
+      <li>Kirtikar KR &amp; Basu BD — Indian Medicinal Plants, Vol. 2 — Cassia tora botanical and ethnobotanical account</li>
+      <li>EFSA Panel — "Scientific Opinion on the safety of Cassia gum as a food additive (E 499)" — EFSA Journal, 2017</li>
+    </ul>
+  </div>
+</div>
+
+<footer>
+  <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a qualified practitioner before therapeutic use</p>
+</footer>
+
+  <div id="viewerModal">
+    <div id="modal-topbar">
+      <span>3D Model — Chakramarda</span>
+      <button type="button" id="close3D">✕</button>
+    </div>
+    <model-viewer src="chakramarda3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+  </div>
+  <script>
+    (function() {
+      var open3D = document.getElementById('open3D');
+      var close3D = document.getElementById('close3D');
+      var modal = document.getElementById('viewerModal');
+      if (!open3D || !close3D || !modal) return;
+      function openModal() {
+        
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+      function closeModal() {
+        
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+      open3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); openModal();
+      });
+      close3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); closeModal();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+      });
+    })();
+  </script>
+
+</body>
+</html>

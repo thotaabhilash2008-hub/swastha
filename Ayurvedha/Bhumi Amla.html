@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bhumi Amla | Swastha</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+  <style>
+    #open3D {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      padding: 10px 18px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: var(--forest);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      z-index: 1000;
+      transition: .3s;
+    }
+    #open3D:hover {
+      background: var(--gold);
+      color: var(--deep);
+    }
+    #viewerModal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+    }
+    #modal-topbar {
+      flex-shrink: 0;
+      height: 58px;
+      background: #111111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px 0 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      z-index: 99999;
+    }
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 4.5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.72);
+      user-select: none;
+    }
+    #close3D {
+      width: 38px;
+      height: 38px;
+      font-size: 15px;
+      font-weight: 300;
+      background: transparent;
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background .2s, color .2s, transform .22s;
+      outline: none;
+      flex-shrink: 0;
+    }
+    #close3D:hover {
+      background: #ffffff;
+      color: #111111;
+      border-color: #ffffff;
+      transform: rotate(90deg);
+    }
+    #viewerModal model-viewer {
+      flex: 1;
+      width: 100%;
+      display: block;
+      background: #ffffff;
+    }
+
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+    * { margin: 0; padding: 0; box-sizing: border-box }
+    html { scroll-behavior: smooth }
+    body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--ink); min-height: 100vh; overflow-x: hidden; position: relative }
+    body::before { content: ''; position: fixed; inset: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E"); opacity: .035; pointer-events: none; z-index: 100 }
+    .bg-circle { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0 }
+    .bg-circle-1 { width: 700px; height: 700px; background: radial-gradient(circle, rgba(42,92,63,.1) 0%, transparent 70%); top: -200px; right: -150px }
+    .bg-circle-2 { width: 500px; height: 500px; background: radial-gradient(circle, rgba(201,168,76,.08) 0%, transparent 70%); bottom: -100px; left: -100px }
+    .botanical-svg { position: fixed; pointer-events: none; z-index: 1; opacity: .1 }
+    .botanical-tl { top: -20px; left: -20px; width: 260px }
+    .botanical-br { bottom: -20px; right: -20px; width: 220px; transform: rotate(180deg) }
+    .entry-badge { position: fixed; top: 24px; left: 30px; font-family: 'Cormorant Garamond', serif; font-size: 12px; letter-spacing: 4px; color: var(--gold); z-index: 1000; font-weight: 300 }
+    .hero { position: relative; z-index: 10; padding: 54px 40px 0; text-align: center; opacity: 0; animation: fadeUp .9s ease .1s forwards }
+    .back-link { display: inline-flex; align-items: center; gap: 8px; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--sage); text-decoration: none; margin-bottom: 36px; transition: color .3s }
+    .back-link:hover { color: var(--gold) }
+    .logo-rule { display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 14px }
+    .logo-rule span { display: block; height: 1px; width: 70px; background: linear-gradient(to right, transparent, var(--gold)) }
+    .logo-rule span:last-child { background: linear-gradient(to left, transparent, var(--gold)) }
+    .logo-ornament { font-size: 13px; color: var(--gold) }
+    .hero-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(58px, 11vw, 105px); font-weight: 300; letter-spacing: 8px; line-height: 1; color: var(--deep) }
+    .hero-subtitle { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-style: italic; font-weight: 300; color: var(--earth); letter-spacing: 2px; margin-top: 8px }
+    .hero-sci { font-size: 11px; font-weight: 200; letter-spacing: 5px; color: var(--sage); margin-top: 6px }
+    .hero-photos { position: relative; z-index: 10; display: grid; grid-template-columns: 1fr 1fr; gap: 2px; max-width: 900px; margin: 40px auto 0; opacity: 0; animation: fadeUp .9s ease .35s forwards }
+    .hero-photos img { width: 100%; height: 380px; object-fit: cover; object-position: center; display: block; background: var(--parchment) }
+    .hero-photos img:first-child { object-position: center 40% }
+    .photo-caption { text-align: center; font-family: 'Cormorant Garamond', serif; font-size: 12px; font-style: italic; color: var(--sage); letter-spacing: 1px; padding: 10px 0 0; max-width: 900px; margin: 0 auto; position: relative; z-index: 10; opacity: 0; animation: fadeUp .9s ease .5s forwards }
+    .divider { display: flex; align-items: center; justify-content: center; gap: 16px; margin: 50px auto; max-width: 600px; opacity: 0; animation: fadeUp .9s ease .55s forwards; position: relative; z-index: 10 }
+    .divider-line { height: 1px; width: 120px; background: linear-gradient(to right, transparent, var(--sage)) }
+    .divider-line:last-child { background: linear-gradient(to left, transparent, var(--sage)) }
+    .divider-leaf { color: var(--forest); font-size: 18px }
+    .content { position: relative; z-index: 10; max-width: 860px; margin: 0 auto; padding: 0 30px 80px }
+    .intro-text { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 300; line-height: 1.75; color: var(--ink); text-align: center; max-width: 700px; margin: 0 auto 60px; opacity: 0; animation: fadeUp .9s ease .6s forwards }
+    .intro-text em { color: var(--forest); font-style: italic }
+    .section { margin-bottom: 60px; opacity: 0; animation: fadeUp .9s ease forwards }
+    .section:nth-child(1) { animation-delay: .65s } .section:nth-child(2) { animation-delay: .75s }
+    .section:nth-child(3) { animation-delay: .85s } .section:nth-child(4) { animation-delay: .95s }
+    .section:nth-child(5) { animation-delay: 1.05s } .section:nth-child(6) { animation-delay: 1.15s }
+    .section:nth-child(7) { animation-delay: 1.25s }
+    .section-header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px }
+    .section-num { font-family: 'Cormorant Garamond', serif; font-size: 11px; letter-spacing: 4px; color: var(--gold) }
+    .section-title { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 400; color: var(--deep); letter-spacing: 1px }
+    .section-rule { height: 1px; flex: 1; background: linear-gradient(to right, var(--gold), transparent) }
+    .section-body { font-size: 13px; font-weight: 300; line-height: 1.9; color: var(--ink); margin-bottom: 24px }
+    .data-table { width: 100%; border-collapse: collapse; margin: 16px 0 8px; font-size: 12px }
+    .data-table thead tr { background: var(--deep); color: var(--gold); font-size: 10px; letter-spacing: 3px; text-transform: uppercase }
+    .data-table thead th { padding: 12px 14px; text-align: left; font-weight: 400 }
+    .data-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .data-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .data-table tbody tr { transition: background .2s }
+    .data-table tbody tr:hover { background: rgba(200, 164, 93, 0.15) }
+    .data-table tbody td { padding: 10px 14px; color: var(--ink); border-bottom: 1px solid rgba(107,79,45,.08) }
+    .data-table tbody td:first-child { font-weight: 400; color: var(--deep); width: 28% }
+    .dosha-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .dosha-table thead tr { background: var(--forest); color: var(--cream) }
+    .dosha-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .dosha-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .dosha-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .dosha-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(107,79,45,.08) }
+    .dosha-table tbody td:first-child { font-weight: 400; color: var(--forest); width: 18% }
+    .dosha-table tbody td:nth-child(2) { color: var(--earth); width: 20% }
+    .consume-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .consume-table thead tr { background: var(--earth); color: var(--cream) }
+    .consume-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .consume-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .consume-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .consume-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(107,79,45,.08) }
+    .consume-table tbody td:first-child { font-weight: 400; color: var(--earth); width: 22% }
+    .benefits-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: rgba(107,79,45,.12); border: 1px solid rgba(107,79,45,.12); margin: 8px 0 }
+    .benefit-card { background: var(--cream); padding: 24px 22px; transition: background .3s; position: relative; overflow: hidden }
+    .benefit-card:hover { background: #ede4ce }
+    .benefit-card::before { content: ''; position: absolute; bottom: 0; left: 0; width: 0; height: 2px; background: var(--gold); transition: width .4s }
+    .benefit-card:hover::before { width: 100% }
+    .benefit-title { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 600; color: var(--forest); margin-bottom: 8px }
+    .benefit-desc { font-size: 11.5px; font-weight: 300; line-height: 1.75; color: var(--ink); opacity: .85 }
+    .precaution-list { list-style: none; margin: 8px 0 }
+    .precaution-list li { display: flex; gap: 12px; align-items: flex-start; padding: 10px 14px; font-size: 12px; font-weight: 300; line-height: 1.7; color: var(--ink); border-bottom: 1px solid rgba(107,79,45,.08) }
+    .precaution-list li:last-child { border-bottom: none }
+    .precaution-list li::before { content: '▸'; color: var(--gold); flex-shrink: 0; margin-top: 1px }
+    .nutrition-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: rgba(107,79,45,.12); border: 1px solid rgba(107,79,45,.12); margin: 20px 0 }
+    .nutrition-cell { background: var(--cream); padding: 22px 16px; text-align: center; transition: background .3s }
+    .nutrition-cell:hover { background: var(--parchment) }
+    .nutrition-num { font-family: 'Cormorant Garamond', serif; font-size: 36px; font-weight: 300; color: var(--forest); line-height: 1; margin-bottom: 4px }
+    .nutrition-unit { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); font-weight: 300 }
+    .nutrition-label { font-size: 11px; font-weight: 300; color: var(--ink); margin-top: 5px }
+    .script-box { border-left: 3px solid var(--gold); background: var(--parchment); padding: 18px 22px; margin: 18px 0 24px; font-family: 'Cormorant Garamond', serif; font-size: 15px; font-style: italic; color: var(--deep); line-height: 1.8 }
+    .script-box span { display: block; font-family: 'Jost', sans-serif; font-size: 11px; font-style: normal; letter-spacing: 3px; color: var(--sage); margin-top: 8px; text-transform: uppercase }
+    /* Spotlight callout for liver herb */
+    .spotlight { background: linear-gradient(135deg, rgba(42,92,63,.07), rgba(201,168,76,.07)); border: 1px solid rgba(201,168,76,.3); padding: 20px 24px; margin: 20px 0 28px; position: relative }
+    .spotlight::before { content: '★'; position: absolute; top: -10px; left: 20px; background: var(--cream); padding: 0 8px; color: var(--gold); font-size: 14px }
+    .spotlight-title { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 600; color: var(--deep); margin-bottom: 8px }
+    .spotlight-body { font-size: 12px; font-weight: 300; line-height: 1.8; color: var(--ink) }
+    .sources { border-top: 1px solid rgba(107,79,45,.15); padding-top: 24px; margin-top: 20px }
+    .sources-title { font-size: 10px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); margin-bottom: 12px; font-weight: 300 }
+    .sources ul { list-style: none }
+    .sources ul li { font-family: 'Cormorant Garamond', serif; font-size: 13px; font-style: italic; color: var(--earth); padding: 5px 0; border-bottom: 1px solid rgba(107,79,45,.06) }
+    .sources ul li::before { content: '· '; color: var(--sage) }
+    footer { position: relative; z-index: 10; text-align: center; padding: 24px 20px 44px; border-top: 1px solid rgba(107,79,45,.12); max-width: 860px; margin: 0 auto }
+    footer p { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); font-weight: 300 }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(28px) } to { opacity: 1; transform: translateY(0) } }
+    @media(max-width:700px) {
+      .hero-photos { grid-template-columns: 1fr } .hero-photos img { height: 260px }
+      .benefits-grid { grid-template-columns: 1fr } .nutrition-bar { grid-template-columns: 1fr 1fr }
+      .content { padding: 0 18px 60px }
+    }
+  </style>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+</head>
+<body>
+  <button type="button" id="open3D">View in 3D</button>
+
+
+<div class="entry-badge">No. 41</div>
+<div class="bg-circle bg-circle-1"></div>
+<div class="bg-circle bg-circle-2"></div>
+
+<svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#2a5c3f" stroke-width="1.5" fill="none"/>
+  <circle cx="90" cy="210" r="8" fill="#2a5c3f" opacity="0.7"/><circle cx="130" cy="175" r="10" fill="#7a9e7e" opacity="0.6"/>
+  <circle cx="170" cy="135" r="7" fill="#2a5c3f" opacity="0.8"/><circle cx="210" cy="95" r="9" fill="#c9a84c" opacity="0.5"/>
+  <ellipse cx="115" cy="195" rx="20" ry="10" fill="#7a9e7e" transform="rotate(-30 115 195)"/>
+  <ellipse cx="155" cy="155" rx="18" ry="9" fill="#2a5c3f" transform="rotate(-45 155 155)"/>
+</svg>
+<svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#2a5c3f" stroke-width="1.5" fill="none"/>
+  <circle cx="90" cy="210" r="8" fill="#2a5c3f" opacity="0.7"/><circle cx="130" cy="175" r="10" fill="#7a9e7e" opacity="0.6"/>
+  <ellipse cx="115" cy="195" rx="20" ry="10" fill="#7a9e7e" transform="rotate(-30 115 195)"/>
+</svg>
+
+<div class="hero">
+  <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+  <div class="logo-rule"><span></span><div class="logo-ornament">✦</div><span></span></div>
+  <div class="hero-title">Bhumi Amla</div>
+  <div class="hero-subtitle">Stonebreaker — The Earth Gooseberry</div>
+  <div class="hero-sci">Phyllanthus niruri L. &nbsp;·&nbsp; Phyllanthus urinaria &nbsp;·&nbsp; Phyllanthus amarus</div>
+</div>
+
+<div class="hero-photos">
+  <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/b/bd/Quebra-Pedra._Phyllanthus_niruri.JPG/1280px-Quebra-Pedra._Phyllanthus_niruri.JPG" alt="Bhumi Amla plant showing feathery pinnate leaves with tiny fruits underneath"
+    onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+  <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/b/bd/Keezharnelli_2_Phyllanthus_niruri.jpg/1280px-Keezharnelli_2_Phyllanthus_niruri.jpg" alt="Close-up of Phyllanthus niruri tiny spherical fruits lined under leaf branches"
+    onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+</div>
+<p class="photo-caption">Fig. 1 — Bhumi Amla's delicate feathery branches with characteristic fruits arranged along the underside of leaf rachis &nbsp;·&nbsp; Fig. 2 — Tiny spherical ribbed fruits of Phyllanthus niruri, resembling miniature Amla (gooseberry) — origin of its common name</p>
+
+<div class="divider">
+  <div class="divider-line"></div>
+  <div class="divider-leaf">❧</div>
+  <div class="divider-line"></div>
+</div>
+
+<div class="content">
+  <p class="intro-text">So small it grows unnoticed at the edge of rice paddies and garden paths, <em>Bhumi Amla</em> — "the Amla of the earth" — is among the most thoroughly researched hepatoprotective plants on the planet. Classical Ayurveda knew it as <em>Bhumyamalaki</em> and deployed it in virtually every liver, kidney, and viral condition; modern pharmacology has confirmed it with over 1,600 published studies, including landmark trials for hepatitis B and kidney stones.</p>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">01</span><h2 class="section-title">Botanical Profile</h2><div class="section-rule"></div></div>
+    <p class="section-body">Bhumi Amla (<em>Phyllanthus niruri</em> L.) is a small, erect annual herb of the Phyllanthaceae family — formerly placed within Euphorbiaceae — growing to 10–40 cm. The plant has a single main stem with smooth, distichous (two-ranked) branches bearing elliptic or oblong leaves arranged feather-like along the rachis, superficially resembling a compound leaf but botanically being a leafy branch. This distinctive architecture is responsible for the most striking feature of the plant: the fruits — tiny, smooth, ribbed spherical capsules 2–3 mm in diameter — hang in a perfect row from the underside of each branch like a string of miniature gooseberries, giving the plant its Sanskrit and common name.</p>
+    <p class="section-body">It is a pantropical weed, native to the Amazon basin and introduced or naturalised across tropical Asia, Africa, and the Pacific. In India it thrives in moist disturbed soils, paddy fields, roadsides, and shaded gardens across the plains and lower Himalayan foothills, flowering and fruiting year-round in warm climates. The closely related <em>P. amarus</em> Schumach. &amp; Thonn. and <em>P. urinaria</em> L. are used interchangeably in many Indian traditions, with <em>P. niruri</em> being the primary species in classical Ayurvedic texts.</p>
+    <table class="data-table">
+      <thead><tr><th>PROPERTY</th><th>Detail</th></tr></thead>
+      <tbody>
+        <tr><td>Family</td><td>Phyllanthaceae (formerly Euphorbiaceae)</td></tr>
+        <tr><td>Botanical Name</td><td>Phyllanthus niruri L. (syn. P. amarus, P. urinaria)</td></tr>
+        <tr><td>Sanskrit Names</td><td>Bhumyamalaki, Tamalaki, Bahupatra, Dhatriparni, Shivaparni</td></tr>
+        <tr><td>Common Names</td><td>Stonebreaker, Leaf-Flower, Gale of the Wind, Carry-Me-Seed</td></tr>
+        <tr><td>Regional Names</td><td>Keezhanelli (Tam), Nela Usiri (Tel), Kizhi Nelli (Mal), Hazardana (Hindi), Bhuiavla (Mar)</td></tr>
+        <tr><td>Origin</td><td>Native to Amazon basin; pantropical weed across Asia, Africa</td></tr>
+        <tr><td>Plant Type</td><td>Erect annual herb, 10–40 cm; monoecious</td></tr>
+        <tr><td>Habitat</td><td>Moist disturbed soils, paddy field margins, shaded gardens, roadsides</td></tr>
+        <tr><td>Flowering</td><td>Year-round in tropical conditions; peak in monsoon season</td></tr>
+        <tr><td>Medicinal Parts</td><td>Whole plant (primary), roots, leaves, seeds</td></tr>
+        <tr><td>Taste Profile</td><td>Tikta (bitter), Kashaya (astringent), Madhura (sweet)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">02</span><h2 class="section-title">Phytochemistry &amp; Composition</h2><div class="section-rule"></div></div>
+    <p class="section-body">Phyllanthus niruri is one of the most phytochemically characterised medicinal plants in tropical medicine, with over 200 compounds isolated across the genus. The plant's therapeutic potency is attributed to a complex matrix of lignans, flavonoids, tannins, alkaloids, terpenoids, and polyphenols — each contributing to its multi-target pharmacological profile. Phyllanthin and hypophyllanthin, the signature lignans of the species, are responsible for the majority of its hepatoprotective activity and serve as chemical markers for standardisation of commercial preparations.</p>
+    <p class="section-body">Geraniin — a complex ellagitannin — is the principal compound responsible for antiviral activity against hepatitis B surface antigen (HBsAg) and HIV. Phyllanthusiin D, corilagin, and ellagic acid further contribute to the antiviral and antioxidant profile. Phylltetralin, a unique lignan, shows anti-inflammatory and antispasmodic activity relevant to urinary tract conditions.</p>
+    <div class="nutrition-bar">
+      <div class="nutrition-cell">
+        <div class="nutrition-num">200+</div>
+        <div class="nutrition-unit">compounds</div>
+        <div class="nutrition-label">Isolated across genus</div>
+      </div>
+      <div class="nutrition-cell">
+        <div class="nutrition-num">1,600+</div>
+        <div class="nutrition-unit">studies</div>
+        <div class="nutrition-label">Published pharmacology papers</div>
+      </div>
+      <div class="nutrition-cell">
+        <div class="nutrition-num">3</div>
+        <div class="nutrition-unit">continents</div>
+        <div class="nutrition-label">Independent folk stone remedy tradition</div>
+      </div>
+      <div class="nutrition-cell">
+        <div class="nutrition-num">5,000</div>
+        <div class="nutrition-unit">years</div>
+        <div class="nutrition-label">Of documented Ayurvedic use</div>
+      </div>
+    </div>
+    <table class="data-table">
+      <thead><tr><th>Compound</th><th>Category</th><th>Primary Action</th></tr></thead>
+      <tbody>
+        <tr><td>Phyllanthin</td><td>Lignan (marker compound)</td><td>Hepatoprotective, anti-hepatitis B, CCl₄-liver protection; chemical standardisation marker</td></tr>
+        <tr><td>Hypophyllanthin</td><td>Lignan</td><td>Hepatoprotective, anti-inflammatory; synergises with phyllanthin</td></tr>
+        <tr><td>Geraniin</td><td>Ellagitannin</td><td>Antiviral (HBsAg inhibition, anti-HIV), antioxidant, hypotensive</td></tr>
+        <tr><td>Corilagin</td><td>Hydrolysable tannin</td><td>Antiviral, anti-diabetic, antioxidant, anti-fibrotic</td></tr>
+        <tr><td>Ellagic Acid</td><td>Polyphenol</td><td>Antioxidant, antitumour, antimutagenic, antibacterial</td></tr>
+        <tr><td>Phylltetralin</td><td>Lignan</td><td>Antispasmodic on smooth muscle; relevant to ureteral stones &amp; dysuria</td></tr>
+        <tr><td>Quercetin &amp; Rutin</td><td>Flavonoid glycosides</td><td>Anti-inflammatory, hepatoprotective, capillary-strengthening</td></tr>
+        <tr><td>Nirtetralin &amp; Niranthin</td><td>Lignans</td><td>Calcium-channel antagonism (anti-spasmodic), anti-hypertensive</td></tr>
+        <tr><td>Phyllanthusiin D</td><td>Ellagitannin</td><td>HBsAg inhibition, antiviral, anti-inflammatory</td></tr>
+        <tr><td>Securinine &amp; Phyllantine</td><td>Alkaloids</td><td>GABA antagonism (CNS stimulant at low doses), antimicrobial</td></tr>
+        <tr><td>Lupeol &amp; β-Sitosterol</td><td>Triterpenoids</td><td>Anti-inflammatory, diuretic, hypolipidaemic</td></tr>
+        <tr><td>Repandusinic Acid</td><td>Tannin</td><td>Anti-HIV (reverse transcriptase inhibition), antiviral</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">03</span><h2 class="section-title">Ayurvedic Significance</h2><div class="section-rule"></div></div>
+    <p class="section-body">Bhumyamalaki is classified in classical Ayurveda primarily as a <em>yakrit uttejaka</em> (liver stimulant and protector) and <em>mutravirajaniya</em> (urine normaliser) drug. It appears prominently in Charaka Samhita's Chikitsasthana in the management of <em>kamala</em> (jaundice and hepatitis), <em>pandu</em> (anaemia), and <em>mutrakriccha</em> (painful urination). Sushruta Samhita includes it among wound-healing and skin-clarifying herbs. Ashtanga Hridaya commends it for <em>prameha</em> (diabetes and urinary disorders) management.</p>
+    <div class="script-box">
+      "Bhumyamalaki tikta kashaya madhura sheeta, yakrit-pliha-vishamjwara-prameha-kamala-meha-nashani"
+      <span>— Bhavaprakasha Nighantu, Guduchyadi Varga — Core classical description of Bhumyamalaki</span>
+    </div>
+    <p class="section-body">The verse identifies Bhumyamalaki as bitter-astringent-sweet, cold in potency, and a destroyer of liver and spleen diseases, irregular fevers, prameha (urinary/diabetic conditions), jaundice, and urinary disorders. In Siddha medicine (Tamil Nadu), it is known as <em>Keezhanelli</em> and considered one of the most important anti-viral and liver herbs. The Tamil Siddha text Gunapadam credits it with specific anti-jaundice activity through clearing <em>kamalai</em> (bile obstruction).</p>
+    <table class="dosha-table">
+      <thead><tr><th>Dosha</th><th>Effect</th><th>Mechanism &amp; Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Vata ↓</td><td>Mildly pacifying</td><td>Sweet vipaka and cold potency gently ground Vata; relevant to urinary pain, nervous tension associated with Vata-type kidney dysfunction</td></tr>
+        <tr><td>Pitta ↓</td><td>Strongly pacifying</td><td>Sheeta virya (cold potency), tikta-kashaya rasa powerfully reduce Pitta — the primary dosha behind jaundice, hepatitis, burning urination, and inflammatory skin conditions. Bhumi Amla is Pitta's foremost hepatic corrective.</td></tr>
+        <tr><td>Kapha ↓</td><td>Pacifying</td><td>Bitter-astringent taste and diuretic action reduce Kapha accumulation; helpful in Kapha-type oedema, obesity-related fatty liver, and sluggish metabolism</td></tr>
+      </tbody>
+    </table>
+    <p class="section-body"><strong>Rasa:</strong> Tikta (bitter), Kashaya (astringent), Madhura (sweet) &nbsp;·&nbsp; <strong>Guna:</strong> Laghu (light), Ruksha (dry) &nbsp;·&nbsp; <strong>Virya:</strong> Sheeta (cold) &nbsp;·&nbsp; <strong>Vipaka:</strong> Madhura (sweet) &nbsp;·&nbsp; <strong>Karma:</strong> Tridoshashamaka (balances all three doshas)</p>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">04</span><h2 class="section-title">Key Health Benefits</h2><div class="section-rule"></div></div>
+
+    <div class="spotlight">
+      <div class="spotlight-title">Liver Champion — The Most Researched Hepatoprotective Herb in Ayurveda</div>
+      <div class="spotlight-body">Bhumi Amla stands apart from all other Ayurvedic liver herbs in having the most extensive body of modern clinical evidence for hepatoprotection. Multiple randomised controlled trials and a Cochrane-level systematic review (Thyagarajan et al.) have evaluated its effects on hepatitis B. Phyllanthin and hypophyllanthin protect hepatocytes against paracetamol-, CCl₄-, and ethanol-induced liver damage through mechanisms including NF-κB inhibition, cytochrome P450 2E1 reduction, and induction of hepatic antioxidant enzymes.</div>
+    </div>
+
+    <div class="benefits-grid">
+      <div class="benefit-card">
+        <div class="benefit-title">Hepatoprotection &amp; Liver Regeneration</div>
+        <div class="benefit-desc">Phyllanthin and hypophyllanthin dose-dependently protect hepatocytes against chemical, viral, and alcoholic injury. Animal studies show significant normalisation of SGOT, SGPT, and bilirubin levels. Clinically evaluated in hepatitis B, alcoholic liver disease, and drug-induced hepatotoxicity with positive outcomes in multiple trials.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Anti-Hepatitis B (HBV)</div>
+        <div class="benefit-desc">Geraniin, phyllanthusiin D, and corilagin inhibit hepatitis B surface antigen (HBsAg) and hepatitis B e-antigen (HBeAg) secretion in infected cell lines. Clinical trials by Thyagarajan (1988, 1990) demonstrated clearance of HBsAg in a significant proportion of chronic HBV carriers treated with standardised Phyllanthus extract — among the most remarkable antiviral results from a plant source.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Kidney Stone Dissolution</div>
+        <div class="benefit-desc">Earned the folk name "Stonebreaker" independently across Brazil, India, and Southeast Asia — three unconnected traditions sharing the same indication. Phylltetralin and niranthin relax ureteral smooth muscle, facilitating passage of calculi. Clinical studies (Freitas AM, 2002) in Brazilian populations confirmed significant reduction in urinary calcium oxalate crystal aggregation and stone size with <em>P. niruri</em> extract.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Anti-diabetic &amp; Glycaemic Control</div>
+        <div class="benefit-desc">Whole-plant and leaf extracts significantly reduce fasting blood glucose in streptozotocin-induced diabetic animal models. Corilagin and ellagic acid inhibit α-glucosidase and α-amylase activity, slowing carbohydrate digestion. Phyllanthus extracts also improve insulin sensitivity and protect pancreatic beta cells from oxidative stress.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Antiviral — HIV, HSV, Dengue</div>
+        <div class="benefit-desc">Repandusinic acid and geraniin inhibit HIV reverse transcriptase activity. Extracts show activity against herpes simplex virus type 1 and 2, and dengue virus replication in cell culture. While not a replacement for antiviral therapy, the mechanism is distinct from and potentially complementary to current antiretroviral approaches.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Diuretic &amp; Urinary Tract Support</div>
+        <div class="benefit-desc">Classical designation as <em>mutravirajaniya</em> (urine normaliser) is supported by documented diuretic activity and smooth-muscle relaxation in the urinary tract. Used for dysuria, burning micturition, urinary tract infections, and albuminuria. Diuretic action supports clearance of renal uric acid — beneficial in gout.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Antioxidant &amp; Anti-inflammatory</div>
+        <div class="benefit-desc">Among the highest DPPH radical scavenging activities measured in Indian medicinal plants, attributed to the dense tannin and polyphenol matrix. Quercetin and rutin inhibit COX-2 and LOX pathways. Anti-inflammatory activity validated in carrageenan paw oedema and cotton pellet granuloma models.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Antimalarial &amp; Antipyretic</div>
+        <div class="benefit-desc">Aqueous and ethanolic extracts show significant suppression of Plasmodium falciparum in vitro. Traditional use in malarious regions of India, West Africa, and the Amazon for intermittent fevers — a convergent folk use noted independently across three continents. Antipyretic activity confirmed in brewer's yeast-induced fever models in rats.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">05</span><h2 class="section-title">Classical Formulations</h2><div class="section-rule"></div></div>
+    <p class="section-body">Bhumyamalaki is a key ingredient in several classical Ayurvedic formulations, particularly those directed at liver, urinary, and skin conditions. It also appears in Siddha and Unani systems under its regional names. Below are the principal classical compound preparations in which it features.</p>
+    <table class="data-table">
+      <thead><tr><th>Formulation</th><th>System</th><th>Primary Indication</th></tr></thead>
+      <tbody>
+        <tr><td>Bhumyamalaki Churna</td><td>Ayurveda</td><td>Jaundice, hepatitis, fatty liver — single-herb or simple compound powder</td></tr>
+        <tr><td>Phyllanthus Compound (Tablet)</td><td>Modern Ayurveda</td><td>Chronic hepatitis B, liver enzyme normalisation, alcoholic liver disease</td></tr>
+        <tr><td>Liver 52 / Liv.52 (ingredient)</td><td>Ayurveda</td><td>Widely used poly-herbal liver tonic including Bhumyamalaki extract</td></tr>
+        <tr><td>Arogyavardhini Vati</td><td>Ayurveda</td><td>Jaundice, liver and spleen disorders, skin diseases, obesity</td></tr>
+        <tr><td>Punarnava Mandura</td><td>Ayurveda</td><td>Pandu roga (anaemia), liver and spleen diseases, oedema</td></tr>
+        <tr><td>Nela Nelli Kashayam</td><td>Siddha (Tamil)</td><td>Kamalai (jaundice), liver inflammation, urinary burning</td></tr>
+        <tr><td>Triphala Guggulu (variant)</td><td>Ayurveda</td><td>Urinary calculi, inflammatory joint conditions with liver involvement</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">06</span><h2 class="section-title">How to Use Bhumi Amla</h2><div class="section-rule"></div></div>
+    <p class="section-body">Bhumi Amla preparations are widely available commercially as standardised extracts, churna (powder), and tablets. The whole plant — including roots — is therapeutically active. Fresh plant preparations have a long tradition especially in South India and Tamil Nadu; dried powder and standardised extracts are preferred for consistent dosing in hepatitis and stone conditions.</p>
+    <table class="consume-table">
+      <thead><tr><th>Form</th><th>Preparation</th><th>Dosage</th><th>Best Use</th></tr></thead>
+      <tbody>
+        <tr><td>Fresh Plant Juice</td><td>Pound whole fresh plant, strain juice</td><td>15–20 ml once or twice daily on empty stomach</td><td>Jaundice, hepatitis, burning urination</td></tr>
+        <tr><td>Whole Plant Powder (Churna)</td><td>Dried, powdered whole plant; with water or buttermilk</td><td>3–6 g twice daily, after meals</td><td>Liver disorders, kidney stones, diabetes</td></tr>
+        <tr><td>Decoction (Kwatha)</td><td>Boil 10–15 g dried herb in 200 ml water; reduce to half</td><td>50–60 ml twice daily</td><td>Chronic hepatitis, spleen enlargement, urinary infections</td></tr>
+        <tr><td>Standardised Extract (Tablet/Capsule)</td><td>Commercially available; standardised for phyllanthin content</td><td>500 mg–1 g twice daily (as directed)</td><td>Hepatitis B, liver enzyme elevation, kidney stones</td></tr>
+        <tr><td>Cold Infusion (Hima)</td><td>Soak dried herb in cold water overnight; strain morning</td><td>30 ml on empty stomach</td><td>Dysuria, burning urination, urinary tract infections</td></tr>
+        <tr><td>Root Decoction</td><td>Boil roots specifically; strain and cool</td><td>30 ml twice daily</td><td>Jaundice, gonorrhoea, chronic fevers (classical Siddha)</td></tr>
+        <tr><td>Leaf Paste (Topical)</td><td>Fresh leaves ground into paste</td><td>Apply to skin lesions 1–2× daily</td><td>Skin diseases, ringworm, ulcers, boils</td></tr>
+        <tr><td>With Cow's Milk (Ksheerpaka)</td><td>Boiled in milk; classical preparation</td><td>100–150 ml once daily</td><td>Pandu roga (anaemia), general debility, urinary weakness</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">07</span><h2 class="section-title">Safety &amp; Precautions</h2><div class="section-rule"></div></div>
+    <p class="section-body">Bhumi Amla has an excellent safety profile in traditional use and clinical studies at standard doses. However, its pharmacological potency — particularly regarding blood sugar, blood pressure, and liver enzyme modulation — means it can interact with certain medications and warrants careful use in specific populations.</p>
+    <ul class="precaution-list">
+      <li><strong>Pregnancy:</strong> Traditionally contraindicated. Uterine smooth-muscle activity has been attributed to certain Phyllanthus alkaloids. Avoid internal use during pregnancy without specialist supervision.</li>
+      <li><strong>Anti-diabetic drug interaction:</strong> Bhumi Amla significantly lowers blood glucose. Concurrent use with insulin, metformin, or sulfonylureas may cause additive hypoglycaemia — monitor blood sugar closely and inform your physician.</li>
+      <li><strong>Anti-hypertensive interaction:</strong> Geraniin and nirtetralin have calcium-channel antagonist properties. Combining with anti-hypertensive medications may produce additive blood pressure lowering — monitor BP during concurrent use.</li>
+      <li><strong>Anticoagulant interaction:</strong> Polyphenols and ellagic acid may mildly inhibit platelet aggregation. Use caution with warfarin, aspirin therapy, or before surgical procedures; inform treating physician of herbal use.</li>
+      <li><strong>Hepatitis B — clinical context:</strong> While promising antiviral data exists, Bhumi Amla should be used as an adjunct to, not a replacement for, evidence-based antiviral therapy (tenofovir, entecavir) in active HBV infection. Discuss with a hepatologist.</li>
+      <li><strong>Kapha-cold constitutions:</strong> Sheeta virya (cold potency) may aggravate cold, sluggish Kapha conditions. Those with very cold digestion (<em>mandagni</em>) may experience digestive heaviness — combine with warming digestives like dry ginger if needed.</li>
+      <li><strong>Kidney conditions:</strong> While traditionally used for kidney stones, significant renal disease or solitary kidney warrants physician supervision before use of any strong diuretic herb.</li>
+      <li><strong>Children:</strong> Traditional use in children is documented in South India (Keezhanelli juice for infantile jaundice), but standardised extract doses have not been established paediatrically — use only under Ayurvedic supervision.</li>
+    </ul>
+  </div>
+
+  <div class="sources">
+    <div class="sources-title">References &amp; Sources</div>
+    <ul>
+      <li>Thyagarajan SP et al. — "Effect of Phyllanthus amarus on chronic carriers of hepatitis B virus" — The Lancet, 1988</li>
+      <li>Calixto JB et al. — "A review of the plants of the genus Phyllanthus: their chemistry, pharmacology and therapeutic potential" — Medicinal Research Reviews, 1998</li>
+      <li>Freitas AM et al. — "The effect of Phyllanthus niruri on urinary inhibitors of calcium oxalate crystallisation and other factors associated with renal stone formation" — BJU International, 2002</li>
+      <li>Srividya N &amp; Periwal S — "Diuretic, hypotensive and hypoglycaemic effect of Phyllanthus amarus" — Indian Journal of Experimental Biology, 1995</li>
+      <li>Unander DW et al. — "Usage and bioassays in Phyllanthus: literature survey, phytochemistry and pharmacology" — Journal of Ethnopharmacology, 1990</li>
+      <li>Kassuya CA et al. — "Anti-inflammatory properties of extracts, fractions and lignans isolated from Phyllanthus amarus" — Planta Medica, 2005</li>
+      <li>Bharatiya Vanaushadhi (Indian Medicinal Plants) — Vol. 4 — Bhumyamalaki botanical and ethnobotanical account</li>
+      <li>Charaka Samhita — Chikitsasthana 16 — Kamala (jaundice) and prameha management with Bhumyamalaki</td></tr></li>
+      <li>Bhavaprakasha Nighantu — Guduchyadi Varga — Classical properties and indications of Bhumyamalaki</li>
+      <li>Gunapadam (Mooligai Vaguppu) — Siddha classical text — Keezhanelli actions in kamalai and mutra diseases</li>
+      <li>Paul B et al. — "Compounds from Phyllanthus niruri Linn. with antiviral properties" — Journal of Ethnopharmacology, 2006</li>
+    </ul>
+  </div>
+</div>
+
+<footer>
+  <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a qualified practitioner before therapeutic use</p>
+</footer>
+
+  <div id="viewerModal">
+    <div id="modal-topbar">
+      <span>3D Model — Bhumi Amla</span>
+      <button type="button" id="close3D">✕</button>
+    </div>
+    <model-viewer src="bhumiamla3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+  </div>
+  <script>
+    (function() {
+      var open3D = document.getElementById('open3D');
+      var close3D = document.getElementById('close3D');
+      var modal = document.getElementById('viewerModal');
+      if (!open3D || !close3D || !modal) return;
+      function openModal() {
+        
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+      function closeModal() {
+        
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+      open3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); openModal();
+      });
+      close3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); closeModal();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+      });
+    })();
+  </script>
+
+</body>
+</html>

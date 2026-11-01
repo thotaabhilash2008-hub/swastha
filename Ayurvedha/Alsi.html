@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alsi — Flaxseed | Swastha</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap"
+    rel="stylesheet">
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+  <style>
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box
+    }
+
+    html {
+      scroll-behavior: smooth
+    }
+
+    body {
+      font-family: 'Jost', sans-serif;
+      background: var(--cream);
+      color: var(--ink);
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity: .035;
+      pointer-events: none;
+      z-index: 100
+    }
+
+    #open3D {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      padding: 10px 18px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: var(--forest);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      z-index: 1000;
+      transition: .3s
+    }
+
+    #open3D:hover {
+      background: var(--gold);
+      color: var(--deep)
+    }
+
+    #viewerModal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+    }
+
+    #modal-topbar {
+      flex-shrink: 0;
+      height: 58px;
+      background: #111111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px 0 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      z-index: 99999;
+    }
+
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 4.5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.72);
+      user-select: none;
+    }
+
+    #close3D {
+      width: 38px;
+      height: 38px;
+      font-size: 15px;
+      font-weight: 300;
+      background: transparent;
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background .2s, color .2s, transform .22s;
+      outline: none;
+      flex-shrink: 0;
+    }
+
+    #close3D:hover {
+      background: #ffffff;
+      color: #111111;
+      border-color: #ffffff;
+      transform: rotate(90deg)
+    }
+
+    #viewerModal model-viewer {
+      flex: 1;
+      width: 100%;
+      display: block;
+      background: #ffffff;
+    }
+
+    .bg-circle {
+      position: fixed;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0
+    }
+
+    .bg-circle-1 {
+      width: 700px;
+      height: 700px;
+      background: radial-gradient(circle, rgba(42, 92, 63, .1) 0%, transparent 70%);
+      top: -200px;
+      right: -150px
+    }
+
+    .bg-circle-2 {
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(201, 168, 76, .08) 0%, transparent 70%);
+      bottom: -100px;
+      left: -100px
+    }
+
+    .botanical-svg {
+      position: fixed;
+      pointer-events: none;
+      z-index: 1;
+      opacity: .1
+    }
+
+    .botanical-tl {
+      top: -20px;
+      left: -20px;
+      width: 260px
+    }
+
+    .botanical-br {
+      bottom: -20px;
+      right: -20px;
+      width: 220px;
+      transform: rotate(180deg)
+    }
+
+    .hero {
+      position: relative;
+      z-index: 10;
+      padding: 54px 40px 0;
+      text-align: center;
+      opacity: 0;
+      animation: fadeUp .9s ease .1s forwards
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--sage);
+      text-decoration: none;
+      margin-bottom: 36px;
+      transition: color .3s
+    }
+
+    .back-link:hover {
+      color: var(--gold)
+    }
+
+    .logo-rule {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 14px
+    }
+
+    .logo-rule span {
+      display: block;
+      height: 1px;
+      width: 70px;
+      background: linear-gradient(to right, transparent, var(--gold))
+    }
+
+    .logo-rule span:last-child {
+      background: linear-gradient(to left, transparent, var(--gold))
+    }
+
+    .logo-ornament {
+      font-size: 13px;
+      color: var(--gold)
+    }
+
+    .hero-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(64px, 12vw, 110px);
+      font-weight: 300;
+      letter-spacing: 8px;
+      line-height: 1;
+      color: var(--deep)
+    }
+
+    .hero-subtitle {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 18px;
+      font-style: italic;
+      font-weight: 300;
+      color: var(--earth);
+      letter-spacing: 2px;
+      margin-top: 8px
+    }
+
+    .hero-sci {
+      font-size: 11px;
+      font-weight: 200;
+      letter-spacing: 5px;
+      color: var(--sage);
+      margin-top: 6px
+    }
+
+    .hero-photos {
+      position: relative;
+      z-index: 10;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2px;
+      max-width: 900px;
+      margin: 40px auto 0;
+      opacity: 0;
+      animation: fadeUp .9s ease .35s forwards
+    }
+
+    .hero-photos img {
+      width: 100%;
+      height: 380px;
+      object-fit: cover;
+      object-position: center;
+      display: block;
+      background: var(--parchment);
+    }
+
+    .hero-photos img:first-child {
+      object-position: center 40%
+    }
+
+    .photo-caption {
+      text-align: center;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 12px;
+      font-style: italic;
+      color: var(--sage);
+      letter-spacing: 1px;
+      padding: 10px 0 0;
+      max-width: 900px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 10;
+      opacity: 0;
+      animation: fadeUp .9s ease .5s forwards
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin: 50px auto;
+      max-width: 600px;
+      opacity: 0;
+      animation: fadeUp .9s ease .55s forwards;
+      position: relative;
+      z-index: 10
+    }
+
+    .divider-line {
+      height: 1px;
+      width: 120px;
+      background: linear-gradient(to right, transparent, var(--sage))
+    }
+
+    .divider-line:last-child {
+      background: linear-gradient(to left, transparent, var(--sage))
+    }
+
+    .divider-leaf {
+      color: var(--forest);
+      font-size: 18px
+    }
+
+    .content {
+      position: relative;
+      z-index: 10;
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 30px 80px
+    }
+
+    .intro-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 20px;
+      font-weight: 300;
+      line-height: 1.75;
+      color: var(--ink);
+      text-align: center;
+      max-width: 700px;
+      margin: 0 auto 60px;
+      opacity: 0;
+      animation: fadeUp .9s ease .6s forwards
+    }
+
+    .intro-text em {
+      color: var(--forest);
+      font-style: italic
+    }
+
+    .section {
+      margin-bottom: 60px;
+      opacity: 0;
+      animation: fadeUp .9s ease forwards
+    }
+
+    .section:nth-child(1) {
+      animation-delay: .65s
+    }
+
+    .section:nth-child(2) {
+      animation-delay: .75s
+    }
+
+    .section:nth-child(3) {
+      animation-delay: .85s
+    }
+
+    .section:nth-child(4) {
+      animation-delay: .95s
+    }
+
+    .section:nth-child(5) {
+      animation-delay: 1.05s
+    }
+
+    .section:nth-child(6) {
+      animation-delay: 1.15s
+    }
+
+    .section:nth-child(7) {
+      animation-delay: 1.25s
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 20px
+    }
+
+    .section-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 11px;
+      letter-spacing: 4px;
+      color: var(--gold)
+    }
+
+    .section-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 28px;
+      font-weight: 400;
+      color: var(--deep);
+      letter-spacing: 1px
+    }
+
+    .section-rule {
+      height: 1px;
+      flex: 1;
+      background: linear-gradient(to right, var(--gold), transparent)
+    }
+
+    .section-body {
+      font-size: 13px;
+      font-weight: 300;
+      line-height: 1.9;
+      color: var(--ink);
+      margin-bottom: 24px
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0 8px;
+      font-size: 12px
+    }
+
+    .data-table thead tr {
+      background: var(--deep);
+      color: var(--gold);
+      font-size: 10px;
+      letter-spacing: 3px;
+      text-transform: uppercase
+    }
+
+    .data-table thead th {
+      padding: 12px 14px;
+      text-align: left;
+      font-weight: 400
+    }
+
+    .data-table tbody tr:nth-child(even) {
+      background: var(--parchment)
+    }
+
+    .data-table tbody tr:nth-child(odd) {
+      background: var(--cream)
+    }
+
+    .data-table tbody tr {
+      transition: background .2s
+    }
+
+    .data-table tbody tr:hover {
+      background: rgba(200, 164, 93, 0.15)
+    }
+
+    .data-table tbody td {
+      padding: 10px 14px;
+      color: var(--ink);
+      border-bottom: 1px solid rgba(107, 79, 45, .08)
+    }
+
+    .data-table tbody td:first-child {
+      font-weight: 400;
+      color: var(--deep);
+      width: 28%
+    }
+
+    .dosha-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 12px
+    }
+
+    .dosha-table thead tr {
+      background: var(--forest);
+      color: var(--cream)
+    }
+
+    .dosha-table thead th {
+      padding: 12px 14px;
+      text-align: left;
+      font-weight: 400;
+      letter-spacing: 2px;
+      font-size: 10px;
+      text-transform: uppercase
+    }
+
+    .dosha-table tbody tr:nth-child(even) {
+      background: var(--parchment)
+    }
+
+    .dosha-table tbody tr:nth-child(odd) {
+      background: var(--cream)
+    }
+
+    .dosha-table tbody td {
+      padding: 11px 14px;
+      color: var(--ink);
+      border-bottom: 1px solid rgba(107, 79, 45, .08)
+    }
+
+    .dosha-table tbody td:first-child {
+      font-weight: 400;
+      color: var(--forest);
+      width: 18%
+    }
+
+    .dosha-table tbody td:nth-child(2) {
+      color: var(--earth);
+      width: 20%
+    }
+
+    .consume-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 12px
+    }
+
+    .consume-table thead tr {
+      background: var(--earth);
+      color: var(--cream)
+    }
+
+    .consume-table thead th {
+      padding: 12px 14px;
+      text-align: left;
+      font-weight: 400;
+      letter-spacing: 2px;
+      font-size: 10px;
+      text-transform: uppercase
+    }
+
+    .consume-table tbody tr:nth-child(even) {
+      background: var(--parchment)
+    }
+
+    .consume-table tbody tr:nth-child(odd) {
+      background: var(--cream)
+    }
+
+    .consume-table tbody td {
+      padding: 11px 14px;
+      color: var(--ink);
+      border-bottom: 1px solid rgba(107, 79, 45, .08)
+    }
+
+    .consume-table tbody td:first-child {
+      font-weight: 400;
+      color: var(--earth);
+      width: 22%
+    }
+
+    .benefits-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: rgba(107, 79, 45, .12);
+      border: 1px solid rgba(107, 79, 45, .12);
+      margin: 8px 0
+    }
+
+    .benefit-card {
+      background: var(--cream);
+      padding: 24px 22px;
+      transition: background .3s;
+      position: relative;
+      overflow: hidden
+    }
+
+    .benefit-card:hover {
+      background: #ede4ce
+    }
+
+    .benefit-card::before {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: var(--gold);
+      transition: width .4s
+    }
+
+    .benefit-card:hover::before {
+      width: 100%
+    }
+
+    .benefit-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--forest);
+      margin-bottom: 8px
+    }
+
+    .benefit-desc {
+      font-size: 11.5px;
+      font-weight: 300;
+      line-height: 1.75;
+      color: var(--ink);
+      opacity: .85
+    }
+
+    .precaution-list {
+      list-style: none;
+      margin: 8px 0
+    }
+
+    .precaution-list li {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      padding: 10px 14px;
+      font-size: 12px;
+      font-weight: 300;
+      line-height: 1.7;
+      color: var(--ink);
+      border-bottom: 1px solid rgba(107, 79, 45, .08)
+    }
+
+    .precaution-list li:last-child {
+      border-bottom: none
+    }
+
+    .precaution-list li::before {
+      content: '▸';
+      color: var(--gold);
+      flex-shrink: 0;
+      margin-top: 1px
+    }
+
+    .sources {
+      border-top: 1px solid rgba(107, 79, 45, .15);
+      padding-top: 24px;
+      margin-top: 20px
+    }
+
+    .sources-title {
+      font-size: 10px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--sage);
+      margin-bottom: 12px;
+      font-weight: 300
+    }
+
+    .sources ul {
+      list-style: none
+    }
+
+    .sources ul li {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 13px;
+      font-style: italic;
+      color: var(--earth);
+      padding: 5px 0;
+      border-bottom: 1px solid rgba(107, 79, 45, .06)
+    }
+
+    .sources ul li::before {
+      content: '· ';
+      color: var(--sage)
+    }
+
+    .nutrition-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: rgba(107, 79, 45, .12);
+      border: 1px solid rgba(107, 79, 45, .12);
+      margin: 20px 0
+    }
+
+    .nutrition-cell {
+      background: var(--cream);
+      padding: 22px 16px;
+      text-align: center;
+      transition: background .3s
+    }
+
+    .nutrition-cell:hover {
+      background: var(--parchment)
+    }
+
+    .nutrition-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 36px;
+      font-weight: 300;
+      color: var(--forest);
+      line-height: 1;
+      margin-bottom: 4px
+    }
+
+    .nutrition-unit {
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--gold);
+      font-weight: 300
+    }
+
+    .nutrition-label {
+      font-size: 11px;
+      font-weight: 300;
+      color: var(--ink);
+      margin-top: 5px
+    }
+
+    footer {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      padding: 24px 20px 44px;
+      border-top: 1px solid rgba(107, 79, 45, .12);
+      max-width: 860px;
+      margin: 0 auto
+    }
+
+    footer p {
+      font-size: 11px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--sage);
+      font-weight: 300
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(28px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
+
+    @media(max-width:700px) {
+      .hero-photos {
+        grid-template-columns: 1fr
+      }
+
+      .hero-photos img {
+        height: 260px
+      }
+
+      .benefits-grid {
+        grid-template-columns: 1fr
+      }
+
+      .nutrition-bar {
+        grid-template-columns: 1fr 1fr
+      }
+
+      .content {
+        padding: 0 18px 60px
+      }
+
+      #modal-topbar {
+        padding: 0 16px 0 20px
+      }
+
+      #modal-topbar span {
+        font-size: 9px;
+        letter-spacing: 3px
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <button id="open3D">View in 3D</button>
+
+  <div id="viewerModal">
+    <div id="modal-topbar">
+      <span>3D Model — Alsi</span>
+      <button id="close3D">✕</button>
+    </div>
+    <model-viewer src="alsi3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+  </div>
+
+  <div class="bg-circle bg-circle-1"></div>
+  <div class="bg-circle bg-circle-2"></div>
+
+  <svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#2a5c3f" stroke-width="1.5" fill="none" />
+    <circle cx="90" cy="210" r="8" fill="#2a5c3f" opacity="0.7" />
+    <circle cx="130" cy="175" r="10" fill="#7a9e7e" opacity="0.6" />
+    <circle cx="170" cy="135" r="7" fill="#2a5c3f" opacity="0.8" />
+    <circle cx="210" cy="95" r="9" fill="#c9a84c" opacity="0.5" />
+    <ellipse cx="115" cy="195" rx="20" ry="10" fill="#7a9e7e" transform="rotate(-30 115 195)" />
+    <ellipse cx="155" cy="155" rx="18" ry="9" fill="#2a5c3f" transform="rotate(-45 155 155)" />
+    <ellipse cx="195" cy="115" rx="16" ry="8" fill="#7a9e7e" transform="rotate(-60 195 115)" />
+  </svg>
+  <svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#2a5c3f" stroke-width="1.5" fill="none" />
+    <circle cx="90" cy="210" r="8" fill="#2a5c3f" opacity="0.7" />
+    <circle cx="130" cy="175" r="10" fill="#7a9e7e" opacity="0.6" />
+    <circle cx="170" cy="135" r="7" fill="#2a5c3f" opacity="0.8" />
+    <ellipse cx="115" cy="195" rx="20" ry="10" fill="#7a9e7e" transform="rotate(-30 115 195)" />
+  </svg>
+
+  <div class="hero">
+    <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+    <div class="logo-rule"><span></span>
+      <div class="logo-ornament">✦</div><span></span>
+    </div>
+    <div class="hero-title">Alsi</div>
+    <div class="hero-subtitle">Atasi — The Most Useful Seed</div>
+    <div class="hero-sci">Linum usitatissimum &nbsp;·&nbsp; Linaceae</div>
+  </div>
+
+  <div class="hero-photos">
+    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/5/51/Linum_usitatissimum_001.JPG/1280px-Linum_usitatissimum_001.JPG" alt="Brown and golden flaxseeds"
+      onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/2/21/Linum_usitatissimum_close_to_a_little_tree_in_a_garden.jpg/1280px-Linum_usitatissimum_close_to_a_little_tree_in_a_garden.jpg" alt="Flax plant with blue flowers"
+      onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+  </div>
+  <p class="photo-caption">Fig. 1 — Glossy oval flaxseeds in their two classic varieties — brown and golden &nbsp;·&nbsp; Fig. 2 — The flax plant in flower, with its signature five-petalled sky-blue blossoms</p>
+
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-leaf">❧</div>
+    <div class="divider-line"></div>
+  </div>
+
+  <div class="content">
+    <p class="intro-text">Its Latin name carries the verdict of millennia: <em>usitatissimum</em> means "the most useful." Cultivated since the dawn of civilisation in Egypt and Mesopotamia for the linen its fibres became and the medicine its seeds delivered, Alsi is among the rare plants that clothed bodies, fed kitchens, and healed wounds — all from the same blue-flowered field.</p>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">01</span>
+        <h2 class="section-title">Botanical Profile</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Alsi (<em>Linum usitatissimum</em> L.) is a slender annual herb of the Linaceae family, growing to 0.6–1.2 metres in height with linear-lanceolate leaves and signature five-petalled, sky-blue flowers about 2.5 cm across, arranged in loose corymbose panicles. The genus name <em>Linum</em> derives from the Greek <em>linon</em>, meaning "flax," and the seeds (the medicinal part) develop in small spherical capsules after flowering.</p>
+      <p class="section-body">Two main seed varieties are recognised — golden-yellow and reddish-brown — both with similar nutritional and medicinal profiles. Cultivated as a winter crop across India, including the Himalayan foothills up to 1,800 m, the plant has been used since the 8th century in classical Ayurveda for both internal nourishment and external applications. Bhavaprakasha Nighantu describes the plant under the name <em>Atasi</em>, with five Sanskrit synonyms grounded in its features: <em>Neelapushpi</em> ("blue-flowered"), <em>Kshuma</em> ("nose-shaped flower"), and <em>Uma</em> / <em>Parvati</em>.</p>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>PROPERTY</th>
+            <th>Detail</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Family</td>
+            <td>Linaceae</td>
+          </tr>
+          <tr>
+            <td>Botanical Name</td>
+            <td>Linum usitatissimum L.</td>
+          </tr>
+          <tr>
+            <td>Sanskrit Names</td>
+            <td>Atasi, Neelapushpi, Uma, Parvati, Kshuma, Picchala</td>
+          </tr>
+          <tr>
+            <td>Common Names</td>
+            <td>Alsi, Tisi, Linseed, Flaxseed, Katan (Unani), Agasi, Virai</td>
+          </tr>
+          <tr>
+            <td>Origin</td>
+            <td>Ancient Egypt, Mesopotamia, India; cultivated worldwide</td>
+          </tr>
+          <tr>
+            <td>Plant Type</td>
+            <td>Annual herb (0.6–1.2 m), winter crop</td>
+          </tr>
+          <tr>
+            <td>Harvest Season</td>
+            <td>February – March (after winter cultivation)</td>
+          </tr>
+          <tr>
+            <td>Medicinal Parts</td>
+            <td>Seeds (primary), seed oil, mucilage</td>
+          </tr>
+          <tr>
+            <td>Taste Profile</td>
+            <td>Sweet (madhura), bitter (tikta), pungent (per Bhavaprakasha)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">02</span>
+        <h2 class="section-title">Phytochemistry Composition</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Few foods in nature combine so many functional compounds in one seed. Alsi delivers nearly 40% fat — of which over half is the omega-3 fatty acid alpha-linolenic acid (ALA) — making it the richest plant source of omega-3 known to nutrition science. ALA is a precursor that the body partially converts into EPA and DHA, the same fatty acids extracted from fish oil.</p>
+      <p class="section-body">Beyond ALA, flaxseed is the world's leading dietary source of <em>lignans</em> — particularly secoisolariciresinol diglucoside (SDG) — at concentrations up to 800 times higher than other plant foods. These phytoestrogen polyphenols, alongside soluble mucilage fibre, vitamin E, B-vitamins, magnesium, and high-quality protein, give Alsi a remarkably broad therapeutic footprint.</p>
+      <div class="nutrition-bar">
+        <div class="nutrition-cell">
+          <div class="nutrition-num">55%</div>
+          <div class="nutrition-unit">of total fat</div>
+          <div class="nutrition-label">Alpha-linolenic acid (ALA)</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">800×</div>
+          <div class="nutrition-unit">more than</div>
+          <div class="nutrition-label">Lignans vs other plants</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">28%</div>
+          <div class="nutrition-unit">by weight</div>
+          <div class="nutrition-label">Dietary fibre</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">20%</div>
+          <div class="nutrition-unit">by weight</div>
+          <div class="nutrition-label">Plant protein</div>
+        </div>
+      </div>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Compound</th>
+            <th>Category</th>
+            <th>Primary Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Alpha-Linolenic Acid (ALA)</td>
+            <td>Omega-3 fatty acid</td>
+            <td>Anti-inflammatory, cardioprotective, neuroprotective</td>
+          </tr>
+          <tr>
+            <td>Secoisolariciresinol Diglucoside (SDG)</td>
+            <td>Lignan / phytoestrogen</td>
+            <td>Hormone modulation, anticancer, antioxidant</td>
+          </tr>
+          <tr>
+            <td>Pinoresinol &amp; Lariciresinol</td>
+            <td>Lignans</td>
+            <td>Estrogen receptor modulation, antimicrobial</td>
+          </tr>
+          <tr>
+            <td>Soluble Mucilage</td>
+            <td>Polysaccharide fibre</td>
+            <td>Laxative, demulcent, gut-soothing, satiety</td>
+          </tr>
+          <tr>
+            <td>Insoluble Fibre</td>
+            <td>Lignin, cellulose</td>
+            <td>Bulk-forming laxative, gut microbiome support</td>
+          </tr>
+          <tr>
+            <td>Linolenic &amp; Linoleic Acids</td>
+            <td>Polyunsaturated fats</td>
+            <td>Cell membrane integrity, skin health</td>
+          </tr>
+          <tr>
+            <td>Vitamin E (γ-Tocopherol)</td>
+            <td>Fat-soluble vitamin</td>
+            <td>Antioxidant, oxidative stress protection</td>
+          </tr>
+          <tr>
+            <td>Plant Protein (Linatin, Conlinin)</td>
+            <td>Storage proteins</td>
+            <td>Muscle repair, enzyme synthesis</td>
+          </tr>
+          <tr>
+            <td>Cyanogenic Glycosides (linustatin)</td>
+            <td>Trace constituents</td>
+            <td>Negligible at culinary doses; broken down on processing</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">03</span>
+        <h2 class="section-title">Ayurvedic Significance</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Bhavaprakasha Nighantu describes Atasi as <em>Vatahara</em> (Vata-pacifying) and especially efficacious in <em>Vata Vyadhi</em> — disorders rooted in Vata imbalance such as neuralgia, paralysis, sciatica, and chronic constipation. Charaka and Sushruta employ it in the treatment of <em>Kushtha</em> (skin disorders) and <em>Vrana</em> (wounds), often as a topical oil application. The defining classical verse declares: <em>"Atati satatam gamayati vata vyadhi pratishedhena"</em> — "Atasi continually drives away Vata disorders."</p>
+      <p class="section-body">Its rasa (taste) is <em>madhura</em> (sweet) and <em>tikta</em> (bitter); guna is <em>guru</em> (heavy), <em>snigdha</em> (unctuous), and <em>tikshna</em> (piercing); vipaka is <em>katu</em> (pungent); and veerya is <em>ushna</em> (hot). The hot potency makes Alsi a definitive Vata-pacifier, but the same heat aggravates Pitta and may slightly increase Kapha when consumed in excess.</p>
+      <table class="dosha-table">
+        <thead>
+          <tr>
+            <th>Dosha</th>
+            <th>Effect</th>
+            <th>Mechanism &amp; Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Vata ↓</td>
+            <td>Pacifying</td>
+            <td>Unctuous (snigdha) and hot qualities lubricate tissues, dissolve dryness, and warm the colon — classical drug of choice for Vata-Vyadhi (neuralgia, paralysis, constipation)</td>
+          </tr>
+          <tr>
+            <td>Pitta ↑</td>
+            <td>May aggravate</td>
+            <td>Hot potency (ushna virya) can increase Pitta, blood-heat, and bleeding tendency; not advised in Raktapitta or hyperacidity</td>
+          </tr>
+          <tr>
+            <td>Kapha ~</td>
+            <td>Mixed effect</td>
+            <td>Heaviness (guru) may aggravate Kapha if eaten raw, but proper roasting reduces this; lignans and fibre help with Kapha-type obesity</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">04</span>
+        <h2 class="section-title">Key Health Benefits</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Modern research has positioned Alsi among the world's most studied "functional foods," with published clinical trials supporting its role in cardiovascular health, hormonal balance, glycemic control, cancer prevention, and inflammatory pain relief — many of these mirrored in classical Ayurvedic indications recorded centuries before chemistry could describe them.</p>
+      <div class="benefits-grid">
+        <div class="benefit-card">
+          <div class="benefit-title">Cardiovascular Protection</div>
+          <div class="benefit-desc">The flagship modern use. ALA, lignans, and soluble fibre work together to reduce LDL cholesterol, lower triglycerides, stabilise heart rhythm, and protect arterial walls from oxidative damage. Daily intake of 30 g of ground flaxseed has shown measurable systolic and diastolic blood pressure reduction in clinical trials.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Digestive &amp; Bowel Health</div>
+          <div class="benefit-desc">A near-perfect natural laxative — soluble mucilage absorbs water and softens stool, while insoluble fibre adds bulk. Effective in chronic constipation, IBS, and diverticular disease. Bhavaprakasha specifically prescribes Alsi for Vata-type constipation; modern science confirms via gel-forming fibre mechanism.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Hormonal Balance &amp; Menopause</div>
+          <div class="benefit-desc">SDG lignans, after gut bacterial conversion, become enterolactone and enterodiol — phytoestrogens that gently modulate estrogen receptors. Studies show reduction in hot flashes, regulation of menstrual cycles, and supportive effect on PCOS and menopausal transition.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Anticancer Research</div>
+          <div class="benefit-desc">Long-term flaxseed lignan intake is associated in epidemiological studies with reduced breast, prostate, and colon cancer risk. ALA and SDG appear to inhibit tumour-cell proliferation, angiogenesis, and metastasis in preclinical models. Clinical trials remain ongoing for established cancers.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Glycemic &amp; Diabetes Support</div>
+          <div class="benefit-desc">Daily ground flaxseed consumption has been shown to lower fasting blood glucose, improve insulin sensitivity, and reduce HbA1c in Type 2 diabetic patients over 1–3 month trials. Soluble fibre slows carbohydrate absorption; lignans have direct insulin-modulating activity.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Joint &amp; Inflammatory Pain</div>
+          <div class="benefit-desc">A 2014 randomised trial confirmed linseed oil's efficacy in mild-to-moderate Carpal Tunnel Syndrome. ALA-derived eicosanoids reduce systemic inflammation in arthritis, gout, and Vata-driven joint pain — validating the classical Ayurvedic <em>Vata Vyadhi</em> indication.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Skin, Hair &amp; Wound Healing</div>
+          <div class="benefit-desc">Topical Alsi oil softens dry skin, eases eczema, and accelerates wound healing — all classical <em>Vrana</em> and <em>Kushtha</em> indications. Internally, omega-3s improve skin elasticity, reduce acne inflammation, and support shiny hair through scalp lipid balance.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Weight &amp; Satiety</div>
+          <div class="benefit-desc">The unique combination of soluble fibre, protein, and ALA induces strong satiety. Eaten before meals, Alsi reduces appetite, slows gastric emptying, and stabilises post-prandial glucose — a measurable adjunct to weight-management protocols.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">06</span>
+        <h2 class="section-title">How to Consume Alsi</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Whole flaxseeds pass largely undigested through the gut, so grinding immediately before use is essential to release ALA and lignans. Roast lightly for digestibility and to neutralise trace cyanogenic glycosides. Once ground, store in airtight containers refrigerated, as the high omega-3 content rapidly oxidises. The classical Ayurvedic pairing is with warm water in the morning — a practice now echoed in modern functional nutrition.</p>
+      <table class="consume-table">
+        <thead>
+          <tr>
+            <th>Form</th>
+            <th>Preparation</th>
+            <th>Dosage</th>
+            <th>Best Time</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Roasted Whole Seeds</td>
+            <td>Dry-roast in pan; chew thoroughly</td>
+            <td>1–2 tsp (5–10 g) daily</td>
+            <td>After meals</td>
+          </tr>
+          <tr>
+            <td>Ground Flaxmeal</td>
+            <td>Grind fresh; mix with warm water, smoothie, or yogurt</td>
+            <td>1–2 tbsp (10–20 g) daily</td>
+            <td>Morning, with breakfast</td>
+          </tr>
+          <tr>
+            <td>Alsi Water</td>
+            <td>Soak 1 tsp seeds overnight; drink with mucilage gel</td>
+            <td>1 cup daily</td>
+            <td>Morning, empty stomach</td>
+          </tr>
+          <tr>
+            <td>Flaxseed Oil</td>
+            <td>Cold-pressed, unrefined; never heated</td>
+            <td>1–2 tsp (5–10 ml) daily</td>
+            <td>With salads, raw on food</td>
+          </tr>
+          <tr>
+            <td>Roasted Powder</td>
+            <td>Roast then grind; mix with honey or rock salt</td>
+            <td>3–6 g twice daily</td>
+            <td>Before or after meals</td>
+          </tr>
+          <tr>
+            <td>Baked or Cooked</td>
+            <td>Added to cookies, breads, parathas, dosas</td>
+            <td>1–2 tbsp per serving</td>
+            <td>With meals</td>
+          </tr>
+          <tr>
+            <td>Topical Oil (Vrana)</td>
+            <td>Warm linseed oil applied to wounds or joints</td>
+            <td>As required</td>
+            <td>For arthritis, dry skin, eczema</td>
+          </tr>
+          <tr>
+            <td>Poultice (Kalka)</td>
+            <td>Ground seeds with warm water as paste</td>
+            <td>Applied as needed</td>
+            <td>On boils, abscesses, joint pain</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">07</span>
+        <h2 class="section-title">Safety &amp; Precautions</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Alsi is generally regarded as safe in food quantities, but its omega-3 density, lignan content, and uterine-stimulating reputation in classical texts call for thoughtful use in certain conditions and alongside specific medications. Always introduce gradually and ensure adequate water intake to prevent fibre-related obstruction.</p>
+      <ul class="precaution-list">
+        <li><strong>Pregnancy:</strong> Avoid medicinal doses. Lignans have phytoestrogenic activity, and traditional texts caution against high doses during pregnancy; small culinary amounts are typically acceptable but consult your physician.</li>
+        <li><strong>Bleeding disorders &amp; surgery:</strong> ALA and lignans together have mild antiplatelet effect. Discontinue at least 2 weeks before scheduled surgery. Avoid combining with warfarin, heparin, aspirin, clopidogrel, or NSAIDs without medical guidance.</li>
+        <li><strong>Antidiabetic medications:</strong> Hypoglycaemic action may potentiate insulin and oral antidiabetics (glimepiride, glipizide). Monitor blood glucose closely; adjust dosage with medical supervision.</li>
+        <li><strong>High Pitta or Raktapitta:</strong> Ushna virya (hot potency) may aggravate hyperacidity, gastritis, nasal bleeding, or heavy menstrual flow. Avoid in active bleeding episodes; pair with cooling anupanas like coconut water.</li>
+        <li><strong>Hormone-sensitive conditions:</strong> Use with caution in oestrogen-receptor-positive breast cancer, endometriosis, fibroids, or while on hormonal contraceptives — phytoestrogen activity could potentially modulate effects either way.</li>
+        <li><strong>Bowel obstruction:</strong> The fibre swells dramatically when wet. Always consume with adequate water (at least 200 ml per 1 tbsp ground seed). Avoid in cases of intestinal obstruction or severe gastroparesis.</li>
+        <li><strong>Hypothyroidism:</strong> Take Alsi at least 2 hours away from thyroid medication, as the fibre may bind levothyroxine and reduce absorption.</li>
+        <li><strong>Raw vs roasted:</strong> Whole raw flaxseeds in very high doses contain trace cyanogenic glycosides. Light roasting and proper grinding eliminate this concern; processed seeds at culinary doses are entirely safe.</li>
+      </ul>
+    </div>
+
+    <div class="sources">
+      <div class="sources-title">References &amp; Sources</div>
+      <ul>
+        <li>Goyal A et al. — "Flax and flaxseed oil: an ancient medicine &amp; modern functional food" — Journal of Food Science and Technology, 2014</li>
+        <li>Touré A &amp; Xueming X — "Flaxseed lignans: source, biosynthesis, metabolism, antioxidant activity, bio-active components, and health benefits" — Comprehensive Reviews in Food Science and Food Safety, 2010</li>
+        <li>Hashempur MH et al. — "Effect of Linum usitatissimum (Linseed) Oil in mild and moderate Carpal Tunnel Syndrome: A randomized double-blind, placebo-controlled clinical trial" — DARU Journal of Pharmaceutical Sciences, 2014</li>
+        <li>Kajla P, Sharma A, Sood DR — "Flaxseed — a potential functional food source" — Journal of Food Science and Technology, 2015</li>
+        <li>Bloedon LT &amp; Szapary PO — "Flaxseed and cardiovascular risk" — Nutrition Reviews, 2004</li>
+        <li>Tanna I et al. — "Pharmacognostical and Phytochemical evaluation of Atasi (Linum usitatissimum L.)" — Indian Journal of Traditional Knowledge, 2013</li>
+        <li>Bhavaprakasha Nighantu — Page 640, Shloka 66–67 — Classical description of Atasi</li>
+        <li>Ayurvedic Pharmacopoeia of India, Part I, Volume V — Government of India</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer>
+    <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a
+      qualified practitioner before therapeutic use</p>
+  </footer>
+
+  <audio id="alsiAudio" src="alsi_benefits.mp3" loop preload="auto"></audio>
+
+  <script>
+    const open3D = document.getElementById('open3D');
+    const close3D = document.getElementById('close3D');
+    const modal = document.getElementById('viewerModal');
+    const alsiAudio = document.getElementById('alsiAudio');
+
+    function openModal() {
+      modal.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+      history.pushState({ modal: 'alsi3d' }, '', '#3d');
+      alsiAudio.play().catch(e => console.log('Audio autoplay blocked', e));
+    }
+
+    function closeModal() {
+      modal.style.display = 'none';
+      document.body.style.overflow = '';
+      if (window.location.hash === '#3d') {
+        history.replaceState(null, '', window.location.pathname);
+      }
+      alsiAudio.pause();
+      alsiAudio.currentTime = 0;
+    }
+
+    open3D.addEventListener('click', function (e) {
+      e.preventDefault(); e.stopPropagation();
+      openModal();
+    });
+
+    close3D.addEventListener('click', function (e) {
+      e.preventDefault(); e.stopPropagation();
+      closeModal();
+    });
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+    });
+
+    window.addEventListener('popstate', function (e) {
+      if (modal.style.display === 'flex') {
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+    });
+  </script>
+</body>
+
+</html>

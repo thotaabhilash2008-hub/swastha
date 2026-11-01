@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kurchi | Swastha</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+  <style>
+    #open3D {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      padding: 10px 18px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: var(--forest);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      z-index: 1000;
+      transition: .3s;
+    }
+    #open3D:hover {
+      background: var(--gold);
+      color: var(--deep);
+    }
+    #viewerModal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+    }
+    #modal-topbar {
+      flex-shrink: 0;
+      height: 58px;
+      background: #111111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px 0 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      z-index: 99999;
+    }
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 4.5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.72);
+      user-select: none;
+    }
+    #close3D {
+      width: 38px;
+      height: 38px;
+      font-size: 15px;
+      font-weight: 300;
+      background: transparent;
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background .2s, color .2s, transform .22s;
+      outline: none;
+      flex-shrink: 0;
+    }
+    #close3D:hover {
+      background: #ffffff;
+      color: #111111;
+      border-color: #ffffff;
+      transform: rotate(90deg);
+    }
+    #viewerModal model-viewer {
+      flex: 1;
+      width: 100%;
+      display: block;
+      background: #ffffff;
+    }
+
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+    * { margin: 0; padding: 0; box-sizing: border-box }
+    html { scroll-behavior: smooth }
+    body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--ink); min-height: 100vh; overflow-x: hidden; position: relative }
+    body::before { content: ''; position: fixed; inset: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E"); opacity: .035; pointer-events: none; z-index: 100 }
+    .bg-circle { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0 }
+    .bg-circle-1 { width: 700px; height: 700px; background: radial-gradient(circle, rgba(42,92,63,.1) 0%, transparent 70%); top: -200px; right: -150px }
+    .bg-circle-2 { width: 500px; height: 500px; background: radial-gradient(circle, rgba(201,168,76,.08) 0%, transparent 70%); bottom: -100px; left: -100px }
+    .botanical-svg { position: fixed; pointer-events: none; z-index: 1; opacity: .1 }
+    .botanical-tl { top: -20px; left: -20px; width: 260px }
+    .botanical-br { bottom: -20px; right: -20px; width: 220px; transform: rotate(180deg) }
+    .hero { position: relative; z-index: 10; padding: 54px 40px 0; text-align: center; opacity: 0; animation: fadeUp .9s ease .1s forwards }
+    .back-link { display: inline-flex; align-items: center; gap: 8px; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--sage); text-decoration: none; margin-bottom: 36px; transition: color .3s }
+    .back-link:hover { color: var(--gold) }
+    .logo-rule { display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 14px }
+    .logo-rule span { display: block; height: 1px; width: 70px; background: linear-gradient(to right, transparent, var(--gold)) }
+    .logo-rule span:last-child { background: linear-gradient(to left, transparent, var(--gold)) }
+    .logo-ornament { font-size: 13px; color: var(--gold) }
+    .hero-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(64px,12vw,110px); font-weight: 300; letter-spacing: 8px; line-height: 1; color: var(--deep) }
+    .hero-subtitle { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-style: italic; font-weight: 300; color: var(--earth); letter-spacing: 2px; margin-top: 8px }
+    .hero-sci { font-size: 11px; font-weight: 200; letter-spacing: 5px; color: var(--sage); margin-top: 6px }
+    .hero-photos { position: relative; z-index: 10; display: grid; grid-template-columns: 1fr 1fr; gap: 2px; max-width: 900px; margin: 40px auto 0; opacity: 0; animation: fadeUp .9s ease .35s forwards }
+    .hero-photos img { width: 100%; height: 380px; object-fit: cover; object-position: center; display: block; background: var(--parchment) }
+    .photo-caption { text-align: center; font-family: 'Cormorant Garamond', serif; font-size: 12px; font-style: italic; color: var(--sage); letter-spacing: 1px; padding: 10px 0 0; max-width: 900px; margin: 0 auto; position: relative; z-index: 10; opacity: 0; animation: fadeUp .9s ease .5s forwards }
+    .divider { display: flex; align-items: center; justify-content: center; gap: 16px; margin: 50px auto; max-width: 600px; opacity: 0; animation: fadeUp .9s ease .55s forwards; position: relative; z-index: 10 }
+    .divider-line { height: 1px; width: 120px; background: linear-gradient(to right, transparent, var(--sage)) }
+    .divider-line:last-child { background: linear-gradient(to left, transparent, var(--sage)) }
+    .divider-leaf { color: var(--forest); font-size: 18px }
+    .content { position: relative; z-index: 10; max-width: 860px; margin: 0 auto; padding: 0 30px 80px }
+    .intro-text { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 300; line-height: 1.75; color: var(--ink); text-align: center; max-width: 700px; margin: 0 auto 60px; opacity: 0; animation: fadeUp .9s ease .6s forwards }
+    .intro-text em { color: var(--forest); font-style: italic }
+    .section { margin-bottom: 60px; opacity: 0; animation: fadeUp .9s ease forwards }
+    .section:nth-child(1) { animation-delay: .65s }
+    .section:nth-child(2) { animation-delay: .75s }
+    .section:nth-child(3) { animation-delay: .85s }
+    .section:nth-child(4) { animation-delay: .95s }
+    .section:nth-child(5) { animation-delay: 1.05s }
+    .section:nth-child(6) { animation-delay: 1.15s }
+    .section:nth-child(7) { animation-delay: 1.25s }
+    .section-header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px }
+    .section-num { font-family: 'Cormorant Garamond', serif; font-size: 11px; letter-spacing: 4px; color: var(--gold) }
+    .section-title { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 400; color: var(--deep); letter-spacing: 1px }
+    .section-rule { height: 1px; flex: 1; background: linear-gradient(to right, var(--gold), transparent) }
+    .section-body { font-size: 13px; font-weight: 300; line-height: 1.9; color: var(--ink); margin-bottom: 24px }
+    .data-table { width: 100%; border-collapse: collapse; margin: 16px 0 8px; font-size: 12px }
+    .data-table thead tr { background: var(--deep); color: var(--gold); font-size: 10px; letter-spacing: 3px; text-transform: uppercase }
+    .data-table thead th { padding: 12px 14px; text-align: left; font-weight: 400 }
+    .data-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .data-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .data-table tbody tr { transition: background .2s }
+    .data-table tbody tr:hover { background: rgba(200, 164, 93, 0.15) }
+    .data-table tbody td { padding: 10px 14px; color: var(--ink); border-bottom: 1px solid rgba(107,79,45,.08) }
+    .data-table tbody td:first-child { font-weight: 400; color: var(--deep); width: 28% }
+    .dosha-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .dosha-table thead tr { background: var(--forest); color: var(--cream) }
+    .dosha-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .dosha-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .dosha-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .dosha-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(107,79,45,.08) }
+    .dosha-table tbody td:first-child { font-weight: 400; color: var(--forest); width: 18% }
+    .dosha-table tbody td:nth-child(2) { color: var(--earth); width: 20% }
+    .consume-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .consume-table thead tr { background: var(--earth); color: var(--cream) }
+    .consume-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .consume-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .consume-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .consume-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(107,79,45,.08) }
+    .consume-table tbody td:first-child { font-weight: 400; color: var(--earth); width: 22% }
+    .benefits-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: rgba(107,79,45,.12); border: 1px solid rgba(107,79,45,.12); margin: 8px 0 }
+    .benefit-card { background: var(--cream); padding: 24px 22px; transition: background .3s; position: relative; overflow: hidden }
+    .benefit-card:hover { background: #ede4ce }
+    .benefit-card::before { content: ''; position: absolute; bottom: 0; left: 0; width: 0; height: 2px; background: var(--gold); transition: width .4s }
+    .benefit-card:hover::before { width: 100% }
+    .benefit-title { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 600; color: var(--forest); margin-bottom: 8px }
+    .benefit-desc { font-size: 11.5px; font-weight: 300; line-height: 1.75; color: var(--ink); opacity: .85 }
+    .precaution-list { list-style: none; margin: 8px 0 }
+    .precaution-list li { display: flex; gap: 12px; align-items: flex-start; padding: 10px 14px; font-size: 12px; font-weight: 300; line-height: 1.7; color: var(--ink); border-bottom: 1px solid rgba(107,79,45,.08) }
+    .precaution-list li:last-child { border-bottom: none }
+    .precaution-list li::before { content: '▸'; color: var(--gold); flex-shrink: 0; margin-top: 1px }
+    .sources { border-top: 1px solid rgba(107,79,45,.15); padding-top: 24px; margin-top: 20px }
+    .sources-title { font-size: 10px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); margin-bottom: 12px; font-weight: 300 }
+    .sources ul { list-style: none }
+    .sources ul li { font-family: 'Cormorant Garamond', serif; font-size: 13px; font-style: italic; color: var(--earth); padding: 5px 0; border-bottom: 1px solid rgba(107,79,45,.06) }
+    .sources ul li::before { content: '· '; color: var(--sage) }
+    .nutrition-bar { display: grid; grid-template-columns: repeat(4,1fr); gap: 1px; background: rgba(107,79,45,.12); border: 1px solid rgba(107,79,45,.12); margin: 20px 0 }
+    .nutrition-cell { background: var(--cream); padding: 22px 16px; text-align: center; transition: background .3s }
+    .nutrition-cell:hover { background: var(--parchment) }
+    .nutrition-num { font-family: 'Cormorant Garamond', serif; font-size: 36px; font-weight: 300; color: var(--forest); line-height: 1; margin-bottom: 4px }
+    .nutrition-unit { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); font-weight: 300 }
+    .nutrition-label { font-size: 11px; font-weight: 300; color: var(--ink); margin-top: 5px }
+    footer { position: relative; z-index: 10; text-align: center; padding: 24px 20px 44px; border-top: 1px solid rgba(107,79,45,.12); max-width: 860px; margin: 0 auto }
+    footer p { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); font-weight: 300 }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(28px) } to { opacity: 1; transform: translateY(0) } }
+    @media(max-width:700px) {
+      .hero-photos { grid-template-columns: 1fr }
+      .hero-photos img { height: 260px }
+      .benefits-grid { grid-template-columns: 1fr }
+      .nutrition-bar { grid-template-columns: 1fr 1fr }
+      .content { padding: 0 18px 60px }
+    }
+  </style>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+</head>
+<body>
+  <button type="button" id="open3D">View in 3D</button>
+
+
+  <div class="bg-circle bg-circle-1"></div>
+  <div class="bg-circle bg-circle-2"></div>
+
+  <svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#2a5c3f" stroke-width="1.5" fill="none"/>
+    <circle cx="90" cy="210" r="8" fill="#2a5c3f" opacity="0.7"/>
+    <circle cx="130" cy="175" r="10" fill="#7a9e7e" opacity="0.6"/>
+    <circle cx="170" cy="135" r="7" fill="#2a5c3f" opacity="0.8"/>
+    <circle cx="210" cy="95" r="9" fill="#c9a84c" opacity="0.5"/>
+    <ellipse cx="115" cy="195" rx="20" ry="10" fill="#7a9e7e" transform="rotate(-30 115 195)"/>
+    <ellipse cx="155" cy="155" rx="18" ry="9" fill="#2a5c3f" transform="rotate(-45 155 155)"/>
+    <ellipse cx="195" cy="115" rx="16" ry="8" fill="#7a9e7e" transform="rotate(-60 195 115)"/>
+  </svg>
+  <svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#2a5c3f" stroke-width="1.5" fill="none"/>
+    <circle cx="90" cy="210" r="8" fill="#2a5c3f" opacity="0.7"/>
+    <circle cx="130" cy="175" r="10" fill="#7a9e7e" opacity="0.6"/>
+    <ellipse cx="115" cy="195" rx="20" ry="10" fill="#7a9e7e" transform="rotate(-30 115 195)"/>
+  </svg>
+
+  <div class="hero">
+    <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+    <div class="logo-rule"><span></span><div class="logo-ornament">✦</div><span></span></div>
+    <div class="hero-title">Kurchi</div>
+    <div class="hero-subtitle">Conessi Bark — The Bitter Bark of Ayurveda</div>
+    <div class="hero-sci">Holarrhena pubescens &nbsp;·&nbsp; Holarrhena antidysenterica</div>
+  </div>
+
+  <div class="hero-photos">
+    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d6/Wrightia_antidysenterica_%282%29.JPG/1280px-Wrightia_antidysenterica_%282%29.JPG" alt="Kurchi tree with white fragrant flowers" onerror="this.style.minHeight='380px';this.style.background='var(--parchment)';">
+    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9b/%22%2Barya%2B%22_Wrightia_antidysenterica_2025_01.jpg/1280px-%22%2Barya%2B%22_Wrightia_antidysenterica_2025_01.jpg" alt="Kurchi bark and seeds used in Ayurveda" onerror="this.style.minHeight='380px';this.style.background='var(--parchment)';">
+  </div>
+  <p class="photo-caption">Fig. 1 — Clusters of fragrant white flowers of the Kurchi tree in bloom &nbsp;·&nbsp; Fig. 2 — Dried Kurchi bark and seeds, the primary medicinal parts used in classical Ayurveda</p>
+
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-leaf">❧</div>
+    <div class="divider-line"></div>
+  </div>
+
+  <div class="content">
+    <p class="intro-text">Revered across millennia as <em>Kutaja</em> — "born on the mountain" — Kurchi is one of Ayurveda's most celebrated anti-dysenteric herbs, praised in the Charaka Samhita and Sushruta Samhita as the supreme remedy for <em>Atisara</em> (diarrhoea) and <em>Pravahika</em> (dysentery). Its bark, seeds, and flowers together form a complete pharmacopoeia that bridges ancient wisdom and modern pharmacology.</p>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">01</span>
+        <h2 class="section-title">Botanical Profile</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Kurchi (<em>Holarrhena pubescens</em> Wall. ex G. Don) is a medium-sized deciduous tree of the Apocynaceae family, reaching 6–12 metres in height. It is distributed widely across the Indian subcontinent — from the Himalayas and the Western Ghats to Sri Lanka, Myanmar, and tropical Africa — typically growing in moist deciduous forests, river banks, and forest margins up to 1,200 m elevation.</p>
+      <p class="section-body">The bark is pale grey with lenticels and exudes a milky latex when cut. Leaves are opposite, elliptic-oblong, shortly pubescent below, 10–20 cm long. The flowers are white, fragrant, and borne in dense terminal corymbs — blooming April to June. The fruit is a paired follicle (30–45 cm long) bearing numerous seeds crowned with tufts of long silky hairs. All parts of the tree — bark, seeds, root, flowers, and leaves — are used medicinally, though the bark and seeds are primary.</p>
+      <table class="data-table">
+        <thead><tr><th>PROPERTY</th><th>Detail</th></tr></thead>
+        <tbody>
+          <tr><td>Family</td><td>Apocynaceae</td></tr>
+          <tr><td>Botanical Name</td><td>Holarrhena pubescens (Wall. ex G. Don) / H. antidysenterica</td></tr>
+          <tr><td>Sanskrit Names</td><td>Kutaja, Vatsaka, Shakra, Girimallika, Kalinga, Indrayava</td></tr>
+          <tr><td>Common Names</td><td>Conessi Bark, Kurchi, Bitter Oleander, Tellicherry Bark, Ivory Tree</td></tr>
+          <tr><td>Regional Names</td><td>Kuda (Hindi), Kodagapala (Kan), Kodaga (Tel), Veppalai (Tam), Kutajabeej (Guj)</td></tr>
+          <tr><td>Origin</td><td>Indian Subcontinent, Sri Lanka, Southeast Asia, tropical Africa</td></tr>
+          <tr><td>Plant Type</td><td>Medium deciduous tree (6–12 m), latex-bearing</td></tr>
+          <tr><td>Flowering Season</td><td>April to June; fruits mature October–November</td></tr>
+          <tr><td>Medicinal Parts</td><td>Bark (primary), seeds (Indrayava), root bark, flowers, leaves</td></tr>
+          <tr><td>Taste Profile</td><td>Tikta (bitter), Kashaya (astringent)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">02</span>
+        <h2 class="section-title">Phytochemistry Composition</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Kurchi is one of the richest known plant sources of steroidal alkaloids, with over 30 alkaloids isolated from its bark and seeds. Conessine — the principal alkaloid of the bark — is a potent amoebicide that has been extensively studied in both traditional and modern contexts. The seeds (Indrayava) have a distinct phytochemical profile complementary to the bark, rich in bitter glycosides and fatty acids.</p>
+      <div class="nutrition-bar">
+        <div class="nutrition-cell">
+          <div class="nutrition-num">30+</div>
+          <div class="nutrition-unit">alkaloids</div>
+          <div class="nutrition-label">Isolated from bark &amp; seeds</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">4%</div>
+          <div class="nutrition-unit">conessine</div>
+          <div class="nutrition-label">Bark alkaloid yield</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">1200m</div>
+          <div class="nutrition-unit">altitude</div>
+          <div class="nutrition-label">Grows up to (Himalayas)</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">3</div>
+          <div class="nutrition-unit">parts</div>
+          <div class="nutrition-label">Bark, seed, root — all used</div>
+        </div>
+      </div>
+      <table class="data-table">
+        <thead><tr><th>Compound</th><th>Category</th><th>Primary Action</th></tr></thead>
+        <tbody>
+          <tr><td>Conessine</td><td>Steroidal alkaloid</td><td>Potent amoebicide, anti-dysenteric, antiprotozoal</td></tr>
+          <tr><td>Holarrhimine &amp; Kurchamine</td><td>Steroidal alkaloids</td><td>Antimicrobial, antidiarrhoeal, CNS activity</td></tr>
+          <tr><td>Isoconessimine</td><td>Steroidal alkaloid</td><td>Anti-inflammatory, antipyretic</td></tr>
+          <tr><td>Holarrhesine</td><td>Steroidal alkaloid</td><td>Antispasmodic, smooth muscle relaxation</td></tr>
+          <tr><td>Conkurchine &amp; Norholadienamine</td><td>Minor alkaloids</td><td>Antimicrobial synergists</td></tr>
+          <tr><td>β-Sitosterol</td><td>Phytosterol</td><td>Anti-inflammatory, hypolipidemic</td></tr>
+          <tr><td>Ursolic Acid</td><td>Triterpenoid</td><td>Antioxidant, hepatoprotective, anti-inflammatory</td></tr>
+          <tr><td>Lupeol</td><td>Triterpenoid</td><td>Anti-arthritic, antitumour, hepatoprotective</td></tr>
+          <tr><td>Tannins &amp; Saponins</td><td>Secondary metabolites</td><td>Astringent, antidiarrhoeal, antimicrobial</td></tr>
+          <tr><td>Fatty Acids (seed)</td><td>Lipids</td><td>Emollient, membrane-supportive</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">03</span>
+        <h2 class="section-title">Ayurvedic Significance</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Kutaja is one of the most celebrated herbs in the classical Ayurvedic lexicon. Charaka lists it among the top herbs for <em>Grahani</em> (IBS/malabsorption), <em>Atisara</em> (diarrhoea), and <em>Raktapitta</em> (bleeding disorders). Sushruta praised it for healing intestinal ulcerations and haemorrhagic dysentery. The seeds — known as <em>Indrayava</em> — are listed separately as a drug of choice in fever with diarrhoea.</p>
+      <p class="section-body">The classical shloka — <em>"Kutajah kaphapittasra pravahikatisarajit, tikto graahi laghushshnashcha krimighno rochanavrinah"</em> — describes Kutaja as pacifying Kapha, Pitta, and Rakta; conquering dysentery; bitter, absorbent, light, hot; destroying worms; promoting appetite; and healing wounds. This single verse encapsulates its primary Ayurvedic indications with remarkable precision.</p>
+      <table class="dosha-table">
+        <thead><tr><th>Dosha</th><th>Effect</th><th>Mechanism &amp; Notes</th></tr></thead>
+        <tbody>
+          <tr><td>Vata ↔</td><td>Neutral / mild pacification</td><td>Kashaya (astringent) rasa reduces fluid loss and intestinal hypermotility; excessive use may aggravate Vata dryness</td></tr>
+          <tr><td>Pitta ↓</td><td>Pacifying</td><td>Tikta (bitter) rasa and Sheeta virya (cool potency) directly pacify Pitta; primary indication in Pitta-type dysentery with bleeding and burning</td></tr>
+          <tr><td>Kapha ↓</td><td>Pacifying</td><td>Laghu (light) and Tikshna (sharp) qualities dry Kapha; helpful in mucus-laden stools, ama accumulation, and sluggish digestion</td></tr>
+        </tbody>
+      </table>
+      <p class="section-body"><strong>Rasa:</strong> Tikta (bitter), Kashaya (astringent) &nbsp;·&nbsp; <strong>Guna:</strong> Laghu (light), Ruksha (dry) &nbsp;·&nbsp; <strong>Virya:</strong> Sheeta (cool) &nbsp;·&nbsp; <strong>Vipaka:</strong> Katu (pungent) &nbsp;·&nbsp; <strong>Karma:</strong> Kapha-Pitta shamaka, Grahi, Krimighna</p>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">04</span>
+        <h2 class="section-title">Key Health Benefits</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Modern pharmacological research has firmly established Kurchi as one of the most scientifically validated Ayurvedic herbs — its anti-amoebic, antidiarrhoeal, and anti-inflammatory properties backed by robust preclinical and clinical evidence, validating over two millennia of classical application.</p>
+      <div class="benefits-grid">
+        <div class="benefit-card">
+          <div class="benefit-title">Anti-dysenteric &amp; Anti-amoebic</div>
+          <div class="benefit-desc">Conessine, the principal bark alkaloid, demonstrates potent activity against Entamoeba histolytica — the causative agent of amoebic dysentery — and is effective even against metronidazole-resistant strains. Bark decoctions remain a frontline classical treatment for acute and chronic amoebic dysentery.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Antidiarrhoeal &amp; Grahi</div>
+          <div class="benefit-desc">Kurchi's astringent tannins and alkaloids reduce intestinal hypermotility, absorb excess fluid from the gut lumen, and restore normal bowel transit. It is prescribed across all Ayurvedic traditions for IBS with diarrhoea, malabsorption (Grahani), and chronic loose stools — including the celebrated Kutajghan Vati formulation.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Intestinal Antimicrobial</div>
+          <div class="benefit-desc">Bark and seed extracts demonstrate significant in vitro activity against Shigella, Salmonella, E. coli, and Clostridium — the principal bacterial pathogens of infectious diarrhoea and food poisoning. The alkaloid complex acts on bacterial membranes and disrupts pathogen colonisation of intestinal mucosa.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Wound Healing &amp; Skin Conditions</div>
+          <div class="benefit-desc">Bark paste applied topically promotes wound closure through astringent haemostasis, antimicrobial protection, and collagen synthesis promotion. Classical texts recommend it for chronic skin ulcers, eczema, and infected wounds. Seed paste is applied externally in skin infections and parasitic infestations.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Anti-inflammatory &amp; Antipyretic</div>
+          <div class="benefit-desc">Ethanolic extracts of bark and root show significant COX-inhibition and pro-inflammatory cytokine suppression. The herb is classically indicated in fever accompanying intestinal infections — its cool potency (Sheeta virya) combined with Pitta-pacifying bitterness provides gentle, sustained fever reduction without cold suppression.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Menstrual &amp; Gynaecological Health</div>
+          <div class="benefit-desc">Kurchi is a classical remedy for menorrhagia (excessive menstruation) and leucorrhoea — its astringent and haemostatic actions reducing uterine bleeding and abnormal vaginal discharge. Indrayava (seeds) are particularly mentioned in Garbhaposhana (foetal nourishment) formulations in classical texts.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Antioxidant &amp; Hepatoprotective</div>
+          <div class="benefit-desc">Ursolic acid, lupeol, and β-sitosterol from Kurchi demonstrate significant hepatoprotective activity in carbon tetrachloride-induced hepatotoxicity models, reducing liver enzyme elevation and supporting hepatocyte regeneration. DPPH and FRAP assays confirm robust free-radical scavenging capacity of bark extracts.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Anthelmintic &amp; Krimighna</div>
+          <div class="benefit-desc">Classical Ayurveda classifies Kutaja as a premier <em>Krimighna</em> (parasite-destroying) herb. Both bark and seeds show activity against intestinal helminths (roundworms, tapeworms) and Giardia in traditional and experimental settings — often combined with Vidanga and Haridra in classical anti-parasitic protocols.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">05</span>
+        <h2 class="section-title">How to Consume Kurchi</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Kurchi is used both as a single herb and as a key ingredient in classical compound formulations. The bark is predominantly used for acute and chronic intestinal conditions; the seeds (Indrayava) are used in fever, malabsorption, and gynaecological conditions. Internal preparations should be taken under the guidance of a qualified Ayurvedic physician.</p>
+      <table class="consume-table">
+        <thead><tr><th>Form</th><th>Preparation</th><th>Dosage</th><th>Best Use</th></tr></thead>
+        <tbody>
+          <tr><td>Bark Decoction (Kwatha)</td><td>Boil bark in water; reduce to ¼</td><td>30–50 ml twice daily</td><td>Acute dysentery, amoebic colitis</td></tr>
+          <tr><td>Kutajghan Vati</td><td>Classical tablet formulation</td><td>1–2 tabs twice daily</td><td>IBS, chronic diarrhoea, Grahani</td></tr>
+          <tr><td>Bark Powder (Churna)</td><td>Dried bark powder with buttermilk</td><td>3–6 g, twice daily</td><td>Loose stools, mucus in stools</td></tr>
+          <tr><td>Indrayava (Seed) Powder</td><td>Seed powder with honey</td><td>1–3 g, twice daily</td><td>Fever with diarrhoea, malabsorption</td></tr>
+          <tr><td>Kutajarishta</td><td>Classical fermented liquid</td><td>15–20 ml after meals</td><td>Chronic dysentery, Grahani</td></tr>
+          <tr><td>Bark Paste (Topical)</td><td>Ground fresh bark paste</td><td>Apply to affected area</td><td>Skin ulcers, infected wounds, eczema</td></tr>
+          <tr><td>Bark + Curd/Buttermilk</td><td>Bark decoction mixed with takra</td><td>30 ml twice daily</td><td>Chronic IBS, malabsorption syndrome</td></tr>
+          <tr><td>Kutaja Ghrita</td><td>Medicated ghee (classical)</td><td>Per practitioner direction</td><td>Raktapitta (bleeding disorders), fever</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">06</span>
+        <h2 class="section-title">Safety &amp; Precautions</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Kurchi has an excellent safety profile at classical therapeutic doses and is among the most widely used Ayurvedic herbs for gastrointestinal conditions. However, its steroidal alkaloid content (particularly conessine) warrants attention with prolonged high-dose use, as excessive conessine can affect the nervous system.</p>
+      <ul class="precaution-list">
+        <li><strong>Pregnancy:</strong> Use with caution — Indrayava (seeds) are specifically cautioned in early pregnancy due to uterine stimulant properties. Internal use of bark should be supervised by a physician throughout pregnancy.</li>
+        <li><strong>Constipation &amp; dry constitutions:</strong> The Ruksha (dry) and Grahi (absorbent) properties can aggravate constipation and Vata dryness; avoid in cases of constipation, hard stools, or very dry Vata constitutions without appropriate anupana (vehicle).</li>
+        <li><strong>Prolonged high-dose use:</strong> Chronic high-dose consumption (above classical limits) of conessine-rich preparations may cause neurological symptoms including tremors, confusion, and CNS excitation — adhere to prescribed dose and duration.</li>
+        <li><strong>Sprue &amp; severe malabsorption:</strong> While classically used for Grahani, in advanced malabsorption with extreme emaciation, use only under specialist supervision as the drying properties can further deplete tissues.</li>
+        <li><strong>Drug interactions:</strong> May potentiate anti-diarrhoeal medications; caution with concomitant use of anti-amoebic drugs (metronidazole) — though traditionally combined, clinical pharmacokinetic interactions are not fully characterised.</li>
+        <li><strong>Children:</strong> Traditional paediatric use exists at reduced doses — only under qualified supervision; avoid self-medication in children under 5 years.</li>
+        <li><strong>Hypotension:</strong> Steroidal alkaloids at high doses may modestly reduce blood pressure; caution in individuals on antihypertensive therapy.</li>
+        <li><strong>Self-diagnosis of dysentery:</strong> Bloody diarrhoea, high fever, or prolonged dysentery require clinical investigation; Kurchi is supportive therapy and not a substitute for diagnosis and emergency care.</li>
+      </ul>
+    </div>
+
+    <div class="sources">
+      <div class="sources-title">References &amp; Sources</div>
+      <ul>
+        <li>Charaka Samhita — Chikitsasthana, Atisara Chikitsa &amp; Grahani Chikitsa; Sutrasthana references to Kutaja</li>
+        <li>Sushruta Samhita — Uttaratantra, intestinal ulceration and haemorrhagic dysentery</li>
+        <li>Sharma PV — Dravyaguna Vigyana Vol. II — Classical properties of Kutaja</li>
+        <li>Bhavaprakasha Nighantu — Vatadi Varga; Dhanvantari Nighantu — Shatapushpadi Varga</li>
+        <li>Kirtikar KR &amp; Basu BD — Indian Medicinal Plants — Holarrhena antidysenterica monograph</li>
+        <li>Siddiqui BS et al. — "Alkaloids from Holarrhena pubescens bark" — Phytochemistry, 2001</li>
+        <li>Maurya SK et al. — "A comprehensive review on Kutaja" — International Journal of Pharmaceutical Sciences, 2010</li>
+        <li>Agarwal SS &amp; Paridhavi M — "Herbal Drug Technology" — Holarrhena pubescens applications</li>
+        <li>Jabeen A et al. — "Antiamoebic activity of Holarrhena pubescens" — Journal of Ethnopharmacology, 2011</li>
+        <li>API — Ayurvedic Pharmacopoeia of India, Part I Vol. I — Kutaja monograph</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer>
+    <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a qualified practitioner before therapeutic use</p>
+  </footer>
+
+  <div id="viewerModal">
+    <div id="modal-topbar">
+      <span>3D Model — Kurchi</span>
+      <button type="button" id="close3D">✕</button>
+    </div>
+    <model-viewer src="kurchi3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+  </div>
+  <script>
+    (function() {
+      var open3D = document.getElementById('open3D');
+      var close3D = document.getElementById('close3D');
+      var modal = document.getElementById('viewerModal');
+      if (!open3D || !close3D || !modal) return;
+      function openModal() {
+        
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+      function closeModal() {
+        
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+      open3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); openModal();
+      });
+      close3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); closeModal();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+      });
+    })();
+  </script>
+
+</body>
+</html>

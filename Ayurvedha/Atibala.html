@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Atibala — Country Mallow | Swastha</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap"
+    rel="stylesheet">
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+  <style>
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box
+    }
+
+    html {
+      scroll-behavior: smooth
+    }
+
+    body {
+      font-family: 'Jost', sans-serif;
+      background: var(--cream);
+      color: var(--ink);
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity: .035;
+      pointer-events: none;
+      z-index: 100
+    }
+
+    #open3D {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      padding: 10px 18px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: var(--forest);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      z-index: 1000;
+      transition: .3s
+    }
+
+    #open3D:hover {
+      background: var(--gold);
+      color: var(--deep)
+    }
+
+    #viewerModal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+    }
+
+    #modal-topbar {
+      flex-shrink: 0;
+      height: 58px;
+      background: #111111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px 0 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      z-index: 99999;
+    }
+
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 4.5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.72);
+      user-select: none;
+    }
+
+    #close3D {
+      width: 38px;
+      height: 38px;
+      font-size: 15px;
+      font-weight: 300;
+      background: transparent;
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background .2s, color .2s, transform .22s;
+      outline: none;
+      flex-shrink: 0;
+    }
+
+    #close3D:hover {
+      background: #ffffff;
+      color: #111111;
+      border-color: #ffffff;
+      transform: rotate(90deg)
+    }
+
+    #viewerModal model-viewer {
+      flex: 1;
+      width: 100%;
+      display: block;
+      background: #ffffff;
+    }
+
+    .bg-circle {
+      position: fixed;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0
+    }
+
+    .bg-circle-1 {
+      width: 700px;
+      height: 700px;
+      background: radial-gradient(circle, rgba(42, 92, 63, .1) 0%, transparent 70%);
+      top: -200px;
+      right: -150px
+    }
+
+    .bg-circle-2 {
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(201, 168, 76, .08) 0%, transparent 70%);
+      bottom: -100px;
+      left: -100px
+    }
+
+    .botanical-svg {
+      position: fixed;
+      pointer-events: none;
+      z-index: 1;
+      opacity: .1
+    }
+
+    .botanical-tl {
+      top: -20px;
+      left: -20px;
+      width: 260px
+    }
+
+    .botanical-br {
+      bottom: -20px;
+      right: -20px;
+      width: 220px;
+      transform: rotate(180deg)
+    }
+
+    .hero {
+      position: relative;
+      z-index: 10;
+      padding: 54px 40px 0;
+      text-align: center;
+      opacity: 0;
+      animation: fadeUp .9s ease .1s forwards
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--sage);
+      text-decoration: none;
+      margin-bottom: 36px;
+      transition: color .3s
+    }
+
+    .back-link:hover {
+      color: var(--gold)
+    }
+
+    .logo-rule {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 14px
+    }
+
+    .logo-rule span {
+      display: block;
+      height: 1px;
+      width: 70px;
+      background: linear-gradient(to right, transparent, var(--gold))
+    }
+
+    .logo-rule span:last-child {
+      background: linear-gradient(to left, transparent, var(--gold))
+    }
+
+    .logo-ornament {
+      font-size: 13px;
+      color: var(--gold)
+    }
+
+    .hero-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(64px, 12vw, 110px);
+      font-weight: 300;
+      letter-spacing: 8px;
+      line-height: 1;
+      color: var(--deep)
+    }
+
+    .hero-subtitle {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 18px;
+      font-style: italic;
+      font-weight: 300;
+      color: var(--earth);
+      letter-spacing: 2px;
+      margin-top: 8px
+    }
+
+    .hero-sci {
+      font-size: 11px;
+      font-weight: 200;
+      letter-spacing: 5px;
+      color: var(--sage);
+      margin-top: 6px
+    }
+
+    .hero-photos {
+      position: relative;
+      z-index: 10;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2px;
+      max-width: 900px;
+      margin: 40px auto 0;
+      opacity: 0;
+      animation: fadeUp .9s ease .35s forwards
+    }
+
+    .hero-photos img {
+      width: 100%;
+      height: 380px;
+      object-fit: cover;
+      object-position: center;
+      display: block;
+      background: var(--parchment);
+    }
+
+    .hero-photos img:first-child {
+      object-position: center 40%
+    }
+
+    .photo-caption {
+      text-align: center;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 12px;
+      font-style: italic;
+      color: var(--sage);
+      letter-spacing: 1px;
+      padding: 10px 0 0;
+      max-width: 900px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 10;
+      opacity: 0;
+      animation: fadeUp .9s ease .5s forwards
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin: 50px auto;
+      max-width: 600px;
+      opacity: 0;
+      animation: fadeUp .9s ease .55s forwards;
+      position: relative;
+      z-index: 10
+    }
+
+    .divider-line {
+      height: 1px;
+      width: 120px;
+      background: linear-gradient(to right, transparent, var(--sage))
+    }
+
+    .divider-line:last-child {
+      background: linear-gradient(to left, transparent, var(--sage))
+    }
+
+    .divider-leaf {
+      color: var(--forest);
+      font-size: 18px
+    }
+
+    .content {
+      position: relative;
+      z-index: 10;
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 30px 80px
+    }
+
+    .intro-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 20px;
+      font-weight: 300;
+      line-height: 1.75;
+      color: var(--ink);
+      text-align: center;
+      max-width: 700px;
+      margin: 0 auto 60px;
+      opacity: 0;
+      animation: fadeUp .9s ease .6s forwards
+    }
+
+    .intro-text em {
+      color: var(--forest);
+      font-style: italic
+    }
+
+    .section {
+      margin-bottom: 60px;
+      opacity: 0;
+      animation: fadeUp .9s ease forwards
+    }
+
+    .section:nth-child(1) {
+      animation-delay: .65s
+    }
+
+    .section:nth-child(2) {
+      animation-delay: .75s
+    }
+
+    .section:nth-child(3) {
+      animation-delay: .85s
+    }
+
+    .section:nth-child(4) {
+      animation-delay: .95s
+    }
+
+    .section:nth-child(5) {
+      animation-delay: 1.05s
+    }
+
+    .section:nth-child(6) {
+      animation-delay: 1.15s
+    }
+
+    .section:nth-child(7) {
+      animation-delay: 1.25s
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 20px
+    }
+
+    .section-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 11px;
+      letter-spacing: 4px;
+      color: var(--gold)
+    }
+
+    .section-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 28px;
+      font-weight: 400;
+      color: var(--deep);
+      letter-spacing: 1px
+    }
+
+    .section-rule {
+      height: 1px;
+      flex: 1;
+      background: linear-gradient(to right, var(--gold), transparent)
+    }
+
+    .section-body {
+      font-size: 13px;
+      font-weight: 300;
+      line-height: 1.9;
+      color: var(--ink);
+      margin-bottom: 24px
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0 8px;
+      font-size: 12px
+    }
+
+    .data-table thead tr {
+      background: var(--deep);
+      color: var(--gold);
+      font-size: 10px;
+      letter-spacing: 3px;
+      text-transform: uppercase
+    }
+
+    .data-table thead th {
+      padding: 12px 14px;
+      text-align: left;
+      font-weight: 400
+    }
+
+    .data-table tbody tr:nth-child(even) {
+      background: var(--parchment)
+    }
+
+    .data-table tbody tr:nth-child(odd) {
+      background: var(--cream)
+    }
+
+    .data-table tbody tr {
+      transition: background .2s
+    }
+
+    .data-table tbody tr:hover {
+      background: rgba(200, 164, 93, 0.15)
+    }
+
+    .data-table tbody td {
+      padding: 10px 14px;
+      color: var(--ink);
+      border-bottom: 1px solid rgba(107, 79, 45, .08)
+    }
+
+    .data-table tbody td:first-child {
+      font-weight: 400;
+      color: var(--deep);
+      width: 28%
+    }
+
+    .dosha-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 12px
+    }
+
+    .dosha-table thead tr {
+      background: var(--forest);
+      color: var(--cream)
+    }
+
+    .dosha-table thead th {
+      padding: 12px 14px;
+      text-align: left;
+      font-weight: 400;
+      letter-spacing: 2px;
+      font-size: 10px;
+      text-transform: uppercase
+    }
+
+    .dosha-table tbody tr:nth-child(even) {
+      background: var(--parchment)
+    }
+
+    .dosha-table tbody tr:nth-child(odd) {
+      background: var(--cream)
+    }
+
+    .dosha-table tbody td {
+      padding: 11px 14px;
+      color: var(--ink);
+      border-bottom: 1px solid rgba(107, 79, 45, .08)
+    }
+
+    .dosha-table tbody td:first-child {
+      font-weight: 400;
+      color: var(--forest);
+      width: 18%
+    }
+
+    .dosha-table tbody td:nth-child(2) {
+      color: var(--earth);
+      width: 20%
+    }
+
+    .consume-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 12px
+    }
+
+    .consume-table thead tr {
+      background: var(--earth);
+      color: var(--cream)
+    }
+
+    .consume-table thead th {
+      padding: 12px 14px;
+      text-align: left;
+      font-weight: 400;
+      letter-spacing: 2px;
+      font-size: 10px;
+      text-transform: uppercase
+    }
+
+    .consume-table tbody tr:nth-child(even) {
+      background: var(--parchment)
+    }
+
+    .consume-table tbody tr:nth-child(odd) {
+      background: var(--cream)
+    }
+
+    .consume-table tbody td {
+      padding: 11px 14px;
+      color: var(--ink);
+      border-bottom: 1px solid rgba(107, 79, 45, .08)
+    }
+
+    .consume-table tbody td:first-child {
+      font-weight: 400;
+      color: var(--earth);
+      width: 22%
+    }
+
+    .benefits-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: rgba(107, 79, 45, .12);
+      border: 1px solid rgba(107, 79, 45, .12);
+      margin: 8px 0
+    }
+
+    .benefit-card {
+      background: var(--cream);
+      padding: 24px 22px;
+      transition: background .3s;
+      position: relative;
+      overflow: hidden
+    }
+
+    .benefit-card:hover {
+      background: #ede4ce
+    }
+
+    .benefit-card::before {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: var(--gold);
+      transition: width .4s
+    }
+
+    .benefit-card:hover::before {
+      width: 100%
+    }
+
+    .benefit-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--forest);
+      margin-bottom: 8px
+    }
+
+    .benefit-desc {
+      font-size: 11.5px;
+      font-weight: 300;
+      line-height: 1.75;
+      color: var(--ink);
+      opacity: .85
+    }
+
+    .precaution-list {
+      list-style: none;
+      margin: 8px 0
+    }
+
+    .precaution-list li {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      padding: 10px 14px;
+      font-size: 12px;
+      font-weight: 300;
+      line-height: 1.7;
+      color: var(--ink);
+      border-bottom: 1px solid rgba(107, 79, 45, .08)
+    }
+
+    .precaution-list li:last-child {
+      border-bottom: none
+    }
+
+    .precaution-list li::before {
+      content: '▸';
+      color: var(--gold);
+      flex-shrink: 0;
+      margin-top: 1px
+    }
+
+    .sources {
+      border-top: 1px solid rgba(107, 79, 45, .15);
+      padding-top: 24px;
+      margin-top: 20px
+    }
+
+    .sources-title {
+      font-size: 10px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--sage);
+      margin-bottom: 12px;
+      font-weight: 300
+    }
+
+    .sources ul {
+      list-style: none
+    }
+
+    .sources ul li {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 13px;
+      font-style: italic;
+      color: var(--earth);
+      padding: 5px 0;
+      border-bottom: 1px solid rgba(107, 79, 45, .06)
+    }
+
+    .sources ul li::before {
+      content: '· ';
+      color: var(--sage)
+    }
+
+    .nutrition-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: rgba(107, 79, 45, .12);
+      border: 1px solid rgba(107, 79, 45, .12);
+      margin: 20px 0
+    }
+
+    .nutrition-cell {
+      background: var(--cream);
+      padding: 22px 16px;
+      text-align: center;
+      transition: background .3s
+    }
+
+    .nutrition-cell:hover {
+      background: var(--parchment)
+    }
+
+    .nutrition-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 36px;
+      font-weight: 300;
+      color: var(--forest);
+      line-height: 1;
+      margin-bottom: 4px
+    }
+
+    .nutrition-unit {
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--gold);
+      font-weight: 300
+    }
+
+    .nutrition-label {
+      font-size: 11px;
+      font-weight: 300;
+      color: var(--ink);
+      margin-top: 5px
+    }
+
+    footer {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      padding: 24px 20px 44px;
+      border-top: 1px solid rgba(107, 79, 45, .12);
+      max-width: 860px;
+      margin: 0 auto
+    }
+
+    footer p {
+      font-size: 11px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--sage);
+      font-weight: 300
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(28px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
+
+    @media(max-width:700px) {
+      .hero-photos {
+        grid-template-columns: 1fr
+      }
+
+      .hero-photos img {
+        height: 260px
+      }
+
+      .benefits-grid {
+        grid-template-columns: 1fr
+      }
+
+      .nutrition-bar {
+        grid-template-columns: 1fr 1fr
+      }
+
+      .content {
+        padding: 0 18px 60px
+      }
+
+      #modal-topbar {
+        padding: 0 16px 0 20px
+      }
+
+      #modal-topbar span {
+        font-size: 9px;
+        letter-spacing: 3px
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <button id="open3D">View in 3D</button>
+
+  <div id="viewerModal">
+    <div id="modal-topbar">
+      <span>3D Model — Atibala</span>
+      <button id="close3D">✕</button>
+    </div>
+    <model-viewer src="atibala3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+  </div>
+
+  <div class="bg-circle bg-circle-1"></div>
+  <div class="bg-circle bg-circle-2"></div>
+
+  <svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#2a5c3f" stroke-width="1.5" fill="none" />
+    <circle cx="90" cy="210" r="8" fill="#2a5c3f" opacity="0.7" />
+    <circle cx="130" cy="175" r="10" fill="#7a9e7e" opacity="0.6" />
+    <circle cx="170" cy="135" r="7" fill="#2a5c3f" opacity="0.8" />
+    <circle cx="210" cy="95" r="9" fill="#c9a84c" opacity="0.5" />
+    <ellipse cx="115" cy="195" rx="20" ry="10" fill="#7a9e7e" transform="rotate(-30 115 195)" />
+    <ellipse cx="155" cy="155" rx="18" ry="9" fill="#2a5c3f" transform="rotate(-45 155 155)" />
+    <ellipse cx="195" cy="115" rx="16" ry="8" fill="#7a9e7e" transform="rotate(-60 195 115)" />
+  </svg>
+  <svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#2a5c3f" stroke-width="1.5" fill="none" />
+    <circle cx="90" cy="210" r="8" fill="#2a5c3f" opacity="0.7" />
+    <circle cx="130" cy="175" r="10" fill="#7a9e7e" opacity="0.6" />
+    <circle cx="170" cy="135" r="7" fill="#2a5c3f" opacity="0.8" />
+    <ellipse cx="115" cy="195" rx="20" ry="10" fill="#7a9e7e" transform="rotate(-30 115 195)" />
+  </svg>
+
+  <div class="hero">
+    <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+    <div class="logo-rule"><span></span>
+      <div class="logo-ornament">✦</div><span></span>
+    </div>
+    <div class="hero-title">Atibala</div>
+    <div class="hero-subtitle">Country Mallow — The Very Powerful</div>
+    <div class="hero-sci">Abutilon indicum &nbsp;·&nbsp; Malvaceae</div>
+  </div>
+
+  <div class="hero-photos">
+    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/0/07/Abutilon_indicum_-_par_Mickael_Schauli.jpg/1280px-Abutilon_indicum_-_par_Mickael_Schauli.jpg" alt="Golden-yellow flowers of Atibala"
+      onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9c/Indian_abutilon_Abutilon_indicum_3268.jpg/1280px-Indian_abutilon_Abutilon_indicum_3268.jpg" alt="Atibala shrub with pubescent leaves"
+      onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+  </div>
+  <p class="photo-caption">Fig. 1 — Signature golden-yellow five-petalled flowers of Atibala blooming on the velvety stem &nbsp;·&nbsp; Fig. 2 — The country mallow shrub with its pubescent cordate leaves and beaked seed capsules</p>
+
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-leaf">❧</div>
+    <div class="divider-line"></div>
+  </div>
+
+  <div class="content">
+    <p class="intro-text">Its name is its declaration: <em>Ati</em> — surpassing — and <em>Bala</em> — strength. Surpassing strength. A roadside weed in hotter India, often overlooked between dust and asphalt, yet so revered by Charaka and Sushruta that they grouped it with three sister plants — Bala, Nagabala, Mahabala — into the <em>Bala Chatushka</em>, the four pillars of strength-giving herbs. From paralysis to puerperal weakness, when Vata wastes the tissues, Atibala is sent.</p>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">01</span>
+        <h2 class="section-title">Botanical Profile</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Atibala (<em>Abutilon indicum</em> (L.) Sweet) is an erect, velvety, perennial undershrub of the Malvaceae family — the same family as cotton (Karpasa Kula) — growing to 1–3 metres in height. The entire plant is densely covered with fine, simple, stellate hairs giving it a soft grey appearance. Leaves are simple, alternate, ovate with a cordate base and toothed margins. The signature flowers are bisexual, regular, with five golden-yellow petals — the bloom that earns it its English nickname "Country mallow." Fruits are schizocarp capsules with horizontally spreading beaks, green when young, ripening to brownish-black, holding numerous reniform tuberculate seeds.</p>
+      <p class="section-body">Found wild as a roadside weed across the hotter parts of India, Sri Lanka, tropical America, and Malesia, Atibala thrives in wastelands and in the sub-Himalayan plains up to 1,200 metres elevation. Classical Ayurveda groups Bala, Atibala, and Nagabala together as <em>Balatraya</em> (the three Balas); when Mahabala is added, the quartet is known as <em>Bala Chatushka</em>. In Kerala, <em>Urena lobata</em> is sometimes locally accepted as Atibala, though <em>Abutilon indicum</em> remains the most widely recognised and authentic source.</p>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>PROPERTY</th>
+            <th>Detail</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Family</td>
+            <td>Malvaceae (Karpasa Kula)</td>
+          </tr>
+          <tr>
+            <td>Botanical Name</td>
+            <td>Abutilon indicum (L.) Sweet</td>
+          </tr>
+          <tr>
+            <td>Sanskrit Names</td>
+            <td>Atibala, Kankatika, Rishyaprokta, Jayavandha, Jayapateri, Badela, Bhuribala</td>
+          </tr>
+          <tr>
+            <td>Common Names</td>
+            <td>Atibala, Country Mallow, Indian Mallow, Kanghi, Kakahi, Petari, Mudra, Khapat, Tutti, Thuthi, Munja</td>
+          </tr>
+          <tr>
+            <td>Origin</td>
+            <td>Tropical &amp; subtropical Asia; widespread across India</td>
+          </tr>
+          <tr>
+            <td>Plant Type</td>
+            <td>Erect velvety perennial undershrub (1–3 m)</td>
+          </tr>
+          <tr>
+            <td>Flowering Season</td>
+            <td>Year-round, peak in monsoon and post-monsoon</td>
+          </tr>
+          <tr>
+            <td>Medicinal Parts</td>
+            <td>Roots (primary), seeds, leaves, bark, flowers, stems</td>
+          </tr>
+          <tr>
+            <td>Taste Profile</td>
+            <td>Sweet (madhura) — Bhavaprakasha; Bitter-Pungent (tikta-katu) — Dhanwantri Nighantu</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">02</span>
+        <h2 class="section-title">Phytochemistry Composition</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Modern phytochemical studies have catalogued a rich matrix of bioactive constituents in Atibala — the seeds and roots are particularly mucilaginous and load-bearing of medicinal value. The whole plant contains <em>asparagine</em>, <em>tannins</em>, <em>flavonoids</em>, <em>saponins</em>, <em>alkaloids</em>, mucilaginous polysaccharides, vanillic and p-coumaric acids, fumaric acid, and amino acids — alongside sterols including β-sitosterol and stigmasterol.</p>
+      <p class="section-body">A characteristic essential oil profile contains <em>α-pinene</em>, <em>caryophyllene</em>, <em>caryophyllene oxide</em>, <em>eudesmol</em>, <em>farnesol</em>, <em>borneol</em>, <em>geraniol</em>, <em>geranyl acetate</em>, <em>elemene</em>, and <em>α-cineole</em>. Other documented compounds include alantolactone, isoalantolactone, n-alkane mixtures, alkanols, and hexoses. A 2023 AYU journal study using HPTLC fingerprinting identified 9–12 distinct peaks in alcoholic and hydroalcoholic fruit extracts, providing a modern standardisation profile.</p>
+      <div class="nutrition-bar">
+        <div class="nutrition-cell">
+          <div class="nutrition-num">12</div>
+          <div class="nutrition-unit">peaks (HPTLC)</div>
+          <div class="nutrition-label">Hydroalcoholic fingerprint</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">4</div>
+          <div class="nutrition-unit">classical herbs of</div>
+          <div class="nutrition-label">Bala Chatushka group</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">10+</div>
+          <div class="nutrition-unit">essential oil</div>
+          <div class="nutrition-label">Aromatic compounds</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">3 of 3</div>
+          <div class="nutrition-unit">doshas</div>
+          <div class="nutrition-label">Tridoshaja effect</div>
+        </div>
+      </div>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Compound</th>
+            <th>Category</th>
+            <th>Primary Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Asparagine</td>
+            <td>Amino acid</td>
+            <td>Diuretic, demulcent, soothing</td>
+          </tr>
+          <tr>
+            <td>Mucilaginous Polysaccharides</td>
+            <td>Hydrocolloids</td>
+            <td>Demulcent, laxative, wound-soothing</td>
+          </tr>
+          <tr>
+            <td>β-Sitosterol &amp; Stigmasterol</td>
+            <td>Phytosterols</td>
+            <td>Cholesterol-lowering, anti-inflammatory, larvicidal</td>
+          </tr>
+          <tr>
+            <td>Alantolactone &amp; Isoalantolactone</td>
+            <td>Sesquiterpene lactones</td>
+            <td>Anthelmintic, antimicrobial, expectorant</td>
+          </tr>
+          <tr>
+            <td>α-Pinene &amp; Caryophyllene</td>
+            <td>Terpenes (essential oil)</td>
+            <td>Anti-inflammatory, bronchodilator, aromatic</td>
+          </tr>
+          <tr>
+            <td>Eudesmol &amp; Farnesol</td>
+            <td>Sesquiterpene alcohols</td>
+            <td>Sedative, antimicrobial, skin-protective</td>
+          </tr>
+          <tr>
+            <td>Vanillic &amp; p-Coumaric Acids</td>
+            <td>Phenolic acids</td>
+            <td>Antioxidant, antimicrobial, anti-inflammatory</td>
+          </tr>
+          <tr>
+            <td>Flavonoids &amp; Saponins</td>
+            <td>Polyphenols / glycosides</td>
+            <td>Anticonvulsant, antidiabetic, immunomodulatory</td>
+          </tr>
+          <tr>
+            <td>Linoleic Acid</td>
+            <td>Omega-6 fatty acid</td>
+            <td>Anticonvulsant, anti-inflammatory, skin barrier support</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">03</span>
+        <h2 class="section-title">Ayurvedic Significance</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Charaka classifies Atibala under <em>Madhura Skanda</em> (the sweet-taste group) and <em>Balya</em> (the strength-imparting group of herbs). Sushruta uses it abundantly in <em>Vata Vyadhi Chikitsa</em> (treatment of nervous-system disorders). Alongside Bala (Sida cordifolia), Nagabala (Sida humilis), and Mahabala (Sida rhombifolia), it forms the legendary <em>Bala Chatushka</em> — the four-pillar quartet of restorative Ayurvedic strength tonics. Kaiyadeva Nighantu lists it under <em>Aushadhi Varga</em>, while Bhavaprakasha and Dhanwantri Nighantu place it in <em>Guduchyadi Varga</em>.</p>
+      <p class="section-body">Bhavaprakasha's classical verse declares: "<em>Balachatushtayam sheetam madhuram balakantikrit, snigdham grahi sameerasrapittasrakshatanashanam</em>" — Atibala (with its sister Balas) is cooling, sweet, strengthens body and complexion, unctuous, absorbent; pacifies Vata, raktapitta, bleeding disorders, and heals wounds. Rasa: <em>madhura</em> (sweet); guna: <em>laghu</em> (light), <em>snigdha</em> (unctuous); vipaka: <em>madhura</em> (sweet); veerya: <em>sheeta</em> (cooling).</p>
+      <table class="dosha-table">
+        <thead>
+          <tr>
+            <th>Dosha</th>
+            <th>Effect</th>
+            <th>Mechanism &amp; Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Vata ↓</td>
+            <td>Pacifying</td>
+            <td>Sweet rasa, unctuous (snigdha) guna, and madhura vipaka nourish wasted tissues, calm dryness, and rebuild strength — the foundational classical use for Vata Vyadhi (paralysis, neuralgia, debility)</td>
+          </tr>
+          <tr>
+            <td>Pitta ↓</td>
+            <td>Pacifying</td>
+            <td>Cooling potency (sheeta virya) and sweet post-digestive effect calm inflammation, burning, raktapitta, and bleeding disorders; supports tissue repair after injury or surgery</td>
+          </tr>
+          <tr>
+            <td>Kapha ~</td>
+            <td>Mixed effect</td>
+            <td>Heaviness and unctuousness may marginally increase Kapha at high doses, but the overall Tridoshaja effect (per Ayurvedic Pharmacopoeia) is balanced when used in proper dose and anupana</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">04</span>
+        <h2 class="section-title">Key Health Benefits</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Modern pharmacological research has confirmed Atibala's role across an extraordinarily broad therapeutic landscape — its 2010s-era reputation as a "sarva roga niramani" (panacea) supported by documented anti-inflammatory, antihyperlipidemic, hepatoprotective, hypoglycaemic, immunomodulatory, antimicrobial, anticonvulsant, and wound-healing activity.</p>
+      <div class="benefits-grid">
+        <div class="benefit-card">
+          <div class="benefit-title">Strength &amp; Vitality (Balya)</div>
+          <div class="benefit-desc">The signature classical use, encoded in its very name. Atibala root oil with Bala forms the basis of <em>Mahanarayan Tailam</em> and <em>Bala Atibaladi Tailam</em> — used for general debility, post-illness recovery, muscular weakness, and tissue rebuilding. Considered a Rasayana for strength.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Vata Disorders &amp; Paralysis</div>
+          <div class="benefit-desc">Premier remedy for hemiplegia, facial paralysis, sciatica, neuralgia, and muscular dystrophy. The defining medicinal application across Charaka and Sushruta. Both internal use (decoction, powder) and external application (medicated oils) work synergistically on nervous-system disorders.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Hepatoprotective &amp; Liver Tonic</div>
+          <div class="benefit-desc">Documented hepatostimulative and anti-biliary action. Supports bile secretion and helps liver enzymes return to normal levels. Used traditionally in jaundice, hepatitis, and chronic liver insufficiency. Phytosterols and phenolic compounds together offer measurable hepatoprotection in research.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Joint Pain &amp; Arthritis</div>
+          <div class="benefit-desc">Strong analgesic and anti-inflammatory action, useful in rheumatoid arthritis (Amavata) and osteoarthritis (Sandhivata). Atibala protects against protein denaturation and RBC membrane damage in research models — the cellular basis of inflammation reduction.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Hypoglycaemic &amp; Diabetes</div>
+          <div class="benefit-desc">Leaves have documented hypoglycaemic activity. Modulates plasma glucose levels and may help regulate adipocyte development and glucose utilisation, addressing aspects of insulin resistance. Adjunct to standard care for Type 2 diabetes management under medical supervision.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Aphrodisiac &amp; Reproductive</div>
+          <div class="benefit-desc">Classical <em>Vrishya</em> herb — increases quality and quantity of shukra (semen). Used for male sexual dysfunction with ¼–½ tsp powder, honey, and water twice daily after light meals. Roots also classically used in uterine haemorrhagic disorders and post-partum recovery.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Respiratory &amp; Asthma Support</div>
+          <div class="benefit-desc">Dried aerial parts have shown improvement in pulmonary function (FVC, FEV1, PEFR) in mild-to-severe bronchial asthma research. Useful in cough, bronchitis, chest tightness, wheezing, and dyspnoea. Unani tradition uses seeds for bronchitis and chest disorders.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Wound Healing &amp; Skin Care</div>
+          <div class="benefit-desc">Seeds and seed oil possess <em>Ropana</em> (healing) action. Mucilaginous compounds aid wound contraction, skin regeneration, and tissue closure. Powder made into paste with coconut oil is traditionally applied to ulcers, slow-healing wounds, and reduces wrinkle appearance over time.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">06</span>
+        <h2 class="section-title">How to Consume Atibala</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Atibala is exclusively medicinal — not consumed as food. The roots, seeds, and leaves dominate therapeutic use, prepared as decoction, powder, juice, oil, or as part of polyherbal classical preparations. Maximum daily dosage of root or seed powder should not exceed 12 grams. Always pair with appropriate anupana (vehicle) — milk for Vata-type debility, honey for aphrodisiac action, and water for general use.</p>
+      <table class="consume-table">
+        <thead>
+          <tr>
+            <th>Form</th>
+            <th>Preparation</th>
+            <th>Dosage</th>
+            <th>Best Time</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Root Powder (Churna)</td>
+            <td>Dried root powder with warm milk or water</td>
+            <td>3–6 g twice daily (max 12 g/day)</td>
+            <td>Morning &amp; evening</td>
+          </tr>
+          <tr>
+            <td>Root Decoction (Kashayam)</td>
+            <td>Boil 1 tbsp coarse root powder in 4 cups water; reduce to 1 cup</td>
+            <td>50–100 ml twice daily</td>
+            <td>Empty stomach</td>
+          </tr>
+          <tr>
+            <td>Seed Powder</td>
+            <td>Roasted &amp; ground seeds with honey</td>
+            <td>2–5 g daily</td>
+            <td>Morning, before food</td>
+          </tr>
+          <tr>
+            <td>Leaf Juice (Swarasa)</td>
+            <td>Fresh leaves crushed and strained</td>
+            <td>10–20 ml twice daily</td>
+            <td>Morning, empty stomach</td>
+          </tr>
+          <tr>
+            <td>Atibala Rasayana</td>
+            <td>Classical strength-promoting Ayurvedic preparation</td>
+            <td>3–6 g daily</td>
+            <td>Morning, with warm milk</td>
+          </tr>
+          <tr>
+            <td>Mahanarayan Tailam</td>
+            <td>Classical medicated oil with Atibala among ingredients</td>
+            <td>External massage</td>
+            <td>For paralysis, neuralgia, joint pain</td>
+          </tr>
+          <tr>
+            <td>Decoction Mouth Gargle</td>
+            <td>½–1 tsp powder boiled in 2 cups water; reduce to ½ cup</td>
+            <td>Gargle 1–2× daily</td>
+            <td>For toothache &amp; oral infections</td>
+          </tr>
+          <tr>
+            <td>Topical Powder Paste</td>
+            <td>Powder mixed with coconut oil into a smooth paste</td>
+            <td>Applied as needed</td>
+            <td>On wounds, ulcers, wrinkles</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">07</span>
+        <h2 class="section-title">Safety &amp; Precautions</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Atibala is among the safer Ayurvedic herbs, with no major adverse effects documented at standard doses across centuries of classical use. The Ayurvedic Pharmacopoeia of India lists it as a Tridoshaja-balancing herb safe for sustained use, though concentrated extracts and high doses warrant attention in specific clinical contexts.</p>
+      <ul class="precaution-list">
+        <li><strong>Pregnancy:</strong> Atibala in natural form is generally regarded as possibly safe in pregnancy and breastfeeding when used in food-grade culinary doses; however, concentrated extracts should be avoided. Always seek qualified medical advice before therapeutic use during pregnancy.</li>
+        <li><strong>Antidiabetic medications:</strong> Documented hypoglycaemic activity may potentiate insulin and oral antidiabetics. Monitor blood glucose closely if combining; adjust dosage with medical supervision.</li>
+        <li><strong>Antihypertensive medications:</strong> Diuretic and circulatory effects may add to blood-pressure-lowering drugs. Use with caution; monitor blood pressure if combining.</li>
+        <li><strong>Anti-oestrogenic activity:</strong> Atibala may suppress oestrogen-induced uterotropic responses. Use with caution in hormone-sensitive conditions, infertility treatment, or while on hormonal contraceptives.</li>
+        <li><strong>Maximum dose limit:</strong> Root or seed powder should not exceed 12 grams per day. Higher doses may cause stomach discomfort, excessive cooling effect, or digestive imbalance.</li>
+        <li><strong>Cold constitution:</strong> Cooling potency (sheeta virya) may worsen chilliness, hypothyroidism, or excessive Vata in cold-prone individuals. Combine with warming spices (ginger, black pepper) or warm milk if needed.</li>
+        <li><strong>Species substitution:</strong> In Kerala, <em>Urena lobata</em> is sometimes used as a regional Atibala substitute; <em>Abutilon indicum</em> remains the authentic source per the Ayurvedic Pharmacopoeia. Source authenticated material from reputable suppliers.</li>
+        <li><strong>Allergies:</strong> Limited data is available on Atibala-related allergies. Discontinue use and consult a physician if any unexpected skin reaction or sensitivity occurs.</li>
+      </ul>
+    </div>
+
+    <div class="sources">
+      <div class="sources-title">References &amp; Sources</div>
+      <ul>
+        <li>Tadnere Gautam P, Aslam P, Bharti K, Singhai AK — "Abutilon indicum Linn: A Phytopharmacological Review" — International Journal of Research in Pharmacy &amp; Chemistry, 2013</li>
+        <li>Dumantraj AR, Kharat RS, Ghotankar AM, Chincholikar MB — "Review of Atibala (Abutilon indicum) for its Pharmacological Properties" — World Journal of Pharmaceutical Research, 2015</li>
+        <li>Shekshavali T, Roshan S — "A Review on Pharmacological Activities of Abutilon indicum (Atibala)" — Research Journal of Pharmacology &amp; Pharmacodynamics, 2016</li>
+        <li>"Pharmacognostical and phytochemical studies of Atibala (Abutilon indicum [Linn.] sweet) fruit" — AYU (An International Quarterly Journal of Research in Ayurveda), 2023</li>
+        <li>Mangla M, Bimal N, Gughria B — "Review on pharmacological activities of traditional medicine: Abutilon indicum" — International Journal of Pharmaceutical, Medical and Applied Sciences, 2012</li>
+        <li>Charaka Samhita — Madhura Skanda &amp; Balya Mahakashayas (Sutrasthana 4); Atibala Rasayana (Chikitsasthana 1/2/12)</li>
+        <li>Bhavaprakasha Nighantu — Guduchyadi Varga; classical description of Bala Chatushka</li>
+        <li>The Ayurvedic Pharmacopoeia of India, Part I, Volume I — Ministry of AYUSH, Govt. of India</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer>
+    <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a
+      qualified practitioner before therapeutic use</p>
+  </footer>
+
+  <audio id="atibalaAudio" src="atibala_benefits.mp3" loop preload="auto"></audio>
+
+  <script>
+    const open3D = document.getElementById('open3D');
+    const close3D = document.getElementById('close3D');
+    const modal = document.getElementById('viewerModal');
+    const atibalaAudio = document.getElementById('atibalaAudio');
+
+    function openModal() {
+      modal.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+      history.pushState({ modal: 'atibala3d' }, '', '#3d');
+      atibalaAudio.play().catch(e => console.log('Audio autoplay blocked', e));
+    }
+
+    function closeModal() {
+      modal.style.display = 'none';
+      document.body.style.overflow = '';
+      if (window.location.hash === '#3d') {
+        history.replaceState(null, '', window.location.pathname);
+      }
+      atibalaAudio.pause();
+      atibalaAudio.currentTime = 0;
+    }
+
+    open3D.addEventListener('click', function (e) {
+      e.preventDefault(); e.stopPropagation();
+      openModal();
+    });
+
+    close3D.addEventListener('click', function (e) {
+      e.preventDefault(); e.stopPropagation();
+      closeModal();
+    });
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+    });
+
+    window.addEventListener('popstate', function (e) {
+      if (modal.style.display === 'flex') {
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+    });
+  </script>
+</body>
+
+</html>

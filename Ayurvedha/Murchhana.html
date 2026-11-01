@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Murchhana | Swastha</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap"
+    rel="stylesheet">
+  <style>
+    #open3D {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      padding: 10px 18px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: var(--forest);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      z-index: 1000;
+      transition: .3s;
+    }
+    #open3D:hover {
+      background: var(--gold);
+      color: var(--deep);
+    }
+    #viewerModal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+    }
+    #modal-topbar {
+      flex-shrink: 0;
+      height: 58px;
+      background: #111111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px 0 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      z-index: 99999;
+    }
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 4.5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.72);
+      user-select: none;
+    }
+    #close3D {
+      width: 38px;
+      height: 38px;
+      font-size: 15px;
+      font-weight: 300;
+      background: transparent;
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background .2s, color .2s, transform .22s;
+      outline: none;
+      flex-shrink: 0;
+    }
+    #close3D:hover {
+      background: #ffffff;
+      color: #111111;
+      border-color: #ffffff;
+      transform: rotate(90deg);
+    }
+    #viewerModal model-viewer {
+      flex: 1;
+      width: 100%;
+      display: block;
+      background: #ffffff;
+    }
+
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+
+    * { margin: 0; padding: 0; box-sizing: border-box }
+    html { scroll-behavior: smooth }
+
+    body {
+      font-family: 'Jost', sans-serif;
+      background: var(--cream);
+      color: var(--ink);
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity: .035;
+      pointer-events: none;
+      z-index: 100
+    }
+
+    .bg-circle {
+      position: fixed;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0
+    }
+    .bg-circle-1 {
+      width: 700px; height: 700px;
+      background: radial-gradient(circle, rgba(181,82,27,.08) 0%, transparent 70%);
+      top: -200px; right: -150px
+    }
+    .bg-circle-2 {
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(212,135,42,.07) 0%, transparent 70%);
+      bottom: -100px; left: -100px
+    }
+
+    /* Veena string decoration */
+    .veena-svg {
+      position: fixed;
+      pointer-events: none;
+      z-index: 1;
+      opacity: .09
+    }
+    .veena-tl { top: 0; left: 0; width: 280px }
+    .veena-br { bottom: 0; right: 0; width: 240px; transform: rotate(180deg) }
+
+    .hero {
+      position: relative;
+      z-index: 10;
+      padding: 54px 40px 0;
+      text-align: center;
+      opacity: 0;
+      animation: fadeUp .9s ease .1s forwards
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--sage);
+      text-decoration: none;
+      margin-bottom: 36px;
+      transition: color .3s
+    }
+    .back-link:hover { color: var(--gold) }
+
+    .logo-rule {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 14px
+    }
+    .logo-rule span {
+      display: block;
+      height: 1px;
+      width: 70px;
+      background: linear-gradient(to right, transparent, var(--gold))
+    }
+    .logo-rule span:last-child {
+      background: linear-gradient(to left, transparent, var(--gold))
+    }
+    .logo-ornament { font-size: 13px; color: var(--gold) }
+
+    .hero-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(64px, 12vw, 110px);
+      font-weight: 300;
+      letter-spacing: 8px;
+      line-height: 1;
+      color: var(--deep)
+    }
+    .hero-subtitle {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 18px;
+      font-style: italic;
+      font-weight: 300;
+      color: var(--saffron);
+      letter-spacing: 2px;
+      margin-top: 8px
+    }
+    .hero-sci {
+      font-size: 11px;
+      font-weight: 200;
+      letter-spacing: 5px;
+      color: var(--sage);
+      margin-top: 6px
+    }
+
+    /* Tanpura / Veena visual */
+    .hero-visual {
+      position: relative;
+      z-index: 10;
+      max-width: 860px;
+      margin: 48px auto 0;
+      opacity: 0;
+      animation: fadeUp .9s ease .35s forwards
+    }
+    .sa-scale {
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      gap: 3px;
+      padding: 0 30px
+    }
+    .sa-key {
+      flex: 1;
+      max-width: 68px;
+      border-radius: 0 0 6px 6px;
+      position: relative;
+      cursor: default;
+      transition: transform .2s
+    }
+    .sa-key:hover { transform: translateY(-4px) }
+    .sa-key.white-key {
+      background: linear-gradient(to bottom, #f9f3e8, #ede4cc);
+      border: 1px solid rgba(107,79,45,.25);
+      height: 140px
+    }
+    .sa-key.black-key {
+      background: linear-gradient(to bottom, #2a1f0e, #1a3326);
+      height: 90px;
+      max-width: 44px;
+      z-index: 2;
+      margin: 0 -5px
+    }
+    .sa-key .swar-label {
+      position: absolute;
+      bottom: 10px;
+      left: 0; right: 0;
+      text-align: center;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 14px;
+      color: var(--earth);
+      font-weight: 600;
+      letter-spacing: 1px
+    }
+    .sa-key.black-key .swar-label {
+      color: var(--gold);
+      font-size: 11px;
+      bottom: 7px
+    }
+    .sa-key .swar-devanagari {
+      position: absolute;
+      top: 10px;
+      left: 0; right: 0;
+      text-align: center;
+      font-size: 15px;
+      color: rgba(107,79,45,.4)
+    }
+    .sa-key.black-key .swar-devanagari { color: rgba(201,168,76,.3) }
+
+    .scale-label {
+      text-align: center;
+      font-size: 10px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--sage);
+      margin-top: 14px;
+      font-weight: 300
+    }
+
+    .photo-caption {
+      text-align: center;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 12px;
+      font-style: italic;
+      color: var(--sage);
+      letter-spacing: 1px;
+      padding: 10px 0 0;
+      max-width: 900px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 10;
+      opacity: 0;
+      animation: fadeUp .9s ease .5s forwards
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin: 50px auto;
+      max-width: 600px;
+      opacity: 0;
+      animation: fadeUp .9s ease .55s forwards;
+      position: relative;
+      z-index: 10
+    }
+    .divider-line {
+      height: 1px;
+      width: 120px;
+      background: linear-gradient(to right, transparent, var(--amber))
+    }
+    .divider-line:last-child {
+      background: linear-gradient(to left, transparent, var(--amber))
+    }
+    .divider-leaf { color: var(--saffron); font-size: 18px }
+
+    .content {
+      position: relative;
+      z-index: 10;
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 30px 80px
+    }
+
+    .intro-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 20px;
+      font-weight: 300;
+      line-height: 1.75;
+      color: var(--ink);
+      text-align: center;
+      max-width: 700px;
+      margin: 0 auto 60px;
+      opacity: 0;
+      animation: fadeUp .9s ease .6s forwards
+    }
+    .intro-text em { color: var(--saffron); font-style: italic }
+
+    .section {
+      margin-bottom: 60px;
+      opacity: 0;
+      animation: fadeUp .9s ease forwards
+    }
+    .section:nth-child(1) { animation-delay: .65s }
+    .section:nth-child(2) { animation-delay: .75s }
+    .section:nth-child(3) { animation-delay: .85s }
+    .section:nth-child(4) { animation-delay: .95s }
+    .section:nth-child(5) { animation-delay: 1.05s }
+    .section:nth-child(6) { animation-delay: 1.15s }
+    .section:nth-child(7) { animation-delay: 1.25s }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 20px
+    }
+    .section-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 11px;
+      letter-spacing: 4px;
+      color: var(--gold)
+    }
+    .section-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 28px;
+      font-weight: 400;
+      color: var(--deep);
+      letter-spacing: 1px
+    }
+    .section-rule {
+      height: 1px;
+      flex: 1;
+      background: linear-gradient(to right, var(--amber), transparent)
+    }
+
+    .section-body {
+      font-size: 13px;
+      font-weight: 300;
+      line-height: 1.9;
+      color: var(--ink);
+      margin-bottom: 24px
+    }
+
+    /* Murchhana grid — 7 rows for 7 murchhanas */
+    .murchhana-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: rgba(107,79,45,.12);
+      border: 1px solid rgba(107,79,45,.12);
+      margin: 12px 0
+    }
+    .m-card {
+      background: var(--cream);
+      padding: 22px 20px;
+      transition: background .3s;
+      position: relative;
+      overflow: hidden
+    }
+    .m-card:hover { background: #ede4ce }
+    .m-card::before {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0;
+      width: 0; height: 2px;
+      background: var(--amber);
+      transition: width .4s
+    }
+    .m-card:hover::before { width: 100% }
+    .m-card-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 11px;
+      letter-spacing: 3px;
+      color: var(--gold);
+      margin-bottom: 4px
+    }
+    .m-card-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--saffron);
+      margin-bottom: 6px
+    }
+    .m-card-seq {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 15px;
+      font-style: italic;
+      color: var(--deep);
+      margin-bottom: 8px;
+      letter-spacing: 2px
+    }
+    .m-card-desc {
+      font-size: 11.5px;
+      font-weight: 300;
+      line-height: 1.75;
+      color: var(--ink);
+      opacity: .85
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0 8px;
+      font-size: 12px
+    }
+    .data-table thead tr {
+      background: var(--deep);
+      color: var(--gold);
+      font-size: 10px;
+      letter-spacing: 3px;
+      text-transform: uppercase
+    }
+    .data-table thead th {
+      padding: 12px 14px;
+      text-align: left;
+      font-weight: 400
+    }
+    .data-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .data-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .data-table tbody tr { transition: background .2s }
+    .data-table tbody tr:hover { background: rgba(200, 164, 93, 0.15) }
+    .data-table tbody td {
+      padding: 10px 14px;
+      color: var(--ink);
+      border-bottom: 1px solid rgba(107,79,45,.08)
+    }
+    .data-table tbody td:first-child {
+      font-weight: 400;
+      color: var(--deep);
+      width: 28%
+    }
+
+    .raga-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 12px
+    }
+    .raga-table thead tr { background: var(--saffron); color: var(--cream) }
+    .raga-table thead th {
+      padding: 12px 14px;
+      text-align: left;
+      font-weight: 400;
+      letter-spacing: 2px;
+      font-size: 10px;
+      text-transform: uppercase
+    }
+    .raga-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .raga-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .raga-table tbody td {
+      padding: 11px 14px;
+      color: var(--ink);
+      border-bottom: 1px solid rgba(107,79,45,.08)
+    }
+    .raga-table tbody td:first-child {
+      font-weight: 400;
+      color: var(--saffron);
+      width: 22%
+    }
+
+    .stat-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: rgba(107,79,45,.12);
+      border: 1px solid rgba(107,79,45,.12);
+      margin: 20px 0
+    }
+    .stat-cell {
+      background: var(--cream);
+      padding: 22px 16px;
+      text-align: center;
+      transition: background .3s
+    }
+    .stat-cell:hover { background: var(--parchment) }
+    .stat-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 36px;
+      font-weight: 300;
+      color: var(--saffron);
+      line-height: 1;
+      margin-bottom: 4px
+    }
+    .stat-unit {
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--gold);
+      font-weight: 300
+    }
+    .stat-label {
+      font-size: 11px;
+      font-weight: 300;
+      color: var(--ink);
+      margin-top: 5px
+    }
+
+    .precaution-list { list-style: none; margin: 8px 0 }
+    .precaution-list li {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      padding: 10px 14px;
+      font-size: 12px;
+      font-weight: 300;
+      line-height: 1.7;
+      color: var(--ink);
+      border-bottom: 1px solid rgba(107,79,45,.08)
+    }
+    .precaution-list li:last-child { border-bottom: none }
+    .precaution-list li::before {
+      content: '▸';
+      color: var(--amber);
+      flex-shrink: 0;
+      margin-top: 1px
+    }
+
+    .sources {
+      border-top: 1px solid rgba(107,79,45,.15);
+      padding-top: 24px;
+      margin-top: 20px
+    }
+    .sources-title {
+      font-size: 10px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--sage);
+      margin-bottom: 12px;
+      font-weight: 300
+    }
+    .sources ul { list-style: none }
+    .sources ul li {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 13px;
+      font-style: italic;
+      color: var(--earth);
+      padding: 5px 0;
+      border-bottom: 1px solid rgba(107,79,45,.06)
+    }
+    .sources ul li::before { content: '· '; color: var(--sage) }
+
+    footer {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      padding: 24px 20px 44px;
+      border-top: 1px solid rgba(107,79,45,.12);
+      max-width: 860px;
+      margin: 0 auto
+    }
+    footer p {
+      font-size: 11px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--sage);
+      font-weight: 300
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(28px) }
+      to { opacity: 1; transform: translateY(0) }
+    }
+
+    @media(max-width:700px) {
+      .murchhana-grid { grid-template-columns: 1fr }
+      .stat-bar { grid-template-columns: 1fr 1fr }
+      .content { padding: 0 18px 60px }
+      .sa-scale { gap: 2px; padding: 0 10px }
+      .sa-key.white-key { height: 110px }
+      .sa-key.black-key { height: 72px }
+    }
+  </style>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+</head>
+
+<body>
+  <button type="button" id="open3D">View in 3D</button>
+
+
+  <div class="bg-circle bg-circle-1"></div>
+  <div class="bg-circle bg-circle-2"></div>
+
+  <!-- Decorative SVG — veena strings -->
+  <svg class="veena-svg veena-tl" viewBox="0 0 280 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <line x1="10" y1="320" x2="260" y2="10" stroke="#b5521b" stroke-width="1"/>
+    <line x1="30" y1="320" x2="280" y2="20" stroke="#c9a84c" stroke-width="1"/>
+    <line x1="55" y1="320" x2="280" y2="55" stroke="#b5521b" stroke-width="0.7"/>
+    <line x1="80" y1="320" x2="280" y2="90" stroke="#2a5c3f" stroke-width="0.7"/>
+    <circle cx="140" cy="165" r="28" stroke="#c9a84c" stroke-width="1" fill="none"/>
+    <circle cx="140" cy="165" r="18" stroke="#b5521b" stroke-width="0.6" fill="none"/>
+  </svg>
+  <svg class="veena-svg veena-br" viewBox="0 0 280 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <line x1="10" y1="320" x2="260" y2="10" stroke="#b5521b" stroke-width="1"/>
+    <line x1="30" y1="320" x2="280" y2="20" stroke="#c9a84c" stroke-width="1"/>
+    <line x1="55" y1="320" x2="280" y2="55" stroke="#b5521b" stroke-width="0.7"/>
+    <circle cx="140" cy="165" r="28" stroke="#c9a84c" stroke-width="1" fill="none"/>
+  </svg>
+
+  <div class="hero">
+    <a href="musicology.html" class="back-link">← Back to Musicology</a>
+    <div class="logo-rule"><span></span>
+      <div class="logo-ornament">♩</div><span></span>
+    </div>
+    <div class="hero-title">Murchhana</div>
+    <div class="hero-subtitle">The Ancient Art of Scale Rotation</div>
+    <div class="hero-sci">मूर्च्छना &nbsp;·&nbsp; Indian Classical Musicology &nbsp;·&nbsp; Nāṭyaśāstra</div>
+  </div>
+
+  <!-- Interactive keyboard showing Sa–Sa octave -->
+  <div class="hero-visual">
+    <div class="sa-scale" id="swarScale"></div>
+    <div class="scale-label">Saptak — The Seven Swaras of the Octave</div>
+  </div>
+  <p class="photo-caption">The seven primary swaras (Sa Re Ga Ma Pa Dha Ni) and their vikrit (altered) forms from which Murchhanas are derived &nbsp;·&nbsp; Each Murchhana begins on a different swara, rotating the tonal centre</p>
+
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-leaf">𝄞</div>
+    <div class="divider-line"></div>
+  </div>
+
+  <div class="content">
+    <p class="intro-text">From the Sanskrit root <em>mūrch</em> — "to spread, to expand, to fill space" — Murchhana is the systematic rotation of a parent scale (<em>Grama</em>) by beginning successive octaves on each of its constituent notes, generating a family of derived modal scales. Codified by <em>Bharata Muni</em> in the Nāṭyaśāstra over two millennia ago, Murchhanas form the theoretical bridge between ancient Grama theory and the modern Raga system.</p>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">01</span>
+        <h2 class="section-title">What is Murchhana?</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">In Indian classical musicology, a <strong>Murchhana</strong> is a specific sequence of seven successive notes (swaras) that fills the span of one octave (saptak), obtained by taking a standard scale and rotating its starting point to a different degree. The term encompasses two interrelated meanings: (1) the melodic ascent through all seven notes of an octave — what we might call a modal scale — and (2) the emotional quality or aesthetic mood that such a scale evokes.</p>
+      <p class="section-body">The concept is rooted in the two parent scales (<em>Gramas</em>) recognised by Bharata Muni — the <strong>Shadja Grama</strong> (Sa-grama) and the <strong>Madhyama Grama</strong> (Ma-grama) — each of which yields seven Murchhanas by starting successively on each of the seven swaras (Sa, Ri, Ga, Ma, Pa, Dha, Ni), giving <strong>14 Murchhanas</strong> in total. A third Grama, the Gandharva Grama, was mentioned but considered no longer in practical use.</p>
+      <div class="stat-bar">
+        <div class="stat-cell">
+          <div class="stat-num">2</div>
+          <div class="stat-unit">Gramas</div>
+          <div class="stat-label">Shadja &amp; Madhyama</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-num">14</div>
+          <div class="stat-unit">Murchhanas</div>
+          <div class="stat-label">7 from each Grama</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-num">7</div>
+          <div class="stat-unit">Swaras</div>
+          <div class="stat-label">Per Murchhana</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-num">84</div>
+          <div class="stat-unit">Taanas</div>
+          <div class="stat-label">Derived from Murchhanas</div>
+        </div>
+      </div>
+      <p class="section-body">Importantly, each Murchhana preserves the same intervallic pattern of the parent Grama — only the tonal centre (Graha) shifts. This is analogous to Western modal theory, where Dorian, Phrygian, Lydian etc. are rotations of the major scale — though the Indian system preceded and differs from Greek modal theory in both its microtonal (shruti-based) precision and its aesthetic-emotional framework.</p>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">02</span>
+        <h2 class="section-title">Historical Sources</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">The theory of Murchhana is primarily codified in three foundational texts of Indian musicology, spanning nearly fifteen centuries of scholarly tradition.</p>
+      <table class="data-table">
+        <thead>
+          <tr><th>Text</th><th>Author / Period</th><th>Contribution to Murchhana Theory</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Nāṭyaśāstra</td>
+            <td>Bharata Muni, c. 200 BCE–200 CE</td>
+            <td>First systematic exposition; defines Grama, Murchhana and their 14 forms; describes shruti intervals underpinning each mode</td>
+          </tr>
+          <tr>
+            <td>Dattilam</td>
+            <td>Dattila, c. 100 CE</td>
+            <td>Elaborates on Murchhana in context of Gandharva music; discusses emotional (rasa) associations of each mode</td>
+          </tr>
+          <tr>
+            <td>Bṛhaddēśī</td>
+            <td>Matanga Muni, c. 8th–9th c. CE</td>
+            <td>Bridges Murchhana and the emerging Raga concept; first text to use the word "Raga" systematically; shows how Murchhanas generate Jatis (melodic types)</td>
+          </tr>
+          <tr>
+            <td>Saṅgītaratnākara</td>
+            <td>Sarngadeva, c. 1210–1247 CE</td>
+            <td>Synthesises all prior theory; detailed treatment of 14 Murchhanas, their swaras, shrutis and practical application in Prabandha compositions</td>
+          </tr>
+          <tr>
+            <td>Swaramela Kalanidhi</td>
+            <td>Ramamatya, 1550 CE</td>
+            <td>Attempts reconciliation of ancient Grama–Murchhana theory with contemporary Raga practice; pivotal for Carnatic musicology</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">03</span>
+        <h2 class="section-title">The 7 Murchhanas of Shadja Grama</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">The <strong>Shadja Grama</strong> (Sa-grama) is the primary parent scale, analogous to the natural major scale but defined by 22 shrutis (microtonal divisions of the octave) with specific intervallic ratios. Beginning the octave successively on each of the seven swaras yields seven distinct modal scales, each bearing a proper Sanskrit name and a distinctive emotional character.</p>
+      <div class="murchhana-grid">
+        <div class="m-card">
+          <div class="m-card-num">SG · I</div>
+          <div class="m-card-title">Uttaramandravā</div>
+          <div class="m-card-seq">Sa · Ri · Ga · Ma · Pa · Dha · Ni</div>
+          <div class="m-card-desc">The root Murchhana beginning on Shadja (Sa). Considered the most natural and balanced mode — the Shadja Grama itself. Evokes stability, groundedness, and the quality of the earth element.</div>
+        </div>
+        <div class="m-card">
+          <div class="m-card-num">SG · II</div>
+          <div class="m-card-title">Rajani</div>
+          <div class="m-card-seq">Ri · Ga · Ma · Pa · Dha · Ni · Sa</div>
+          <div class="m-card-desc">Beginning on Rishabha (Ri). The interval shift creates a subtle austerity and introspective mood — associated in later Jati theory with evening and contemplative states.</div>
+        </div>
+        <div class="m-card">
+          <div class="m-card-num">SG · III</div>
+          <div class="m-card-title">Uttarayatā</div>
+          <div class="m-card-seq">Ga · Ma · Pa · Dha · Ni · Sa · Ri</div>
+          <div class="m-card-desc">Beginning on Gandhara (Ga). Produces a distinctly poignant and tender quality; this Murchhana's intervallic structure later influenced several Bhairavi-family ragas.</div>
+        </div>
+        <div class="m-card">
+          <div class="m-card-num">SG · IV</div>
+          <div class="m-card-title">Shuddha Shadjavā</div>
+          <div class="m-card-seq">Ma · Pa · Dha · Ni · Sa · Ri · Ga</div>
+          <div class="m-card-desc">Beginning on Madhyama (Ma). One of the most significant — its intervallic structure closely parallels the Western Lydian mode and is considered the gateway to Madhyama Grama derivations.</div>
+        </div>
+        <div class="m-card">
+          <div class="m-card-num">SG · V</div>
+          <div class="m-card-title">Matsarikṛtā</div>
+          <div class="m-card-seq">Pa · Dha · Ni · Sa · Ri · Ga · Ma</div>
+          <div class="m-card-desc">Beginning on Panchama (Pa). Exudes heroic energy and vigour; its open, ascending feel evokes the quality of Vira Rasa (valour). Structurally comparable to the Western Mixolydian.</div>
+        </div>
+        <div class="m-card">
+          <div class="m-card-num">SG · VI</div>
+          <div class="m-card-title">Ashvakrāntā</div>
+          <div class="m-card-seq">Dha · Ni · Sa · Ri · Ga · Ma · Pa</div>
+          <div class="m-card-desc">Beginning on Dhaivata (Dha). Named for the "horse's gait" — its irregular interval pattern creates an undulating, dynamic quality associated with movement and transitions.</div>
+        </div>
+        <div class="m-card">
+          <div class="m-card-num">SG · VII</div>
+          <div class="m-card-title">Abhirudgatā</div>
+          <div class="m-card-seq">Ni · Sa · Ri · Ga · Ma · Pa · Dha</div>
+          <div class="m-card-desc">Beginning on Nishada (Ni). The most remote from the tonal centre — evokes yearning, longing, and the quality of Shringar Rasa (romantic love). Its structure influenced several Yaman-family ragas.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">04</span>
+        <h2 class="section-title">The 7 Murchhanas of Madhyama Grama</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">The <strong>Madhyama Grama</strong> (Ma-grama) differs from Shadja Grama by a single shruti: Panchama is lowered by one shruti (approximately 22 cents), altering the intervallic character of the entire scale family. This subtle difference generates a family of seven Murchhanas with a distinctly different emotional palette — generally considered more introspective, complex, and rarer in practical use.</p>
+      <div class="murchhana-grid">
+        <div class="m-card">
+          <div class="m-card-num">MG · I</div>
+          <div class="m-card-title">Sauvīrī</div>
+          <div class="m-card-seq">Sa · Ri · Ga · Ma · Pa♭ · Dha · Ni</div>
+          <div class="m-card-desc">Root Murchhana of the Madhyama Grama. The lowered Panchama immediately introduces a plaintive, melancholic quality absent in Uttaramandravā. Evokes Karuna Rasa (compassion, pathos).</div>
+        </div>
+        <div class="m-card">
+          <div class="m-card-num">MG · II</div>
+          <div class="m-card-title">Hārinī</div>
+          <div class="m-card-seq">Ri · Ga · Ma · Pa♭ · Dha · Ni · Sa</div>
+          <div class="m-card-desc">Beginning on Rishabha. The "deer-like" mode — swift, graceful, and elusive. Its intervallic asymmetry creates melodic patterns that feel perpetually in motion, never fully settling.</div>
+        </div>
+        <div class="m-card">
+          <div class="m-card-num">MG · III</div>
+          <div class="m-card-title">Kalopanatā</div>
+          <div class="m-card-seq">Ga · Ma · Pa♭ · Dha · Ni · Sa · Ri</div>
+          <div class="m-card-desc">Beginning on Gandhara. Described in Dattilam as suited to themes of discord and conflict resolution; the tension created by the lowered Pa from this starting point is particularly pronounced.</div>
+        </div>
+        <div class="m-card">
+          <div class="m-card-num">MG · IV</div>
+          <div class="m-card-title">Śuddhamadyā</div>
+          <div class="m-card-seq">Ma · Pa♭ · Dha · Ni · Sa · Ri · Ga</div>
+          <div class="m-card-desc">Beginning on Madhyama. The "pure middle" mode; beginning on the note that defines the Grama itself gives this Murchhana a self-referential quality — introspective, philosophical, withdrawn.</div>
+        </div>
+        <div class="m-card">
+          <div class="m-card-num">MG · V</div>
+          <div class="m-card-title">Mārgavī</div>
+          <div class="m-card-seq">Pa♭ · Dha · Ni · Sa · Ri · Ga · Ma</div>
+          <div class="m-card-desc">Beginning on the lowered Panchama — a tonally ambiguous starting point that creates a searching, wayward quality. Associated with the imagery of a traveller on an unknown path.</div>
+        </div>
+        <div class="m-card">
+          <div class="m-card-num">MG · VI</div>
+          <div class="m-card-title">Pauravi</div>
+          <div class="m-card-seq">Dha · Ni · Sa · Ri · Ga · Ma · Pa♭</div>
+          <div class="m-card-desc">Beginning on Dhaivata. The ending of this Murchhana on the lowered Panchama gives it an unresolved, open quality — evocative of dawn, anticipation, and the space between states.</div>
+        </div>
+        <div class="m-card">
+          <div class="m-card-num">MG · VII</div>
+          <div class="m-card-title">Hṛṣyakā</div>
+          <div class="m-card-seq">Ni · Sa · Ri · Ga · Ma · Pa♭ · Dha</div>
+          <div class="m-card-desc">Beginning on Nishada. The "joyful" mode — paradoxically, the final Murchhana of the plaintive Madhyama Grama produces a bright, celebratory character through its specific intervallic arrangement.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">05</span>
+        <h2 class="section-title">Murchhana, Jati & the Birth of Ragas</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">The theoretical pathway from ancient Murchhana to the modern Raga system passes through an intermediate concept: <em>Jati</em>. Matanga Muni's Bṛhaddēśī (c. 8th–9th c. CE) describes 18 Jatis — seven Shuddha (pure) and 11 Vikrita (modified) — each derived from one or more Murchhanas by applying specific rules of omission, emphasis, and ornamentation.</p>
+      <p class="section-body">Ragas evolved from Jatis by accumulating additional layers of melodic personality: characteristic phrase patterns (vakra), ascending/descending forms (aroha/avaroha), specific ornamentation (gamaka), time-of-day associations, and emotional mood (rasa). While no modern Raga can be said to be simply a Murchhana, the ancient modes provided the modal DNA from which the Raga system grew.</p>
+      <table class="raga-table">
+        <thead>
+          <tr><th>Murchhana</th><th>Related Jati</th><th>Descendant Raga(s)</th><th>Tradition</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Uttaramandravā</td>
+            <td>Shadja Jati</td>
+            <td>Bilawal (H), Shankarabharanam (C)</td>
+            <td>Both</td>
+          </tr>
+          <tr>
+            <td>Rajani</td>
+            <td>Arshabhi Jati</td>
+            <td>Kafi, Bhimpalasi (H)</td>
+            <td>Hindustani</td>
+          </tr>
+          <tr>
+            <td>Uttarayatā</td>
+            <td>Gandhara Jati</td>
+            <td>Bhairavi (H), Natabhairavi (C)</td>
+            <td>Both</td>
+          </tr>
+          <tr>
+            <td>Shuddha Shadjavā</td>
+            <td>Madhyama Jati</td>
+            <td>Yaman / Kalyan (H), Kalyani (C)</td>
+            <td>Both</td>
+          </tr>
+          <tr>
+            <td>Matsarikṛtā</td>
+            <td>Panchama Jati</td>
+            <td>Khamaj (H), Harikambhoji (C)</td>
+            <td>Both</td>
+          </tr>
+          <tr>
+            <td>Ashvakrāntā</td>
+            <td>Dhaivata Jati</td>
+            <td>Asavari (H), Natabhairavi (C)</td>
+            <td>Hindustani</td>
+          </tr>
+          <tr>
+            <td>Abhirudgatā</td>
+            <td>Nishada Jati</td>
+            <td>Bhairav (H), Mayamalavagowla (C)</td>
+            <td>Both</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="section-body" style="font-size:11px;color:var(--sage)">(H) = Hindustani tradition &nbsp;·&nbsp; (C) = Carnatic tradition &nbsp;·&nbsp; These correspondences are approximate; scholarly debate continues on precise lineages.</p>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">06</span>
+        <h2 class="section-title">Shruti: The Microtonal Foundation</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Murchhanas cannot be properly understood without the concept of <strong>Shrutis</strong> — the 22 microtonal intervals into which the octave is divided in Indian classical theory. The word shruti means "what is heard" — implying intervals so subtle they are perceived rather than consciously analysed. The 22 shrutis are not equal divisions (unlike Western equal temperament) but occur in groups of 2, 3, or 4 shrutis per swara position.</p>
+      <table class="data-table">
+        <thead>
+          <tr><th>Swara</th><th>Devanāgarī</th><th>Shrutis (count)</th><th>Cumulative Shrutis</th><th>Western Approx.</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Sa (Shadja)</td><td>स</td><td>4</td><td>1–4</td><td>C (tonic)</td></tr>
+          <tr><td>Ri (Rishabha)</td><td>रि</td><td>3</td><td>5–7</td><td>D (major 2nd)</td></tr>
+          <tr><td>Ga (Gandhara)</td><td>ग</td><td>2</td><td>8–9</td><td>E (major 3rd)</td></tr>
+          <tr><td>Ma (Madhyama)</td><td>म</td><td>4</td><td>10–13</td><td>F (perfect 4th)</td></tr>
+          <tr><td>Pa (Panchama)</td><td>प</td><td>4</td><td>14–17</td><td>G (perfect 5th)</td></tr>
+          <tr><td>Dha (Dhaivata)</td><td>ध</td><td>3</td><td>18–20</td><td>A (major 6th)</td></tr>
+          <tr><td>Ni (Nishada)</td><td>नि</td><td>2</td><td>21–22</td><td>B (major 7th)</td></tr>
+        </tbody>
+      </table>
+      <p class="section-body">When a Murchhana rotates the tonal centre, the <em>number</em> of shrutis assigned to each position in the new scale changes — because the note that was Pa (4 shrutis) now becomes Sa (also 4 shrutis), but the note that was Ga (2 shrutis) may now occupy the position of Ri (normally 3 shrutis). This redistribution of shrutis is the precise mechanism by which Murchhanas produce their distinct intervallic characters — it is not a simple transposition but a genuine modal transformation at the microtonal level.</p>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">07</span>
+        <h2 class="section-title">Aesthetic Doctrine — Rasa & Mood</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Classical theorists were explicit that Murchhanas were not merely abstract scale constructions — each mode carried a specific emotional power (<em>rasa</em>) capable of affecting both the performer and the listener. This doctrine, elaborated in the Nāṭyaśāstra's chapter on music (<em>Natyashastra Adhyaya 28</em>), reflects the broader Indian aesthetic philosophy that sound (<em>nada</em>) is inherently charged with emotional and even spiritual significance.</p>
+      <ul class="precaution-list">
+        <li><strong>Therapeutic use:</strong> Ancient Gandharva Veda (the musicological branch of Atharva Veda) prescribed specific Murchhanas for therapeutic purposes — certain modes to calm the mind, others to stimulate vitality or induce sleep. This proto-music-therapy tradition persisted into medieval Raga-Chikitsa (raga-based healing) practice.</li>
+        <li><strong>Ritual context:</strong> Specific Murchhanas were assigned to different times of day, seasons, and ritual occasions in the <em>Sama Veda</em> tradition — an early codification of the time-theory that later became central to Raga classification.</li>
+        <li><strong>Cosmological mapping:</strong> Each Murchhana was associated with one of the seven planetary deities (Navagraha), the seven colours of light, and the seven chakras of the subtle body — part of a comprehensive correspondence system bridging music, cosmology, and healing.</li>
+        <li><strong>Nava Rasa correlation:</strong> Bharata Muni assigned each Murchhana to one of the nine primary aesthetic emotions (Nava Rasas) — Shringar (love), Vira (heroism), Karuna (compassion), Adbhuta (wonder), Hasya (joy), Bhayanaka (fear), Bibhatsa (disgust), Raudra (fury), and Shanta (peace).</li>
+        <li><strong>Modern relevance:</strong> Contemporary music psychology research has found that modal structures analogous to ancient Murchhanas consistently evoke cross-culturally stable emotional responses — lending empirical support to Bharata's 2000-year-old aesthetic doctrine.</li>
+      </ul>
+    </div>
+
+    <div class="sources">
+      <div class="sources-title">References &amp; Sources</div>
+      <ul>
+        <li>Bharata Muni — Nāṭyaśāstra — Adhyaya 28 (Gandharva Adhyaya), c. 200 BCE–200 CE</li>
+        <li>Dattila — Dattilam — Gandharva Sangita Prakarana, c. 100 CE</li>
+        <li>Matanga Muni — Bṛhaddēśī — Chapters on Grama, Murchhana, and Jati, c. 8th–9th c. CE</li>
+        <li>Sarngadeva — Saṅgītaratnākara — Swaradhyaya, c. 1210–1247 CE</li>
+        <li>Ramamatya — Swaramela Kalanidhi — 1550 CE</li>
+        <li>Widdess, Richard — "The Ragas of Early Indian Music" — Oxford University Press, 1995</li>
+        <li>Lath, Mukund — "A Study of Dattilam: A Treatise on the Sacred Music of Ancient India" — Impex India, 1978</li>
+        <li>Levy, Mark — "Intonation in North Indian Music" — Biblia Impex, 1982</li>
+        <li>Rowell, Lewis — "Music and Musical Thought in Early India" — University of Chicago Press, 1992</li>
+        <li>Sharma, Premlata — "Bṛhaddēśī of Śrī Mataṅga Muni" — Indira Gandhi National Centre for the Arts, 1992</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer>
+    <p>Swastha Musicology &nbsp;·&nbsp; All information is for educational and scholarly reference &nbsp;·&nbsp; Consult trained musicians and musicologists for practical guidance</p>
+  </footer>
+
+  <script>
+    // Build the saptak keyboard
+    const swaras = [
+      { label: 'Sa', dev: 'स', type: 'white' },
+      { label: 'Ri♭', dev: 'रि', type: 'black' },
+      { label: 'Ri', dev: 'रि', type: 'white' },
+      { label: 'Ga♭', dev: 'ग', type: 'black' },
+      { label: 'Ga', dev: 'ग', type: 'white' },
+      { label: 'Ma', dev: 'म', type: 'white' },
+      { label: 'Ma#', dev: 'म', type: 'black' },
+      { label: 'Pa', dev: 'प', type: 'white' },
+      { label: 'Dha♭', dev: 'ध', type: 'black' },
+      { label: 'Dha', dev: 'ध', type: 'white' },
+      { label: 'Ni♭', dev: 'नि', type: 'black' },
+      { label: 'Ni', dev: 'नि', type: 'white' },
+      { label: "Sa'", dev: 'स', type: 'white' },
+    ];
+
+    const scale = document.getElementById('swarScale');
+    swaras.forEach(s => {
+      const key = document.createElement('div');
+      key.className = 'sa-key ' + (s.type === 'black' ? 'black-key' : 'white-key');
+      key.innerHTML = `<div class="swar-devanagari">${s.dev}</div><div class="swar-label">${s.label}</div>`;
+      scale.appendChild(key);
+    });
+  </script>
+
+
+  <div id="viewerModal">
+    <div id="modal-topbar">
+      <span>3D Model — Murchhana</span>
+      <button type="button" id="close3D">✕</button>
+    </div>
+    <model-viewer src="murchhana3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+  </div>
+  <script>
+    (function() {
+      var open3D = document.getElementById('open3D');
+      var close3D = document.getElementById('close3D');
+      var modal = document.getElementById('viewerModal');
+      if (!open3D || !close3D || !modal) return;
+      function openModal() {
+        
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+      function closeModal() {
+        
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+      open3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); openModal();
+      });
+      close3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); closeModal();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+      });
+    })();
+  </script>
+
+</body>
+</html>

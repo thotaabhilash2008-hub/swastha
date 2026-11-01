@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Changeri | Swastha</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+  <style>
+    #open3D {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      padding: 10px 18px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: var(--forest);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      z-index: 1000;
+      transition: .3s;
+    }
+    #open3D:hover {
+      background: var(--gold);
+      color: var(--deep);
+    }
+    #viewerModal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+    }
+    #modal-topbar {
+      flex-shrink: 0;
+      height: 58px;
+      background: #111111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px 0 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      z-index: 99999;
+    }
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 4.5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.72);
+      user-select: none;
+    }
+    #close3D {
+      width: 38px;
+      height: 38px;
+      font-size: 15px;
+      font-weight: 300;
+      background: transparent;
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background .2s, color .2s, transform .22s;
+      outline: none;
+      flex-shrink: 0;
+    }
+    #close3D:hover {
+      background: #ffffff;
+      color: #111111;
+      border-color: #ffffff;
+      transform: rotate(90deg);
+    }
+    #viewerModal model-viewer {
+      flex: 1;
+      width: 100%;
+      display: block;
+      background: #ffffff;
+    }
+
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+    * { margin: 0; padding: 0; box-sizing: border-box }
+    html { scroll-behavior: smooth }
+    body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--ink); min-height: 100vh; overflow-x: hidden; position: relative }
+    body::before { content: ''; position: fixed; inset: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E"); opacity: .035; pointer-events: none; z-index: 100 }
+    .bg-circle { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0 }
+    .bg-circle-1 { width: 700px; height: 700px; background: radial-gradient(circle, rgba(42,92,63,.1) 0%, transparent 70%); top: -200px; right: -150px }
+    .bg-circle-2 { width: 500px; height: 500px; background: radial-gradient(circle, rgba(201,168,76,.08) 0%, transparent 70%); bottom: -100px; left: -100px }
+    .botanical-svg { position: fixed; pointer-events: none; z-index: 1; opacity: .1 }
+    .botanical-tl { top: -20px; left: -20px; width: 260px }
+    .botanical-br { bottom: -20px; right: -20px; width: 220px; transform: rotate(180deg) }
+    .entry-badge { position: fixed; top: 24px; left: 30px; font-family: 'Cormorant Garamond', serif; font-size: 12px; letter-spacing: 4px; color: var(--gold); z-index: 1000; font-weight: 300 }
+    .hero { position: relative; z-index: 10; padding: 54px 40px 0; text-align: center; opacity: 0; animation: fadeUp .9s ease .1s forwards }
+    .back-link { display: inline-flex; align-items: center; gap: 8px; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--sage); text-decoration: none; margin-bottom: 36px; transition: color .3s }
+    .back-link:hover { color: var(--gold) }
+    .logo-rule { display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 14px }
+    .logo-rule span { display: block; height: 1px; width: 70px; background: linear-gradient(to right, transparent, var(--gold)) }
+    .logo-rule span:last-child { background: linear-gradient(to left, transparent, var(--gold)) }
+    .logo-ornament { font-size: 13px; color: var(--gold) }
+    .hero-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(54px, 11vw, 108px); font-weight: 300; letter-spacing: 8px; line-height: 1; color: var(--deep) }
+    .hero-subtitle { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-style: italic; font-weight: 300; color: var(--earth); letter-spacing: 2px; margin-top: 8px }
+    .hero-sci { font-size: 11px; font-weight: 200; letter-spacing: 5px; color: var(--sage); margin-top: 6px }
+    .hero-photos { position: relative; z-index: 10; display: grid; grid-template-columns: 1fr 1fr; gap: 2px; max-width: 900px; margin: 40px auto 0; opacity: 0; animation: fadeUp .9s ease .35s forwards }
+    .hero-photos img { width: 100%; height: 380px; object-fit: cover; object-position: center; display: block; background: var(--parchment) }
+    .photo-caption { text-align: center; font-family: 'Cormorant Garamond', serif; font-size: 12px; font-style: italic; color: var(--sage); letter-spacing: 1px; padding: 10px 0 0; max-width: 900px; margin: 0 auto; position: relative; z-index: 10; opacity: 0; animation: fadeUp .9s ease .5s forwards }
+    .divider { display: flex; align-items: center; justify-content: center; gap: 16px; margin: 50px auto; max-width: 600px; opacity: 0; animation: fadeUp .9s ease .55s forwards; position: relative; z-index: 10 }
+    .divider-line { height: 1px; width: 120px; background: linear-gradient(to right, transparent, var(--sage)) }
+    .divider-line:last-child { background: linear-gradient(to left, transparent, var(--sage)) }
+    .divider-leaf { color: var(--forest); font-size: 18px }
+    .content { position: relative; z-index: 10; max-width: 860px; margin: 0 auto; padding: 0 30px 80px }
+    .intro-text { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 300; line-height: 1.75; color: var(--ink); text-align: center; max-width: 700px; margin: 0 auto 60px; opacity: 0; animation: fadeUp .9s ease .6s forwards }
+    .intro-text em { color: var(--forest); font-style: italic }
+    .section { margin-bottom: 60px; opacity: 0; animation: fadeUp .9s ease forwards }
+    .section:nth-child(1) { animation-delay: .65s } .section:nth-child(2) { animation-delay: .75s }
+    .section:nth-child(3) { animation-delay: .85s } .section:nth-child(4) { animation-delay: .95s }
+    .section:nth-child(5) { animation-delay: 1.05s } .section:nth-child(6) { animation-delay: 1.15s }
+    .section:nth-child(7) { animation-delay: 1.25s } .section:nth-child(8) { animation-delay: 1.35s }
+    .section-header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px }
+    .section-num { font-family: 'Cormorant Garamond', serif; font-size: 11px; letter-spacing: 4px; color: var(--gold) }
+    .section-title { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 400; color: var(--deep); letter-spacing: 1px }
+    .section-rule { height: 1px; flex: 1; background: linear-gradient(to right, var(--gold), transparent) }
+    .section-body { font-size: 13px; font-weight: 300; line-height: 1.9; color: var(--ink); margin-bottom: 24px }
+    .data-table { width: 100%; border-collapse: collapse; margin: 16px 0 8px; font-size: 12px }
+    .data-table thead tr { background: var(--deep); color: var(--gold); font-size: 10px; letter-spacing: 3px; text-transform: uppercase }
+    .data-table thead th { padding: 12px 14px; text-align: left; font-weight: 400 }
+    .data-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .data-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .data-table tbody tr { transition: background .2s }
+    .data-table tbody tr:hover { background: rgba(200, 164, 93, 0.15) }
+    .data-table tbody td { padding: 10px 14px; color: var(--ink); border-bottom: 1px solid rgba(107,79,45,.08) }
+    .data-table tbody td:first-child { font-weight: 400; color: var(--deep); width: 28% }
+    .dosha-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .dosha-table thead tr { background: var(--forest); color: var(--cream) }
+    .dosha-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .dosha-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .dosha-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .dosha-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(107,79,45,.08) }
+    .dosha-table tbody td:first-child { font-weight: 400; color: var(--forest); width: 18% }
+    .dosha-table tbody td:nth-child(2) { color: var(--earth); width: 20% }
+    .consume-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .consume-table thead tr { background: var(--earth); color: var(--cream) }
+    .consume-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .consume-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .consume-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .consume-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(107,79,45,.08) }
+    .consume-table tbody td:first-child { font-weight: 400; color: var(--earth); width: 22% }
+    .benefits-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: rgba(107,79,45,.12); border: 1px solid rgba(107,79,45,.12); margin: 8px 0 }
+    .benefit-card { background: var(--cream); padding: 24px 22px; transition: background .3s; position: relative; overflow: hidden }
+    .benefit-card:hover { background: #ede4ce }
+    .benefit-card::before { content: ''; position: absolute; bottom: 0; left: 0; width: 0; height: 2px; background: var(--gold); transition: width .4s }
+    .benefit-card:hover::before { width: 100% }
+    .benefit-title { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 600; color: var(--forest); margin-bottom: 8px }
+    .benefit-desc { font-size: 11.5px; font-weight: 300; line-height: 1.75; color: var(--ink); opacity: .85 }
+    .precaution-list { list-style: none; margin: 8px 0 }
+    .precaution-list li { display: flex; gap: 12px; align-items: flex-start; padding: 10px 14px; font-size: 12px; font-weight: 300; line-height: 1.7; color: var(--ink); border-bottom: 1px solid rgba(107,79,45,.08) }
+    .precaution-list li:last-child { border-bottom: none }
+    .precaution-list li::before { content: '▸'; color: var(--gold); flex-shrink: 0; margin-top: 1px }
+    .nutrition-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: rgba(107,79,45,.12); border: 1px solid rgba(107,79,45,.12); margin: 20px 0 }
+    .nutrition-cell { background: var(--cream); padding: 22px 16px; text-align: center; transition: background .3s }
+    .nutrition-cell:hover { background: var(--parchment) }
+    .nutrition-num { font-family: 'Cormorant Garamond', serif; font-size: 34px; font-weight: 300; color: var(--forest); line-height: 1; margin-bottom: 4px }
+    .nutrition-unit { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); font-weight: 300 }
+    .nutrition-label { font-size: 11px; font-weight: 300; color: var(--ink); margin-top: 5px }
+    .script-box { border-left: 3px solid var(--gold); background: var(--parchment); padding: 18px 22px; margin: 18px 0 24px; font-family: 'Cormorant Garamond', serif; font-size: 15px; font-style: italic; color: var(--deep); line-height: 1.8 }
+    .script-box span { display: block; font-family: 'Jost', sans-serif; font-size: 11px; font-style: normal; letter-spacing: 3px; color: var(--sage); margin-top: 8px; text-transform: uppercase }
+    .spotlight { background: linear-gradient(135deg, rgba(42,92,63,.07), rgba(201,168,76,.07)); border: 1px solid rgba(201,168,76,.3); padding: 20px 24px; margin: 20px 0 28px; position: relative }
+    .spotlight::before { content: '★'; position: absolute; top: -10px; left: 20px; background: var(--cream); padding: 0 8px; color: var(--gold); font-size: 14px }
+    .spotlight-title { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 600; color: var(--deep); margin-bottom: 8px }
+    .spotlight-body { font-size: 12px; font-weight: 300; line-height: 1.8; color: var(--ink) }
+    /* Oxalic acid callout */
+    .oxalic-note { background: linear-gradient(135deg, rgba(107,79,45,.06), rgba(201,168,76,.06)); border: 1px solid rgba(107,79,45,.2); border-left: 4px solid var(--earth); padding: 16px 22px; margin: 16px 0 22px }
+    .oxalic-note-title { font-family: 'Cormorant Garamond', serif; font-size: 15px; font-weight: 600; color: var(--earth); margin-bottom: 6px }
+    .oxalic-note-body { font-size: 12px; font-weight: 300; line-height: 1.8; color: var(--ink) }
+    /* Taste profile visual */
+    .taste-strip { display: grid; grid-template-columns: repeat(3,1fr); gap: 1px; background: rgba(107,79,45,.12); border: 1px solid rgba(107,79,45,.12); margin: 18px 0 }
+    .taste-cell { background: var(--parchment); padding: 16px 18px; text-align: center }
+    .taste-label { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); margin-bottom: 6px; font-weight: 300 }
+    .taste-name { font-family: 'Cormorant Garamond', serif; font-size: 19px; font-weight: 400; color: var(--deep); margin-bottom: 4px }
+    .taste-desc { font-size: 11px; font-weight: 300; line-height: 1.6; color: var(--ink) }
+    .sources { border-top: 1px solid rgba(107,79,45,.15); padding-top: 24px; margin-top: 20px }
+    .sources-title { font-size: 10px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); margin-bottom: 12px; font-weight: 300 }
+    .sources ul { list-style: none }
+    .sources ul li { font-family: 'Cormorant Garamond', serif; font-size: 13px; font-style: italic; color: var(--earth); padding: 5px 0; border-bottom: 1px solid rgba(107,79,45,.06) }
+    .sources ul li::before { content: '· '; color: var(--sage) }
+    footer { position: relative; z-index: 10; text-align: center; padding: 24px 20px 44px; border-top: 1px solid rgba(107,79,45,.12); max-width: 860px; margin: 0 auto }
+    footer p { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); font-weight: 300 }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(28px) } to { opacity: 1; transform: translateY(0) } }
+    @media(max-width:700px) {
+      .hero-photos { grid-template-columns: 1fr } .hero-photos img { height: 260px }
+      .benefits-grid { grid-template-columns: 1fr } .nutrition-bar { grid-template-columns: 1fr 1fr }
+      .taste-strip { grid-template-columns: 1fr } .content { padding: 0 18px 60px }
+    }
+  </style>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+</head>
+<body>
+  <button type="button" id="open3D">View in 3D</button>
+
+
+<div class="entry-badge">No. 53</div>
+<div class="bg-circle bg-circle-1"></div>
+<div class="bg-circle bg-circle-2"></div>
+
+<svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#2a5c3f" stroke-width="1.5" fill="none"/>
+  <circle cx="90" cy="210" r="8" fill="#2a5c3f" opacity="0.7"/>
+  <circle cx="130" cy="175" r="10" fill="#7a9e7e" opacity="0.6"/>
+  <circle cx="170" cy="135" r="7" fill="#2a5c3f" opacity="0.8"/>
+  <circle cx="210" cy="95" r="9" fill="#c9a84c" opacity="0.5"/>
+  <ellipse cx="115" cy="195" rx="20" ry="10" fill="#7a9e7e" transform="rotate(-30 115 195)"/>
+  <ellipse cx="155" cy="155" rx="18" ry="9" fill="#2a5c3f" transform="rotate(-45 155 155)"/>
+</svg>
+<svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#2a5c3f" stroke-width="1.5" fill="none"/>
+  <circle cx="90" cy="210" r="8" fill="#2a5c3f" opacity="0.7"/>
+  <circle cx="130" cy="175" r="10" fill="#7a9e7e" opacity="0.6"/>
+  <ellipse cx="115" cy="195" rx="20" ry="10" fill="#7a9e7e" transform="rotate(-30 115 195)"/>
+</svg>
+
+<div class="hero">
+  <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+  <div class="logo-rule"><span></span><div class="logo-ornament">✦</div><span></span></div>
+  <div class="hero-title">Changeri</div>
+  <div class="hero-subtitle">Creeping Wood Sorrel — The Sour Clover of the Courtyard</div>
+  <div class="hero-sci">Oxalis corniculata L. &nbsp;·&nbsp; Oxalidaceae</div>
+</div>
+
+<div class="hero-photos">
+  <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c4/Larval_Host_Plant_%28Oxalis_corniculata%29_of_Pseudozizeeria_maha_%28Kollar%2C_%281844%29%29_%E2%80%93_Pale_Grass_Blue.jpg/1280px-Larval_Host_Plant_%28Oxalis_corniculata%29_of_Pseudozizeeria_maha_%28Kollar%2C_%281844%29%29_%E2%80%93_Pale_Grass_Blue.jpg" alt="Oxalis corniculata growing as a low creeping herb with trifoliate leaves and yellow flowers"
+    onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+  <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e8/Oxalis.corniculata.7562.JPG/1280px-Oxalis.corniculata.7562.JPG" alt="Close-up of Oxalis corniculata heart-shaped leaflets with tiny yellow five-petalled flowers"
+    onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+</div>
+<p class="photo-caption">Fig. 1 — Oxalis corniculata creeping along a garden path; its trifoliate clover-like leaves fold downward at night in a behaviour called nyctinasty &nbsp;·&nbsp; Fig. 2 — The characteristic heart-shaped leaflets and delicate five-petalled yellow flowers of Changeri, no larger than a fingernail</p>
+
+<div class="divider">
+  <div class="divider-line"></div>
+  <div class="divider-leaf">❧</div>
+  <div class="divider-line"></div>
+</div>
+
+<div class="content">
+  <p class="intro-text">It grows between the cracks of every courtyard, beneath every garden bench, along every shaded wall in tropical India — so common and so small it is almost universally overlooked. Yet <em>Changeri</em> has been described in every classical Ayurvedic text from Charaka onward, classified in five Nighantus, and prescribed for conditions ranging from diarrhoea and worms to scurvy and scorpion sting. This is the herb that hides in plain sight — one of Ayurveda's most accessible medicines, growing freely wherever it is needed.</p>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">01</span><h2 class="section-title">Botanical Profile</h2><div class="section-rule"></div></div>
+    <p class="section-body"><em>Oxalis corniculata</em> L. is a small, prostrate or semi-erect annual or perennial herb of the Oxalidaceae family, growing 5–30 cm. It spreads by creeping stems that root at the nodes, forming low mats of trifoliate leaves — each leaflet heart-shaped (obcordate), 5–15 mm wide, sometimes flushed purple-bronze especially in sunny conditions. The plant produces small, bright yellow five-petalled flowers throughout the year in warm climates, and slender cylindrical seed capsules 1–2.5 cm long that eject seeds explosively when ripe — sometimes dispersing them up to a metre from the parent plant. The leaves fold downward at night and in intense heat, a movement known as <em>nyctinasty</em>, giving the plant a liveliness unique among ground-cover herbs.</p>
+    <p class="section-body">Though considered a cosmopolitan weed of uncertain geographic origin — possibly tropical America or southern Europe, now naturalised across every temperate and tropical region on earth — Oxalis corniculata has been documented in Indian literature for over two thousand years, suggesting long naturalization or independent origin. It thrives in gardens, lawns, roadsides, rice-paddy bunds, and shaded waste ground from the plains to 3,000 m in the Himalayan foothills. The closely related <em>Oxalis stricta</em> and the ornamental <em>Oxalis acetosella</em> (wood sorrel of European forests) share the sour oxalic acid taste but are less common in Indian traditional medicine.</p>
+
+    <div class="taste-strip">
+      <div class="taste-cell">
+        <div class="taste-label">Primary Taste</div>
+        <div class="taste-name">Amla</div>
+        <div class="taste-desc">Sour — the defining quality of Changeri, produced by high oxalic acid and potassium oxalate content; one of the sourest wild herbs in India</div>
+      </div>
+      <div class="taste-cell">
+        <div class="taste-label">Secondary Taste</div>
+        <div class="taste-name">Kashaya</div>
+        <div class="taste-desc">Astringent — tannins and polyphenols produce a drying, puckering quality underlying the primary sourness; responsible for its antidiarrhoeal activity</div>
+      </div>
+      <div class="taste-cell">
+        <div class="taste-label">Ayurvedic Rarity</div>
+        <div class="taste-name">Amla Pradhana</div>
+        <div class="taste-desc">Among very few herbs classified as primarily sour (Amla) in Ayurvedic rasa. Most medicinal herbs are bitter or pungent; Changeri's sour dominance gives it a unique niche in Pitta-digestive therapy</div>
+      </div>
+    </div>
+
+    <table class="data-table">
+      <thead><tr><th>PROPERTY</th><th>Detail</th></tr></thead>
+      <tbody>
+        <tr><td>Family</td><td>Oxalidaceae (Wood Sorrel family)</td></tr>
+        <tr><td>Botanical Name</td><td>Oxalis corniculata L.</td></tr>
+        <tr><td>Sanskrit Names</td><td>Changeri, Chukrika, Ambashtha, Aranalamla, Shukta, Dantashatha, Chitrika</td></tr>
+        <tr><td>Common Names</td><td>Creeping Wood Sorrel, Procumbent Yellow Sorrel, Sleeping Beauty, Indian Sorrel</td></tr>
+        <tr><td>Regional Names</td><td>Changeri / Chuka (Hindi), Pulichchi Keerai (Tam), Pulicheruku (Tel), Chukka (Mal), Ambat Chuka (Mar), Amrul (Ben)</td></tr>
+        <tr><td>Related Species</td><td>Oxalis acetosella (European Wood Sorrel), O. stricta (Upright Yellow Sorrel), O. triangularis (Purple Shamrock)</td></tr>
+        <tr><td>Origin</td><td>Possibly tropical America or southern Europe; cosmopolitan weed, India-naturalised for 2,000+ years</td></tr>
+        <tr><td>Habitat</td><td>Gardens, lawns, shaded walls, rice-paddy margins, roadsides; plains to 3,000 m</td></tr>
+        <tr><td>Plant Type</td><td>Prostrate creeping herb, 5–30 cm; roots at nodes; trifoliate leaves</td></tr>
+        <tr><td>Flowering</td><td>Year-round in tropical India; bright yellow 5-petalled flowers</td></tr>
+        <tr><td>Medicinal Parts</td><td>Whole plant (primary), leaves, juice, root</td></tr>
+        <tr><td>Taste Profile</td><td>Amla (sour, primary), Kashaya (astringent)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">02</span><h2 class="section-title">Phytochemistry &amp; Composition</h2><div class="section-role"></div></div>
+    <p class="section-body">Changeri's phytochemical identity is dominated by oxalic acid and its salts — potassium oxalate and calcium oxalate — which account for its intense sour taste, its anti-scorbutic and refrigerant properties, and its principal safety concern in high-dose use. The plant is also rich in ascorbic acid (Vitamin C), flavonoids, phenolic acids, and a characteristic profile of isoflavones and phytosterols that contribute to its anti-inflammatory, antimicrobial, and wound-healing actions.</p>
+    <p class="section-body">Significantly, Changeri contains a diverse range of anthraquinones, tartaric acid, and malic acid alongside oxalic acid — giving it a complex polyphenol matrix beyond the simple "sour weed" classification. The leaves are among the richest wild sources of Vitamin C per gram in Indian flora, explaining its classical use as an anti-scorbutic. The root contains tannins and terpenoids with hepatoprotective activity distinct from the aerial parts.</p>
+
+    <div class="oxalic-note">
+      <div class="oxalic-note-title">Oxalic Acid — The Therapeutic and Safety Duality</div>
+      <div class="oxalic-note-body">Oxalic acid and potassium oxalate give Changeri its sour taste and its refrigerant, diuretic, and anti-inflammatory properties — but also its principal safety constraint. At culinary quantities (small amounts as potherb or juice), oxalic acid is beneficial: it chelates excess calcium, provides organic acid buffering, and contributes to the antidiarrhoeal astringency. At high or sustained doses, oxalic acid forms insoluble calcium oxalate crystals that can precipitate in renal tubules, potentially contributing to calcium oxalate kidney stones in susceptible individuals. Classical Ayurvedic texts acknowledge this dual nature, using Changeri as a short-course acute remedy rather than a long-term tonic. All internal therapeutic preparations should be of moderate quantity and short duration.</div>
+    </div>
+
+    <div class="nutrition-bar">
+      <div class="nutrition-cell">
+        <div class="nutrition-num">780mg</div>
+        <div class="nutrition-unit">per 100g</div>
+        <div class="nutrition-label">Oxalic acid in fresh leaves</div>
+      </div>
+      <div class="nutrition-cell">
+        <div class="nutrition-num">High</div>
+        <div class="nutrition-unit">Vitamin C</div>
+        <div class="nutrition-label">Among richest wild Indian greens</div>
+      </div>
+      <div class="nutrition-cell">
+        <div class="nutrition-num">5</div>
+        <div class="nutrition-unit">Nighantus</div>
+        <div class="nutrition-label">Documented across classical texts</div>
+      </div>
+      <div class="nutrition-cell">
+        <div class="nutrition-num">360°</div>
+        <div class="nutrition-unit">Habitat</div>
+        <div class="nutrition-label">Every continent, every garden</div>
+      </div>
+    </div>
+
+    <table class="data-table">
+      <thead><tr><th>Compound</th><th>Category</th><th>Primary Action</th></tr></thead>
+      <tbody>
+        <tr><td>Oxalic Acid &amp; Potassium Oxalate</td><td>Organic acid (leaves)</td><td>Sour taste, refrigerant, diuretic, calcium-chelating; responsible for both therapeutic and safety profile; present at 600–800 mg/100g fresh weight</td></tr>
+        <tr><td>Ascorbic Acid (Vitamin C)</td><td>Vitamin (leaves)</td><td>Anti-scorbutic, antioxidant, collagen synthesis, immune support; one of richest wild sources in Indian flora</td></tr>
+        <tr><td>Tartaric &amp; Malic Acids</td><td>Organic acids</td><td>Diuretic, digestive acidifiers, buffering; contribute to sour taste alongside oxalic acid</td></tr>
+        <tr><td>Vitexin &amp; Isovitexin</td><td>Flavone C-glycosides</td><td>Anti-inflammatory, antioxidant, anxiolytic (GABA-A modulation), hepatoprotective</td></tr>
+        <tr><td>Orientin &amp; Isoorientin</td><td>Flavone C-glycosides</td><td>Anti-inflammatory, antioxidant, anti-diabetic (α-glucosidase inhibition), cardioprotective</td></tr>
+        <tr><td>Quercetin &amp; Kaempferol</td><td>Flavonoid aglycones</td><td>Antioxidant, anti-inflammatory, antimicrobial, anti-allergic</td></tr>
+        <tr><td>Tannins (Gallotannins)</td><td>Hydrolysable tannins</td><td>Astringent, antidiarrhoeal, antimicrobial, anti-haemorrhagic; complement oxalic acid astringency</td></tr>
+        <tr><td>β-Sitosterol &amp; Campesterol</td><td>Phytosterols</td><td>Anti-inflammatory, hypolipidaemic, hepatoprotective</td></tr>
+        <tr><td>Ursolic &amp; Oleanolic Acids</td><td>Pentacyclic triterpenes</td><td>Anti-inflammatory, antimicrobial, hepatoprotective, antitumour</td></tr>
+        <tr><td>Calcium Oxalate (crystals)</td><td>Inorganic salt (all parts)</td><td>Present in needle-like raphide crystals; tissue irritant at high concentrations; source of urinary oxalate on metabolism</td></tr>
+        <tr><td>Phenolic Acids (caffeic, ferulic)</td><td>Hydroxycinnamic acids</td><td>Antioxidant, anti-inflammatory, antimicrobial, hepatoprotective</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">03</span><h2 class="section-title">Ayurvedic Significance</h2><div class="section-rule"></div></div>
+    <p class="section-body">Changeri is one of the relatively few Ayurvedic herbs classified as primarily <em>Amla</em> (sour) in rasa — a distinction it shares with Amalaki (Emblica officinalis) and Chukra (Rumex species), and which places it in a small, therapeutically specialised group. Charaka Samhita classifies Changeri in the <em>Phanita Varga</em> and prescribes it for <em>arsha</em> (haemorrhoids), <em>atisara</em> (diarrhoea), and <em>krimi</em> (intestinal worms). Sushruta Samhita lists it in the <em>Parushakadi Gana</em> — a group of sour, refrigerant drugs used for thirst, fever, and burning sensations. Ashtanga Hridaya includes it among digestive and bowel-regulating preparations.</p>
+
+    <div class="script-box">
+      "Changeri amla kashaya laghu ushna deepani pachani, atisara-arsha-krimi-trishna-jwara-vatakaphanashani"
+      <span>— Bhavaprakasha Nighantu, Guduchyadi Varga — Classical properties of Changeri</span>
+    </div>
+
+    <p class="section-body">The shloka identifies Changeri as sour-astringent, light, hot in potency, stimulating digestion and enhancing digestive fire — and specifically as a destroyer of diarrhoea, haemorrhoids, intestinal worms, thirst, fever, and Vata-Kapha disorders. Dhanvantari Nighantu's Shatapushpadi Varga and Raja Nighantu both describe it as <em>dipana-pachana</em> (digestive stimulant) and <em>shulahara</em> (colic-relieving). In Siddha medicine (<em>Pulichchi Keerai</em>), the leaf juice is a standard prescription for children's digestive complaints, worm infestations, and scurvy — a use so consistently documented that it reflects a pre-modern practical understanding of the plant's high Vitamin C content.</p>
+
+    <table class="dosha-table">
+      <thead><tr><th>Dosha</th><th>Effect</th><th>Mechanism &amp; Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Vata ↓</td><td>Pacifying</td><td>Amla (sour) rasa is inherently Vata-pacifying — sourness nourishes and grounds Vata in the digestive system. Ushna virya warms the gut and relieves Vata-type cramping, bloating, and intestinal pain. Classical use for Vata-type colicky diarrhoea.</td></tr>
+        <tr><td>Pitta ↑</td><td>Aggravating at excess</td><td>Ushna virya (hot potency) and Amla rasa increase Pitta with excess consumption — leading to gastric acidity, burning sensations, and skin eruptions. Classical texts note this clearly. Used carefully in Pitta conditions; short courses only; diluted juice or cooked preparations reduce this aggravation.</td></tr>
+        <tr><td>Kapha ↓</td><td>Pacifying</td><td>Laghu (light), ushna (hot), and tikshna (sharp) qualities reduce Kapha accumulation; digestive stimulation (<em>deepana</em>) cuts through Kapha-type sluggish digestion; astringency drains Kapha-type oozing or damp intestinal conditions</td></tr>
+      </tbody>
+    </table>
+    <p class="section-body"><strong>Rasa:</strong> Amla (sour, primary), Kashaya (astringent) &nbsp;·&nbsp; <strong>Guna:</strong> Laghu (light), Ruksha (dry) &nbsp;·&nbsp; <strong>Virya:</strong> Ushna (hot) &nbsp;·&nbsp; <strong>Vipaka:</strong> Amla (sour) &nbsp;·&nbsp; <strong>Karma:</strong> Vata-Kapha shamaka, Deepana-Pachana (digestive), Krimighna (antiparasitic), Stambhana (antidiarrhoeal), Shulahara (antispasmodic)</p>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">04</span><h2 class="section-title">Key Health Benefits</h2><div class="section-rule"></div></div>
+
+    <div class="spotlight">
+      <div class="spotlight-title">The Accessible Anti-Scorbutic — Classical Vitamin C Before Vitamins Were Named</div>
+      <div class="spotlight-body">Long before vitamin deficiency diseases were understood biochemically, classical Ayurvedic and Siddha physicians had identified Changeri as a remedy for the cluster of symptoms we now recognise as scurvy — gum bleeding (<em>dantamula shotha</em>), skin haemorrhages (<em>rakta vikara</em>), weakness, and slow wound healing. The prescription of fresh Changeri leaf juice for these conditions — documented in Siddha Gunapadam and multiple folk traditions — reflects empirical recognition of its high Vitamin C content, which modern analysis has confirmed is among the highest of any common wild green in tropical India. In remote Himalayan and tribal communities where access to citrus was seasonal or absent, Changeri growing on doorsteps provided year-round anti-scorbutic protection. It stands as one of the most elegant examples of practical nutritional medicine embedded within ethnobotanical tradition.</div>
+    </div>
+
+    <div class="benefits-grid">
+      <div class="benefit-card">
+        <div class="benefit-title">Digestive Stimulant &amp; Appetite</div>
+        <div class="benefit-desc">Amla rasa (sourness) is a powerful stimulant of gastric acid secretion, salivation, and digestive enzyme release — making Changeri one of Ayurveda's most potent <em>deepana</em> herbs. Classical use for loss of appetite (<em>aruchi</em>), sluggish digestion (<em>mandagni</em>), flatulence, and dyspepsia. The organic acid matrix (oxalic, tartaric, malic) creates an acidic gastric environment conducive to protein digestion and mineral absorption.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Antidiarrhoeal &amp; Intestinal</div>
+        <div class="benefit-desc">Tannin-mediated astringency contracts intestinal mucosa and reduces fluid secretion; antimicrobial activity of quercetin and phenolic acids reduces pathogenic load. Classical specific for <em>atisara</em> (diarrhoea) — particularly Kapha-type watery diarrhoea and Vata-type crampy diarrhoea. Fresh plant juice classically given in children's loose motions across South Indian Siddha tradition as Pulichchi Keerai juice.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Antiparasitic &amp; Worm Expulsion</div>
+        <div class="benefit-desc">Classical designation as <em>Krimighna</em> (parasite destroyer) encompasses intestinal worms — roundworm, threadworm, and hookworm — for which fresh plant juice is prescribed in classical texts and in tribal practice across Jharkhand, Odisha, and Tamil Nadu. The organic acids create an unfavourable intestinal environment for helminthic survival; flavonoids specifically inhibit worm ATPase enzyme activity.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Scurvy &amp; Vitamin C Deficiency</div>
+        <div class="benefit-desc">Among the highest Vitamin C concentrations of any common wild Indian herb. Prescribed in Siddha and folk medicine for bleeding gums, skin purpura, slow wound healing, and constitutional weakness arising from Vitamin C deficiency. In communities without year-round citrus access, Changeri growing wild on doorsteps provides a freely available, potent anti-scorbutic available in every season.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Antipyretic &amp; Refrigerant</div>
+        <div class="benefit-desc">Classical designation in the <em>Parushakadi Gana</em> (Sushruta) — a group of refrigerant, thirst-relieving drugs — reflects the cooling sensation of Changeri juice in fever despite its Ushna virya. Organic acids produce a biochemically cooling, hydrating effect at the systemic level distinct from the local hot taste. Used for <em>trishna</em> (burning thirst) and fever in children in folk medicine across the subcontinent.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Antimicrobial &amp; Wound Healing</div>
+        <div class="benefit-desc">Extracts show significant activity against Staphylococcus aureus, E. coli, Klebsiella pneumoniae, and Salmonella typhi. Ursolic and oleanolic acids have broad-spectrum antibacterial and antifungal activity. Fresh leaf paste is applied in tribal medicine to infected wounds, boils, and dermatophyte infections. Vitamin C-mediated collagen synthesis accelerates wound healing and tissue repair.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Haemorrhoids &amp; Rectal Conditions</div>
+        <div class="benefit-desc">A classical Charaka indication — <em>arsha nashana</em> (haemorrhoid-destroyer). The astringent-sour combination reduces venous congestion, controls bleeding from haemorrhoidal tissue, and soothes mucosal inflammation. Used as fresh juice internally and as warm leaf poultice externally. Classical formulations combine Changeri with Haritaki and buttermilk for post-partum haemorrhoidal complaints.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Liver &amp; Hepatoprotection</div>
+        <div class="benefit-desc">Vitexin, isovitexin, and β-sitosterol from the whole plant protect hepatocytes from CCl₄-induced damage in animal studies. Root extracts show significant reduction in liver enzyme elevation (SGPT, SGOT) and bilirubin in experimentally induced hepatitis models. Traditional use of fresh Changeri juice for jaundice in children — a practice documented independently in Tamil Siddha, tribal Odisha, and rural Maharashtra folk traditions.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">05</span><h2 class="section-title">Traditional &amp; Ethnobotanical Uses</h2><div class="section-rule"></div></div>
+    <p class="section-body">Changeri's ubiquity as a garden weed across tropical India has made it a first-resort folk remedy in rural and tribal communities — freely available, instantly recognisable, and requiring no preparation beyond squeezing fresh juice. The range of conditions for which it has been independently employed across different regional traditions reflects its genuine pharmacological versatility.</p>
+    <table class="data-table">
+      <thead><tr><th>Tradition / Region</th><th>Use &amp; Preparation</th></tr></thead>
+      <tbody>
+        <tr><td>Ayurveda (Classical)</td><td>Fresh juice for diarrhoea, worms, haemorrhoids, fever, thirst; compound preparations with Haritaki for <em>arsha</em>; classified in Parushakadi Gana (Sushruta) and Phanita Varga (Charaka)</td></tr>
+        <tr><td>Siddha (Tamil Nadu)</td><td>Pulichchi Keerai juice for children's digestive complaints, worm infestation, bleeding gums, and jaundice; cooked as a potherb for Vitamin C supplementation; decoction for fever with chills</td></tr>
+        <tr><td>Tribal (Jharkhand / Odisha)</td><td>Fresh leaf juice for intestinal worms in children; leaf paste for infected wounds, boils, and insect stings; root decoction for liver conditions; leaves chewed for oral ulcers and gum bleeding</td></tr>
+        <tr><td>Maharashtra / Goa</td><td>Ambat Chuka leaves eaten as sour vegetable in dal and curries; juice for scorpion sting as first aid; topical application for warts and corns</td></tr>
+        <tr><td>Kerala (Ayurvedic folk)</td><td>Chukka leaf decoction for constipation; juice with buttermilk for haemorrhoids; fresh leaves applied to forehead for headache with fever</td></tr>
+        <tr><td>Bengal / Eastern India</td><td>Amrul leaves boiled as potherb in famine food and nutritional supplementation; juice for scurvy symptoms in monsoon season when citrus is unavailable</td></tr>
+        <tr><td>Pan-Asian / Global</td><td>Oxalis corniculata leaves eaten as sour salad green or cooking herb across Southeast Asia, East Africa, and South America; traditional flavouring agent in beverages, chutneys, and sauces</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">06</span><h2 class="section-title">How to Use Changeri</h2><div class="section-rule"></div></div>
+    <p class="section-body">Changeri is primarily used fresh — the whole plant, leaves, or expressed juice. It is also used as a cooked vegetable in small quantities. Given the oxalic acid content, all internal preparations should be moderate in quantity and short in duration. Cooking significantly reduces oxalic acid content (up to 50% reduction by blanching and discarding water), making it safer for regular dietary consumption as a potherb. Fresh juice is more potent medicinally but carries a higher oxalic acid load than cooked preparations.</p>
+    <table class="consume-table">
+      <thead><tr><th>Form</th><th>Preparation</th><th>Dosage</th><th>Best Use</th></tr></thead>
+      <tbody>
+        <tr><td>Fresh Leaf Juice (Swarasa)</td><td>Wash and pound fresh whole plant; squeeze through cloth to extract juice</td><td>10–15 ml once or twice daily; short course of 5–7 days</td><td>Diarrhoea, worms, fever with thirst, bleeding gums, jaundice (children)</td></tr>
+        <tr><td>Juice with Honey</td><td>Fresh juice + raw honey (1:1) mixed</td><td>10 ml of mixture twice daily</td><td>Children's digestive complaints, worm infestation, loss of appetite</td></tr>
+        <tr><td>Juice with Buttermilk</td><td>10 ml fresh juice in 100 ml thin buttermilk (takra)</td><td>Once daily after meals</td><td>Classical preparation for haemorrhoids, diarrhoea, and Pitta-digestive complaints</td></tr>
+        <tr><td>Cooked Potherb</td><td>Fresh leaves blanched in boiling water (discarded); seasoned with mustard, garlic, salt</td><td>50–80 g as a vegetable side dish</td><td>Nutritional Vitamin C source, mild digestive stimulant, regular dietary use</td></tr>
+        <tr><td>Leaf Paste (Topical)</td><td>Fresh leaves pounded to paste with a little water</td><td>Apply to affected area; leave 20–30 min</td><td>Boils, infected wounds, insect stings, scorpion sting (first aid), warts</td></tr>
+        <tr><td>Whole Plant Decoction</td><td>10–15 g fresh plant in 200 ml water, simmered 10 min, strained</td><td>50–60 ml once or twice daily</td><td>Liver conditions, fever, constipation, haemorrhoids — cooked form safer for sustained use</td></tr>
+        <tr><td>Compound with Haritaki</td><td>Classical preparation: Changeri juice + Haritaki powder + rock salt</td><td>Per physician direction; short course</td><td>Haemorrhoids, atisara — classical Charaka combination</td></tr>
+        <tr><td>Forehead Application</td><td>Fresh crushed leaves applied to forehead and temples</td><td>As needed during fever episode</td><td>Fever headache, burning sensation in fever — folk refrigerant application</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">07</span><h2 class="section-title">Safety &amp; Precautions</h2><div class="section-rule"></div></div>
+    <p class="section-body">Changeri is safe at moderate culinary quantities — it has been consumed as a potherb and flavouring across tropical Asia for millennia without reported adverse effects at food-level doses. Therapeutic juice preparations carry a meaningful oxalic acid load and require careful dosing and duration management, particularly in individuals with kidney disease or a history of renal stones.</p>
+    <ul class="precaution-list">
+      <li><strong>Kidney stones (renal calculi):</strong> The most important safety consideration. Oxalic acid combines with calcium in the urine to form calcium oxalate — the most common type of kidney stone. Individuals with a history of calcium oxalate kidney stones, hyperoxaluria, or chronic kidney disease should avoid therapeutic-dose fresh juice preparations and limit dietary consumption. Even culinary use should be discussed with a nephrologist in stone-formers.</li>
+      <li><strong>Chronic kidney disease (CKD):</strong> In CKD patients with reduced renal clearance, even normal dietary oxalate loads can accumulate. Changeri juice is contraindicated as a therapeutic preparation in moderate-to-severe CKD.</li>
+      <li><strong>Pitta aggravation:</strong> Amla (sour) rasa and Ushna virya will aggravate Pitta with excess or prolonged use — leading to gastric acidity, heartburn, skin redness, or irritability. Limit therapeutic juice to short courses (5–7 days); always dilute fresh juice with water or buttermilk; avoid on empty stomach in Pitta-dominant individuals.</li>
+      <li><strong>Pregnancy:</strong> Moderate culinary use as a cooked vegetable is safe. High-dose fresh juice preparations are traditionally classified as emmenagogues in some folk texts and should be avoided in the first trimester. Discuss with Ayurvedic physician before therapeutic use during pregnancy.</li>
+      <li><strong>Dental enamel:</strong> Prolonged or frequent contact of oxalic acid with teeth can demineralise enamel. Rinse mouth after consuming fresh juice or sour plant preparations; do not hold juice in the mouth for extended periods.</li>
+      <li><strong>Rheumatic / arthritic conditions:</strong> Oxalic acid can precipitate in synovial tissue in susceptible individuals, potentially worsening gouty or rheumatoid conditions. Patients with gout, pseudogout, or hyperuricaemia should use Changeri sparingly and prefer cooked over raw preparations.</li>
+      <li><strong>Children:</strong> Fresh juice at 5–10 ml is widely used in children in Siddha and folk practice for worm infestation and digestive complaints — considered safe at these doses. Avoid large quantities of raw plant material in children under 5; cooked preparations are preferred for routine dietary use in young children.</li>
+      <li><strong>Drug interaction (calcium supplements):</strong> Concurrent high-dose Changeri juice with calcium supplementation increases the oxalate-calcium crystal formation risk. Separate consumption by at least 2–3 hours; prefer cooked preparations if using calcium supplements regularly.</li>
+    </ul>
+  </div>
+
+  <div class="sources">
+    <div class="sources-title">References &amp; Sources</div>
+    <ul>
+      <li>Misra CS et al. — "Phytochemical screening and pharmacological activities of Oxalis corniculata" — International Journal of Pharma and Bio Sciences, 2011</li>
+      <li>Hajra S et al. — "Antimicrobial efficacy of Oxalis corniculata Linn. against some common bacterial pathogens" — Asian Pacific Journal of Tropical Biomedicine, 2012</li>
+      <li>Nair R &amp; Chanda S — "Activity of some medicinal plants against certain pathogenic bacterial strains" — Indian Journal of Pharmacology, 2006</li>
+      <li>Gopalakrishnan S &amp; Rajameena R — "Phytochemical screening and antimicrobial activity of Oxalis corniculata Linn." — International Research Journal of Pharmacy, 2011</li>
+      <li>Charaka Samhita — Chikitsasthana, Atisara Chikitsa and Arsha Chikitsa — Changeri in digestive and haemorrhoidal management</li>
+      <li>Sushruta Samhita — Sutrasthana, Parushakadi Gana — Changeri as refrigerant, sour drug group</li>
+      <li>Bhavaprakasha Nighantu — Guduchyadi Varga — Classical properties and clinical indications of Changeri</li>
+      <li>Dhanvantari Nighantu — Shatapushpadi Varga — Changeri as deepana-pachana and krimighna drug</li>
+      <li>Kiritikar KR &amp; Basu BD — Indian Medicinal Plants, Vol. 1 — Oxalis corniculata: botanical account and traditional uses</li>
+      <li>Siddha Gunapadam (Mooligai Vaguppu) — Pulichchi Keerai: properties, juice preparations for children's digestive conditions</li>
+      <li>Das S et al. — "Hepatoprotective activity of Oxalis corniculata against carbon tetrachloride-induced liver damage in rats" — Pharmacognosy Research, 2011</li>
+      <li>Shukla YN et al. — "Phytoconstituents and their biological activities from Oxalis corniculata" — Journal of Medicinal and Aromatic Plant Sciences, 2000</li>
+    </ul>
+  </div>
+</div>
+
+<footer>
+  <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a qualified practitioner before therapeutic use</p>
+</footer>
+
+  <div id="viewerModal">
+    <div id="modal-topbar">
+      <span>3D Model — Changeri</span>
+      <button type="button" id="close3D">✕</button>
+    </div>
+    <model-viewer src="changeri3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+  </div>
+  <script>
+    (function() {
+      var open3D = document.getElementById('open3D');
+      var close3D = document.getElementById('close3D');
+      var modal = document.getElementById('viewerModal');
+      if (!open3D || !close3D || !modal) return;
+      function openModal() {
+        
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+      function closeModal() {
+        
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+      open3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); openModal();
+      });
+      close3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); closeModal();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+      });
+    })();
+  </script>
+
+</body>
+</html>

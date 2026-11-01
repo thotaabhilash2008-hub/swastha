@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sala — Sal Tree | Swastha</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+  <style>
+    #open3D {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      padding: 10px 18px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: var(--forest);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      z-index: 1000;
+      transition: .3s;
+    }
+    #open3D:hover {
+      background: var(--gold);
+      color: var(--deep);
+    }
+    #viewerModal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+    }
+    #modal-topbar {
+      flex-shrink: 0;
+      height: 58px;
+      background: #111111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px 0 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      z-index: 99999;
+    }
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 4.5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.72);
+      user-select: none;
+    }
+    #close3D {
+      width: 38px;
+      height: 38px;
+      font-size: 15px;
+      font-weight: 300;
+      background: transparent;
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background .2s, color .2s, transform .22s;
+      outline: none;
+      flex-shrink: 0;
+    }
+    #close3D:hover {
+      background: #ffffff;
+      color: #111111;
+      border-color: #ffffff;
+      transform: rotate(90deg);
+    }
+    #viewerModal model-viewer {
+      flex: 1;
+      width: 100%;
+      display: block;
+      background: #ffffff;
+    }
+
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+    * { margin:0; padding:0; box-sizing:border-box }
+    html { scroll-behavior:smooth }
+    body { font-family:'Jost',sans-serif; background:var(--cream); color:var(--ink); min-height:100vh; overflow-x:hidden; position:relative }
+    body::before { content:''; position:fixed; inset:0; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E"); opacity:.035; pointer-events:none; z-index:100 }
+
+    .bg-circle { position:fixed; border-radius:50%; pointer-events:none; z-index:0 }
+    .bg-circle-1 { width:700px; height:700px; background:radial-gradient(circle, rgba(61,92,42,.1) 0%, transparent 70%); top:-200px; right:-150px }
+    .bg-circle-2 { width:500px; height:500px; background:radial-gradient(circle, rgba(194,151,62,.08) 0%, transparent 70%); bottom:-100px; left:-100px }
+
+    .botanical-svg { position:fixed; pointer-events:none; z-index:1; opacity:.1 }
+    .botanical-tl { top:-20px; left:-20px; width:280px }
+    .botanical-br { bottom:-20px; right:-20px; width:240px; transform:rotate(180deg) }
+
+    .hero { position:relative; z-index:10; padding:54px 40px 0; text-align:center; opacity:0; animation:fadeUp .9s ease .1s forwards }
+    .back-link { display:inline-flex; align-items:center; gap:8px; font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--sage); text-decoration:none; margin-bottom:36px; transition:color .3s }
+    .back-link:hover { color:var(--gold) }
+    .logo-rule { display:flex; align-items:center; justify-content:center; gap:20px; margin-bottom:14px }
+    .logo-rule span { display:block; height:1px; width:70px; background:linear-gradient(to right, transparent, var(--gold)) }
+    .logo-rule span:last-child { background:linear-gradient(to left, transparent, var(--gold)) }
+    .logo-ornament { font-size:13px; color:var(--gold) }
+    .hero-title { font-family:'Cormorant Garamond',serif; font-size:clamp(60px,11vw,105px); font-weight:300; letter-spacing:8px; line-height:1; color:var(--deep) }
+    .hero-subtitle { font-family:'Cormorant Garamond',serif; font-size:18px; font-style:italic; font-weight:300; color:var(--earth); letter-spacing:2px; margin-top:8px }
+    .hero-sci { font-size:11px; font-weight:200; letter-spacing:5px; color:var(--sage); margin-top:6px }
+
+    .hero-photos { position:relative; z-index:10; display:grid; grid-template-columns:1fr 1fr; gap:2px; max-width:900px; margin:40px auto 0; opacity:0; animation:fadeUp .9s ease .35s forwards }
+    .hero-photos img { width:100%; height:380px; object-fit:cover; object-position:center; display:block; background:var(--parchment) }
+    .photo-caption { text-align:center; font-family:'Cormorant Garamond',serif; font-size:12px; font-style:italic; color:var(--sage); letter-spacing:1px; padding:10px 0 0; max-width:900px; margin:0 auto; position:relative; z-index:10; opacity:0; animation:fadeUp .9s ease .5s forwards }
+
+    .divider { display:flex; align-items:center; justify-content:center; gap:16px; margin:50px auto; max-width:600px; opacity:0; animation:fadeUp .9s ease .55s forwards; position:relative; z-index:10 }
+    .divider-line { height:1px; width:120px; background:linear-gradient(to right, transparent, var(--sage)) }
+    .divider-line:last-child { background:linear-gradient(to left, transparent, var(--sage)) }
+    .divider-leaf { color:var(--forest); font-size:20px }
+
+    .content { position:relative; z-index:10; max-width:860px; margin:0 auto; padding:0 30px 80px }
+    .intro-text { font-family:'Cormorant Garamond',serif; font-size:20px; font-weight:300; line-height:1.75; color:var(--ink); text-align:center; max-width:700px; margin:0 auto 60px; opacity:0; animation:fadeUp .9s ease .6s forwards }
+    .intro-text em { color:var(--forest); font-style:italic }
+
+    .section { margin-bottom:60px; opacity:0; animation:fadeUp .9s ease forwards }
+    .section:nth-child(1) { animation-delay:.65s } .section:nth-child(2) { animation-delay:.75s }
+    .section:nth-child(3) { animation-delay:.85s } .section:nth-child(4) { animation-delay:.95s }
+    .section:nth-child(5) { animation-delay:1.05s } .section:nth-child(6) { animation-delay:1.15s }
+    .section:nth-child(7) { animation-delay:1.25s } .section:nth-child(8) { animation-delay:1.35s }
+
+    .section-header { display:flex; align-items:center; gap:14px; margin-bottom:20px }
+    .section-num { font-family:'Cormorant Garamond',serif; font-size:11px; letter-spacing:4px; color:var(--gold) }
+    .section-title { font-family:'Cormorant Garamond',serif; font-size:28px; font-weight:400; color:var(--deep); letter-spacing:1px }
+    .section-rule { height:1px; flex:1; background:linear-gradient(to right, var(--gold), transparent) }
+    .section-body { font-size:13px; font-weight:300; line-height:1.9; color:var(--ink); margin-bottom:24px }
+
+    .data-table { width:100%; border-collapse:collapse; margin:16px 0 8px; font-size:12px }
+    .data-table thead tr { background:var(--deep); color:var(--gold); font-size:10px; letter-spacing:3px; text-transform:uppercase }
+    .data-table thead th { padding:12px 14px; text-align:left; font-weight:400 }
+    .data-table tbody tr:nth-child(even) { background:var(--parchment) }
+    .data-table tbody tr:nth-child(odd) { background:var(--cream) }
+    .data-table tbody tr { transition:background .2s }
+    .data-table tbody tr:hover { background:#dfd6c0 }
+    .data-table tbody td { padding:10px 14px; color:var(--ink); border-bottom:1px solid rgba(61,92,42,.08) }
+    .data-table tbody td:first-child { font-weight:400; color:var(--deep); width:28% }
+
+    .dosha-table { width:100%; border-collapse:collapse; margin:16px 0; font-size:12px }
+    .dosha-table thead tr { background:var(--forest); color:var(--cream) }
+    .dosha-table thead th { padding:12px 14px; text-align:left; font-weight:400; letter-spacing:2px; font-size:10px; text-transform:uppercase }
+    .dosha-table tbody tr:nth-child(even) { background:var(--parchment) }
+    .dosha-table tbody tr:nth-child(odd) { background:var(--cream) }
+    .dosha-table tbody td { padding:11px 14px; color:var(--ink); border-bottom:1px solid rgba(61,92,42,.08) }
+    .dosha-table tbody td:first-child { font-weight:400; color:var(--forest); width:18% }
+    .dosha-table tbody td:nth-child(2) { color:var(--earth); width:20% }
+
+    .consume-table { width:100%; border-collapse:collapse; margin:16px 0; font-size:12px }
+    .consume-table thead tr { background:var(--earth); color:var(--cream) }
+    .consume-table thead th { padding:12px 14px; text-align:left; font-weight:400; letter-spacing:2px; font-size:10px; text-transform:uppercase }
+    .consume-table tbody tr:nth-child(even) { background:var(--parchment) }
+    .consume-table tbody tr:nth-child(odd) { background:var(--cream) }
+    .consume-table tbody td { padding:11px 14px; color:var(--ink); border-bottom:1px solid rgba(61,92,42,.08) }
+    .consume-table tbody td:first-child { font-weight:400; color:var(--earth); width:22% }
+
+    .benefits-grid { display:grid; grid-template-columns:1fr 1fr; gap:1px; background:rgba(61,92,42,.12); border:1px solid rgba(61,92,42,.12); margin:8px 0 }
+    .benefit-card { background:var(--cream); padding:24px 22px; transition:background .3s; position:relative; overflow:hidden }
+    .benefit-card:hover { background:#e4dbc8 }
+    .benefit-card::before { content:''; position:absolute; bottom:0; left:0; width:0; height:2px; background:var(--gold); transition:width .4s }
+    .benefit-card:hover::before { width:100% }
+    .benefit-title { font-family:'Cormorant Garamond',serif; font-size:16px; font-weight:600; color:var(--forest); margin-bottom:8px }
+    .benefit-desc { font-size:11.5px; font-weight:300; line-height:1.75; color:var(--ink); opacity:.85 }
+
+    .sacred-band { background:var(--deep); color:var(--cream); padding:36px 40px; margin:0 0 60px; text-align:center; position:relative; overflow:hidden }
+    .sacred-band::before { content:''; position:absolute; inset:0; background:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='100' cy='100' r='80' fill='none' stroke='rgba(194,151,62,0.08)' stroke-width='1'/%3E%3Ccircle cx='100' cy='100' r='60' fill='none' stroke='rgba(194,151,62,0.06)' stroke-width='1'/%3E%3C/svg%3E") center/300px; pointer-events:none }
+    .sacred-band-title { font-family:'Cormorant Garamond',serif; font-size:11px; letter-spacing:5px; text-transform:uppercase; color:var(--gold); margin-bottom:16px }
+    .sacred-band-text { font-family:'Cormorant Garamond',serif; font-size:19px; font-style:italic; font-weight:300; line-height:1.75; max-width:620px; margin:0 auto; opacity:.9 }
+    .sacred-band-attr { font-size:11px; letter-spacing:3px; color:var(--sage); margin-top:14px; text-transform:uppercase }
+
+    .precaution-list { list-style:none; margin:8px 0 }
+    .precaution-list li { display:flex; gap:12px; align-items:flex-start; padding:10px 14px; font-size:12px; font-weight:300; line-height:1.7; color:var(--ink); border-bottom:1px solid rgba(61,92,42,.08) }
+    .precaution-list li:last-child { border-bottom:none }
+    .precaution-list li::before { content:'▸'; color:var(--gold); flex-shrink:0; margin-top:1px }
+
+    .nutrition-bar { display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:rgba(61,92,42,.12); border:1px solid rgba(61,92,42,.12); margin:20px 0 }
+    .nutrition-cell { background:var(--cream); padding:22px 16px; text-align:center; transition:background .3s }
+    .nutrition-cell:hover { background:var(--parchment) }
+    .nutrition-num { font-family:'Cormorant Garamond',serif; font-size:36px; font-weight:300; color:var(--forest); line-height:1; margin-bottom:4px }
+    .nutrition-unit { font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--gold); font-weight:300 }
+    .nutrition-label { font-size:11px; font-weight:300; color:var(--ink); margin-top:5px }
+
+    .sources { border-top:1px solid rgba(61,92,42,.15); padding-top:24px; margin-top:20px }
+    .sources-title { font-size:10px; letter-spacing:4px; text-transform:uppercase; color:var(--sage); margin-bottom:12px; font-weight:300 }
+    .sources ul { list-style:none }
+    .sources ul li { font-family:'Cormorant Garamond',serif; font-size:13px; font-style:italic; color:var(--earth); padding:5px 0; border-bottom:1px solid rgba(61,92,42,.06) }
+    .sources ul li::before { content:'· '; color:var(--sage) }
+
+    footer { position:relative; z-index:10; text-align:center; padding:24px 20px 44px; border-top:1px solid rgba(61,92,42,.12); max-width:860px; margin:0 auto }
+    footer p { font-size:11px; letter-spacing:4px; text-transform:uppercase; color:var(--sage); font-weight:300 }
+
+    @keyframes fadeUp { from { opacity:0; transform:translateY(28px) } to { opacity:1; transform:translateY(0) } }
+    @media(max-width:700px) {
+      .hero-photos { grid-template-columns:1fr } .hero-photos img { height:260px }
+      .benefits-grid { grid-template-columns:1fr } .nutrition-bar { grid-template-columns:1fr 1fr }
+      .content { padding:0 18px 60px } .sacred-band { padding:28px 22px }
+      .sacred-band-text { font-size:16px }
+    }
+  </style>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+</head>
+<body>
+  <button type="button" id="open3D">View in 3D</button>
+
+
+  <div class="bg-circle bg-circle-1"></div>
+  <div class="bg-circle bg-circle-2"></div>
+
+  <!-- Botanical SVGs — large branching tree motif -->
+  <svg class="botanical-svg botanical-tl" viewBox="0 0 320 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M30 310 Q 60 240 90 190 Q 130 130 160 80 Q 190 40 230 10" stroke="#3d5c2a" stroke-width="2" fill="none"/>
+    <path d="M90 190 Q 60 160 40 130" stroke="#3d5c2a" stroke-width="1.2" fill="none"/>
+    <path d="M130 140 Q 170 120 185 90" stroke="#3d5c2a" stroke-width="1.2" fill="none"/>
+    <path d="M160 80 Q 130 60 110 40" stroke="#3d5c2a" stroke-width="1" fill="none"/>
+    <ellipse cx="75" cy="165" rx="22" ry="11" fill="#85a065" transform="rotate(-40 75 165)" opacity=".7"/>
+    <ellipse cx="148" cy="118" rx="20" ry="10" fill="#3d5c2a" transform="rotate(-55 148 118)" opacity=".7"/>
+    <ellipse cx="115" cy="58" rx="18" ry="9" fill="#85a065" transform="rotate(-30 115 58)" opacity=".6"/>
+    <ellipse cx="200" cy="55" rx="16" ry="8" fill="#3d5c2a" transform="rotate(-65 200 55)" opacity=".6"/>
+    <circle cx="230" cy="10" r="10" fill="#c2973e" opacity=".4"/>
+  </svg>
+  <svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#3d5c2a" stroke-width="1.5" fill="none"/>
+    <circle cx="90" cy="210" r="8" fill="#3d5c2a" opacity="0.7"/>
+    <circle cx="130" cy="175" r="10" fill="#85a065" opacity="0.6"/>
+    <ellipse cx="115" cy="195" rx="20" ry="10" fill="#85a065" transform="rotate(-30 115 195)"/>
+    <ellipse cx="165" cy="140" rx="18" ry="9" fill="#3d5c2a" transform="rotate(-50 165 140)"/>
+  </svg>
+
+  <div class="hero">
+    <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+    <div class="logo-rule"><span></span><div class="logo-ornament">✦</div><span></span></div>
+    <div class="hero-title">Sala</div>
+    <div class="hero-subtitle">The Sal Tree — Sacred Forest Giant of the Himalayas</div>
+    <div class="hero-sci">Shorea robusta Gaertn. f. &nbsp;·&nbsp; Dipterocarpaceae</div>
+  </div>
+
+  <div class="hero-photos">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/f/fd/Shorea_robusta.jpg" alt="Sal tree towering forest canopy with dense broad leaves"
+      onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/0/0e/Shorea_robusta_in_Chhattisgarh.jpg" alt="Sal tree resin and flowers — Shorea robusta blooms"
+      onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+  </div>
+  <p class="photo-caption">Fig. 1 — The towering forest canopy of Shorea robusta — one of India's most dominant and sacred timber trees &nbsp;·&nbsp; Fig. 2 — Sal flowers and the precious oleoresin tapped from bark fissures, the tree's primary medicinal product</p>
+
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-leaf">🌿</div>
+    <div class="divider-line"></div>
+  </div>
+
+  <div class="content">
+    <p class="intro-text">Towering above the forests of the Himalayan foothills and the Gangetic plains, <em>Shorea robusta</em> — the Sal tree — is simultaneously one of India's most economically vital timber trees, a foundational Ayurvedic remedy, and one of the subcontinent's most sacred botanical presences. It was beneath a Sal grove at Kushinagar that the Buddha attained <em>Mahaparinirvana</em>; its resin has sealed wounds, purified spaces, and strengthened bodies for three thousand years of recorded history.</p>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">01</span>
+        <h2 class="section-title">Botanical Profile</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body"><em>Shorea robusta</em> Gaertn. f. is a large, semi-evergreen to deciduous tree of the Dipterocarpaceae family — the dipterocarp family that dominates the humid tropical forests of South and Southeast Asia. In India it is the dominant canopy tree of the Sal forests stretching across the Himalayan foothills from Assam to the Punjab, and south through Jharkhand, Odisha, and Chhattisgarh — one of the most ecologically and economically important forest types in South Asia.</p>
+      <p class="section-body">Sal trees are massive: mature specimens reach 30–45 m in height with trunk diameters exceeding 2 m, and lifespans of several hundred years. The bark is thick, rough, longitudinally fissured, and grey-brown — oozing a characteristic pale yellow oleoresin (<em>Sal dhoop</em> / <em>Ral</em>) when wounded. Leaves are large (10–25 cm), ovate-oblong, prominently veined, and leathery — briefly deciduous in March-April, rapidly replaced by copper-tinged new flushes. The small, pale-yellow, fragrant flowers appear in March–May in large panicles and produce distinctive winged fruits (samaras) with 2–5 papery wings for wind dispersal.</p>
+      <p class="section-body">Every part of the Sal tree is medicinally or economically useful: the oleoresin (<em>Shala Niryasa</em>) is the primary Ayurvedic medicinal product; the seeds yield a high-quality edible fat (<em>Sal fat / Mowrah butter</em>); the leaves are universally used as food plates across eastern and central India; the bark yields tannins; and the timber — hard, durable, termite-resistant — is among India's most prized structural woods.</p>
+      <table class="data-table">
+        <thead><tr><th>PROPERTY</th><th>Detail</th></tr></thead>
+        <tbody>
+          <tr><td>Family</td><td>Dipterocarpaceae</td></tr>
+          <tr><td>Botanical Name</td><td>Shorea robusta Gaertn. f.</td></tr>
+          <tr><td>Sanskrit Names</td><td>Sala, Shala, Sarja, Ashvakarna, Chiraparna, Shalendra</td></tr>
+          <tr><td>Common Names</td><td>Sal, Sal Tree, Sakhua, Shala</td></tr>
+          <tr><td>Regional Names</td><td>Sal (Hin/Ben), Sakhua (Jhar/Odisha), Guggilam (Tel), Saala (Kan), Kungilam (Tam)</td></tr>
+          <tr><td>Origin</td><td>Indian subcontinent — Himalayan foothills, Gangetic plain, peninsular India</td></tr>
+          <tr><td>Plant Type</td><td>Large semi-evergreen deciduous tree (30–45 m)</td></tr>
+          <tr><td>Flowering Season</td><td>March–May</td></tr>
+          <tr><td>Medicinal Parts</td><td>Oleoresin / bark resin (primary), bark, seeds, leaves, seed fat</td></tr>
+          <tr><td>Taste Profile</td><td>Kashaya (astringent), Tikta (bitter), Madhura (sweet — seed fat)</td></tr>
+          <tr><td>Sacred Significance</td><td>Site of Buddha's Mahaparinirvana; sacred to Adivasi communities; used in Hindu and Buddhist rituals</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Sacred interlude band -->
+    <div class="sacred-band">
+      <div class="sacred-band-title">Sacred Heritage</div>
+      <div class="sacred-band-text">"And the Blessed One lay down between the twin Sal trees which then, although it was not their season, broke into full bloom, raining down their blossoms upon the Tathagata's body in homage."</div>
+      <div class="sacred-band-attr">Mahaparinibbana Sutta — Digha Nikaya · The Buddha's final hours at Kushinagar</div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">02</span>
+        <h2 class="section-title">Phytochemistry &amp; Composition</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">The oleoresin of Shorea robusta is the most pharmacologically significant product of the Sal tree and has been most thoroughly investigated. It is a complex mixture of diterpene acids, triterpenes, sesquiterpenes, and phenolic compounds. The bark yields ellagitannins and catechins; the seed fat is rich in stearic and oleic acids with a composition similar to cocoa butter — used as a cocoa butter substitute in the food industry; the leaves contain flavonoids and phenolic acids.</p>
+      <div class="nutrition-bar">
+        <div class="nutrition-cell">
+          <div class="nutrition-num">40–70%</div>
+          <div class="nutrition-unit">resin acids</div>
+          <div class="nutrition-label">In Sal oleoresin</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">56%</div>
+          <div class="nutrition-unit">stearic acid</div>
+          <div class="nutrition-label">In Sal seed fat</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">25%</div>
+          <div class="nutrition-unit">tannins</div>
+          <div class="nutrition-label">In Sal bark (astringent)</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">30 m+</div>
+          <div class="nutrition-unit">height</div>
+          <div class="nutrition-label">Mature canopy giant</div>
+        </div>
+      </div>
+      <table class="data-table">
+        <thead><tr><th>Compound</th><th>Category</th><th>Part &amp; Primary Action</th></tr></thead>
+        <tbody>
+          <tr><td>Shoreic Acid &amp; Saliresinol</td><td>Diterpene resin acids</td><td>Oleoresin — antimicrobial, wound-sealing, anti-inflammatory; principal active resins</td></tr>
+          <tr><td>α- &amp; β-Amyrins</td><td>Pentacyclic triterpenes</td><td>Bark &amp; resin — anti-inflammatory, analgesic, hepatoprotective</td></tr>
+          <tr><td>Dammarane Triterpenes</td><td>Tetracyclic triterpenes</td><td>Oleoresin — cytotoxic, anti-inflammatory</td></tr>
+          <tr><td>Ellagic Acid &amp; Ellagitannins</td><td>Hydrolysable tannins</td><td>Bark — astringent, antioxidant, wound-healing, anti-diarrheal</td></tr>
+          <tr><td>Catechins &amp; Epicatechins</td><td>Flavan-3-ols</td><td>Bark — antioxidant, cardioprotective, antimicrobial</td></tr>
+          <tr><td>Quercetin &amp; Kaempferol</td><td>Flavonols</td><td>Leaves &amp; bark — antioxidant, anti-inflammatory, anti-diabetic</td></tr>
+          <tr><td>Shoreaketone &amp; Salacinol-type</td><td>Sesquiterpenes</td><td>Resin — antimicrobial, anti-fungal, anti-ulcer</td></tr>
+          <tr><td>Stearic &amp; Oleic Acids</td><td>Fatty acids</td><td>Seed fat — emollient, skin barrier, cocoa butter substitute</td></tr>
+          <tr><td>Gallic Acid &amp; Chebulagic Acid</td><td>Phenolic acids</td><td>Bark — antioxidant, antimicrobial, astringent</td></tr>
+          <tr><td>β-Sitosterol &amp; Lupeol</td><td>Sterols &amp; triterpenes</td><td>Bark &amp; resin — anti-inflammatory, hepatoprotective, anti-tumour</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">03</span>
+        <h2 class="section-title">Ayurvedic Significance</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Sala (<em>Shorea robusta</em>) is prominently referenced in all major classical Ayurvedic texts. Charaka Samhita places it among the <em>Kashaya Skandha</em> (astringent group) and uses it in formulations for <em>Atisara</em> (diarrhea), <em>Prameha</em> (urinary/diabetic disorders), and wound management. Sushruta Samhita lists the oleoresin (<em>Shala Niryasa</em> or <em>Sarjanishkranda</em>) as a primary ingredient in <em>Ropana</em> (wound-healing) preparations and <em>Vrana Chikitsa</em> (ulcer treatment). The Ashtanga Hridayam uses it in ear, nose, and throat formulations.</p>
+      <p class="section-body">The Bhavaprakasha Nighantu classifies the tree under <em>Karpuradi Varga</em> (resinous substances group), noting: <em>"Sarja kashayo rooksha kaphapittaharah param, vrana shotha visarpashu jeernajware hitah"</em> — Sarja (Sal resin) is astringent, dry, supreme in Kapha-Pitta pacification, beneficial in wounds, oedema, erysipelas, and chronic fever. The Dhanvantari Nighantu and Raja Nighantu both extensively list its applications, and its resin is a component of the classical preparation <em>Sarjarasa Taila</em>.</p>
+      <table class="dosha-table">
+        <thead><tr><th>Dosha</th><th>Effect</th><th>Mechanism &amp; Notes</th></tr></thead>
+        <tbody>
+          <tr><td>Vata ↑</td><td>Mildly aggravating</td><td>Rooksha (dry) and kashaya (astringent) qualities may increase Vata dryness — use cautiously in Vata-predominant constitutions and severe constipation; oleoresin preparations with ghee mitigate this</td></tr>
+          <tr><td>Pitta ↓</td><td>Pacifying</td><td>Astringent-bitter rasa and sheeta (cooling) tendency of the bark reduce Pitta; indicated in Pitta-type diarrhea, bleeding disorders, inflammatory skin conditions, and ulcers</td></tr>
+          <tr><td>Kapha ↓↓</td><td>Strongly pacifying</td><td>Rooksha (dry), laghu (light), and kashaya (astringent) properties powerfully reduce Kapha — primary indication in Kapha-type urinary disorders (prameha), excess mucus, oedema, and skin disease</td></tr>
+        </tbody>
+      </table>
+      <p class="section-body"><strong>Rasa:</strong> Kashaya (astringent), Tikta (bitter) &nbsp;·&nbsp; <strong>Guna:</strong> Guru (heavy — resin), Rooksha (dry) &nbsp;·&nbsp; <strong>Virya:</strong> Sheeta (cooling — bark); Ushna (hot — resin) &nbsp;·&nbsp; <strong>Vipaka:</strong> Katu (pungent) &nbsp;·&nbsp; <strong>Karma:</strong> Kapha-Pitta shamaka, Vrana-ropana, Grahi, Pramehaghna</p>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">04</span>
+        <h2 class="section-title">Key Health Benefits</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Modern pharmacological research on Shorea robusta's oleoresin, bark, and seed fat validates its classical applications across wound healing, antimicrobial activity, anti-inflammatory action, and urinary-metabolic disorders. The tree's diverse parts offer distinct but complementary therapeutic profiles.</p>
+      <div class="benefits-grid">
+        <div class="benefit-card">
+          <div class="benefit-title">Wound Healing &amp; Anti-ulcer</div>
+          <div class="benefit-desc">Shala Niryasa (Sal resin) is Ayurveda's premier topical wound-sealing agent — applied to cuts, ulcers, fissures, and surgical wounds. Diterpene resin acids create a protective barrier while ellagitannins and catechins from bark decoction accelerate granulation tissue formation. Studies confirm significant reduction in wound area, increased collagen synthesis, and faster epithelialisation compared to controls.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Anti-diarrheal &amp; Gut Astringent</div>
+          <div class="benefit-desc">The bark's high tannin content — ellagic acid, gallic acid, and catechins — is strongly astringent, reducing intestinal secretion, tightening mucosal permeability, and inhibiting gut pathogens. Classical preparations using Sal bark decoction for <em>Atisara</em> (diarrhea), dysentery, and irritable bowel are validated by pharmacological studies showing dose-dependent inhibition of castor-oil and charcoal-induced diarrhea in rodent models.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Anti-diabetic &amp; Pramehaghna</div>
+          <div class="benefit-desc">Classical description of Sala as <em>Pramehaghna</em> (urinary disorder-destroying) encompasses its use in diabetes. Bark and leaf extracts demonstrate significant alpha-glucosidase and alpha-amylase inhibitory activity. Quercetin and kaempferol from the leaves improve insulin sensitivity; catechins reduce oxidative stress in pancreatic tissue. Animal studies show meaningful reduction in fasting blood glucose and HbA1c-equivalent markers.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Antimicrobial &amp; Anti-fungal</div>
+          <div class="benefit-desc">Sal resin and bark extracts demonstrate broad-spectrum activity against Staphylococcus aureus (including MRSA), Streptococcus, E. coli, Klebsiella pneumoniae, and Candida albicans. The diterpene resin acids disrupt microbial membranes while tannins denature surface proteins. Used classically as a fumigant (<em>dhoop</em>) — burning the resin — for environmental antimicrobial purification of spaces.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Anti-inflammatory &amp; Analgesic</div>
+          <div class="benefit-desc">α- and β-amyrins and lupeol from bark and resin demonstrate significant COX inhibition and pro-inflammatory cytokine suppression in carrageenan and formalin-induced inflammation models. Used in classical Ayurveda for inflammatory joint conditions, oedema (<em>shotha</em>), and erysipelas (<em>visarpa</em>). The resin is applied as a poultice for arthritic joints and swellings in Adivasi folk traditions across Jharkhand and Odisha.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Ear, Nose &amp; Throat Remedy</div>
+          <div class="benefit-desc">Sal resin preparations are used in classical Ayurveda for chronic ear discharge (<em>Karnasrava</em>), sinusitis, and nasal polyps — included in ENT formulations of Ashtanga Hridayam. Antimicrobial and drying (rooksha) properties address chronic otitis media and mucosal congestion. The smoke of burning resin (<em>dhoomapana</em>) is used for throat and respiratory conditions in classical fumigation therapy.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Skin Emollient &amp; Cosmetic</div>
+          <div class="benefit-desc">Sal seed fat — with its cocoa butter-like fatty acid profile (stearic 56%, oleic 35%) — is a premium skin emollient, forming an occlusive barrier that retains moisture and soothes dry, chapped, and inflamed skin. It is used in classical <em>Lepa</em> (topical paste) preparations for skin disorders, as a base for medicated ointments, and is now commercially used in natural cosmetics and chocolate confectionery.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Haemostatic &amp; Anti-bleeding</div>
+          <div class="benefit-desc">Sal bark and resin's powerful astringency gives it documented haemostatic (bleeding-stopping) properties — applied topically to wounds, bleeding piles, and gum disease. Classical texts describe its use in <em>Raktapitta</em> (bleeding disorders) and <em>Arsha</em> (haemorrhoids). Tannin-mediated vasoconstriction and protein precipitation physically seal bleeding surfaces.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">05</span>
+        <h2 class="section-title">Ecological &amp; Cultural Heritage</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Shorea robusta is far more than a medicinal tree — it is a cultural, ecological, and spiritual keystone of northern and eastern India. Sal forests cover approximately 11.6 million hectares across India and are among the most biodiverse and ecologically productive forest types in the subcontinent, supporting tiger reserves, elephant corridors, and hundreds of endemic species.</p>
+      <table class="data-table">
+        <thead><tr><th>Cultural Dimension</th><th>Detail</th></tr></thead>
+        <tbody>
+          <tr><td>Buddhist Sacred Site</td><td>The Buddha attained Mahaparinirvana in a Sal grove at Kushinagar (Uttar Pradesh) — Sal trees are planted around Buddhist monasteries across South and Southeast Asia as a memorial to this event</td></tr>
+          <tr><td>Hindu Ritual Use</td><td>Sal resin (dhoop) is burned as sacred incense in temples and homes across eastern India; Sal leaves are used to serve prasad and food in religious ceremonies; the tree is associated with the goddess Lakshmi</td></tr>
+          <tr><td>Adivasi Sacred Tree</td><td>Sacred to numerous tribal communities — the Santal, Ho, Munda, Oraon, and Gond peoples consider the Sal a deity-dwelling tree; traditional Sarhul (flower festival) centres on Sal flowering in spring</td></tr>
+          <tr><td>Economic Importance</td><td>One of India's top 5 commercially important timber trees — used in railway sleepers, construction, furniture, and flooring; Sal seed fat is traded as a cocoa butter substitute; leaves are a major source of livelihood as disposable plates (dona-pattal)</td></tr>
+          <tr><td>Forest Ecology</td><td>Dominant canopy former of Sal forest (Sarana biome) — creates a unique understorey ecology supporting endemic flora and fauna; critical carbon sink; watershed protector across the Himalayan foothills</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">06</span>
+        <h2 class="section-title">How to Use Sala</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">The different parts of the Sal tree yield distinct preparations for distinct purposes. The oleoresin is the primary Ayurvedic medicinal product — used both topically and internally in carefully prepared formulations. Bark decoctions are used internally for diarrhea and urinary disorders. Seed fat is used both internally as a food fat and externally as a skin emollient.</p>
+      <table class="consume-table">
+        <thead><tr><th>Form</th><th>Preparation</th><th>Dosage</th><th>Best Use</th></tr></thead>
+        <tbody>
+          <tr><td>Oleoresin (Shala Niryasa) — Topical</td><td>Purified resin applied directly or in oil base</td><td>Apply to wound, ulcer, or affected area 1–2× daily</td><td>Wound healing, skin ulcers, bleeding piles, fissures</td></tr>
+          <tr><td>Bark Decoction (Kwatha)</td><td>Boil dried bark in water; reduce to ¼</td><td>30–50 ml twice daily</td><td>Diarrhea, dysentery, urinary disorders, bleeding</td></tr>
+          <tr><td>Bark Powder (Churna)</td><td>Dried bark powder with honey</td><td>2–4 g twice daily</td><td>Chronic diarrhea, prameha, wound healing (internal)</td></tr>
+          <tr><td>Dhoop (Incense fumigation)</td><td>Burn dried resin as incense</td><td>As needed in ritual or therapeutic use</td><td>Antimicrobial fumigation, respiratory conditions, ENT therapy</td></tr>
+          <tr><td>Seed Fat (Sal Fat)</td><td>Expressed seed fat — used as cooking fat or topical</td><td>As food: per normal dietary use; topical: apply freely</td><td>Skin emollient, dry skin, chapped lips, cosmetic base; edible fat</td></tr>
+          <tr><td>Sarjarasa Taila (Classical)</td><td>Medicated oil with Sal resin per classical formula</td><td>Per practitioner direction</td><td>Chronic wounds, ear disorders, skin conditions, ENT</td></tr>
+          <tr><td>Leaf Decoction (topical wash)</td><td>Boil leaves in water; cool and use as wash</td><td>Apply to affected skin 1–2× daily</td><td>Skin infections, wounds, inflammatory skin conditions</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">07</span>
+        <h2 class="section-title">Safety &amp; Precautions</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Sala has an excellent safety record across centuries of Ayurvedic and folk use. The bark and seed fat are among the safest parts. The oleoresin, while highly effective topically, requires careful internal dosing under supervision — unpurified resin in high doses may cause gastric irritation. Resin-based preparations should use properly processed (<em>shodhita</em>) Shala Niryasa for internal use.</p>
+      <ul class="precaution-list">
+        <li><strong>Internal oleoresin use:</strong> Crude, unpurified Sal resin should not be consumed internally — only classically processed (<em>shodhita</em>) preparations under a qualified Ayurvedic physician's supervision. Topical use of purified resin is safe for most individuals.</li>
+        <li><strong>Vata constitution / Constipation:</strong> The rooksha (dry) and kashaya (astringent) properties of the bark may aggravate Vata and worsen constipation in dry-constitution individuals. Use with ghee or sesame oil as anupana if Vata aggravation is a concern.</li>
+        <li><strong>Resin allergy:</strong> Individuals sensitive to other tree resins (pine, frankincense, myrrh) may occasionally show cross-sensitivity to Sal resin — perform a small patch test before topical application over large skin areas.</li>
+        <li><strong>Pregnancy:</strong> Moderate use of bark decoction and seed fat is generally considered safe. Internal oleoresin preparations during pregnancy should be avoided without specialist supervision.</li>
+        <li><strong>Dhoop fumigation:</strong> Burning Sal resin in closed, poorly ventilated spaces may cause respiratory irritation in sensitive individuals, those with asthma, or young children — ensure adequate ventilation during incense use.</li>
+        <li><strong>Drug interactions:</strong> Tannin-rich bark preparations may reduce the absorption of iron, zinc, and certain medications if taken simultaneously — maintain a 2-hour separation from other medications and iron supplements.</li>
+        <li><strong>Sustainable sourcing:</strong> While not endangered, Sal forests are under significant pressure from deforestation and over-exploitation. Prefer sustainably harvested or cultivated sources; support forest conservation initiatives when using Sal products commercially.</li>
+      </ul>
+    </div>
+
+    <div class="sources">
+      <div class="sources-title">References &amp; Sources</div>
+      <ul>
+        <li>Orwa C et al. — Agroforestree Database 4.0 — Shorea robusta monograph, World Agroforestry Centre, 2009</li>
+        <li>Pandey G — Dravyaguna Vigyana Vol. III — Shorea robusta (Sala / Sarja) classical properties and formulations</li>
+        <li>Kirtikar KR &amp; Basu BD — Indian Medicinal Plants — Shorea robusta chapter, Vol. I</li>
+        <li>Bhavaprakasha Nighantu — Karpuradi Varga: Sarjanishkranda (Sal resin) properties</li>
+        <li>Charaka Samhita — Chikitsasthana: Atisara, Prameha, and Vrana Chikitsa chapters</li>
+        <li>Sushruta Samhita — Chikitsasthana: Vrana Chikitsa — Shala Niryasa applications</li>
+        <li>Dhanvantari Nighantu and Raja Nighantu — Sala / Sarja entries</li>
+        <li>Mahaparinibbana Sutta — Digha Nikaya — Pali Canon: The Buddha's Parinirvana in the Sal grove</li>
+        <li>Rao MV et al. — "Pharmacological evaluation of Shorea robusta bark extracts" — Journal of Ethnopharmacology, 2013</li>
+        <li>Kumar S et al. — "Anti-diarrheal activity of Shorea robusta bark: an experimental study" — Asian Pacific Journal of Tropical Medicine, 2011</li>
+        <li>Srivastava S et al. — "Sal fat (Shorea robusta): composition, properties and food applications" — Journal of the American Oil Chemists' Society, 2010</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer>
+    <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a qualified practitioner before therapeutic use</p>
+  </footer>
+
+
+  <div id="viewerModal">
+    <div id="modal-topbar">
+      <span>3D Model — Sala</span>
+      <button type="button" id="close3D">✕</button>
+    </div>
+    <model-viewer src="sala3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+  </div>
+  <script>
+    (function() {
+      var open3D = document.getElementById('open3D');
+      var close3D = document.getElementById('close3D');
+      var modal = document.getElementById('viewerModal');
+      if (!open3D || !close3D || !modal) return;
+      function openModal() {
+        
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+      function closeModal() {
+        
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+      open3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); openModal();
+      });
+      close3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); closeModal();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+      });
+    })();
+  </script>
+
+</body>
+</html>

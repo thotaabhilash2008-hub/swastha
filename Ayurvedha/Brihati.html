@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Brihati — Poison Berry | Swastha</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap"
+    rel="stylesheet">
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+  <style>
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box
+    }
+
+    html {
+      scroll-behavior: smooth
+    }
+
+    body {
+      font-family: 'Jost', sans-serif;
+      background: var(--cream);
+      color: var(--ink);
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity: .035;
+      pointer-events: none;
+      z-index: 100
+    }
+
+    #open3D {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      padding: 10px 18px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: var(--forest);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      z-index: 1000;
+      transition: .3s
+    }
+
+    #open3D:hover {
+      background: var(--gold);
+      color: var(--deep)
+    }
+
+    #viewerModal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+    }
+
+    #modal-topbar {
+      flex-shrink: 0;
+      height: 58px;
+      background: #111111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px 0 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      z-index: 99999;
+    }
+
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 4.5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.72);
+      user-select: none;
+    }
+
+    #close3D {
+      width: 38px;
+      height: 38px;
+      font-size: 15px;
+      font-weight: 300;
+      background: transparent;
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background .2s, color .2s, transform .22s;
+      outline: none;
+      flex-shrink: 0;
+    }
+
+    #close3D:hover {
+      background: #ffffff;
+      color: #111111;
+      border-color: #ffffff;
+      transform: rotate(90deg)
+    }
+
+    #viewerModal model-viewer {
+      flex: 1;
+      width: 100%;
+      display: block;
+      background: #ffffff;
+    }
+
+    .bg-circle {
+      position: fixed;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0
+    }
+
+    .bg-circle-1 {
+      width: 700px;
+      height: 700px;
+      background: radial-gradient(circle, rgba(42, 92, 63, .1) 0%, transparent 70%);
+      top: -200px;
+      right: -150px
+    }
+
+    .bg-circle-2 {
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(201, 168, 76, .08) 0%, transparent 70%);
+      bottom: -100px;
+      left: -100px
+    }
+
+    .botanical-svg {
+      position: fixed;
+      pointer-events: none;
+      z-index: 1;
+      opacity: .1
+    }
+
+    .botanical-tl {
+      top: -20px;
+      left: -20px;
+      width: 260px
+    }
+
+    .botanical-br {
+      bottom: -20px;
+      right: -20px;
+      width: 220px;
+      transform: rotate(180deg)
+    }
+
+    .hero {
+      position: relative;
+      z-index: 10;
+      padding: 54px 40px 0;
+      text-align: center;
+      opacity: 0;
+      animation: fadeUp .9s ease .1s forwards
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--sage);
+      text-decoration: none;
+      margin-bottom: 36px;
+      transition: color .3s
+    }
+
+    .back-link:hover {
+      color: var(--gold)
+    }
+
+    .logo-rule {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 14px
+    }
+
+    .logo-rule span {
+      display: block;
+      height: 1px;
+      width: 70px;
+      background: linear-gradient(to right, transparent, var(--gold))
+    }
+
+    .logo-rule span:last-child {
+      background: linear-gradient(to left, transparent, var(--gold))
+    }
+
+    .logo-ornament {
+      font-size: 13px;
+      color: var(--gold)
+    }
+
+    .hero-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(64px, 12vw, 110px);
+      font-weight: 300;
+      letter-spacing: 8px;
+      line-height: 1;
+      color: var(--deep)
+    }
+
+    .hero-subtitle {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 18px;
+      font-style: italic;
+      font-weight: 300;
+      color: var(--earth);
+      letter-spacing: 2px;
+      margin-top: 8px
+    }
+
+    .hero-sci {
+      font-size: 11px;
+      font-weight: 200;
+      letter-spacing: 5px;
+      color: var(--sage);
+      margin-top: 6px
+    }
+
+    .hero-photos {
+      position: relative;
+      z-index: 10;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2px;
+      max-width: 900px;
+      margin: 40px auto 0;
+      opacity: 0;
+      animation: fadeUp .9s ease .35s forwards
+    }
+
+    .hero-photos img {
+      width: 100%;
+      height: 380px;
+      object-fit: cover;
+      object-position: center;
+      display: block;
+      background: var(--parchment);
+    }
+
+    .hero-photos img:first-child {
+      object-position: center 40%
+    }
+
+    .photo-caption {
+      text-align: center;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 12px;
+      font-style: italic;
+      color: var(--sage);
+      letter-spacing: 1px;
+      padding: 10px 0 0;
+      max-width: 900px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 10;
+      opacity: 0;
+      animation: fadeUp .9s ease .5s forwards
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin: 50px auto;
+      max-width: 600px;
+      opacity: 0;
+      animation: fadeUp .9s ease .55s forwards;
+      position: relative;
+      z-index: 10
+    }
+
+    .divider-line {
+      height: 1px;
+      width: 120px;
+      background: linear-gradient(to right, transparent, var(--sage))
+    }
+
+    .divider-line:last-child {
+      background: linear-gradient(to left, transparent, var(--sage))
+    }
+
+    .divider-leaf {
+      color: var(--forest);
+      font-size: 18px
+    }
+
+    .content {
+      position: relative;
+      z-index: 10;
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 30px 80px
+    }
+
+    .intro-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 20px;
+      font-weight: 300;
+      line-height: 1.75;
+      color: var(--ink);
+      text-align: center;
+      max-width: 700px;
+      margin: 0 auto 60px;
+      opacity: 0;
+      animation: fadeUp .9s ease .6s forwards
+    }
+
+    .intro-text em {
+      color: var(--forest);
+      font-style: italic
+    }
+
+    .section {
+      margin-bottom: 60px;
+      opacity: 0;
+      animation: fadeUp .9s ease forwards
+    }
+
+    .section:nth-child(1) {
+      animation-delay: .65s
+    }
+
+    .section:nth-child(2) {
+      animation-delay: .75s
+    }
+
+    .section:nth-child(3) {
+      animation-delay: .85s
+    }
+
+    .section:nth-child(4) {
+      animation-delay: .95s
+    }
+
+    .section:nth-child(5) {
+      animation-delay: 1.05s
+    }
+
+    .section:nth-child(6) {
+      animation-delay: 1.15s
+    }
+
+    .section:nth-child(7) {
+      animation-delay: 1.25s
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 20px
+    }
+
+    .section-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 11px;
+      letter-spacing: 4px;
+      color: var(--gold)
+    }
+
+    .section-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 28px;
+      font-weight: 400;
+      color: var(--deep);
+      letter-spacing: 1px
+    }
+
+    .section-rule {
+      height: 1px;
+      flex: 1;
+      background: linear-gradient(to right, var(--gold), transparent)
+    }
+
+    .section-body {
+      font-size: 13px;
+      font-weight: 300;
+      line-height: 1.9;
+      color: var(--ink);
+      margin-bottom: 24px
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0 8px;
+      font-size: 12px
+    }
+
+    .data-table thead tr {
+      background: var(--deep);
+      color: var(--gold);
+      font-size: 10px;
+      letter-spacing: 3px;
+      text-transform: uppercase
+    }
+
+    .data-table thead th {
+      padding: 12px 14px;
+      text-align: left;
+      font-weight: 400
+    }
+
+    .data-table tbody tr:nth-child(even) {
+      background: var(--parchment)
+    }
+
+    .data-table tbody tr:nth-child(odd) {
+      background: var(--cream)
+    }
+
+    .data-table tbody tr {
+      transition: background .2s
+    }
+
+    .data-table tbody tr:hover {
+      background: rgba(200, 164, 93, 0.15)
+    }
+
+    .data-table tbody td {
+      padding: 10px 14px;
+      color: var(--ink);
+      border-bottom: 1px solid rgba(107, 79, 45, .08)
+    }
+
+    .data-table tbody td:first-child {
+      font-weight: 400;
+      color: var(--deep);
+      width: 28%
+    }
+
+    .dosha-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 12px
+    }
+
+    .dosha-table thead tr {
+      background: var(--forest);
+      color: var(--cream)
+    }
+
+    .dosha-table thead th {
+      padding: 12px 14px;
+      text-align: left;
+      font-weight: 400;
+      letter-spacing: 2px;
+      font-size: 10px;
+      text-transform: uppercase
+    }
+
+    .dosha-table tbody tr:nth-child(even) {
+      background: var(--parchment)
+    }
+
+    .dosha-table tbody tr:nth-child(odd) {
+      background: var(--cream)
+    }
+
+    .dosha-table tbody td {
+      padding: 11px 14px;
+      color: var(--ink);
+      border-bottom: 1px solid rgba(107, 79, 45, .08)
+    }
+
+    .dosha-table tbody td:first-child {
+      font-weight: 400;
+      color: var(--forest);
+      width: 18%
+    }
+
+    .dosha-table tbody td:nth-child(2) {
+      color: var(--earth);
+      width: 20%
+    }
+
+    .consume-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 12px
+    }
+
+    .consume-table thead tr {
+      background: var(--earth);
+      color: var(--cream)
+    }
+
+    .consume-table thead th {
+      padding: 12px 14px;
+      text-align: left;
+      font-weight: 400;
+      letter-spacing: 2px;
+      font-size: 10px;
+      text-transform: uppercase
+    }
+
+    .consume-table tbody tr:nth-child(even) {
+      background: var(--parchment)
+    }
+
+    .consume-table tbody tr:nth-child(odd) {
+      background: var(--cream)
+    }
+
+    .consume-table tbody td {
+      padding: 11px 14px;
+      color: var(--ink);
+      border-bottom: 1px solid rgba(107, 79, 45, .08)
+    }
+
+    .consume-table tbody td:first-child {
+      font-weight: 400;
+      color: var(--earth);
+      width: 22%
+    }
+
+    .benefits-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: rgba(107, 79, 45, .12);
+      border: 1px solid rgba(107, 79, 45, .12);
+      margin: 8px 0
+    }
+
+    .benefit-card {
+      background: var(--cream);
+      padding: 24px 22px;
+      transition: background .3s;
+      position: relative;
+      overflow: hidden
+    }
+
+    .benefit-card:hover {
+      background: #ede4ce
+    }
+
+    .benefit-card::before {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: var(--gold);
+      transition: width .4s
+    }
+
+    .benefit-card:hover::before {
+      width: 100%
+    }
+
+    .benefit-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--forest);
+      margin-bottom: 8px
+    }
+
+    .benefit-desc {
+      font-size: 11.5px;
+      font-weight: 300;
+      line-height: 1.75;
+      color: var(--ink);
+      opacity: .85
+    }
+
+    .precaution-list {
+      list-style: none;
+      margin: 8px 0
+    }
+
+    .precaution-list li {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      padding: 10px 14px;
+      font-size: 12px;
+      font-weight: 300;
+      line-height: 1.7;
+      color: var(--ink);
+      border-bottom: 1px solid rgba(107, 79, 45, .08)
+    }
+
+    .precaution-list li:last-child {
+      border-bottom: none
+    }
+
+    .precaution-list li::before {
+      content: '▸';
+      color: var(--gold);
+      flex-shrink: 0;
+      margin-top: 1px
+    }
+
+    .sources {
+      border-top: 1px solid rgba(107, 79, 45, .15);
+      padding-top: 24px;
+      margin-top: 20px
+    }
+
+    .sources-title {
+      font-size: 10px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--sage);
+      margin-bottom: 12px;
+      font-weight: 300
+    }
+
+    .sources ul {
+      list-style: none
+    }
+
+    .sources ul li {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 13px;
+      font-style: italic;
+      color: var(--earth);
+      padding: 5px 0;
+      border-bottom: 1px solid rgba(107, 79, 45, .06)
+    }
+
+    .sources ul li::before {
+      content: '· ';
+      color: var(--sage)
+    }
+
+    .nutrition-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: rgba(107, 79, 45, .12);
+      border: 1px solid rgba(107, 79, 45, .12);
+      margin: 20px 0
+    }
+
+    .nutrition-cell {
+      background: var(--cream);
+      padding: 22px 16px;
+      text-align: center;
+      transition: background .3s
+    }
+
+    .nutrition-cell:hover {
+      background: var(--parchment)
+    }
+
+    .nutrition-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 36px;
+      font-weight: 300;
+      color: var(--forest);
+      line-height: 1;
+      margin-bottom: 4px
+    }
+
+    .nutrition-unit {
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--gold);
+      font-weight: 300
+    }
+
+    .nutrition-label {
+      font-size: 11px;
+      font-weight: 300;
+      color: var(--ink);
+      margin-top: 5px
+    }
+
+    footer {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      padding: 24px 20px 44px;
+      border-top: 1px solid rgba(107, 79, 45, .12);
+      max-width: 860px;
+      margin: 0 auto
+    }
+
+    footer p {
+      font-size: 11px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--sage);
+      font-weight: 300
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(28px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
+
+    @media(max-width:700px) {
+      .hero-photos {
+        grid-template-columns: 1fr
+      }
+
+      .hero-photos img {
+        height: 260px
+      }
+
+      .benefits-grid {
+        grid-template-columns: 1fr
+      }
+
+      .nutrition-bar {
+        grid-template-columns: 1fr 1fr
+      }
+
+      .content {
+        padding: 0 18px 60px
+      }
+
+      #modal-topbar {
+        padding: 0 16px 0 20px
+      }
+
+      #modal-topbar span {
+        font-size: 9px;
+        letter-spacing: 3px
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <button id="open3D">View in 3D</button>
+
+  <div id="viewerModal">
+    <div id="modal-topbar">
+      <span>3D Model — Brihati</span>
+      <button id="close3D">✕</button>
+    </div>
+    <model-viewer src="brihati3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+  </div>
+
+  <div class="bg-circle bg-circle-1"></div>
+  <div class="bg-circle bg-circle-2"></div>
+
+  <svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#2a5c3f" stroke-width="1.5" fill="none" />
+    <circle cx="90" cy="210" r="8" fill="#2a5c3f" opacity="0.7" />
+    <circle cx="130" cy="175" r="10" fill="#7a9e7e" opacity="0.6" />
+    <circle cx="170" cy="135" r="7" fill="#2a5c3f" opacity="0.8" />
+    <circle cx="210" cy="95" r="9" fill="#c9a84c" opacity="0.5" />
+    <ellipse cx="115" cy="195" rx="20" ry="10" fill="#7a9e7e" transform="rotate(-30 115 195)" />
+    <ellipse cx="155" cy="155" rx="18" ry="9" fill="#2a5c3f" transform="rotate(-45 155 155)" />
+    <ellipse cx="195" cy="115" rx="16" ry="8" fill="#7a9e7e" transform="rotate(-60 195 115)" />
+  </svg>
+  <svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#2a5c3f" stroke-width="1.5" fill="none" />
+    <circle cx="90" cy="210" r="8" fill="#2a5c3f" opacity="0.7" />
+    <circle cx="130" cy="175" r="10" fill="#7a9e7e" opacity="0.6" />
+    <circle cx="170" cy="135" r="7" fill="#2a5c3f" opacity="0.8" />
+    <ellipse cx="115" cy="195" rx="20" ry="10" fill="#7a9e7e" transform="rotate(-30 115 195)" />
+  </svg>
+
+  <div class="hero">
+    <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+    <div class="logo-rule"><span></span>
+      <div class="logo-ornament">✦</div><span></span>
+    </div>
+    <div class="hero-title">Brihati</div>
+    <div class="hero-subtitle">Poison Berry — The Greater Nightshade Root of Dashamoola</div>
+    <div class="hero-sci">Solanum indicum &nbsp;·&nbsp; Solanaceae</div>
+  </div>
+
+  <div class="hero-photos">
+    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8e/Solanum_indicum_at_Queen_Sirikit_Botanic_Garden_-_Chiang_Mai_2013_2602.jpg/1280px-Solanum_indicum_at_Queen_Sirikit_Botanic_Garden_-_Chiang_Mai_2013_2602.jpg" alt="Purple-blue Brihati flowers"
+      onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d2/Cestrum_elegans_kz03.jpg/1280px-Cestrum_elegans_kz03.jpg" alt="Brihati spiny shrub with dark berries"
+      onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+  </div>
+  <p class="photo-caption">Fig. 1 — Pale purple-blue star-shaped Brihati flowers with their signature yellow anthers &nbsp;·&nbsp; Fig. 2 — The spiny shrub with broad lobed leaves and round dark purple-black berries that earn its English name "poison berry"</p>
+
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-leaf">❧</div>
+    <div class="divider-line"></div>
+  </div>
+
+  <div class="content">
+    <p class="intro-text">"<em>Brihati</em>" simply means <em>big</em> — the larger of the two great nightshade-root sisters of Ayurvedic respiratory medicine. With its smaller twin <em>Kantakari</em>, it forms the legendary <em>Brihati Dwaya</em>, the cornerstone of every Dashamoola formulation. From cough to asthma, from fever to digestive sluggishness, when Kapha clings stubbornly to the lungs, the larger root is sent.</p>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">01</span>
+        <h2 class="section-title">Botanical Profile</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Brihati (<em>Solanum indicum</em> L.) is a perennial spiny shrub of the Solanaceae family — the nightshade family that also gives us tomato, potato, and chilli — reaching 1–1.5 metres in height. The stems are woody at the base, branching, and densely armed with sharp recurved spines. Leaves are alternate, broadly ovate, sinuately lobed, dark green above and pale below, also bearing scattered prickles along the veins. The plant has a faintly bitter, characteristic Solanaceae aroma when leaves are crushed.</p>
+      <p class="section-body">The flowers are stunning — pale purple-blue, star-shaped with five petals fused at the base, and prominent bright-yellow anthers forming a small cone at the centre. The signature fruit is the round, smooth, glossy berry, 1.5–2 cm in diameter, ripening from green to deep purple-black — earning the English name "poison berry" for its toxicity when consumed unprocessed in large amounts. Native to the tropical and subtropical Indian subcontinent up to 1500 m altitude, Brihati is widely distributed across India, Sri Lanka, Bangladesh, and tropical Asia. Classical Ayurveda recognises Brihati as one of the ten foundational roots of <em>Dashamoola</em> — the cornerstone formulation of Ayurvedic pharmacy. Its smaller pair, Kantakari (<em>Solanum xanthocarpum</em>), forms with it the famous <em>Brihati Dwaya</em>.</p>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>PROPERTY</th>
+            <th>Detail</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Family</td>
+            <td>Solanaceae (Nightshade family)</td>
+          </tr>
+          <tr>
+            <td>Botanical Name</td>
+            <td>Solanum indicum L. (syn. Solanum anguivi var. indicum)</td>
+          </tr>
+          <tr>
+            <td>Sanskrit Names</td>
+            <td>Brihati, Vatarki, Kshudrabhandaki, Mahti, Kuli, Hinguli, Rashtrika, Singi, Mahoshtri, Dushpragharshini, Duhsparsha</td>
+          </tr>
+          <tr>
+            <td>Common Names</td>
+            <td>Brihati, Badi Kateri, Vanabhanta, Poison Berry, Indian Nightshade, African Eggplant, Bush Tomato, Pedda Mulaka, Rambegun, Anachundai, Dorali</td>
+          </tr>
+          <tr>
+            <td>Origin</td>
+            <td>Tropical &amp; subtropical Indian subcontinent up to 1500 m</td>
+          </tr>
+          <tr>
+            <td>Plant Type</td>
+            <td>Perennial spiny shrub (1–1.5 m)</td>
+          </tr>
+          <tr>
+            <td>Flowering Season</td>
+            <td>Year-round in tropics; peak in monsoon and post-monsoon</td>
+          </tr>
+          <tr>
+            <td>Medicinal Parts</td>
+            <td>Roots (primary — Dashamoola component), fruits, seeds, leaves</td>
+          </tr>
+          <tr>
+            <td>Taste Profile</td>
+            <td>Pungent (katu), bitter (tikta) — classical rasa</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">02</span>
+        <h2 class="section-title">Phytochemistry Composition</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Brihati's pharmacological power rests on its rich profile of steroidal alkaloids — the same compound family that gives the entire nightshade genus its characteristic bioactivity. The flagship compound is <em>solasodine</em> — a steroidal alkaloid responsible for much of the plant's expectorant and respiratory action, and a precursor used industrially in steroid hormone synthesis. Alongside solasodine sit <em>solanidine</em>, <em>α-solanine</em>, <em>solamargine</em>, <em>solasonine</em>, <em>solanocarpone</em>, and other nightshade-family alkaloids.</p>
+      <p class="section-body">Beyond alkaloids, Brihati contains <em>diosgenin</em> (another steroidal saponin), <em>β-sitosterol</em>, <em>lanosterol</em>, <em>carpesterol</em>, carotene, vitamin C, and notably high phosphorus content. A 2021 Saxena et al. phytochemistry study using HPTLC fingerprinting confirmed the alkaloid profile, while a 2012 IJPPR study by Jayanthi et al. catalogued the plant's broad pharmacological spectrum. Together, these compounds explain Brihati's documented antibacterial, antispasmodic, expectorant, anti-inflammatory, and immunomodulatory pharmacology.</p>
+      <div class="nutrition-bar">
+        <div class="nutrition-cell">
+          <div class="nutrition-num">10</div>
+          <div class="nutrition-unit">roots of</div>
+          <div class="nutrition-label">Dashamoola group</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">2</div>
+          <div class="nutrition-unit">paired sisters</div>
+          <div class="nutrition-label">Brihati &amp; Kantakari (Dwaya)</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">8+</div>
+          <div class="nutrition-unit">documented</div>
+          <div class="nutrition-label">Steroidal alkaloids</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">12+</div>
+          <div class="nutrition-unit">documented</div>
+          <div class="nutrition-label">Pharmacological actions</div>
+        </div>
+      </div>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Compound</th>
+            <th>Category</th>
+            <th>Primary Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Solasodine</td>
+            <td>Steroidal alkaloid</td>
+            <td>Expectorant, anticancer, hormone-precursor — flagship marker</td>
+          </tr>
+          <tr>
+            <td>Solanidine &amp; α-Solanine</td>
+            <td>Steroidal alkaloids</td>
+            <td>Antispasmodic, antibacterial, anti-inflammatory</td>
+          </tr>
+          <tr>
+            <td>Solamargine &amp; Solasonine</td>
+            <td>Steroidal glycoalkaloids</td>
+            <td>Anticancer, antimicrobial, immunomodulatory</td>
+          </tr>
+          <tr>
+            <td>Solanocarpone</td>
+            <td>Triterpenoid</td>
+            <td>Anti-inflammatory, antimicrobial</td>
+          </tr>
+          <tr>
+            <td>Diosgenin</td>
+            <td>Steroidal saponin</td>
+            <td>Hormone-balancing, anti-inflammatory, anticancer</td>
+          </tr>
+          <tr>
+            <td>β-Sitosterol &amp; Lanosterol</td>
+            <td>Phytosterols</td>
+            <td>Cholesterol-lowering, anti-inflammatory, immunomodulatory</td>
+          </tr>
+          <tr>
+            <td>Carpesterol</td>
+            <td>Phytosterol</td>
+            <td>Anti-inflammatory, hepatoprotective</td>
+          </tr>
+          <tr>
+            <td>Carotene &amp; Vitamin C</td>
+            <td>Antioxidants</td>
+            <td>Free-radical scavenging, immune-supportive</td>
+          </tr>
+          <tr>
+            <td>Phosphorus (high content)</td>
+            <td>Mineral</td>
+            <td>Bone health, energy metabolism, neural function</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">03</span>
+        <h2 class="section-title">Ayurvedic Significance</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Brihati is one of the foundational herbs of Ayurvedic pharmacology — it is one of the ten roots that compose <em>Dashamoola</em>, the most celebrated polyherbal preparation in the entire materia medica. <em>Charaka Samhita</em> and <em>Sushruta Samhita</em> repeatedly invoke Brihati for <em>Kasa</em> (cough), <em>Shvasa</em> (asthma, dyspnoea), <em>Jwara</em> (fever), <em>Aruchi</em> (anorexia), <em>Hridroga</em> (heart disease), <em>Mutrakrichra</em> (dysuria), and as a general <em>Deepana-Pachana</em> (digestive-fire kindler).</p>
+      <p class="section-body">Its rasa (taste) is <em>katu</em> (pungent) and <em>tikta</em> (bitter); guna is <em>laghu</em> (light) and <em>ruksha</em> (dry); vipaka is <em>katu</em> (pungent); and veerya is <em>ushna</em> (hot). The hot, light, dry qualities make Brihati a foundational Vata-Kapha pacifier — but its heat may aggravate Pitta. Brihati features in some of Ayurveda's most beloved formulations: <em>Dashamoola Kwath</em>, <em>Dashmularishta</em>, <em>Nalikerasavam</em>, <em>Ajamamsa Rasayanam</em>, and <em>Manasamitra Vatakam</em>. Together with Kantakari, it forms the famous <em>Brihati Dwaya</em> — frequently invoked in classical respiratory and digestive formulations.</p>
+      <table class="dosha-table">
+        <thead>
+          <tr>
+            <th>Dosha</th>
+            <th>Effect</th>
+            <th>Mechanism &amp; Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Vata ↓</td>
+            <td>Pacifying</td>
+            <td>Hot potency (ushna virya) and warming action calm Vata-related abdominal pain, nervous-system disorders, and Vataja respiratory and digestive conditions</td>
+          </tr>
+          <tr>
+            <td>Pitta ↑</td>
+            <td>May aggravate</td>
+            <td>Ushna virya and tikshna quality may increase Pitta; avoid in acute hyperacidity, gastritis, peptic ulcer, and bleeding disorders</td>
+          </tr>
+          <tr>
+            <td>Kapha ↓</td>
+            <td>Pacifying</td>
+            <td>Pungent, bitter, light, and dry qualities reduce mucus, oedema, and metabolic heaviness; classical for Kaphaja Shvasa, Kasa, and digestive sluggishness</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">04</span>
+        <h2 class="section-title">Key Health Benefits</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">As a Dashamoola root, Brihati shares much of its therapeutic territory with the other Dashamoola herbs but is distinguished by its particularly strong respiratory, expectorant, and antibacterial action — driven by solasodine and the broader steroidal alkaloid ensemble. Modern pharmacological research has confirmed its activity across respiratory, digestive, urinary, antimicrobial, and even neuroprotective domains.</p>
+      <div class="benefits-grid">
+        <div class="benefit-card">
+          <div class="benefit-title">Cough, Asthma &amp; Bronchitis</div>
+          <div class="benefit-desc">The flagship classical use. Solasodine acts as a powerful expectorant, thinning mucus and easing its expulsion from the airways. Used since antiquity for chronic cough (Kasa), bronchial asthma (Shvasa), bronchitis, and Kaphaja respiratory congestion — a cornerstone of Dashamoola Kwath and Dashmularishta.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Digestive &amp; Appetiser (Deepana)</div>
+          <div class="benefit-desc">Classical <em>Deepana-Pachana</em> action. Brihati stimulates digestive fire (Agni), kindles appetite in cases of Aruchi (anorexia), reduces abdominal bloating, and clears Ama (metabolic toxin). Used traditionally as part of pre-meal protocols to restore healthy digestion.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Anti-inflammatory (Dashamoola)</div>
+          <div class="benefit-desc">Brihati's role within Dashamoola — Ayurveda's foundational anti-inflammatory pharmacy — addresses joint pain, arthritis, sciatica, gout, and post-injury inflammation. Solanocarpone and steroidal saponins inhibit inflammatory cascades; the polyherbal Dashamoola context amplifies the effect.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Diuretic &amp; Urinary Health</div>
+          <div class="benefit-desc">Documented use in <em>Mutrakrichra</em> (dysuria, painful urination) and chronic urinary tract conditions. Acts as a gentle diuretic, supporting urine flow and clearing urinary stagnation. Useful as adjunct in chronic UTIs and renal calculi management under Ayurvedic supervision.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Cardiotonic &amp; Hridroga</div>
+          <div class="benefit-desc">Classical reference in <em>Hridroga</em> (heart disease) — supports cardiac function, modulates blood pressure, and enhances circulation. Steroidal alkaloids and phytosterols together support cardiovascular health; phosphorus content contributes to muscle and nerve function.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Antimicrobial &amp; Antibacterial</div>
+          <div class="benefit-desc">Documented broad-spectrum activity — α-solanine and related alkaloids inhibit bacterial growth; anti-dermatophytic action useful in fungal skin infections. Anthelmintic activity supports traditional use in worm infestations and chronic gastrointestinal infections.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Antipyretic &amp; Fever Relief</div>
+          <div class="benefit-desc">Used classically in <em>Jwara</em> (fever), particularly Vata-Kaphaja fever types. Combined with other Dashamoola roots, Brihati helps reduce body temperature, ease body aches, and support recovery from chronic intermittent fevers — including malaria-pattern presentations.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Anticancer &amp; Neuroprotective</div>
+          <div class="benefit-desc">Modern research has documented anticancer activity of solamargine and solasonine across multiple cancer cell lines, and emerging evidence of neuroprotective effects from steroidal alkaloids. Promising preclinical signals — clinical research remains in early stages; not a substitute for primary cancer therapy.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">06</span>
+        <h2 class="section-title">How to Consume Brihati</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Brihati is exclusively medicinal — never consumed as food, and the unprocessed berries are mildly toxic in large amounts. Always use Brihati under qualified Ayurvedic supervision; classical practice prefers polyherbal preparations like Dashamoola Kwath rather than standalone single-herb consumption. The roots are by far the most heavily used part, prepared as decoction, powder, or as a component of polyherbal formulations.</p>
+      <table class="consume-table">
+        <thead>
+          <tr>
+            <th>Form</th>
+            <th>Preparation</th>
+            <th>Dosage</th>
+            <th>Best Time</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Root Powder (Churna)</td>
+            <td>Dried root powder with warm water or honey</td>
+            <td>3–6 g daily</td>
+            <td>Twice daily, before meals</td>
+          </tr>
+          <tr>
+            <td>Root Decoction (Kashayam)</td>
+            <td>Boil 1 tbsp coarse root powder in 4 cups water; reduce to 1 cup</td>
+            <td>30–50 ml twice daily</td>
+            <td>Empty stomach (for cough, asthma)</td>
+          </tr>
+          <tr>
+            <td>Dashamoola Kwath</td>
+            <td>Classical ten-root decoction (Brihati included)</td>
+            <td>30–50 ml twice daily</td>
+            <td>Before meals</td>
+          </tr>
+          <tr>
+            <td>Dashmularishta</td>
+            <td>Fermented polyherbal tonic</td>
+            <td>15–30 ml with equal water</td>
+            <td>After meals</td>
+          </tr>
+          <tr>
+            <td>Nalikerasavam</td>
+            <td>Classical fermented preparation with Brihati</td>
+            <td>15–30 ml with equal water</td>
+            <td>After meals</td>
+          </tr>
+          <tr>
+            <td>Ajamamsa Rasayanam</td>
+            <td>Classical Rasayana with Brihati</td>
+            <td>As prescribed</td>
+            <td>As directed by Ayurvedic physician</td>
+          </tr>
+          <tr>
+            <td>Manasamitra Vatakam</td>
+            <td>Classical neurological &amp; psychiatric formulation</td>
+            <td>As prescribed</td>
+            <td>As directed by Ayurvedic physician</td>
+          </tr>
+          <tr>
+            <td>Topical Seed Paste / Fumigation</td>
+            <td>Seeds ground or burnt with turmeric for fumigation</td>
+            <td>Applied / inhaled as needed</td>
+            <td>For dental pain, skin infections</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">07</span>
+        <h2 class="section-title">Safety &amp; Precautions</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Brihati's nightshade-family steroidal alkaloid profile means real toxicological considerations — α-solanine is a known glycoalkaloid that can cause gastrointestinal and neurological symptoms at high doses. Classical Ayurvedic dosing has built in centuries of safety knowledge; modern usage should respect those traditional dosage limits and avoid concentrated single-compound extracts without practitioner supervision.</p>
+      <ul class="precaution-list">
+        <li><strong>Pregnancy:</strong> Avoid entirely. Solanaceae steroidal alkaloids may have teratogenic and uterine-stimulating effects. Brihati is not used during pregnancy in classical Ayurvedic practice.</li>
+        <li><strong>Breastfeeding:</strong> Avoid medicinal doses during lactation. Limited safety data; alkaloids may pass into breast milk. Consult a qualified Ayurvedic physician before any therapeutic use.</li>
+        <li><strong>High Pitta &amp; Hyperacidity:</strong> Ushna virya (hot potency) and tikshna quality may aggravate hyperacidity, gastritis, peptic ulcer, and Pitta-driven bleeding disorders. Avoid during active flare-ups.</li>
+        <li><strong>Solanine toxicity:</strong> Unprocessed berries and high-dose extracts can cause solanine-related symptoms — nausea, vomiting, diarrhoea, headache, and in severe cases neurological symptoms. Stay strictly within classical dose limits (3–6 g powder or 30–50 ml decoction).</li>
+        <li><strong>Species substitution caution:</strong> <em>Solanum anguivi</em> and <em>Solanum ferox</em> are sometimes used in place of authentic <em>Solanum indicum</em>; pharmacology overlaps but is not identical. Source from reputable Ayurvedic suppliers — preferably with API-compliant authentication.</li>
+        <li><strong>MAOI &amp; psychiatric medications:</strong> Steroidal alkaloids may interact with monoamine oxidase inhibitors and certain psychiatric medications. Consult a physician before combining.</li>
+        <li><strong>Surgery:</strong> Discontinue concentrated extracts at least 2 weeks before scheduled surgery due to possible effects on inflammation, blood pressure, and clotting time.</li>
+        <li><strong>Prefer polyherbal context:</strong> Classical practice almost always uses Brihati within Dashamoola formulations rather than as a standalone single herb — the polyherbal context buffers individual alkaloid intensity. Self-medicating with single-herb Brihati is not recommended.</li>
+      </ul>
+    </div>
+
+    <div class="sources">
+      <div class="sources-title">References &amp; Sources</div>
+      <ul>
+        <li>Saxena S et al. — "Phytochemistry and HPTLC fingerprint analysis of Solanum indicum: A review of the medicinal alkaloid profile" — 2021</li>
+        <li>Jayanthi R et al. — "A review on the pharmacological actions of Solanum indicum (Brihati)" — International Journal of Pharmacology &amp; Pharmaceutical Research, 2012</li>
+        <li>"Pharmacognostical and Phytochemical Studies of Solanum indicum Linn." — International Education &amp; Research Journal (IERJ), 2026</li>
+        <li>"Solanum indicum: A Comprehensive Phytopharmacological Review" — ResearchGate, 2017</li>
+        <li>Charaka Samhita — Brihati references in Kasa Chikitsa, Shvasa Chikitsa, Jwara Chikitsa, Dashamoola context</li>
+        <li>Sushruta Samhita — Brihati references in Dashamoola context, Mutrakrichra Chikitsa</li>
+        <li>Bhavaprakasha Nighantu — Classical descriptions of Brihati and Brihati Dwaya properties</li>
+        <li>The Ayurvedic Pharmacopoeia of India, Part I — Government of India, Ministry of AYUSH</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer>
+    <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a
+      qualified practitioner before therapeutic use</p>
+  </footer>
+
+  <audio id="brihatiAudio" src="brihati_benefits.mp3" loop preload="auto"></audio>
+
+  <script>
+    const open3D = document.getElementById('open3D');
+    const close3D = document.getElementById('close3D');
+    const modal = document.getElementById('viewerModal');
+    const brihatiAudio = document.getElementById('brihatiAudio');
+
+    function openModal() {
+      modal.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+      history.pushState({ modal: 'brihati3d' }, '', '#3d');
+      brihatiAudio.play().catch(e => console.log('Audio autoplay blocked', e));
+    }
+
+    function closeModal() {
+      modal.style.display = 'none';
+      document.body.style.overflow = '';
+      if (window.location.hash === '#3d') {
+        history.replaceState(null, '', window.location.pathname);
+      }
+      brihatiAudio.pause();
+      brihatiAudio.currentTime = 0;
+    }
+
+    open3D.addEventListener('click', function (e) {
+      e.preventDefault(); e.stopPropagation();
+      openModal();
+    });
+
+    close3D.addEventListener('click', function (e) {
+      e.preventDefault(); e.stopPropagation();
+      closeModal();
+    });
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+    });
+
+    window.addEventListener('popstate', function (e) {
+      if (modal.style.display === 'flex') {
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+    });
+  </script>
+</body>
+
+</html>

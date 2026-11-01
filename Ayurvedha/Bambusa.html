@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bambusa | Swastha</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+  <style>
+    #open3D {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      padding: 10px 18px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: var(--forest);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      z-index: 1000;
+      transition: .3s;
+    }
+    #open3D:hover {
+      background: var(--gold);
+      color: var(--deep);
+    }
+    #viewerModal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+    }
+    #modal-topbar {
+      flex-shrink: 0;
+      height: 58px;
+      background: #111111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px 0 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      z-index: 99999;
+    }
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 4.5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.72);
+      user-select: none;
+    }
+    #close3D {
+      width: 38px;
+      height: 38px;
+      font-size: 15px;
+      font-weight: 300;
+      background: transparent;
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background .2s, color .2s, transform .22s;
+      outline: none;
+      flex-shrink: 0;
+    }
+    #close3D:hover {
+      background: #ffffff;
+      color: #111111;
+      border-color: #ffffff;
+      transform: rotate(90deg);
+    }
+    #viewerModal model-viewer {
+      flex: 1;
+      width: 100%;
+      display: block;
+      background: #ffffff;
+    }
+
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+    * { margin:0; padding:0; box-sizing:border-box }
+    html { scroll-behavior:smooth }
+    body { font-family:'Jost',sans-serif; background:var(--cream); color:var(--ink); min-height:100vh; overflow-x:hidden; position:relative }
+    body::before {
+      content:''; position:fixed; inset:0;
+      background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity:.025; pointer-events:none; z-index:100;
+    }
+    .bg-circle { position:fixed; border-radius:50%; pointer-events:none; z-index:0 }
+    .bg-circle-1 { width:700px; height:700px; background:radial-gradient(circle,rgba(45,80,22,.12) 0%,transparent 70%); top:-200px; right:-150px }
+    .bg-circle-2 { width:500px; height:500px; background:radial-gradient(circle,rgba(184,160,48,.09) 0%,transparent 70%); bottom:-100px; left:-100px }
+
+    .botanical-svg { position:fixed; pointer-events:none; z-index:1; opacity:.1 }
+    .botanical-tl { top:0; left:0; width:260px }
+    .botanical-br { bottom:0; right:0; width:240px; transform:rotate(180deg) }
+
+    /* ── Hero ── */
+    .hero { position:relative; z-index:10; padding:54px 40px 0; text-align:center; opacity:0; animation:fadeUp .9s ease .1s forwards }
+    .back-link { display:inline-flex; align-items:center; gap:8px; font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--sage); text-decoration:none; margin-bottom:36px; transition:color .3s }
+    .back-link:hover { color:var(--gold) }
+    .logo-rule { display:flex; align-items:center; justify-content:center; gap:20px; margin-bottom:14px }
+    .logo-rule span { display:block; height:1px; width:70px; background:linear-gradient(to right,transparent,var(--gold)) }
+    .logo-rule span:last-child { background:linear-gradient(to left,transparent,var(--gold)) }
+    .logo-ornament { font-size:13px; color:var(--gold) }
+    .hero-title { font-family:'Cormorant Garamond',serif; font-size:clamp(56px,10vw,100px); font-weight:300; letter-spacing:8px; line-height:1; color:var(--deep) }
+    .hero-subtitle { font-family:'Cormorant Garamond',serif; font-size:18px; font-style:italic; font-weight:300; color:var(--earth); letter-spacing:2px; margin-top:8px }
+    .hero-sci { font-size:11px; font-weight:200; letter-spacing:5px; color:var(--sage); margin-top:6px }
+
+    .hero-photos { position:relative; z-index:10; display:grid; grid-template-columns:1fr 1fr; gap:2px; max-width:900px; margin:40px auto 0; opacity:0; animation:fadeUp .9s ease .35s forwards }
+    .hero-photos img { width:100%; height:380px; object-fit:cover; object-position:center; display:block; background:var(--parchment) }
+    .photo-caption { text-align:center; font-family:'Cormorant Garamond',serif; font-size:12px; font-style:italic; color:var(--sage); letter-spacing:1px; padding:10px 0 0; max-width:900px; margin:0 auto; position:relative; z-index:10; opacity:0; animation:fadeUp .9s ease .5s forwards }
+
+    .divider { display:flex; align-items:center; justify-content:center; gap:16px; margin:50px auto; max-width:600px; opacity:0; animation:fadeUp .9s ease .55s forwards; position:relative; z-index:10 }
+    .divider-line { height:1px; width:120px; background:linear-gradient(to right,transparent,var(--sage)) }
+    .divider-line:last-child { background:linear-gradient(to left,transparent,var(--sage)) }
+    .divider-leaf { color:var(--forest); font-size:18px }
+
+    /* ── Content ── */
+    .content { position:relative; z-index:10; max-width:860px; margin:0 auto; padding:0 30px 80px }
+    .intro-text { font-family:'Cormorant Garamond',serif; font-size:20px; font-weight:300; line-height:1.75; color:var(--ink); text-align:center; max-width:700px; margin:0 auto 60px; opacity:0; animation:fadeUp .9s ease .6s forwards }
+    .intro-text em { color:var(--forest); font-style:italic }
+
+    .section { margin-bottom:60px; opacity:0; animation:fadeUp .9s ease forwards }
+    .section:nth-child(1) { animation-delay:.65s } .section:nth-child(2) { animation-delay:.75s }
+    .section:nth-child(3) { animation-delay:.85s } .section:nth-child(4) { animation-delay:.95s }
+    .section:nth-child(5) { animation-delay:1.05s } .section:nth-child(6) { animation-delay:1.15s }
+    .section:nth-child(7) { animation-delay:1.25s }
+
+    .section-header { display:flex; align-items:center; gap:14px; margin-bottom:20px }
+    .section-num { font-family:'Cormorant Garamond',serif; font-size:11px; letter-spacing:4px; color:var(--gold) }
+    .section-title { font-family:'Cormorant Garamond',serif; font-size:28px; font-weight:400; color:var(--deep); letter-spacing:1px }
+    .section-rule { height:1px; flex:1; background:linear-gradient(to right,var(--gold),transparent) }
+    .section-body { font-size:13px; font-weight:300; line-height:1.9; color:var(--ink); margin-bottom:24px }
+
+    /* ── Tables ── */
+    .data-table { width:100%; border-collapse:collapse; margin:16px 0 8px; font-size:12px }
+    .data-table thead tr { background:var(--deep); color:var(--gold); font-size:10px; letter-spacing:3px; text-transform:uppercase }
+    .data-table thead th { padding:12px 14px; text-align:left; font-weight:400 }
+    .data-table tbody tr:nth-child(even) { background:var(--parchment) }
+    .data-table tbody tr:nth-child(odd) { background:var(--cream) }
+    .data-table tbody tr { transition:background .2s }
+    .data-table tbody tr:hover { background:#d8e8c0 }
+    .data-table tbody td { padding:10px 14px; color:var(--ink); border-bottom:1px solid rgba(45,80,22,.08) }
+    .data-table tbody td:first-child { font-weight:400; color:var(--deep); width:28% }
+
+    .dosha-table { width:100%; border-collapse:collapse; margin:16px 0; font-size:12px }
+    .dosha-table thead tr { background:var(--forest); color:var(--mist) }
+    .dosha-table thead th { padding:12px 14px; text-align:left; font-weight:400; letter-spacing:2px; font-size:10px; text-transform:uppercase }
+    .dosha-table tbody tr:nth-child(even) { background:var(--parchment) }
+    .dosha-table tbody tr:nth-child(odd) { background:var(--cream) }
+    .dosha-table tbody td { padding:11px 14px; color:var(--ink); border-bottom:1px solid rgba(45,80,22,.08) }
+    .dosha-table tbody td:first-child { font-weight:400; color:var(--forest); width:18% }
+    .dosha-table tbody td:nth-child(2) { color:var(--earth); width:20% }
+
+    .consume-table { width:100%; border-collapse:collapse; margin:16px 0; font-size:12px }
+    .consume-table thead tr { background:var(--jade); color:var(--cream) }
+    .consume-table thead th { padding:12px 14px; text-align:left; font-weight:400; letter-spacing:2px; font-size:10px; text-transform:uppercase }
+    .consume-table tbody tr:nth-child(even) { background:var(--parchment) }
+    .consume-table tbody tr:nth-child(odd) { background:var(--cream) }
+    .consume-table tbody td { padding:11px 14px; color:var(--ink); border-bottom:1px solid rgba(45,80,22,.08) }
+    .consume-table tbody td:first-child { font-weight:400; color:var(--jade); width:22% }
+
+    /* ── Benefits grid ── */
+    .benefits-grid { display:grid; grid-template-columns:1fr 1fr; gap:1px; background:rgba(45,80,22,.12); border:1px solid rgba(45,80,22,.12); margin:8px 0 }
+    .benefit-card { background:var(--cream); padding:24px 22px; transition:background .3s; position:relative; overflow:hidden }
+    .benefit-card:hover { background:#deeaca }
+    .benefit-card::before { content:''; position:absolute; bottom:0; left:0; width:0; height:2px; background:var(--gold); transition:width .4s }
+    .benefit-card:hover::before { width:100% }
+    .benefit-title { font-family:'Cormorant Garamond',serif; font-size:16px; font-weight:600; color:var(--forest); margin-bottom:8px }
+    .benefit-desc { font-size:11.5px; font-weight:300; line-height:1.75; color:var(--ink); opacity:.85 }
+
+    /* ── Precautions ── */
+    .precaution-list { list-style:none; margin:8px 0 }
+    .precaution-list li { display:flex; gap:12px; align-items:flex-start; padding:10px 14px; font-size:12px; font-weight:300; line-height:1.7; color:var(--ink); border-bottom:1px solid rgba(45,80,22,.08) }
+    .precaution-list li:last-child { border-bottom:none }
+    .precaution-list li::before { content:'▸'; color:var(--gold); flex-shrink:0; margin-top:1px }
+
+    /* ── Stats bar ── */
+    .nutrition-bar { display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:rgba(45,80,22,.12); border:1px solid rgba(45,80,22,.12); margin:20px 0 }
+    .nutrition-cell { background:var(--cream); padding:22px 16px; text-align:center; transition:background .3s }
+    .nutrition-cell:hover { background:var(--parchment) }
+    .nutrition-num { font-family:'Cormorant Garamond',serif; font-size:36px; font-weight:300; color:var(--forest); line-height:1; margin-bottom:4px }
+    .nutrition-unit { font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--gold); font-weight:300 }
+    .nutrition-label { font-size:11px; font-weight:300; color:var(--ink); margin-top:5px }
+
+    /* ── Vanshalochan spotlight ── */
+    .spotlight-box {
+      border:1px solid rgba(184,160,48,.55);
+      background:linear-gradient(135deg,rgba(184,160,48,.07),rgba(45,80,22,.06));
+      padding:28px 30px; margin:20px 0; position:relative;
+    }
+    .spotlight-box::before {
+      content:'VANSHALOCHAN — THE BAMBOO JEWEL';
+      position:absolute; top:-1px; left:24px;
+      font-size:9px; letter-spacing:4px;
+      background:var(--cream); color:var(--gold);
+      padding:0 8px; transform:translateY(-50%);
+    }
+    .spotlight-box p { font-family:'Cormorant Garamond',serif; font-size:16px; font-weight:300; line-height:1.8; color:var(--ink); margin-bottom:12px }
+    .spotlight-box p:last-child { margin-bottom:0 }
+    .spotlight-box em { color:var(--forest) }
+    .spotlight-box strong { color:var(--deep); font-weight:400 }
+
+    /* ── Mast flowering callout ── */
+    .rare-box {
+      border-left:3px solid var(--bamboo);
+      background:rgba(138,170,58,.06);
+      padding:20px 24px; margin:20px 0;
+    }
+    .rare-box-label { font-size:9px; letter-spacing:4px; text-transform:uppercase; color:var(--sage); font-weight:300; margin-bottom:8px }
+    .rare-box p { font-family:'Cormorant Garamond',serif; font-size:15px; font-weight:300; line-height:1.75; color:var(--ink) }
+    .rare-box em { color:var(--forest) }
+
+    /* ── Sources ── */
+    .sources { border-top:1px solid rgba(45,80,22,.15); padding-top:24px; margin-top:20px }
+    .sources-title { font-size:10px; letter-spacing:4px; text-transform:uppercase; color:var(--sage); margin-bottom:12px; font-weight:300 }
+    .sources ul { list-style:none }
+    .sources ul li { font-family:'Cormorant Garamond',serif; font-size:13px; font-style:italic; color:var(--earth); padding:5px 0; border-bottom:1px solid rgba(45,80,22,.06) }
+    .sources ul li::before { content:'· '; color:var(--sage) }
+
+    footer { position:relative; z-index:10; text-align:center; padding:24px 20px 44px; border-top:1px solid rgba(45,80,22,.12); max-width:860px; margin:0 auto }
+    footer p { font-size:11px; letter-spacing:4px; text-transform:uppercase; color:var(--sage); font-weight:300 }
+
+    @keyframes fadeUp { from { opacity:0; transform:translateY(28px) } to { opacity:1; transform:translateY(0) } }
+
+    @media(max-width:700px) {
+      .hero-photos { grid-template-columns:1fr } .hero-photos img { height:260px }
+      .benefits-grid { grid-template-columns:1fr } .nutrition-bar { grid-template-columns:1fr 1fr }
+      .content { padding:0 18px 60px }
+    }
+  </style>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+</head>
+<body>
+  <button type="button" id="open3D">View in 3D</button>
+
+
+<div class="bg-circle bg-circle-1"></div>
+<div class="bg-circle bg-circle-2"></div>
+
+<!-- Bamboo culm SVG decorations: vertical segmented culms + feathery leaf sprays -->
+<svg class="botanical-svg botanical-tl" viewBox="0 0 300 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- culm 1 -->
+  <rect x="28" y="0" width="14" height="400" rx="4" fill="#3a7a50" opacity=".5"/>
+  <line x1="28" y1="55"  x2="42" y2="55"  stroke="#2d5016" stroke-width="2"/>
+  <line x1="28" y1="115" x2="42" y2="115" stroke="#2d5016" stroke-width="2"/>
+  <line x1="28" y1="175" x2="42" y2="175" stroke="#2d5016" stroke-width="2"/>
+  <line x1="28" y1="235" x2="42" y2="235" stroke="#2d5016" stroke-width="2"/>
+  <line x1="28" y1="295" x2="42" y2="295" stroke="#2d5016" stroke-width="2"/>
+  <line x1="28" y1="355" x2="42" y2="355" stroke="#2d5016" stroke-width="2"/>
+  <!-- culm 2 -->
+  <rect x="56" y="30" width="11" height="370" rx="3" fill="#6b9040" opacity=".4"/>
+  <line x1="56" y1="85"  x2="67" y2="85"  stroke="#4a5e2a" stroke-width="1.5"/>
+  <line x1="56" y1="150" x2="67" y2="150" stroke="#4a5e2a" stroke-width="1.5"/>
+  <line x1="56" y1="215" x2="67" y2="215" stroke="#4a5e2a" stroke-width="1.5"/>
+  <line x1="56" y1="280" x2="67" y2="280" stroke="#4a5e2a" stroke-width="1.5"/>
+  <line x1="56" y1="345" x2="67" y2="345" stroke="#4a5e2a" stroke-width="1.5"/>
+  <!-- leaf sprays from nodes -->
+  <path d="M42 55  Q 90 38 130 22"  stroke="#8aaa3a" stroke-width="1.3" fill="none"/>
+  <path d="M42 55  Q 95 70 140 58"  stroke="#6b9040" stroke-width="1.1" fill="none"/>
+  <path d="M42 115 Q 100 98 155 80" stroke="#8aaa3a" stroke-width="1.3" fill="none"/>
+  <path d="M42 175 Q 105 158 165 142" stroke="#6b9040" stroke-width="1.2" fill="none"/>
+  <path d="M42 175 Q 110 190 170 180" stroke="#8aaa3a" stroke-width="1.1" fill="none"/>
+  <path d="M67 150 Q 120 132 175 115" stroke="#6b9040" stroke-width="1.1" fill="none"/>
+  <path d="M67 215 Q 130 198 190 182" stroke="#8aaa3a" stroke-width="1.2" fill="none"/>
+  <path d="M42 235 Q 108 248 168 238" stroke="#6b9040" stroke-width="1.1" fill="none"/>
+  <!-- thorns at nodes -->
+  <path d="M42 115 L 52 105" stroke="#4a5e2a" stroke-width="1.3" fill="none"/>
+  <path d="M42 175 L 50 163" stroke="#4a5e2a" stroke-width="1.3" fill="none"/>
+  <path d="M42 235 L 51 224" stroke="#4a5e2a" stroke-width="1.3" fill="none"/>
+</svg>
+<svg class="botanical-svg botanical-br" viewBox="0 0 300 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="28" y="0" width="14" height="400" rx="4" fill="#3a7a50" opacity=".5"/>
+  <line x1="28" y1="55"  x2="42" y2="55"  stroke="#2d5016" stroke-width="2"/>
+  <line x1="28" y1="115" x2="42" y2="115" stroke="#2d5016" stroke-width="2"/>
+  <line x1="28" y1="175" x2="42" y2="175" stroke="#2d5016" stroke-width="2"/>
+  <line x1="28" y1="235" x2="42" y2="235" stroke="#2d5016" stroke-width="2"/>
+  <path d="M42 55  Q 90 38 130 22" stroke="#8aaa3a" stroke-width="1.3" fill="none"/>
+  <path d="M42 115 Q 100 98 155 80" stroke="#8aaa3a" stroke-width="1.3" fill="none"/>
+  <path d="M42 175 Q 105 158 165 142" stroke="#6b9040" stroke-width="1.2" fill="none"/>
+  <rect x="56" y="30" width="11" height="370" rx="3" fill="#6b9040" opacity=".4"/>
+  <line x1="56" y1="85"  x2="67" y2="85"  stroke="#4a5e2a" stroke-width="1.5"/>
+  <line x1="56" y1="150" x2="67" y2="150" stroke="#4a5e2a" stroke-width="1.5"/>
+</svg>
+
+<div class="hero">
+  <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+  <div class="logo-rule"><span></span><div class="logo-ornament">✦</div><span></span></div>
+  <div class="hero-title">Bambusa</div>
+  <div class="hero-subtitle">Thorny Bamboo — The Green Gold of Vamsha</div>
+  <div class="hero-sci">Bambusa bambos (L.) Voss &nbsp;·&nbsp; syn. Bambusa arundinacea (Retz.) Willd.</div>
+</div>
+
+<div class="hero-photos">
+  <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ad/Indian_thorny_bamboo_%28Bambusa_bambos%29_in_the_Singapore_Botanic_Gardens.jpg/1280px-Indian_thorny_bamboo_%28Bambusa_bambos%29_in_the_Singapore_Botanic_Gardens.jpg" alt="Bambusa bambos towering thorny culms with dense feathery leaf canopy"
+    onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+  <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/b/be/Bambusa_bamus.JPG/1280px-Bambusa_bamus.JPG" alt="Vanshalochan tabasheer siliceous concretion from bamboo internodes"
+    onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+</div>
+<p class="photo-caption">Fig. 1 — The towering thorny culms of <em>Bambusa bambos</em>, armed at every node with curved spines, rising 20–30 m in dense groves along river margins and forest edges &nbsp;·&nbsp; Fig. 2 — Vanshalochan (Tabasheer) — the opalescent siliceous concretion harvested from bamboo internodes — Ayurveda's rarest and most prized plant mineral</p>
+
+<div class="divider">
+  <div class="divider-line"></div>
+  <div class="divider-leaf">❧</div>
+  <div class="divider-line"></div>
+</div>
+
+<div class="content">
+
+  <p class="intro-text">Revered in Sanskrit as <em>Vamsha</em> — "the lineage" or "the continuous"— bamboo was understood by ancient physicians not as a single simple herb but as an entire medicine chest standing upright: its <em>Vanshalochan</em> (the luminous siliceous concretion within its hollow internodes) was counted among the most prized substances in Ayurveda and Unani; its fresh shoots nourished; its leaves cooled fever; its roots arrested haemorrhage; and its seeds — shed only once in a half-century lifetime — were considered so rare and sacred that their appearance was recorded in royal chronicles as an omen of great change.</p>
+
+  <!-- 01 BOTANICAL -->
+  <div class="section">
+    <div class="section-header"><span class="section-num">01</span><h2 class="section-title">Botanical Profile</h2><div class="section-rule"></div></div>
+    <p class="section-body"><em>Bambusa bambos</em> (syn. <em>Bambusa arundinacea</em>) is the largest and most medicinally significant bamboo of the Indian subcontinent — a massive, clump-forming woody grass of the family Poaceae, subfamily Bambusoideae. Individual culms (stems) grow to 20–30 m in height and 15–18 cm in diameter, rising rapidly from the rhizome base — sometimes gaining 30 cm in a single day during monsoon — making it the fastest-growing woody plant on earth. The culms are bright green in youth, turning yellowish-grey with age, hollow between the solid nodes, and armed at each node with clusters of formidable curved thorns (3–5 cm), which give the species its common name and distinguish it clearly from spineless bamboos.</p>
+    <p class="section-body">Leaves are linear-lanceolate (8–30 cm × 1–3 cm), grass-like, borne on short petioles from the branches that emerge at each node. The leaf surface is rough above, covered with short stiff hairs below. Sheaths are papery, falling early. The root system is an interlocking sympodial (clumping) rhizome network — dense, fibrous, and exceptionally deep — which prevents soil erosion and makes Bambusa one of the most effective watershed-protection plants known.</p>
+    <p class="section-body">Bambusa bambos is native to the Indian subcontinent and Sri Lanka — distributed from the Himalayan foothills to Kerala, thriving in moist deciduous forests, river valleys, and ravines up to 1,200 m altitude. It is extensively cultivated across India, Bangladesh, and Myanmar. The most medicinally prized part — <em>Vanshalochan</em> — is extracted from the hollow internodes of old culms. Young shoots (bamboo shoots) are harvested in the monsoon season as a vegetable and medicine.</p>
+
+    <div class="rare-box">
+      <div class="rare-box-label">The Once-in-a-Lifetime Flowering — Mast Seeding</div>
+      <p><em>Bambusa bambos</em> is a monocarpic (semelparous) plant: the entire clump flowers gregariously once — across all individuals of the species simultaneously, regardless of geographic separation — after a species-specific interval of <em>45–120 years</em>, then sets massive quantities of grain-like seed, and dies. This phenomenon, called <em>mast seeding</em> or <em>gregarious flowering</em>, is among the most extraordinary biological events in the plant kingdom. The bamboo seeds (<em>Vamshabija</em>) — which resemble small rice grains and are nutritious, starchy, and edible — were considered sacred and exceptionally rare in classical texts, consumed as a <em>Rasayana</em> (rejuvenative) grain. The mass die-off of bamboo forests following flowering has historically triggered famines in bamboo-dependent ecosystems and has been linked, in the northeast Indian states, to population explosions of bamboo rats.</p>
+    </div>
+
+    <table class="data-table">
+      <thead><tr><th>PROPERTY</th><th>Detail</th></tr></thead>
+      <tbody>
+        <tr><td>Family</td><td>Poaceae (Gramineae), sub-family Bambusoideae</td></tr>
+        <tr><td>Botanical Name</td><td>Bambusa bambos (L.) Voss / Bambusa arundinacea (Retz.) Willd.</td></tr>
+        <tr><td>Sanskrit Names</td><td>Vamsha, Tvaksara, Venu, Kichaka, Yava-phala, Shvetavamsha, Tejana, Shubhra</td></tr>
+        <tr><td>Common Names</td><td>Thorny Bamboo, Giant Thorny Bamboo, Indian Bamboo, Spiny Bamboo</td></tr>
+        <tr><td>Regional Names</td><td>Veduru / Moongil (Tel/Tam), Bans (Hindi), Velu (Mal/Kan), Vans (Mar/Guj), Bash (Ben)</td></tr>
+        <tr><td>Origin / Range</td><td>Indian subcontinent, Sri Lanka; cultivated pan-tropically</td></tr>
+        <tr><td>Plant Type</td><td>Clump-forming woody grass; culms 20–30 m tall, 15–18 cm diameter</td></tr>
+        <tr><td>Flowering Cycle</td><td>Monocarpic: gregarious flowering every 45–120 years; plant dies after seeding</td></tr>
+        <tr><td>Medicinal Parts</td><td>Vanshalochan / Tabasheer (primary); young shoots, leaves, roots, stem nodes, seeds (rare)</td></tr>
+        <tr><td>Taste Profile</td><td>Madhura (sweet), Kashaya (astringent), Tikta (bitter) — varies by plant part</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 02 PHYTOCHEMISTRY -->
+  <div class="section">
+    <div class="section-header"><span class="section-num">02</span><h2 class="section-title">Phytochemistry &amp; Composition</h2><div class="section-rule"></div></div>
+    <p class="section-body">The pharmacochemistry of Bambusa bambos is unique among Ayurvedic plants in that its primary medicinal substance — Vanshalochan — is not an alkaloid, terpene, or flavonoid but an amorphous silica-based mineral concretion: a plant-derived silicate that is almost without parallel in the herbal materia medica. Beyond Vanshalochan, the leaves, shoots, and roots contain a diverse matrix of phenolic compounds, flavonoids, sterols, and cyanogenic glycosides, while bamboo shoots are nutritionally significant as a vegetable — low calorie, high fibre, rich in potassium, and containing all essential amino acids.</p>
+    <div class="nutrition-bar">
+      <div class="nutrition-cell">
+        <div class="nutrition-num">~77</div>
+        <div class="nutrition-unit">% SiO₂</div>
+        <div class="nutrition-label">Vanshalochan silica content</div>
+      </div>
+      <div class="nutrition-cell">
+        <div class="nutrition-num">91</div>
+        <div class="nutrition-unit">% water</div>
+        <div class="nutrition-label">Fresh shoot composition</div>
+      </div>
+      <div class="nutrition-cell">
+        <div class="nutrition-num">18</div>
+        <div class="nutrition-unit">amino acids</div>
+        <div class="nutrition-label">In bamboo shoot protein</div>
+      </div>
+      <div class="nutrition-cell">
+        <div class="nutrition-num">40+</div>
+        <div class="nutrition-unit">compounds</div>
+        <div class="nutrition-label">Bioactives (leaves + shoots)</div>
+      </div>
+    </div>
+    <table class="data-table">
+      <thead><tr><th>Compound</th><th>Source Part</th><th>Category &amp; Primary Action</th></tr></thead>
+      <tbody>
+        <tr><td>Silica (SiO₂) — Vanshalochan</td><td>Internode concretion</td><td>Amorphous silicate; tonic, respiratory, anti-inflammatory; cooling; structural mineral for connective tissue</td></tr>
+        <tr><td>Orientin &amp; Isoorientin</td><td>Leaves</td><td>C-glycosyl flavones; antioxidant, anti-inflammatory, antidiabetic, cardioprotective, antiviral</td></tr>
+        <tr><td>Vitexin &amp; Isovitexin</td><td>Leaves</td><td>Apigenin C-glycosides; anti-inflammatory, analgesic, neuroprotective, antispasmodic</td></tr>
+        <tr><td>Luteolin &amp; Apigenin</td><td>Leaves</td><td>Flavones; antioxidant, anti-inflammatory, anticancer, antibacterial</td></tr>
+        <tr><td>p-Coumaric Acid &amp; Ferulic Acid</td><td>Leaves, shoots</td><td>Hydroxycinnamic acids; antioxidant, antimicrobial, UV-protective</td></tr>
+        <tr><td>Taxiphyllin (dhurrin)</td><td>Young shoots</td><td>Cyanogenic glycoside; toxic raw but inactivated on cooking; antibacterial activity reported</td></tr>
+        <tr><td>β-Sitosterol &amp; Stigmasterol</td><td>Roots, leaves</td><td>Phytosterols; anti-inflammatory, hypolipidemic, immunomodulatory</td></tr>
+        <tr><td>Bamboo Lignans</td><td>Culm, nodes</td><td>Antioxidant; oestrogen-modulating; antimicrobial</td></tr>
+        <tr><td>Potassium (shoots)</td><td>Young shoots</td><td>Mineral; diuretic, antihypertensive, cardioprotective</td></tr>
+        <tr><td>Silicic Acid (soluble)</td><td>Leaves (infusion)</td><td>Bioavailable silica; connective tissue support; urinary anti-lithic; diuretic</td></tr>
+        <tr><td>Tannins &amp; Phenolic acids</td><td>Roots, bark</td><td>Astringent; antimicrobial; wound healing; anti-diarrheal</td></tr>
+        <tr><td>Bamboo Shoot Sterols</td><td>Young shoots</td><td>Cholesterol-lowering; anti-proliferative; chemoprotective</td></tr>
+      </tbody>
+    </table>
+
+    <div class="spotlight-box">
+      <p><strong>Vanshalochan</strong> — called <em>Tabasheer</em> in Unani and Persian medicine, <em>Banslochan</em> in Hindi — is the extraordinary siliceous concretion that forms within the hollow internodes of old bamboo culms. As the bamboo ages, silicic acid absorbed from soil water through the roots is transported to the aerial parts and deposited as amorphous hydrated silica (SiO₂·nH₂O) in the internode cavity. The concretion is translucent-white to milky-blue, cool and smooth to the touch, and faintly iridescent in certain lights. It contains approximately 77% silica, along with calcium, potassium, and traces of aluminium.</p>
+      <p>In classical Ayurveda, Vanshalochan is categorised as a <em>Sikata</em> (siliceous substance) and classified under <em>Ratna-upratna Varga</em> alongside gem-based preparations — a remarkable status for a plant-derived material. It is considered <em>Sheeta</em> (cooling), <em>Balya</em> (strengthening), <em>Rasayana</em> (rejuvenative), and supremely beneficial for the lungs and respiratory tract. In Unani, Tabasheer is described as <em>the cooling heart of the bamboo</em> — prescribed for high fever, palpitations, inflammatory lung disease, and as a general tonic. Modern silica research confirms that bioavailable silica supports collagen synthesis, bone mineralisation, skin and hair integrity, and urinary health — validating every major classical application.</p>
+    </div>
+  </div>
+
+  <!-- 03 AYURVEDIC -->
+  <div class="section">
+    <div class="section-header"><span class="section-num">03</span><h2 class="section-title">Ayurvedic Significance</h2><div class="section-rule"></div></div>
+    <p class="section-body">Bamboo (Vamsha) is cited across all major classical texts. Charaka Samhita includes bamboo leaves in the <em>Ushna Skandha</em> (hot group) diaphoretic formulations for fever and in <em>Pratishyaya</em> (rhinitis / catarrh) treatment. The roots feature in haemostatic (<em>Raktasthambhana</em>) preparations. Sushruta places Vamsha Tvak (bamboo bark / outer culm) in wound-healing formulations. Ashtanga Hridayam of Vagbhata cites it in <em>Kasa</em> (cough), <em>Shvasa</em> (asthma), and <em>Kshatakshaya</em> (pulmonary tuberculosis / chest injury) treatments.</p>
+    <p class="section-body">Vanshalochan is the centrepiece of two landmark classical formulations: <em>Sitopaladi Churna</em> — the most widely used classical Ayurvedic preparation for cough, cold, and respiratory weakness — and <em>Talisadi Churna</em>, both of which list Vanshalochan as the primary ingredient giving cooling and tonic properties to the formula. Classical shloka from Bhavaprakasha — <em>"Vamshastu madhuro hima shleshmapittashrayapaham, kasa-shvasa-raktapitta-kshayaghnah pushtidam param"</em> — describes bamboo as sweet, cooling, removing Kapha and Pitta disorders, destroying cough, asthma, bleeding disorders, and wasting diseases, and supremely nourishing.</p>
+    <table class="dosha-table">
+      <thead><tr><th>Dosha</th><th>Effect</th><th>Mechanism &amp; Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Vata ↑</td><td>Mildly aggravating</td><td>Rooksha (dry) quality of Vanshalochan and bamboo shoots may mildly increase Vata with excessive use; always combined with ghee, honey, or milk in classical formulations to offset dryness; individual plant parts vary — shoots are more Vata-neutral</td></tr>
+        <tr><td>Pitta ↓</td><td>Strongly pacifying</td><td>Sheeta virya (cooling potency) of Vanshalochan is its defining therapeutic quality — premier cooling agent in Pitta-excess conditions: fever, inflammatory lung disease, burning sensations, haemorrhage, and hyperacidity; Madhura (sweet) vipaka further pacifies Pitta</td></tr>
+        <tr><td>Kapha ↓</td><td>Pacifying</td><td>Tikta (bitter) and Kashaya (astringent) rasa of bamboo leaves and Teekshna quality of the herb complex in formulations like Sitopaladi reduce Kapha accumulation; specifically indicated in chronic productive cough, bronchial congestion, and mucus disorders</td></tr>
+      </tbody>
+    </table>
+    <p class="section-body"><strong>Rasa:</strong> Madhura (sweet), Kashaya (astringent), Tikta (bitter) &nbsp;·&nbsp; <strong>Guna:</strong> Laghu (light), Rooksha (dry — Vanshalochan), Sheeta (cool) &nbsp;·&nbsp; <strong>Virya:</strong> Sheeta (cooling) &nbsp;·&nbsp; <strong>Vipaka:</strong> Madhura (sweet) &nbsp;·&nbsp; <strong>Karma:</strong> Pitta-Kapha shamaka, Kasa-hara, Shvasa-hara, Raktapitta-hara, Balya, Rasayana</p>
+  </div>
+
+  <!-- 04 BENEFITS -->
+  <div class="section">
+    <div class="section-header"><span class="section-num">04</span><h2 class="section-title">Key Health Benefits</h2><div class="section-rule"></div></div>
+    <p class="section-body">Modern pharmacological research on Bambusa bambos is advancing rapidly, with leaf flavonoids, Vanshalochan silica, and bamboo shoot phytochemicals all yielding compelling data across respiratory, metabolic, cardiovascular, and gynaecological domains — confirming the breadth of its classical indications.</p>
+    <div class="benefits-grid">
+      <div class="benefit-card">
+        <div class="benefit-title">Respiratory Health — Kasa &amp; Shvasa</div>
+        <div class="benefit-desc">Bamboo's most celebrated classical application — enshrined in Sitopaladi Churna, Ayurveda's quintessential cough formula. Vanshalochan soothes inflamed bronchial mucosa (Sheeta, cooling); leaf flavonoids (orientin, vitexin) reduce airway inflammation and bronchospasm; the overall formula thins mucus and facilitates expectoration. Used in acute and chronic cough, bronchitis, asthma, and post-viral respiratory weakness. Multiple clinical studies confirm Sitopaladi Churna's efficacy in productive cough comparable to standard mucolytics.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Connective Tissue &amp; Bone Health</div>
+        <div class="benefit-desc">Vanshalochan is Ayurveda's preeminent plant-derived silica source. Modern biochemistry has established that silica is essential for hydroxylation of proline and lysine in collagen synthesis — the structural foundation of bone, cartilage, tendons, skin, and hair. Soluble silicic acid from bamboo leaf infusion demonstrates significant collagen-stimulating activity in fibroblast models. Classical use of Vanshalochan as Balya (tissue-strengthening) and Rasayana finds compelling modern validation in silica's role in bone mineralisation and connective tissue integrity.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Antipyretic &amp; Anti-inflammatory</div>
+        <div class="benefit-desc">Bamboo leaf extract demonstrates significant antipyretic activity (reducing yeast-induced fever in animal models at 200–400 mg/kg) and anti-inflammatory activity (reducing carrageenan-induced paw edema) attributable to orientin and isoorientin inhibiting COX-2, TNF-α, and IL-6 pathways. Vanshalochan's Sheeta (cooling) quality underpins its classical use in high fever, burning sensations, and inflammatory conditions. Bamboo leaf decoction is a traditional summer cooling drink across Gujarat and Rajasthan.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Female Reproductive Health</div>
+        <div class="benefit-desc">Bamboo shoots contain phytosterols with weak oestrogenic activity, and the plant is classically listed under <em>Garbhashaya Uttejaka</em> (uterine-stimulating) drugs — bamboo root decoction is used in classical Ayurveda to regulate menstruation, induce uterine contractions in post-partum care, and promote lactation. Young shoots are traditionally consumed by nursing mothers in several Northeast Indian communities to stimulate milk production. This makes bamboo's use during pregnancy a nuanced and physician-directed matter.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Antioxidant &amp; Cardioprotective</div>
+        <div class="benefit-desc">Bamboo leaf flavonoids — particularly orientin, isoorientin, and vitexin — are among the most thoroughly characterised plant antioxidants with strong free-radical scavenging activity across DPPH, ABTS, and FRAP assays. Orientin specifically demonstrates cardioprotective effects by reducing oxidative stress-induced cardiomyocyte apoptosis, improving myocardial blood flow, and inhibiting platelet aggregation. Bamboo leaf extract (BLE) is approved in China as a natural antioxidant food additive — a commercial application derived from its high flavone content.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Antimicrobial &amp; Antifungal</div>
+        <div class="benefit-desc">Ethanol and methanol extracts of bamboo leaves, roots, and culm nodes show significant inhibitory activity against Staphylococcus aureus, E. coli, Pseudomonas aeruginosa, Salmonella, and Aspergillus species. Bamboo vinegar (pyroligneous acid from bamboo charring) has well-documented broad-spectrum antimicrobial activity used in traditional Japanese and Korean medicine. Taxiphyllin in young shoots converts to cyanide on enzymatic hydrolysis — which likely accounts for the reported antibacterial activity against gut pathogens at sub-toxic concentrations.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Antidiabetic &amp; Hypolipidaemic</div>
+        <div class="benefit-desc">Bamboo shoot fibre, phytosterols, and soluble polysaccharides reduce postprandial glucose absorption by slowing intestinal carbohydrate digestion and improving insulin sensitivity in animal models. Bamboo leaf flavones reduce serum total cholesterol, LDL, and triglycerides significantly in hyperlipidaemia models — with orientin showing specific HMGCR (HMG-CoA reductase) inhibitory activity, the same target as statin drugs. Bamboo shoots as a dietary vegetable are recommended in Indian and Southeast Asian naturopathy for diabetes management.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Urinary Health &amp; Anti-lithic</div>
+        <div class="benefit-desc">Classical texts use bamboo leaf decoction as a diuretic and urinary antiseptic for <em>Mutrakricchra</em> (dysuria) and <em>Ashmari</em> (urinary stones). Soluble silicic acid from bamboo leaves modifies urine chemistry to reduce calcium oxalate crystallisation — a mechanism directly relevant to kidney stone prevention. The plant's high potassium content (especially in shoots) promotes urine volume and flushes the renal pelvis. Bamboo leaf infusion remains a popular folk diuretic drink across Andhra Pradesh and Tamil Nadu.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 05 ETHNOBOTANICAL -->
+  <div class="section">
+    <div class="section-header"><span class="section-num">05</span><h2 class="section-title">Traditional &amp; Ethnobotanical Uses</h2><div class="section-rule"></div></div>
+    <p class="section-body">Bamboo is perhaps the most multi-functional plant known to human civilisation — food, medicine, shelter, tools, musical instruments, paper, and spiritual symbol in a single species. Its ethnobotanical medical uses span virtually every system of traditional Asian medicine and every region of India.</p>
+    <table class="data-table">
+      <thead><tr><th>System / Region</th><th>Part Used</th><th>Traditional Application</th></tr></thead>
+      <tbody>
+        <tr><td>Ayurveda — Sitopaladi Churna</td><td>Vanshalochan (primary)</td><td>Classical formulation for cough, cold, asthma, fever, and pulmonary weakness — still the most-prescribed Ayurvedic respiratory compound</td></tr>
+        <tr><td>Unani — Tabasheer</td><td>Vanshalochan</td><td>Mufarreh (cardiac tonic / mood-elevating); used in fever, palpitations, and liver diseases; combined with rose water and sandalwood</td></tr>
+        <tr><td>Northeast India tribal</td><td>Young shoots (fermented)</td><td>Dietary staple and digestive; fermented shoots (<em>mesu</em>) used for gastric disorders, constipation, and as post-partum food for new mothers</td></tr>
+        <tr><td>Kerala Ayurveda</td><td>Root decoction</td><td>Post-partum uterine tonic; menstrual regulation; galactagogue (milk-promotion)</td></tr>
+        <tr><td>Tamil Nadu folk</td><td>Leaf infusion (cold)</td><td>Summer cooling drink; fever; diuretic; relief from burning urination</td></tr>
+        <tr><td>Rajasthan / Gujarat folk</td><td>Internodal water</td><td>Fresh water trapped inside cut young culms drunk for cooling fevers and as a natural electrolyte drink in extreme heat</td></tr>
+        <tr><td>Traditional Chinese medicine</td><td>Leaves (Zhú Yè), pith (Zhú Rú)</td><td>Zhú Yè: clears Heat, promotes urination; Zhú Rú (shaved pith): stops nausea and vomiting, clears phlegm-heat</td></tr>
+        <tr><td>Ancient India (Vedic)</td><td>Seeds (Vamshabija — rare)</td><td>Consumed as sacred grain Rasayana during the once-in-a-century mast seeding event; associated with longevity and rare nourishment</td></tr>
+        <tr><td>Japanese / Korean folk</td><td>Bamboo vinegar (Chikusaku-eki)</td><td>Topical antimicrobial for skin conditions, insect bites, athlete's foot; diluted for detoxifying baths</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 06 HOW TO USE -->
+  <div class="section">
+    <div class="section-header"><span class="section-num">06</span><h2 class="section-title">How to Use Bambusa</h2><div class="section-rule"></div></div>
+    <p class="section-body">Bambusa is used across all routes — internal decoctions and powders, topical applications, dietary shoots, and the classical formulation route via Sitopaladi and Talisadi Churnas. Young bamboo shoots must always be cooked before consumption — raw shoots contain taxiphyllin, a cyanogenic glycoside that releases hydrogen cyanide on enzymatic action, and cooking destroys this compound completely. Vanshalochan is safe internally and requires no special processing.</p>
+    <table class="consume-table">
+      <thead><tr><th>Form</th><th>Preparation</th><th>Dosage</th><th>Best Use</th></tr></thead>
+      <tbody>
+        <tr><td>Sitopaladi Churna (classical)</td><td>Compound powder (Vanshalochan + Pippali + Cardamom + Cinnamon + Mishri)</td><td>1–3 g with honey, 2–3× daily after meals</td><td>Cough, cold, asthma, respiratory weakness — flagship use</td></tr>
+        <tr><td>Vanshalochan Powder</td><td>Fine-ground siliceous concretion; with honey or ghee</td><td>250–500 mg twice daily, physician-directed</td><td>Cooling tonic, fever, chest burning, pulmonary conditions</td></tr>
+        <tr><td>Leaf Decoction (Kwatha)</td><td>Boil 10–15 g dried leaves in 400 ml water; reduce to 100 ml; strain</td><td>30–50 ml twice daily</td><td>Fever, diuretic, urinary burning, anti-inflammatory</td></tr>
+        <tr><td>Leaf Cold Infusion</td><td>Steep fresh leaves in cold water overnight; strain</td><td>50–100 ml once or twice daily</td><td>Summer cooling, dysuria, mild fever</td></tr>
+        <tr><td>Young Shoots (dietary)</td><td>Always cook thoroughly — boil 20 min, discard water; then stir-fry or pickle</td><td>Dietary quantity as vegetable</td><td>Digestive health, cholesterol, antidiabetic diet, diuretic</td></tr>
+        <tr><td>Root Decoction</td><td>Boil 10 g dried root in 300 ml water; reduce to 75 ml</td><td>30–40 ml twice daily, physician-directed</td><td>Post-partum care, menstrual regulation, haemostasis</td></tr>
+        <tr><td>Internodal Water</td><td>Fresh water collected from cut young culm internodes</td><td>50–100 ml as available</td><td>Natural electrolyte, cooling in heat exhaustion</td></tr>
+        <tr><td>Talisadi Churna (classical)</td><td>Compound powder with Vanshalochan as key ingredient</td><td>Per practitioner direction</td><td>Chronic cough, Kapha-Vata respiratory disorders</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 07 SAFETY -->
+  <div class="section">
+    <div class="section-header"><span class="section-num">07</span><h2 class="section-title">Safety &amp; Precautions</h2><div class="section-rule"></div></div>
+    <p class="section-body">Bambusa bambos is broadly safe across its medicinal applications. Its most important safety consideration is the mandatory cooking of young bamboo shoots before consumption — raw shoots contain taxiphyllin which releases cyanide. Once cooked, shoots are entirely safe and nutritious. Vanshalochan is extremely well-tolerated, with no reported adverse effects at classical doses. Internal leaf decoctions and powders are safe for most adults at recommended doses.</p>
+    <ul class="precaution-list">
+      <li><strong>Raw bamboo shoots — NEVER consume raw:</strong> Young shoots contain taxiphyllin, a cyanogenic glycoside that releases hydrogen cyanide (HCN) enzymatically when chewed. Always boil shoots for at least 20 minutes and discard the cooking water before any culinary or medicinal use. Cooked shoots are completely safe.</li>
+      <li><strong>Pregnancy (internal preparations):</strong> Bamboo root decoction and some formulations with bamboo as a uterine stimulant are contraindicated in pregnancy. Vanshalochan in standard formulations (Sitopaladi Churna) is generally considered safe in pregnancy when used at classical doses; confirm with a physician. Bamboo shoots as a cooked vegetable are safe during pregnancy.</li>
+      <li><strong>Vata constitution — excessive dryness:</strong> Vanshalochan is Rooksha (dry) in quality; prolonged internal use without unctuous adjuvants (ghee, honey, milk) may aggravate Vata and cause dryness of mucous membranes. Classical formulations always combine it with sweet, unctuous ingredients to balance this quality.</li>
+      <li><strong>Kidney disease:</strong> High-dose silica supplementation is cleared renally — patients with compromised kidney function should consult a physician before regular internal use of Vanshalochan or bamboo leaf decoctions as diuretics.</li>
+      <li><strong>Thyroid function:</strong> Bamboo shoots contain glucosinolate-like compounds that in very large dietary quantities may mildly interfere with thyroid iodine uptake (goitrogenic potential). This is relevant only to extreme dietary consumption of shoots, not to medicinal preparations at standard doses.</li>
+      <li><strong>Drug interactions:</strong> Bamboo leaf flavonoids (orientin) have demonstrated mild CYP450 inhibitory activity in vitro. Patients on anticoagulants, antidiabetics, or antihypertensives should monitor their response when starting bamboo leaf preparations alongside these medications.</li>
+      <li><strong>Ecological consideration:</strong> In regions where <em>Bambusa bambos</em> groves are entering their rare flowering phase, harvesting should be conservative — the mast seeding event and subsequent die-off make these periods ecologically sensitive. Cultivation is preferred over wild harvesting wherever possible.</li>
+    </ul>
+  </div>
+
+  <div class="sources">
+    <div class="sources-title">References &amp; Sources</div>
+    <ul>
+      <li>Kirtikar KR &amp; Basu BD — Indian Medicinal Plants, Vol. IV — Bambusa arundinacea — Bishen Singh Mahendra Pal Singh, Dehradun, 1975</li>
+      <li>Nirmala C, David E &amp; Sharma ML — "Nutritive value of different bamboo species in the Sikkim Himalayas" — Journal of Human Ecology, 2007</li>
+      <li>Lu B, Wu X, Shi M &amp; Dong Y — "Toxicology and safety of antioxidant bamboo leaf flavonoids" — Food and Chemical Toxicology, 2006</li>
+      <li>Yan Jh et al. — "Orientin and vitexin: Natural flavone C-glycosides — A comprehensive review of pharmacological activity" — Phytomedicine, 2021</li>
+      <li>Kaur C, Kapoor HC — "Antioxidant activity and phenolic content of some Asian vegetables" — International Journal of Food Science and Technology, 2002</li>
+      <li>Sah NK, Singh SNP, Kumari S &amp; Bhat MA — "Bamboo, a medicinal plant of high value in Ayurveda" — Journal of Medicinal Plants Studies, 2014</li>
+      <li>Scurlock JMO &amp; Hall DO — "The global carbon sink: a grassland perspective" — Global Change Biology, 1998 (bamboo carbon sequestration)</li>
+      <li>Charaka Samhita — Chikitsa Sthana — Kasa Chikitsa, Pratishyaya Chikitsa, Raktapitta Chikitsa</li>
+      <li>Sushruta Samhita — Chikitsa Sthana — Vrana Chikitsa; Sutra Sthana — material medicine</li>
+      <li>Ashtanga Hridayam (Vagbhata) — Chikitsa Sthana — Kasa, Shvasa, Kshatakshaya Chikitsa</li>
+      <li>Bhavaprakasha Nighantu — Guduchyadi Varga — Vamsha, Vanshalochan entries</li>
+      <li>API (Ayurvedic Pharmacopoeia of India) — Vanshalochan monograph; Sitopaladi Churna compound formulation</li>
+    </ul>
+  </div>
+
+</div>
+
+<footer>
+  <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a qualified practitioner before therapeutic use</p>
+</footer>
+
+  <div id="viewerModal">
+    <div id="modal-topbar">
+      <span>3D Model — Bambusa</span>
+      <button type="button" id="close3D">✕</button>
+    </div>
+    <model-viewer src="bambusa3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+  </div>
+  <script>
+    (function() {
+      var open3D = document.getElementById('open3D');
+      var close3D = document.getElementById('close3D');
+      var modal = document.getElementById('viewerModal');
+      if (!open3D || !close3D || !modal) return;
+      function openModal() {
+        
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+      function closeModal() {
+        
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+      open3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); openModal();
+      });
+      close3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); closeModal();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+      });
+    })();
+  </script>
+
+</body>
+</html>

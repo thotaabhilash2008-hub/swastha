@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Khadira | Swastha</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+  <style>
+    #open3D {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      padding: 10px 18px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: var(--forest);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      z-index: 1000;
+      transition: .3s;
+    }
+    #open3D:hover {
+      background: var(--gold);
+      color: var(--deep);
+    }
+    #viewerModal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+    }
+    #modal-topbar {
+      flex-shrink: 0;
+      height: 58px;
+      background: #111111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px 0 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      z-index: 99999;
+    }
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 4.5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.72);
+      user-select: none;
+    }
+    #close3D {
+      width: 38px;
+      height: 38px;
+      font-size: 15px;
+      font-weight: 300;
+      background: transparent;
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background .2s, color .2s, transform .22s;
+      outline: none;
+      flex-shrink: 0;
+    }
+    #close3D:hover {
+      background: #ffffff;
+      color: #111111;
+      border-color: #ffffff;
+      transform: rotate(90deg);
+    }
+    #viewerModal model-viewer {
+      flex: 1;
+      width: 100%;
+      display: block;
+      background: #ffffff;
+    }
+
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+    * { margin:0; padding:0; box-sizing:border-box }
+    html { scroll-behavior:smooth }
+    body {
+      font-family:'Jost',sans-serif;
+      background:var(--cream);
+      color:var(--ink);
+      min-height:100vh;
+      overflow-x:hidden;
+      position:relative;
+    }
+    body::before {
+      content:'';
+      position:fixed;
+      inset:0;
+      background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity:.035;
+      pointer-events:none;
+      z-index:100;
+    }
+    .bg-circle { position:fixed; border-radius:50%; pointer-events:none; z-index:0 }
+    .bg-circle-1 { width:700px; height:700px; background:radial-gradient(circle,rgba(122,74,30,.1) 0%,transparent 70%); top:-200px; right:-150px }
+    .bg-circle-2 { width:500px; height:500px; background:radial-gradient(circle,rgba(200,146,42,.08) 0%,transparent 70%); bottom:-100px; left:-100px }
+
+    /* Botanical SVG */
+    .botanical-svg { position:fixed; pointer-events:none; z-index:1; opacity:.09 }
+    .botanical-tl { top:-10px; left:-10px; width:280px }
+    .botanical-br { bottom:-10px; right:-10px; width:240px; transform:rotate(180deg) }
+
+    /* Hero */
+    .hero {
+      position:relative; z-index:10;
+      padding:54px 40px 0;
+      text-align:center;
+      opacity:0;
+      animation:fadeUp .9s ease .1s forwards;
+    }
+    .back-link {
+      display:inline-flex; align-items:center; gap:8px;
+      font-size:11px; letter-spacing:3px; text-transform:uppercase;
+      color:var(--sage); text-decoration:none; margin-bottom:36px;
+      transition:color .3s;
+    }
+    .back-link:hover { color:var(--gold) }
+    .logo-rule { display:flex; align-items:center; justify-content:center; gap:20px; margin-bottom:14px }
+    .logo-rule span { display:block; height:1px; width:70px; background:linear-gradient(to right,transparent,var(--gold)) }
+    .logo-rule span:last-child { background:linear-gradient(to left,transparent,var(--gold)) }
+    .logo-ornament { font-size:13px; color:var(--gold) }
+    .hero-title {
+      font-family:'Cormorant Garamond',serif;
+      font-size:clamp(60px,11vw,108px);
+      font-weight:300; letter-spacing:8px; line-height:1;
+      color:var(--deep);
+    }
+    .hero-subtitle {
+      font-family:'Cormorant Garamond',serif;
+      font-size:18px; font-style:italic; font-weight:300;
+      color:var(--earth); letter-spacing:2px; margin-top:8px;
+    }
+    .hero-sci {
+      font-size:11px; font-weight:200; letter-spacing:5px;
+      color:var(--sage); margin-top:6px;
+    }
+
+    /* Hero photos */
+    .hero-photos {
+      position:relative; z-index:10;
+      display:grid; grid-template-columns:1fr 1fr;
+      gap:2px; max-width:900px;
+      margin:40px auto 0;
+      opacity:0; animation:fadeUp .9s ease .35s forwards;
+    }
+    .hero-photos img {
+      width:100%; height:380px;
+      object-fit:cover; object-position:center;
+      display:block; background:var(--parchment);
+    }
+    .photo-caption {
+      text-align:center;
+      font-family:'Cormorant Garamond',serif;
+      font-size:12px; font-style:italic;
+      color:var(--sage); letter-spacing:1px;
+      padding:10px 0 0; max-width:900px;
+      margin:0 auto;
+      position:relative; z-index:10;
+      opacity:0; animation:fadeUp .9s ease .5s forwards;
+    }
+
+    /* Divider */
+    .divider {
+      display:flex; align-items:center; justify-content:center;
+      gap:16px; margin:50px auto;
+      max-width:600px;
+      opacity:0; animation:fadeUp .9s ease .55s forwards;
+      position:relative; z-index:10;
+    }
+    .divider-line { height:1px; width:120px }
+    .divider-line:first-child { background:linear-gradient(to right,transparent,var(--gold)) }
+    .divider-line:last-child { background:linear-gradient(to left,transparent,var(--gold)) }
+    .divider-leaf { color:var(--earth); font-size:18px }
+
+    /* Content */
+    .content {
+      position:relative; z-index:10;
+      max-width:860px; margin:0 auto;
+      padding:0 30px 80px;
+    }
+    .intro-text {
+      font-family:'Cormorant Garamond',serif;
+      font-size:20px; font-weight:300; line-height:1.75;
+      color:var(--ink); text-align:center;
+      max-width:700px; margin:0 auto 60px;
+      opacity:0; animation:fadeUp .9s ease .6s forwards;
+    }
+    .intro-text em { color:var(--earth); font-style:italic }
+
+    /* Sections */
+    .section { margin-bottom:60px; opacity:0; animation:fadeUp .9s ease forwards }
+    .section:nth-child(1){animation-delay:.65s}
+    .section:nth-child(2){animation-delay:.75s}
+    .section:nth-child(3){animation-delay:.85s}
+    .section:nth-child(4){animation-delay:.95s}
+    .section:nth-child(5){animation-delay:1.05s}
+    .section:nth-child(6){animation-delay:1.15s}
+    .section:nth-child(7){animation-delay:1.25s}
+    .section-header { display:flex; align-items:center; gap:14px; margin-bottom:20px }
+    .section-num { font-family:'Cormorant Garamond',serif; font-size:11px; letter-spacing:4px; color:var(--gold) }
+    .section-title { font-family:'Cormorant Garamond',serif; font-size:28px; font-weight:400; color:var(--deep); letter-spacing:1px }
+    .section-rule { height:1px; flex:1; background:linear-gradient(to right,var(--gold),transparent) }
+    .section-body { font-size:13px; font-weight:300; line-height:1.9; color:var(--ink); margin-bottom:24px }
+
+    /* Tables */
+    .data-table { width:100%; border-collapse:collapse; margin:16px 0 8px; font-size:12px }
+    .data-table thead tr { background:var(--deep); color:var(--gold); font-size:10px; letter-spacing:3px; text-transform:uppercase }
+    .data-table thead th { padding:12px 14px; text-align:left; font-weight:400 }
+    .data-table tbody tr:nth-child(even) { background:var(--parchment) }
+    .data-table tbody tr:nth-child(odd) { background:var(--cream) }
+    .data-table tbody tr { transition:background .2s }
+    .data-table tbody tr:hover { background:#e8d5b8 }
+    .data-table tbody td { padding:10px 14px; color:var(--ink); border-bottom:1px solid rgba(122,74,30,.08) }
+    .data-table tbody td:first-child { font-weight:400; color:var(--deep); width:28% }
+
+    .dosha-table { width:100%; border-collapse:collapse; margin:16px 0; font-size:12px }
+    .dosha-table thead tr { background:var(--forest); color:var(--cream) }
+    .dosha-table thead th { padding:12px 14px; text-align:left; font-weight:400; letter-spacing:2px; font-size:10px; text-transform:uppercase }
+    .dosha-table tbody tr:nth-child(even) { background:var(--parchment) }
+    .dosha-table tbody tr:nth-child(odd) { background:var(--cream) }
+    .dosha-table tbody td { padding:11px 14px; color:var(--ink); border-bottom:1px solid rgba(122,74,30,.08) }
+    .dosha-table tbody td:first-child { font-weight:400; color:var(--earth); width:18% }
+    .dosha-table tbody td:nth-child(2) { color:var(--rust); width:20% }
+
+    .consume-table { width:100%; border-collapse:collapse; margin:16px 0; font-size:12px }
+    .consume-table thead tr { background:var(--rust); color:var(--cream) }
+    .consume-table thead th { padding:12px 14px; text-align:left; font-weight:400; letter-spacing:2px; font-size:10px; text-transform:uppercase }
+    .consume-table tbody tr:nth-child(even) { background:var(--parchment) }
+    .consume-table tbody tr:nth-child(odd) { background:var(--cream) }
+    .consume-table tbody td { padding:11px 14px; color:var(--ink); border-bottom:1px solid rgba(122,74,30,.08) }
+    .consume-table tbody td:first-child { font-weight:400; color:var(--earth); width:22% }
+
+    /* Benefits grid */
+    .benefits-grid { display:grid; grid-template-columns:1fr 1fr; gap:1px; background:rgba(122,74,30,.12); border:1px solid rgba(122,74,30,.12); margin:8px 0 }
+    .benefit-card { background:var(--cream); padding:24px 22px; transition:background .3s; position:relative; overflow:hidden }
+    .benefit-card:hover { background:#ecddc4 }
+    .benefit-card::before { content:''; position:absolute; bottom:0; left:0; width:0; height:2px; background:var(--gold); transition:width .4s }
+    .benefit-card:hover::before { width:100% }
+    .benefit-title { font-family:'Cormorant Garamond',serif; font-size:16px; font-weight:600; color:var(--earth); margin-bottom:8px }
+    .benefit-desc { font-size:11.5px; font-weight:300; line-height:1.75; color:var(--ink); opacity:.85 }
+
+    /* Nutrition bar */
+    .nutrition-bar { display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:rgba(122,74,30,.12); border:1px solid rgba(122,74,30,.12); margin:20px 0 }
+    .nutrition-cell { background:var(--cream); padding:22px 16px; text-align:center; transition:background .3s }
+    .nutrition-cell:hover { background:var(--parchment) }
+    .nutrition-num { font-family:'Cormorant Garamond',serif; font-size:36px; font-weight:300; color:var(--earth); line-height:1; margin-bottom:4px }
+    .nutrition-unit { font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--gold); font-weight:300 }
+    .nutrition-label { font-size:11px; font-weight:300; color:var(--ink); margin-top:5px }
+
+    /* Precaution list */
+    .precaution-list { list-style:none; margin:8px 0 }
+    .precaution-list li { display:flex; gap:12px; align-items:flex-start; padding:10px 14px; font-size:12px; font-weight:300; line-height:1.7; color:var(--ink); border-bottom:1px solid rgba(122,74,30,.08) }
+    .precaution-list li:last-child { border-bottom:none }
+    .precaution-list li::before { content:'▸'; color:var(--gold); flex-shrink:0; margin-top:1px }
+
+    /* Sources */
+    .sources { border-top:1px solid rgba(122,74,30,.15); padding-top:24px; margin-top:20px }
+    .sources-title { font-size:10px; letter-spacing:4px; text-transform:uppercase; color:var(--sage); margin-bottom:12px; font-weight:300 }
+    .sources ul { list-style:none }
+    .sources ul li { font-family:'Cormorant Garamond',serif; font-size:13px; font-style:italic; color:var(--earth); padding:5px 0; border-bottom:1px solid rgba(122,74,30,.06) }
+    .sources ul li::before { content:'· '; color:var(--sage) }
+
+    footer { position:relative; z-index:10; text-align:center; padding:24px 20px 44px; border-top:1px solid rgba(122,74,30,.12); max-width:860px; margin:0 auto }
+    footer p { font-size:11px; letter-spacing:4px; text-transform:uppercase; color:var(--sage); font-weight:300 }
+
+    @keyframes fadeUp { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:translateY(0)} }
+
+    @media(max-width:700px){
+      .hero-photos{grid-template-columns:1fr}
+      .hero-photos img{height:260px}
+      .benefits-grid{grid-template-columns:1fr}
+      .nutrition-bar{grid-template-columns:1fr 1fr}
+      .content{padding:0 18px 60px}
+    }
+  </style>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+</head>
+<body>
+  <button type="button" id="open3D">View in 3D</button>
+
+
+<div class="bg-circle bg-circle-1"></div>
+<div class="bg-circle bg-circle-2"></div>
+
+<!-- Botanical SVG — acacia-like thorned branch -->
+<svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M20 280 Q 80 200 140 140 Q 200 80 260 20" stroke="#7a4a1e" stroke-width="2" fill="none"/>
+  <path d="M80 210 Q 60 180 40 185" stroke="#7a4a1e" stroke-width="1.2" fill="none"/>
+  <path d="M120 170 Q 145 148 150 120" stroke="#7a4a1e" stroke-width="1.2" fill="none"/>
+  <path d="M160 130 Q 140 115 130 90" stroke="#7a4a1e" stroke-width="1.2" fill="none"/>
+  <ellipse cx="50" cy="183" rx="22" ry="9" fill="#7a4a1e" transform="rotate(-35 50 183)"/>
+  <ellipse cx="147" cy="133" rx="20" ry="8" fill="#a0522d" transform="rotate(-50 147 133)"/>
+  <ellipse cx="133" cy="96" rx="18" ry="7" fill="#7a4a1e" transform="rotate(-65 133 96)"/>
+  <circle cx="95" cy="205" r="4" fill="#c8922a" opacity=".7"/>
+  <circle cx="175" cy="115" r="4" fill="#c8922a" opacity=".6"/>
+  <circle cx="215" cy="75" r="3" fill="#c8922a" opacity=".8"/>
+</svg>
+<svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M20 280 Q 80 200 140 140 Q 200 80 260 20" stroke="#7a4a1e" stroke-width="2" fill="none"/>
+  <path d="M80 210 Q 60 180 40 185" stroke="#7a4a1e" stroke-width="1.2" fill="none"/>
+  <ellipse cx="50" cy="183" rx="22" ry="9" fill="#7a4a1e" transform="rotate(-35 50 183)"/>
+  <circle cx="95" cy="205" r="4" fill="#c8922a" opacity=".7"/>
+</svg>
+
+<div class="hero">
+  <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+  <div class="logo-rule"><span></span><div class="logo-ornament">✦</div><span></span></div>
+  <div class="hero-title">Khadira</div>
+  <div class="hero-subtitle">Catechu — The Heartwood of Ancient Healing</div>
+  <div class="hero-sci">Acacia catechu (L.f.) Willd. &nbsp;·&nbsp; Senegalia catechu</div>
+</div>
+
+<div class="hero-photos">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/a/a4/Acacia_catechu_-_K%C3%B6hler%E2%80%93s_Medizinal-Pflanzen-003.jpg" alt="Khadira Acacia catechu bark and heartwood"
+    onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+  <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7e/Acacia_catechu_Govindoo.jpg/1280px-Acacia_catechu_Govindoo.jpg" alt="Khadira flowers and thorned branches"
+    onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+</div>
+<p class="photo-caption">Fig. 1 — Dark heartwood of Khadira yielding the characteristic reddish-brown Catechu extract &nbsp;·&nbsp; Fig. 2 — Feathery bipinnate leaves and pale-yellow flower spikes of Acacia catechu</p>
+
+<div class="divider">
+  <div class="divider-line"></div>
+  <div class="divider-leaf">❧</div>
+  <div class="divider-line"></div>
+</div>
+
+<div class="content">
+  <p class="intro-text">
+    Known since Vedic antiquity as <em>Khadira</em> — "the firm, the hard" — this thorned acacia of the dry Himalayan foothills has yielded <em>Katha</em> (cutch) and <em>Kattha</em> to generations of healers, dyers, tanners, and betel-chewers. Charaka placed it among the most important trees of classical medicine; Sushruta ranked its heartwood extract as supreme in treating <em>kushtha</em> (skin disorders), <em>prameha</em> (metabolic dysfunction), and diseases of the blood and oral cavity.
+  </p>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">01</span><h2 class="section-title">Botanical Profile</h2><div class="section-rule"></div></div>
+    <p class="section-body">Khadira (<em>Acacia catechu</em>) is a medium-sized, deciduous thorny tree of the Fabaceae (Leguminosae) family, native to the Indian subcontinent and Myanmar, now naturalised across tropical Asia and Africa. It typically grows to 9–12 m in height with a rough, dark-grey to brown bark that peels off in long strips, revealing a reddish-brown layer beneath. The sapwood is white; the heartwood is dark reddish-brown — the source of the prized <em>Catechu</em> (Katha / Kattha / Cutch) extract.</p>
+    <p class="section-body">Leaves are bipinnate with 8–30 pairs of pinnae, each bearing 30–50 pairs of linear leaflets. Twin recurved stipular spines at the base of each leaf are characteristic. Flowers are pale yellow or cream, arranged in cylindrical spike-like racemes 5–10 cm long, appearing July–September. Pods are thin, flat, strap-shaped, 5–8 cm long, dehiscent, brown when ripe, containing 3–10 seeds. The tree thrives in dry deciduous forests, riverine woodlands, and foothills up to 1,500 m altitude — particularly the Himalayan Shivalik ranges, Rajasthan, and Central India.</p>
+    <table class="data-table">
+      <thead><tr><th>Property</th><th>Detail</th></tr></thead>
+      <tbody>
+        <tr><td>Family</td><td>Fabaceae / Leguminosae (Mimosaceae subfamily)</td></tr>
+        <tr><td>Botanical Name</td><td>Acacia catechu (L.f.) Willd. / Senegalia catechu</td></tr>
+        <tr><td>Sanskrit Names</td><td>Khadira, Kantaki, Dantadhavana, Balapattraka, Somavalka, Raktasara</td></tr>
+        <tr><td>Common Names</td><td>Catechu, Cutch tree, Black Catechu, Khair, Katha tree</td></tr>
+        <tr><td>Regional Names</td><td>Katha/Khair (Hin), Kachu (Ben), Karingali (Mal/Tam), Kachha (Tel)</td></tr>
+        <tr><td>Medicinal Parts</td><td>Heartwood extract (Katha), bark, leaves, gum, seeds</td></tr>
+        <tr><td>Plant Type</td><td>Deciduous thorny tree (9–12 m)</td></tr>
+        <tr><td>Flowering Season</td><td>July–September; pods ripen November–March</td></tr>
+        <tr><td>Taste Profile</td><td>Kashaya (astringent), Tikta (bitter), Madhura (sweet)</td></tr>
+        <tr><td>Habitat</td><td>Dry deciduous forests, Himalayan Shivalik foothills, up to 1,500 m</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">02</span><h2 class="section-title">Phytochemistry &amp; Composition</h2><div class="section-rule"></div></div>
+    <p class="section-body">The heartwood of Khadira — and especially its aqueous extract <em>Katha</em> — is among the richest natural sources of condensed tannins (proanthocyanidins) in the plant kingdom. Catechin and epicatechin, the defining compounds, constitute up to 35% of dry heartwood weight. These polyphenols are potent antioxidants that form the biochemical basis for virtually all of Khadira's classical and pharmacologically validated actions.</p>
+    <p class="section-body">Beyond catechins, the heartwood yields a complex matrix of flavonoids, terpenoids, phytosterols, and phenolic glycosides. The bark contains a different tannin profile dominated by gallotannins, while the gum, leaves, and seeds each offer distinct secondary metabolite profiles. Two distinct commercial products — pale catechu (Kattha, used in betel leaf) and dark/black catechu (Cutch, used for dyeing and tanning) — arise from different processing methods of the same heartwood.</p>
+    <div class="nutrition-bar">
+      <div class="nutrition-cell">
+        <div class="nutrition-num">35%</div>
+        <div class="nutrition-unit">catechin</div>
+        <div class="nutrition-label">In dry heartwood</div>
+      </div>
+      <div class="nutrition-cell">
+        <div class="nutrition-num">50+</div>
+        <div class="nutrition-unit">compounds</div>
+        <div class="nutrition-label">Isolated phytochemicals</div>
+      </div>
+      <div class="nutrition-cell">
+        <div class="nutrition-num">2</div>
+        <div class="nutrition-unit">extracts</div>
+        <div class="nutrition-label">Kattha &amp; Cutch (cutch)</div>
+      </div>
+      <div class="nutrition-cell">
+        <div class="nutrition-num">20–50%</div>
+        <div class="nutrition-unit">tannins</div>
+        <div class="nutrition-label">In Kattha/Katha extract</div>
+      </div>
+    </div>
+    <table class="data-table">
+      <thead><tr><th>Compound</th><th>Category</th><th>Primary Action</th></tr></thead>
+      <tbody>
+        <tr><td>(+)-Catechin &amp; (−)-Epicatechin</td><td>Flavan-3-ol polyphenols</td><td>Antioxidant, antimicrobial, anti-inflammatory, wound-healing — defining compounds</td></tr>
+        <tr><td>Procyanidins (B1, B2)</td><td>Condensed tannins</td><td>Astringent, anti-diarrhoeal, vascular-protective, collagen-stabilising</td></tr>
+        <tr><td>Catechin Tetramer (Catechu Red)</td><td>Polymerised polyphenol</td><td>Responsible for red colour; hepatoprotective, antifungal</td></tr>
+        <tr><td>Quercetin &amp; Kaempferol</td><td>Flavonols</td><td>Anti-inflammatory, antiviral, antioxidant, antidiabetic</td></tr>
+        <tr><td>Luteolin &amp; Fisetin</td><td>Flavones / Flavonols</td><td>Neuroprotective, anti-inflammatory, antitumour</td></tr>
+        <tr><td>Taxifolin (Dihydroquercetin)</td><td>Flavanonol</td><td>Antioxidant, anti-atherogenic, hepatoprotective</td></tr>
+        <tr><td>β-Sitosterol &amp; Stigmasterol</td><td>Phytosterols</td><td>Anti-inflammatory, hypolipidemic, immunomodulatory</td></tr>
+        <tr><td>Khirsal (acacetin 7-glucoside)</td><td>Flavone glycoside</td><td>Diuretic, antimalarial, smooth muscle relaxant</td></tr>
+        <tr><td>Afrormosin</td><td>Isoflavonoid</td><td>Antimicrobial, oestrogenic activity</td></tr>
+        <tr><td>Gallic Acid &amp; Ellagic Acid</td><td>Hydrolysable tannins (bark)</td><td>Antioxidant, antimicrobial, anticancer</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">03</span><h2 class="section-title">Ayurvedic Significance</h2><div class="section-rule"></div></div>
+    <p class="section-body">Khadira holds an extraordinary position in classical Ayurveda — it is one of the very few substances simultaneously cited across all eight branches (<em>Ashtanga Ayurveda</em>). Charaka lists it among the <em>Kushthaghna</em> (anti-dermatosis), <em>Kandughna</em> (anti-pruritic), <em>Krimighna</em> (anthelmintic), <em>Trishnanigrahana</em> (thirst-quenching), and <em>Lekhaniya</em> (scraping/reducing) mahakashayas — placing it in five of his ten fundamental dashemani groupings. Sushruta classifies it in <em>Nyagrodhadi</em> and <em>Salasaradi Gana</em>, prizing the heartwood for skin, blood, and oral conditions.</p>
+    <p class="section-body">The classical shloka — <em>"Khadiro raktatvakpushpo raktasaro vranarogahrit, kaphaharo mehaghno cha kushtha kriminivarhanam"</em> — celebrates Khadira's red bark, red heartwood, and red flowers, and praises its capacity to heal wounds, clear Kapha, combat prameha, and eradicate skin diseases and parasites. The Ashtanga Hridayam devotes special attention to Khadira in the context of <em>Kushtha</em> treatment, recommending its decoction, ghrita, and tailam preparations extensively.</p>
+    <p class="section-body">Khadirarishta — a classical fermented preparation combining Khadira heartwood with Daru Haridra, Haritaki, and other herbs — remains one of the most widely prescribed Ayurvedic formulas for chronic skin conditions. <em>Khadira Vati</em>, tablets of Katha extract, are universally used for oral hygiene, ulcers, and throat conditions.</p>
+    <table class="dosha-table">
+      <thead><tr><th>Dosha</th><th>Effect</th><th>Mechanism &amp; Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Vata ↓</td><td>Mildly pacifying</td><td>Madhura (sweet) vipaka and nourishing raktasara quality provide mild Vata balance; useful in chronically wasted, dry skin conditions of Vata origin</td></tr>
+        <tr><td>Pitta ↓</td><td>Pacifying</td><td>Kashaya rasa and sheeta virya (cooling potency) effectively clear Pitta-type skin eruptions, redness, bleeding disorders, and inflammatory skin conditions. One of the premier Raktaprasadana (blood-purifying) herbs.</td></tr>
+        <tr><td>Kapha ↓</td><td>Strongly pacifying</td><td>Laghu (light), ruksha (dry), tikshna (sharp) qualities powerfully reduce Kapha — classical for Kapha-type skin disorders, obesity, prameha (diabetes), and respiratory mucus accumulation</td></tr>
+      </tbody>
+    </table>
+    <p class="section-body"><strong>Rasa:</strong> Kashaya (astringent), Tikta (bitter), Madhura (sweet) &nbsp;·&nbsp; <strong>Guna:</strong> Laghu (light), Ruksha (dry) &nbsp;·&nbsp; <strong>Virya:</strong> Sheeta (cold) &nbsp;·&nbsp; <strong>Vipaka:</strong> Madhura (sweet) &nbsp;·&nbsp; <strong>Karma:</strong> Tridoshaghna, Raktaprasadana, Kushtaghna, Krimighna</p>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">04</span><h2 class="section-title">Key Health Benefits</h2><div class="section-rule"></div></div>
+    <p class="section-body">Khadira is one of the most extensively pharmacologically researched Ayurvedic botanicals. Its catechin-rich heartwood extract has been validated across dermatological, antimicrobial, anti-inflammatory, hepatoprotective, antidiabetic, and wound-healing domains — with a particularly strong evidence base for oral and skin applications.</p>
+    <div class="benefits-grid">
+      <div class="benefit-card">
+        <div class="benefit-title">Skin Disorders &amp; Blood Purification</div>
+        <div class="benefit-desc">Classical texts call Khadira <em>kushtha-kriminivarhanam</em> — the supreme destroyer of skin diseases and parasites. Catechins and procyanidins exert potent antioxidant and anti-inflammatory action on inflammatory skin conditions including eczema, psoriasis, urticaria, and acne. Khadirarishta remains a gold-standard Ayurvedic formula for chronic skin conditions.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Oral Health &amp; Dentistry</div>
+        <div class="benefit-desc">Khadira Vati is the classical oral hygiene preparation — Katha extract is chewed or held in the mouth to treat aphthous ulcers, stomatitis, gingivitis, dental caries, and halitosis. Its astringent action tightens gum tissue; its antimicrobial catechins inhibit Streptococcus mutans, the primary caries-causing bacterium. One of Charaka's foremost <em>Dantadhavana</em> (teeth-cleaning) herbs.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Anti-inflammatory &amp; Analgesic</div>
+        <div class="benefit-desc">Catechin and procyanidin extracts significantly inhibit COX-1, COX-2, and lipoxygenase pathways — validated in carrageenan-induced paw edema and cotton pellet granuloma models. Traditional application of bark decoction as a fomentation for arthritic joints is supported by in vivo analgesic studies comparable to aspirin at equivalent doses.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Anti-diabetic &amp; Metabolic</div>
+        <div class="benefit-desc">A major classical indication — <em>Khadira mehaghno cha</em>. Catechin significantly enhances glucose uptake in peripheral tissues via GLUT-4 translocation, inhibits α-glucosidase and α-amylase (reducing post-prandial glucose spikes), and improves pancreatic beta-cell function in streptozotocin-induced diabetic models. Khadira churna is a classical formula for prameha (urinary disorders including glycosuria).</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Antimicrobial &amp; Anthelmintic</div>
+        <div class="benefit-desc">Broad-spectrum antimicrobial activity documented against Staphylococcus aureus, E. coli, Klebsiella pneumoniae, Pseudomonas aeruginosa, Candida albicans, and Aspergillus species. Anti-parasitic action against intestinal worms is well-documented in folk practice and partially validated against Ascaris in animal studies.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Wound Healing</div>
+        <div class="benefit-desc">Katha extract in topical preparations accelerates all phases of wound healing — haemostasis (via astringent tannins), anti-inflammatory phase (via catechin-mediated prostaglandin suppression), proliferative phase (via collagen cross-linking), and remodelling (via antimicrobial protection). Classical Ayurveda uses bark paste and Katha directly on ulcers, burns, and abscesses.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Hepatoprotective</div>
+        <div class="benefit-desc">Catechin and taxifolin in Khadira extract protect hepatocytes against CCl₄-induced and paracetamol-induced liver damage in animal studies, reducing AST, ALT, and bilirubin levels significantly. The mechanism involves free-radical scavenging, mitochondrial stabilisation, and upregulation of hepatic antioxidant enzymes — supporting the classical use for liver disorders and jaundice (<em>kamala</em>).</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Respiratory &amp; Anti-tussive</div>
+        <div class="benefit-desc">Classical texts recommend Khadira decoction in chronic cough, bronchitis, and asthma due to its Kapha-reducing, drying, and antimicrobial properties. Khirsal (acacetin glucoside) demonstrates smooth muscle relaxant activity on bronchial tissue in isolated organ studies, offering pharmacological support for bronchospasm relief in traditional preparations.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">05</span><h2 class="section-title">How to Consume Khadira</h2><div class="section-rule"></div></div>
+    <p class="section-body">Khadira is used extensively in both internal and external preparations. Its heartwood extract <em>Katha</em> is the most widely available form and is safe for routine oral use in appropriate amounts. Internal decoctions and classical formulations (Khadirarishta, Khadira Ghrita) should be taken under practitioner guidance. The bark and heartwood chips are available in Ayurvedic pharmacies and herbal markets across India.</p>
+    <table class="consume-table">
+      <thead><tr><th>Form</th><th>Preparation</th><th>Dosage</th><th>Best Use</th></tr></thead>
+      <tbody>
+        <tr><td>Katha (Catchu Extract)</td><td>Dissolve small piece in warm water or apply directly in mouth</td><td>0.5–1 g per use</td><td>Oral ulcers, gingivitis, throat conditions</td></tr>
+        <tr><td>Khadira Vati</td><td>Classical tablet; dissolve slowly in mouth</td><td>1–2 tablets, 2–3× daily</td><td>Oral hygiene, stomatitis, cough, pharyngitis</td></tr>
+        <tr><td>Heartwood Decoction (Kwatha)</td><td>Boil 10–20 g heartwood chips in 400 ml water; reduce to 100 ml</td><td>30–50 ml twice daily</td><td>Skin disorders, diabetes, blood purification</td></tr>
+        <tr><td>Khadirarishta</td><td>Classical fermented liquid formulation</td><td>15–30 ml with equal water, post meals</td><td>Chronic skin disease, eczema, psoriasis</td></tr>
+        <tr><td>Khadira Churna</td><td>Heartwood powder with honey or warm water</td><td>3–6 g, physician-directed</td><td>Prameha, obesity, skin disorders</td></tr>
+        <tr><td>Bark Decoction (Topical)</td><td>Concentrated decoction used as wash or fomentation</td><td>As needed, 1–2× daily</td><td>Wound cleansing, skin infections, joint swelling</td></tr>
+        <tr><td>Katha Paste (Topical)</td><td>Katha dissolved to paste consistency</td><td>Apply to affected area</td><td>Ulcers, wounds, burns, aphthous sores</td></tr>
+        <tr><td>Khadira Ghrita</td><td>Classical medicated ghee per Ashtanga Hridayam</td><td>Per practitioner direction</td><td>Severe kushtha, internal skin conditions</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">06</span><h2 class="section-title">Safety &amp; Precautions</h2><div class="section-rule"></div></div>
+    <p class="section-body">Khadira has an excellent safety profile and has been consumed as part of daily betel-leaf preparations (<em>tambula</em>) across South and Southeast Asia for millennia. At therapeutic Ayurvedic doses, the heartwood extract is generally well-tolerated. The primary concerns relate to excessive or prolonged use, specific physiological states, and potential for drug interactions via its strong antioxidant chemistry.</p>
+    <ul class="precaution-list">
+      <li><strong>Pregnancy:</strong> Avoid internal use in pregnancy. Classical texts flag Khadira's Kapha-Vata reducing action and its potential to affect uterine tissue; though direct evidence is limited, caution is advised given the high tannin content.</li>
+      <li><strong>Constipation:</strong> The strong astringent (kashaya) quality of Khadira can exacerbate constipation and dry bowel conditions. Use with caution in Vata-type constitutions prone to dryness; combine with Triphala or unctuous foods.</li>
+      <li><strong>Dry constitutions (Vata prakruti):</strong> Excessive or prolonged internal use in Ruksha (dry) constitutions may cause increased dryness — monitor for dry mouth, dry skin, or constipation and reduce dose if these arise.</li>
+      <li><strong>Anticoagulant medications:</strong> Catechins have demonstrated mild antiplatelet and antithrombotic activity in pharmacological studies. Concurrent use with warfarin, aspirin, or antiplatelet drugs should be supervised to avoid additive bleeding risk.</li>
+      <li><strong>Antidiabetic medications:</strong> Khadira lowers blood glucose. When combined with hypoglycaemic drugs (metformin, sulfonylureas, insulin), blood sugar should be monitored to prevent hypoglycaemia.</li>
+      <li><strong>Excessive betel nut chewing:</strong> Katha is traditionally used with betel nut (Areca catechu) in paan. The combination of betel nut, tobacco, and Katha in paan products is associated with oral submucous fibrosis and carcinoma risk — this risk relates to the overall paan habit, not Khadira per se, but context is important.</li>
+      <li><strong>Iron absorption:</strong> High tannin content can chelate dietary iron and reduce its absorption. Avoid consuming Khadira preparations immediately before or after iron-rich meals or iron supplements.</li>
+      <li><strong>Renal considerations:</strong> Large doses of tannin-rich extracts over long periods have theoretical oxalate-loading implications. Individuals with a history of oxalate kidney stones should use with caution and adequate hydration.</li>
+    </ul>
+  </div>
+
+  <div class="sources">
+    <div class="sources-title">References &amp; Sources</div>
+    <ul>
+      <li>Charaka Samhita — Khadira in Kushthaghna, Kandughna, Krimighna, Trishnanigrahana, and Lekhaniya Mahakashayas</li>
+      <li>Sushruta Samhita — Nyagrodhadi and Salasaradi Gana; Khadira in Kushtha Chikitsa</li>
+      <li>Ashtanga Hridayam — Khadira formulations in Kushtha and Prameha Chikitsas</li>
+      <li>Bhavaprakasha Nighantu — Khadiradi Varga; properties of Khadira heartwood, bark, and Katha</li>
+      <li>Dhanvantari Nighantu, Raja Nighantu — Khadira entries with regional synonyms and indications</li>
+      <li>Priyavrat Sharma — Dravyaguna Vigyana Vol. II — Classical properties and formulations of Khadira</li>
+      <li>Patel SS et al. — "Acacia catechu: A Review on its Ethnobotany, Phytochemistry and Pharmacological Profile" — Journal of Pharmacognosy and Phytochemistry, 2020</li>
+      <li>Parmar VS et al. — "Phytochemistry of the genus Acacia and the spread of its use" — Phytochemistry, 1994</li>
+      <li>Gupta R et al. — "Anti-inflammatory and analgesic activity of Acacia catechu heartwood" — International Journal of Pharmacy and Pharmacology, 2012</li>
+      <li>Vashistha RK et al. — "Anti-diabetic potential of Acacia catechu Willd. heartwood" — Journal of Ethnopharmacology, 2016</li>
+      <li>Singh B et al. — "Wound healing activity of Acacia catechu bark extract" — Indian Journal of Natural Products and Resources, 2009</li>
+      <li>Pharmacopoeia of India — Khadira monograph; API standards for Katha and Khadirarishta</li>
+    </ul>
+  </div>
+</div>
+
+<footer>
+  <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a qualified practitioner before therapeutic use</p>
+</footer>
+
+
+  <div id="viewerModal">
+    <div id="modal-topbar">
+      <span>3D Model — Khadira</span>
+      <button type="button" id="close3D">✕</button>
+    </div>
+    <model-viewer src="khadira3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+  </div>
+  <script>
+    (function() {
+      var open3D = document.getElementById('open3D');
+      var close3D = document.getElementById('close3D');
+      var modal = document.getElementById('viewerModal');
+      if (!open3D || !close3D || !modal) return;
+      function openModal() {
+        
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+      function closeModal() {
+        
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+      open3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); openModal();
+      });
+      close3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); closeModal();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+      });
+    })();
+  </script>
+
+</body>
+</html>

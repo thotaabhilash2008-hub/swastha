@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Urad | Swastha</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+  <style>
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+
+    * { margin: 0; padding: 0; box-sizing: border-box }
+    html { scroll-behavior: smooth }
+
+    body {
+      font-family: 'Jost', sans-serif;
+      background: var(--cream);
+      color: var(--ink);
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative
+    }
+
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity: .03; pointer-events: none; z-index: 100
+    }
+
+    #open3D {
+      position: fixed; top: 25px; right: 30px;
+      padding: 10px 18px; font-size: 11px; letter-spacing: 2px;
+      text-transform: uppercase; background: var(--forest);
+      color: #fff; border: none; cursor: pointer; z-index: 1000; transition: .3s
+    }
+    #open3D:hover { background: var(--gold); color: var(--deep) }
+
+    #viewerModal { position: fixed; inset: 0; z-index: 2000; display: none; flex-direction: column }
+    #modal-topbar {
+      flex-shrink: 0; height: 58px; background: #111;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 28px 0 32px; border-bottom: 1px solid rgba(255,255,255,.07)
+    }
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif; font-size: 11px; font-weight: 300;
+      letter-spacing: 4.5px; text-transform: uppercase; color: rgba(255,255,255,.72)
+    }
+    #close3D {
+      width: 38px; height: 38px; font-size: 15px; font-weight: 300;
+      background: transparent; color: #fff; border: 1.5px solid rgba(255,255,255,.7);
+      border-radius: 50%; cursor: pointer; display: flex; align-items: center;
+      justify-content: center; transition: background .2s, color .2s, transform .22s; outline: none
+    }
+    #close3D:hover { background: #fff; color: #111; border-color: #fff; transform: rotate(90deg) }
+    #viewerModal model-viewer { flex: 1; width: 100%; display: block; background: #fff }
+
+    .bg-circle { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0 }
+    .bg-circle-1 {
+      width: 700px; height: 700px;
+      background: radial-gradient(circle, rgba(46,74,30,.1) 0%, transparent 70%);
+      top: -200px; right: -150px
+    }
+    .bg-circle-2 {
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(160,120,48,.09) 0%, transparent 70%);
+      bottom: -100px; left: -100px
+    }
+
+    .botanical-svg { position: fixed; pointer-events: none; z-index: 1; opacity: .09 }
+    .botanical-tl { top: -20px; left: -20px; width: 280px }
+    .botanical-br { bottom: -20px; right: -20px; width: 240px; transform: rotate(180deg) }
+
+    .hero {
+      position: relative; z-index: 10;
+      padding: 54px 40px 0; text-align: center;
+      opacity: 0; animation: fadeUp .9s ease .1s forwards
+    }
+    .back-link {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+      color: var(--sage); text-decoration: none; margin-bottom: 36px; transition: color .3s
+    }
+    .back-link:hover { color: var(--gold) }
+    .logo-rule { display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 14px }
+    .logo-rule span { display: block; height: 1px; width: 70px; background: linear-gradient(to right, transparent, var(--gold)) }
+    .logo-rule span:last-child { background: linear-gradient(to left, transparent, var(--gold)) }
+    .logo-ornament { font-size: 13px; color: var(--gold) }
+    .hero-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(64px, 12vw, 110px);
+      font-weight: 300; letter-spacing: 8px; line-height: 1; color: var(--deep)
+    }
+    .hero-subtitle {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 18px; font-style: italic; font-weight: 300;
+      color: var(--earth); letter-spacing: 2px; margin-top: 8px
+    }
+    .hero-sci {
+      font-size: 11px; font-weight: 200; letter-spacing: 5px;
+      color: var(--sage); margin-top: 6px
+    }
+
+    .hero-photos {
+      position: relative; z-index: 10;
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 2px; max-width: 900px; margin: 40px auto 0;
+      opacity: 0; animation: fadeUp .9s ease .35s forwards
+    }
+    .hero-photos img {
+      width: 100%; height: 380px; object-fit: cover;
+      object-position: center; display: block; background: var(--parchment)
+    }
+
+    .photo-caption {
+      text-align: center; font-family: 'Cormorant Garamond', serif;
+      font-size: 12px; font-style: italic; color: var(--sage); letter-spacing: 1px;
+      padding: 10px 0 0; max-width: 900px; margin: 0 auto;
+      position: relative; z-index: 10;
+      opacity: 0; animation: fadeUp .9s ease .5s forwards
+    }
+
+    .divider {
+      display: flex; align-items: center; justify-content: center;
+      gap: 16px; margin: 50px auto; max-width: 600px;
+      opacity: 0; animation: fadeUp .9s ease .55s forwards;
+      position: relative; z-index: 10
+    }
+    .divider-line { height: 1px; width: 120px; background: linear-gradient(to right, transparent, var(--sage)) }
+    .divider-line:last-child { background: linear-gradient(to left, transparent, var(--sage)) }
+    .divider-leaf { color: var(--forest); font-size: 18px }
+
+    .content {
+      position: relative; z-index: 10;
+      max-width: 860px; margin: 0 auto; padding: 0 30px 80px
+    }
+
+    .intro-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 20px; font-weight: 300; line-height: 1.75;
+      color: var(--ink); text-align: center; max-width: 700px;
+      margin: 0 auto 60px; opacity: 0; animation: fadeUp .9s ease .6s forwards
+    }
+    .intro-text em { color: var(--forest); font-style: italic }
+
+    .section { margin-bottom: 60px; opacity: 0; animation: fadeUp .9s ease forwards }
+    .section:nth-child(1) { animation-delay: .65s }
+    .section:nth-child(2) { animation-delay: .75s }
+    .section:nth-child(3) { animation-delay: .85s }
+    .section:nth-child(4) { animation-delay: .95s }
+    .section:nth-child(5) { animation-delay: 1.05s }
+    .section:nth-child(6) { animation-delay: 1.15s }
+    .section:nth-child(7) { animation-delay: 1.25s }
+
+    .section-header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px }
+    .section-num { font-family: 'Cormorant Garamond', serif; font-size: 11px; letter-spacing: 4px; color: var(--gold) }
+    .section-title { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 400; color: var(--deep); letter-spacing: 1px }
+    .section-rule { height: 1px; flex: 1; background: linear-gradient(to right, var(--gold), transparent) }
+    .section-body { font-size: 13px; font-weight: 300; line-height: 1.9; color: var(--ink); margin-bottom: 24px }
+
+    .data-table { width: 100%; border-collapse: collapse; margin: 16px 0 8px; font-size: 12px }
+    .data-table thead tr { background: var(--deep); color: var(--gold); font-size: 10px; letter-spacing: 3px; text-transform: uppercase }
+    .data-table thead th { padding: 12px 14px; text-align: left; font-weight: 400 }
+    .data-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .data-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .data-table tbody tr { transition: background .2s }
+    .data-table tbody tr:hover { background: #ddd5c0 }
+    .data-table tbody td { padding: 10px 14px; color: var(--ink); border-bottom: 1px solid rgba(74,55,40,.08) }
+    .data-table tbody td:first-child { font-weight: 400; color: var(--deep); width: 28% }
+
+    .dosha-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .dosha-table thead tr { background: var(--forest); color: var(--cream) }
+    .dosha-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .dosha-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .dosha-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .dosha-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(74,55,40,.08) }
+    .dosha-table tbody td:first-child { font-weight: 400; color: var(--forest); width: 18% }
+    .dosha-table tbody td:nth-child(2) { color: var(--earth); width: 20% }
+
+    .consume-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .consume-table thead tr { background: var(--earth); color: var(--cream) }
+    .consume-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .consume-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .consume-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .consume-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(74,55,40,.08) }
+    .consume-table tbody td:first-child { font-weight: 400; color: var(--earth); width: 22% }
+
+    .benefits-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 1px; background: rgba(74,55,40,.12);
+      border: 1px solid rgba(74,55,40,.12); margin: 8px 0
+    }
+    .benefit-card {
+      background: var(--cream); padding: 24px 22px;
+      transition: background .3s; position: relative; overflow: hidden
+    }
+    .benefit-card:hover { background: #e2d9c8 }
+    .benefit-card::before {
+      content: ''; position: absolute; bottom: 0; left: 0;
+      width: 0; height: 2px; background: var(--gold); transition: width .4s
+    }
+    .benefit-card:hover::before { width: 100% }
+    .benefit-title { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 600; color: var(--forest); margin-bottom: 8px }
+    .benefit-desc { font-size: 11.5px; font-weight: 300; line-height: 1.75; color: var(--ink); opacity: .85 }
+
+    .nutrition-bar {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 1px; background: rgba(74,55,40,.12);
+      border: 1px solid rgba(74,55,40,.12); margin: 20px 0
+    }
+    .nutrition-cell { background: var(--cream); padding: 22px 16px; text-align: center; transition: background .3s }
+    .nutrition-cell:hover { background: var(--parchment) }
+    .nutrition-num { font-family: 'Cormorant Garamond', serif; font-size: 36px; font-weight: 300; color: var(--forest); line-height: 1; margin-bottom: 4px }
+    .nutrition-unit { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); font-weight: 300 }
+    .nutrition-label { font-size: 11px; font-weight: 300; color: var(--ink); margin-top: 5px }
+
+    .culinary-strip {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 1px; background: rgba(46,74,30,.15);
+      border: 1px solid rgba(46,74,30,.15); margin: 20px 0
+    }
+    .culinary-cell {
+      background: var(--cream); padding: 20px 18px;
+      transition: background .3s
+    }
+    .culinary-cell:hover { background: var(--parchment) }
+    .culinary-region {
+      font-size: 10px; letter-spacing: 3px; text-transform: uppercase;
+      color: var(--gold); margin-bottom: 6px; font-weight: 300
+    }
+    .culinary-dish {
+      font-family: 'Cormorant Garamond', serif; font-size: 15px;
+      font-weight: 600; color: var(--forest); margin-bottom: 5px
+    }
+    .culinary-desc { font-size: 11px; font-weight: 300; line-height: 1.65; color: var(--ink); opacity: .8 }
+
+    .precaution-list { list-style: none; margin: 8px 0 }
+    .precaution-list li {
+      display: flex; gap: 12px; align-items: flex-start;
+      padding: 10px 14px; font-size: 12px; font-weight: 300; line-height: 1.7;
+      color: var(--ink); border-bottom: 1px solid rgba(74,55,40,.08)
+    }
+    .precaution-list li:last-child { border-bottom: none }
+    .precaution-list li::before { content: '▸'; color: var(--gold); flex-shrink: 0; margin-top: 1px }
+
+    .sources { border-top: 1px solid rgba(74,55,40,.15); padding-top: 24px; margin-top: 20px }
+    .sources-title { font-size: 10px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); margin-bottom: 12px; font-weight: 300 }
+    .sources ul { list-style: none }
+    .sources ul li { font-family: 'Cormorant Garamond', serif; font-size: 13px; font-style: italic; color: var(--earth); padding: 5px 0; border-bottom: 1px solid rgba(74,55,40,.06) }
+    .sources ul li::before { content: '· '; color: var(--sage) }
+
+    footer {
+      position: relative; z-index: 10; text-align: center;
+      padding: 24px 20px 44px; border-top: 1px solid rgba(74,55,40,.12);
+      max-width: 860px; margin: 0 auto
+    }
+    footer p { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); font-weight: 300 }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(28px) }
+      to { opacity: 1; transform: translateY(0) }
+    }
+
+    @media(max-width:700px) {
+      .hero-photos { grid-template-columns: 1fr }
+      .hero-photos img { height: 260px }
+      .benefits-grid, .culinary-strip { grid-template-columns: 1fr }
+      .nutrition-bar { grid-template-columns: 1fr 1fr }
+      .content { padding: 0 18px 60px }
+    }
+  </style>
+</head>
+
+<body>
+
+<button id="open3D">View in 3D</button>
+<div id="viewerModal">
+  <div id="modal-topbar">
+    <span>3D Model — Urad</span>
+    <button id="close3D">✕</button>
+  </div>
+  <model-viewer src="urad3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+</div>
+
+<div class="bg-circle bg-circle-1"></div>
+<div class="bg-circle bg-circle-2"></div>
+
+<!-- Botanical SVG: trailing bean vine with trifoliate leaves and small pods -->
+<svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Main vine -->
+  <path d="M15 285 Q 55 230 90 185 Q 135 130 200 65" stroke="#2e4a1e" stroke-width="1.5" fill="none"/>
+  <!-- Tendrils -->
+  <path d="M90 185 Q 110 168 105 148" stroke="#6b8c52" stroke-width="1" fill="none"/>
+  <path d="M140 140 Q 160 122 158 100" stroke="#6b8c52" stroke-width="1" fill="none"/>
+  <!-- Trifoliate leaves -->
+  <ellipse cx="72" cy="210" rx="14" ry="8" fill="#2e4a1e" opacity="0.5" transform="rotate(-40 72 210)"/>
+  <ellipse cx="82" cy="204" rx="13" ry="7" fill="#6b8c52" opacity="0.4" transform="rotate(-10 82 204)"/>
+  <ellipse cx="65" cy="200" rx="12" ry="7" fill="#2e4a1e" opacity="0.45" transform="rotate(-65 65 200)"/>
+  <ellipse cx="118" cy="162" rx="14" ry="8" fill="#2e4a1e" opacity="0.5" transform="rotate(-35 118 162)"/>
+  <ellipse cx="128" cy="156" rx="13" ry="7" fill="#6b8c52" opacity="0.4" transform="rotate(-5 128 156)"/>
+  <ellipse cx="110" cy="153" rx="12" ry="7" fill="#2e4a1e" opacity="0.45" transform="rotate(-62 110 153)"/>
+  <!-- Bean pods -->
+  <path d="M160 115 Q 175 108 190 112 Q 188 122 173 125 Q 160 122 160 115Z" fill="#4a3728" opacity="0.4"/>
+  <path d="M185 80 Q 200 72 215 77 Q 213 87 198 90 Q 185 87 185 80Z" fill="#4a3728" opacity="0.35"/>
+  <!-- Small black seeds suggestion -->
+  <circle cx="169" cy="118" r="2" fill="#18140c" opacity="0.4"/>
+  <circle cx="176" cy="119" r="2" fill="#18140c" opacity="0.4"/>
+  <circle cx="183" cy="118" r="2" fill="#18140c" opacity="0.35"/>
+</svg>
+<svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M15 285 Q 55 230 90 185 Q 135 130 200 65" stroke="#2e4a1e" stroke-width="1.5" fill="none"/>
+  <path d="M90 185 Q 110 168 105 148" stroke="#6b8c52" stroke-width="1" fill="none"/>
+  <ellipse cx="72" cy="210" rx="14" ry="8" fill="#2e4a1e" opacity="0.5" transform="rotate(-40 72 210)"/>
+  <ellipse cx="82" cy="204" rx="13" ry="7" fill="#6b8c52" opacity="0.4" transform="rotate(-10 82 204)"/>
+  <ellipse cx="65" cy="200" rx="12" ry="7" fill="#2e4a1e" opacity="0.45" transform="rotate(-65 65 200)"/>
+  <path d="M160 115 Q 175 108 190 112 Q 188 122 173 125 Q 160 122 160 115Z" fill="#4a3728" opacity="0.35"/>
+  <circle cx="169" cy="118" r="2" fill="#18140c" opacity="0.35"/>
+  <circle cx="176" cy="119" r="2" fill="#18140c" opacity="0.35"/>
+</svg>
+
+<div class="hero">
+  <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+  <div class="logo-rule"><span></span><div class="logo-ornament">✦</div><span></span></div>
+  <div class="hero-title">Urad</div>
+  <div class="hero-subtitle">Black Gram — The King of Pulses</div>
+  <div class="hero-sci">Vigna mungo (L.) Hepper &nbsp;·&nbsp; Fabaceae</div>
+</div>
+
+<div class="hero-photos">
+  <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/2/2a/Vigna_mungo_var._mungo_%284663940080%29.jpg/1280px-Vigna_mungo_var._mungo_%284663940080%29.jpg" alt="Urad black gram whole seeds and split white dal in wooden bowls"
+    onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+  <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/1/15/Urad_dal_plant.jpg/1280px-Urad_dal_plant.jpg" alt="Urad plant with trifoliate leaves and slender black pods in field"
+    onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+</div>
+<p class="photo-caption">Fig. 1 — Whole black urad and split white urad dal — the same seed, two culinary identities &nbsp;·&nbsp; Fig. 2 — Vigna mungo plant with characteristic trifoliate leaves and slender, hairy black seed pods</p>
+
+<div class="divider">
+  <div class="divider-line"></div>
+  <div class="divider-leaf">❧</div>
+  <div class="divider-line"></div>
+</div>
+
+<div class="content">
+  <p class="intro-text">Revered in Ayurveda as <em>Masha</em> — the supreme pulse — Black Gram has nourished and healed the Indian subcontinent for over three thousand years. Charaka places it among the foremost <em>Shimbhi Dhanya</em> (legumes), praising its unmatched capacity to build strength, restore depleted tissues, and pacify Vata — the same grain that becomes silky dal makhani and crispy dosa, the Ayurvedic rasayana and the everyday staple, inseparable from the kitchen and the clinic alike.</p>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">01</span>
+      <h2 class="section-title">Botanical Profile</h2>
+      <div class="section-rule"></div>
+    </div>
+    <p class="section-body">Urad (<em>Vigna mungo</em>) is an erect to sub-erect, hairy annual legume of the Fabaceae family, closely related to mung bean (<em>V. radiata</em>) and cultivated across the Indian subcontinent, Southeast Asia, and parts of East Africa for over 3,500 years. It grows to 30–100 cm tall with trifoliate leaves and small, pale yellow flowers borne in axillary racemes. The pods are slender, cylindrical, 4–6 cm long, hairy, and turn black-brown to near-black at maturity — each containing 4–10 oblong seeds.</p>
+    <p class="section-body">The seeds present as two distinct culinary forms: whole <em>urad</em> (black husk intact) and <em>urad dal</em> (split and dehusked, creamy white). The husk is rich in fibre and iron; the cotyledon in protein and carbohydrate. The plant fixes atmospheric nitrogen through root-nodule bacteria, making it a valuable soil-enriching rotation crop. It thrives in well-drained tropical and subtropical soils, tolerates drought better than most legumes, and is typically harvested 60–90 days after sowing.</p>
+    <table class="data-table">
+      <thead><tr><th>Property</th><th>Detail</th></tr></thead>
+      <tbody>
+        <tr><td>Family</td><td>Fabaceae / Leguminosae (Pea family)</td></tr>
+        <tr><td>Botanical Name</td><td>Vigna mungo (L.) Hepper (syn. Phaseolus mungo L.)</td></tr>
+        <tr><td>Sanskrit Names</td><td>Masha, Mashaka, Baladhya, Vrishya, Ushna, Madhura-shakha</td></tr>
+        <tr><td>Common Names</td><td>Black Gram, Black Lentil, Urad Dal, Mungo Bean, White Lentil (dehusked)</td></tr>
+        <tr><td>Regional Names</td><td>Urad / Mah (Hindi/Pun), Udid (Mar/Guj), Ulundu (Tam), Minumulu (Tel), Uzhunnu (Mal)</td></tr>
+        <tr><td>Origin</td><td>Indian subcontinent; cultivated since ~1500 BCE</td></tr>
+        <tr><td>Plant Type</td><td>Erect hairy annual legume (30–100 cm)</td></tr>
+        <tr><td>Harvest Season</td><td>60–90 days post-sowing; Kharif (monsoon) &amp; Rabi (winter) crops</td></tr>
+        <tr><td>Medicinal Parts</td><td>Seeds (whole &amp; split), seed paste, sprouts, leaves, plant ash</td></tr>
+        <tr><td>Taste Profile</td><td>Madhura (sweet), Guru (heavy), Snigdha (unctuous)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">02</span>
+      <h2 class="section-title">Nutritional &amp; Phytochemical Composition</h2>
+      <div class="section-rule"></div>
+    </div>
+    <p class="section-body">Urad is nutritionally exceptional among pulses — ranking among the highest in protein content (24–26%), with a particularly rich lysine profile that complements cereal amino acids. Its carbohydrate fraction includes both starch and significant resistant starch, benefiting gut microbiome diversity. The whole black gram retains substantial iron, potassium, magnesium, and B-vitamins in the husk. Beyond macronutrients, Urad contains a range of bioactive polyphenols, isoflavones, saponins, and enzyme inhibitors with documented pharmacological effects.</p>
+    <div class="nutrition-bar">
+      <div class="nutrition-cell">
+        <div class="nutrition-num">25g</div>
+        <div class="nutrition-unit">protein</div>
+        <div class="nutrition-label">Per 100g dry seeds</div>
+      </div>
+      <div class="nutrition-cell">
+        <div class="nutrition-num">18mg</div>
+        <div class="nutrition-unit">iron</div>
+        <div class="nutrition-label">Per 100g (whole black)</div>
+      </div>
+      <div class="nutrition-cell">
+        <div class="nutrition-num">983mg</div>
+        <div class="nutrition-unit">potassium</div>
+        <div class="nutrition-label">Per 100g dry seeds</div>
+      </div>
+      <div class="nutrition-cell">
+        <div class="nutrition-num">7g</div>
+        <div class="nutrition-unit">fibre</div>
+        <div class="nutrition-label">Per 100g cooked</div>
+      </div>
+    </div>
+    <table class="data-table">
+      <thead><tr><th>Compound / Nutrient</th><th>Category</th><th>Primary Action / Role</th></tr></thead>
+      <tbody>
+        <tr><td>Protein (24–26%)</td><td>Macronutrient</td><td>Muscle building, tissue repair; lysine-rich — complements cereal proteins</td></tr>
+        <tr><td>Complex Carbohydrates</td><td>Macronutrient</td><td>Sustained energy; resistant starch feeds beneficial gut bacteria</td></tr>
+        <tr><td>Dietary Fibre (6–8%)</td><td>Structural polysaccharide</td><td>Gut motility, cholesterol reduction, blood sugar regulation</td></tr>
+        <tr><td>Iron &amp; Folate</td><td>Micronutrients</td><td>Haematopoietic; critical in anaemia management and pregnancy nutrition</td></tr>
+        <tr><td>Magnesium &amp; Potassium</td><td>Electrolyte minerals</td><td>Nerve conduction, muscle relaxation, blood pressure regulation</td></tr>
+        <tr><td>Calcium &amp; Phosphorus</td><td>Bone minerals</td><td>Skeletal integrity; bioavailability enhanced by soaking and sprouting</td></tr>
+        <tr><td>Isoflavones (Daidzein, Genistein)</td><td>Phytoestrogens</td><td>Antioxidant, bone-protective, mild oestrogenic modulation</td></tr>
+        <tr><td>Polyphenols &amp; Tannins</td><td>Secondary metabolites (husk)</td><td>Antioxidant, antimicrobial, anti-inflammatory; reduced by dehusking</td></tr>
+        <tr><td>Saponins</td><td>Triterpenoid glycosides</td><td>Cholesterol-binding, immunomodulatory, antifungal</td></tr>
+        <tr><td>B-vitamins (B1, B2, B3, B6)</td><td>Vitamins</td><td>Energy metabolism, nerve function, skin health; thiamine-rich</td></tr>
+        <tr><td>Phytic Acid</td><td>Antinutrient (husk)</td><td>Reduced by soaking, sprouting, fermentation; binds minerals when excessive</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">03</span>
+      <h2 class="section-title">Ayurvedic Significance</h2>
+      <div class="section-rule"></div>
+    </div>
+    <p class="section-body">Urad holds a rank unmatched among legumes in classical Ayurveda. Charaka describes <em>Masha</em> as <em>"balya, vrishya, snigdha, guru"</em> — strength-giving, aphrodisiac, unctuous, and heavy — and places it among the finest dietary medicines for building <em>shukra dhatu</em> (reproductive tissue) and restoring muscular mass in wasting conditions. Sushruta includes it in <em>Masha Pinda Sweda</em> — the signature bolus steam massage used across panchakarma — and as a primary ingredient in <em>Masha Taila</em> (urad oil) for Vata disorders and paralysis.</p>
+    <p class="section-body">Ashtanga Hridayam (Vagbhata) devotes specific attention to Masha in the context of <em>Vata Vyadhi</em> (neurological and degenerative conditions), recommending Masha preparations for facial palsy, hemiplegia, sciatica, and paralytic conditions. The Bhavaprakasha Nighantu praises it as the supreme legume for physical strength: <em>"Masho vrushyaha snigdho guru pittaraktakaraha / balakaro mahashaktihi shukralo vatanapaha"</em> — aphrodisiac, unctuous, heavy, Pitta and Rakta increasing, great strengthener, potent, semen-augmenting, Vata-pacifying.</p>
+    <table class="dosha-table">
+      <thead><tr><th>Dosha</th><th>Effect</th><th>Mechanism &amp; Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Vata ↓↓</td><td>Strongly pacifying</td><td>Snigdha (unctuous), guru (heavy), and madhura (sweet) qualities powerfully pacify Vata; the premier legume in all Vata Vyadhi protocols — nerve disorders, paralysis, degenerative conditions, joint pain, and emaciation</td></tr>
+        <tr><td>Pitta ↑</td><td>Mild aggravation</td><td>Ushna virya (heating) and protein-richness can mildly increase Pitta and Rakta (blood); used cautiously in inflammatory Pitta conditions and bleeding disorders; combining with ghee and cooling spices mitigates this</td></tr>
+        <tr><td>Kapha ↑</td><td>Aggravating</td><td>Its guru (heavy) and snigdha (unctuous) gunas increase Kapha; contraindicated in obesity, congestion, and sluggish digestion; best avoided in Kapha-dominant constitutions without digestive spices</td></tr>
+      </tbody>
+    </table>
+    <p class="section-body"><strong>Rasa:</strong> Madhura (sweet) &nbsp;·&nbsp; <strong>Guna:</strong> Guru (heavy), Snigdha (unctuous) &nbsp;·&nbsp; <strong>Virya:</strong> Ushna (hot) &nbsp;·&nbsp; <strong>Vipaka:</strong> Madhura &nbsp;·&nbsp; <strong>Karma:</strong> Vata shamaka, Balya, Vrishya, Brinhana (building/nourishing), Shukrala</p>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">04</span>
+      <h2 class="section-title">Key Health Benefits</h2>
+      <div class="section-rule"></div>
+    </div>
+    <p class="section-body">Modern nutritional science and pharmacological research have confirmed and expanded upon Urad's classical therapeutic profile — validating its role in bone health, nerve support, diabetes management, cardiovascular protection, and reproductive wellness through both its nutritional density and bioactive phytochemical content.</p>
+    <div class="benefits-grid">
+      <div class="benefit-card">
+        <div class="benefit-title">Vata Vyadhi &amp; Neurological Support</div>
+        <div class="benefit-desc">The defining classical application of Urad — Masha Taila (oil processed with black gram) is the primary therapeutic oil for facial palsy (Ardita), hemiplegia, sciatica, and degenerative nerve conditions in panchakarma practice. Modern research confirms that the B-vitamin complex, magnesium, and essential fatty acids in Urad support myelin integrity and nerve conduction velocity.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Bone &amp; Joint Health</div>
+        <div class="benefit-desc">High calcium, phosphorus, and magnesium content supports skeletal mineralisation and cartilage integrity. Isoflavones (daidzein, genistein) exert mild oestrogenic effects that protect against postmenopausal bone loss. Masha Pinda Sweda — the warm urad bolus massage — is one of Ayurveda's most effective treatments for osteoarthritis, spondylosis, and chronic joint stiffness.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Reproductive &amp; Hormonal Wellness</div>
+        <div class="benefit-desc">Classified as <em>Vrishya</em> (aphrodisiac) and <em>Shukrala</em> (semen-augmenting) in Ayurveda, Urad is a foundational dietary medicine in male and female reproductive health protocols. Its protein, zinc, folate, and isoflavone content supports sperm quality, hormonal balance, and endometrial health. Traditionally prescribed in oligospermia, sexual debility, and post-partum recovery.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Anaemia &amp; Blood Building</div>
+        <div class="benefit-desc">Whole black gram is among the richest plant sources of iron (up to 18 mg/100g) and folate — essential for haematopoiesis. Regular consumption of whole urad (with Vitamin C-rich foods to enhance iron absorption) addresses iron-deficiency anaemia particularly effectively. Folate is critical in megaloblastic anaemia and neural tube defect prevention during early pregnancy.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Cardiovascular Protection</div>
+        <div class="benefit-desc">Soluble fibre and saponins reduce LDL cholesterol and total cholesterol through bile acid sequestration. Potassium and magnesium contribute to blood pressure regulation. Isoflavones improve arterial elasticity and reduce oxidative stress on vascular endothelium. Studies in hypercholesterolaemic subjects show significant lipid-lowering with regular legume consumption.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Diabetes &amp; Glycaemic Control</div>
+        <div class="benefit-desc">Urad's low glycaemic index (GI ~26–29), resistant starch, and soluble fibre produce a blunted post-prandial glucose response. Phytic acid and enzyme inhibitors slow starch digestion. Regular inclusion in the diet reduces fasting blood glucose, improves HbA1c, and enhances insulin sensitivity in type-2 diabetic subjects — though benefits are significantly greater when consumed whole rather than dehusked.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Skin, Hair &amp; External Applications</div>
+        <div class="benefit-desc">Urad paste (Masha Lepa) is a classical Ayurvedic topical preparation for improving skin complexion, reducing pigmentation, and nourishing hair roots. Widely used in Ayurvedic beauty formulations — the creamy starch-protein paste acts as a gentle exfoliant, emollient, and nourishing mask. Urad bran is used in traditional face packs for oily and dull skin across Maharashtra and Tamil Nadu.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Gut Health &amp; Probiotic Support</div>
+        <div class="benefit-desc">Fermented urad preparations — idli, dosa batter, papad — generate lactic acid bacteria and significantly increase bioavailability of minerals by reducing phytic acid. The resistant starch acts as a prebiotic, feeding beneficial gut flora. The high fibre content regulates bowel movements and reduces risk of colorectal disorders. Traditionally used in mild constipation and intestinal weakness.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">05</span>
+      <h2 class="section-title">Culinary Heritage</h2>
+      <div class="section-rule"></div>
+    </div>
+    <p class="section-body">Urad is the most culinarily versatile pulse of the Indian subcontinent — the same grain that becomes Punjab's silkiest dal, South India's crispiest dosa, a creamy Bengali dessert, a Rajasthani mountain-spiced curry, and a Sindhi festival bread. No other pulse transforms across such a range of textures, preparations, and regional identities. Its culinary story is inseparable from the story of South Asian food culture itself.</p>
+    <div class="culinary-strip">
+      <div class="culinary-cell">
+        <div class="culinary-region">Punjab / North India</div>
+        <div class="culinary-dish">Dal Makhani</div>
+        <div class="culinary-desc">Whole urad slow-cooked overnight with rajma, cream, and butter — the defining dish of Punjabi cuisine, best known from Bukhara, ITC Maurya</div>
+      </div>
+      <div class="culinary-cell">
+        <div class="culinary-region">South India</div>
+        <div class="culinary-dish">Dosa &amp; Idli</div>
+        <div class="culinary-desc">Fermented batter of urad dal and rice — the foundation of South India's most beloved breakfast; the fermentation vastly improves nutritional value</div>
+      </div>
+      <div class="culinary-cell">
+        <div class="culinary-region">Tamil Nadu</div>
+        <div class="culinary-dish">Ulundu Kozhukattai</div>
+        <div class="culinary-desc">Steamed rice flour dumplings filled with spiced urad dal — a Ganesh Chaturthi ritual offering and everyday comfort food</div>
+      </div>
+      <div class="culinary-cell">
+        <div class="culinary-region">Bengal</div>
+        <div class="culinary-dish">Biulir Dal</div>
+        <div class="culinary-desc">Delicate urad dal tempered with ginger and green chilli — a hallmark of Bengali cuisine, traditionally served with luchi on auspicious occasions</div>
+      </div>
+      <div class="culinary-cell">
+        <div class="culinary-region">Pan-India</div>
+        <div class="culinary-dish">Papad / Papadum</div>
+        <div class="culinary-desc">Sun-dried urad dal wafers seasoned with cumin, black pepper, or chilli — India's most ubiquitous condiment, found from the street to the fine dining table</div>
+      </div>
+      <div class="culinary-cell">
+        <div class="culinary-region">Maharashtra</div>
+        <div class="culinary-dish">Vada / Medu Vada</div>
+        <div class="culinary-desc">Crispy-fried urad dal doughnuts seasoned with curry leaves, pepper, and ginger — served with sambar and coconut chutney across the country</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">06</span>
+      <h2 class="section-title">How to Consume Urad</h2>
+      <div class="section-rule"></div>
+    </div>
+    <p class="section-body">Urad is a food-medicine: its primary therapeutic use is dietary, consumed as part of regular meals. Ayurvedic therapeutic preparations using concentrated Urad extracts (Masha Taila, Masha Pinda) are administered under practitioner supervision. Nutritional bioavailability is significantly improved by soaking overnight, sprouting, or fermenting before consumption.</p>
+    <table class="consume-table">
+      <thead><tr><th>Form</th><th>Preparation</th><th>Dosage / Use</th><th>Best Use</th></tr></thead>
+      <tbody>
+        <tr><td>Whole Urad (Cooked)</td><td>Soaked overnight, pressure-cooked or slow-cooked</td><td>50–100g dry weight, 3–4× weekly</td><td>General nourishment, Vata pacification, anaemia</td></tr>
+        <tr><td>Urad Dal (Split &amp; Dehusked)</td><td>Washed, boiled as dal with turmeric and tempering</td><td>50–75g dry weight per serving</td><td>Lighter digestion, convalescence, children's nutrition</td></tr>
+        <tr><td>Sprouted Urad</td><td>Soaked 8 hr, sprouted 24–36 hr in damp cloth</td><td>50g sprouts daily</td><td>Maximal bioavailability, diabetes, gut health</td></tr>
+        <tr><td>Fermented Batter</td><td>Ground urad + rice fermented 8–12 hr</td><td>2–4 idlis or 1–2 dosas per meal</td><td>Gut health, probiotic nutrition, mineral absorption</td></tr>
+        <tr><td>Masha Lepa (Paste — Topical)</td><td>Soaked urad ground to smooth paste with milk or water</td><td>Apply 20–30 min; rinse off</td><td>Skin nourishment, complexion, hair root strengthening</td></tr>
+        <tr><td>Masha Taila (Oil — External)</td><td>Classical Ayurvedic medicated oil (practitioner-prepared)</td><td>Warm massage; Shirodhara or Abhyanga</td><td>Facial palsy, paralysis, Vata neurological disorders</td></tr>
+        <tr><td>Masha Pinda Sweda</td><td>Hot bolus of cooked urad in cloth; applied in massage</td><td>Panchakarma procedure — supervised</td><td>Osteoarthritis, spondylosis, degenerative joint disease</td></tr>
+        <tr><td>Urad with Ghee</td><td>Dal cooked with generous ghee; or ghee-tempered</td><td>As part of daily meal</td><td>Maximise Vata-pacifying and brinhana (nourishing) effect</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">07</span>
+      <h2 class="section-title">Cautions &amp; Considerations</h2>
+      <div class="section-rule"></div>
+    </div>
+    <p class="section-body">Urad is a food, not a concentrated medicine — its safety profile for general consumption is excellent and well-established over millennia. However, certain constitutions and health conditions require moderation or specific preparation methods to ensure comfortable digestion and avoid aggravation.</p>
+    <ul class="precaution-list">
+      <li><strong>Kapha-dominant constitution &amp; obesity:</strong> Urad's heavy, unctuous qualities increase Kapha and contribute to weight gain and sluggish digestion when consumed in excess. Kapha types should use sparingly, well-spiced (ginger, black pepper, cumin), and prefer the lighter dehusked dal over whole urad.</li>
+      <li><strong>Gout &amp; hyperuricaemia:</strong> Urad is moderately high in purines — individuals with gout, uric acid kidney stones, or hyperuricaemia should limit intake, as purine metabolism produces uric acid. Sprouted urad has somewhat lower purine levels than cooked whole urad.</li>
+      <li><strong>Kidney disease:</strong> High potassium (983 mg/100g) and phosphorus content requires restriction in chronic kidney disease (CKD) patients, particularly those on dialysis with electrolyte restrictions — consult a dietitian for appropriate portions.</li>
+      <li><strong>Digestive sensitivity (Vata-type):</strong> Although Urad is the premier Vata-pacifying food, it can cause gas, bloating, and flatulence in sensitive digestions — especially when not properly soaked. Always soak for at least 6–8 hours, discard soaking water, and cook thoroughly with digestive spices (asafoetida, cumin, ginger).</li>
+      <li><strong>Pitta aggravation:</strong> Its mild ushna virya can increase Pitta in excess — those with hyperacidity, inflammatory bowel conditions, or bleeding disorders should consume moderately and balance with cooling preparations (adding coriander, coconut, or reducing cooking spice heat).</li>
+      <li><strong>Phytic acid &amp; mineral absorption:</strong> The husk of whole black gram contains phytic acid that can reduce absorption of calcium, iron, and zinc when consumed in excess — mitigated substantially by soaking, sprouting, or fermentation before cooking.</li>
+      <li><strong>Thyroid conditions:</strong> Like most legumes, Urad contains goitrogenic compounds that may affect thyroid function in susceptible individuals if consumed raw or undercooked in large quantities — thorough cooking neutralises these. Individuals on thyroid medication should be mindful of very high consumption.</li>
+      <li><strong>Pregnancy (general use):</strong> Urad is an excellent food for pregnancy — its folate supports neural tube development and its iron addresses pregnancy-related anaemia. However, concentrated Ayurvedic preparations (Masha Taila, high-dose extracts) should only be taken under practitioner supervision.</li>
+    </ul>
+  </div>
+
+  <div class="sources">
+    <div class="sources-title">References &amp; Sources</div>
+    <ul>
+      <li>Nair RB &amp; Shylaja M — "Phytochemical, Nutritional and Pharmacological Properties of Vigna mungo (L.) Hepper — A Review" — Journal of Pharmacognosy &amp; Phytochemistry, 2016</li>
+      <li>Singh N &amp; Meena RK — "Black gram (Vigna mungo L.) — Nutritional composition, health benefits and uses" — International Journal of Food Science &amp; Nutrition, 2018</li>
+      <li>Marathe SA et al. — "Antioxidant capacity and polyphenol content of black gram (Vigna mungo)" — Food Chemistry, 2011</li>
+      <li>Mudryj AN et al. — "Polyphenol rich legumes and their effect on cardiovascular risk factors" — Applied Physiology, Nutrition, and Metabolism, 2012</li>
+      <li>Visha P &amp; Nair CR — "Masha (Vigna mungo) in Ayurveda: A Critical Review" — Ancient Science of Life, 2014</li>
+      <li>Charaka Samhita — Sutra Sthana, Shimbhi Dhanya Varga; Chikitsa Sthana, Vata Vyadhi Chikitsa — Masha references</li>
+      <li>Sushruta Samhita — Chikitsasthana — Masha Pinda Sweda and Masha Taila formulations</li>
+      <li>Ashtanga Hridayam (Vagbhata) — Nidanasthana, Vata Vyadhi — Masha in paralysis and neurological protocols</li>
+      <li>Bhavaprakasha Nighantu — Dhanya Varga — Masha shloka and properties</li>
+      <li>Priyavrat Sharma — Dravyaguna Vigyana, Vol. II — Classical properties and formulations of Masha</li>
+      <li>IFCT (Indian Food Composition Tables), NIN Hyderabad — Vigna mungo nutritional data, 2017</li>
+    </ul>
+  </div>
+</div>
+
+<footer>
+  <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a qualified practitioner before therapeutic use</p>
+</footer>
+
+<script>
+  const open3D = document.getElementById('open3D');
+  const close3D = document.getElementById('close3D');
+  const modal = document.getElementById('viewerModal');
+
+  function openModal() {
+    var _aud = document.getElementById('uradAudio'); if(_aud){ _aud.currentTime=0; var playPromise = _aud.play(); if (playPromise !== undefined) { playPromise.catch(function(e){ console.log(e); }); } }
+
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    history.pushState({ modal: 'urad3d' }, '', '#3d');
+  }
+  function closeModal() {
+    var _aud = document.getElementById('uradAudio'); if(_aud){ _aud.pause(); }
+
+    modal.style.display = 'none';
+    document.body.style.overflow = '';
+    if (window.location.hash === '#3d') history.replaceState(null, '', window.location.pathname);
+  }
+
+  open3D.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); openModal(); });
+  close3D.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); closeModal(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && modal.style.display === 'flex') closeModal(); });
+  window.addEventListener('popstate', () => {
+    if (modal.style.display === 'flex') { modal.style.display = 'none'; document.body.style.overflow = ''; }
+  });
+</script>
+
+
+  <audio id="uradAudio" src="urad_benefits.mp3" loop preload="auto"></audio>
+</body>
+</html>

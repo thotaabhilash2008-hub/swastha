@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kutannata | Swastha</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap"
+    rel="stylesheet">
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+  <style>
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+
+    * { margin: 0; padding: 0; box-sizing: border-box }
+    html { scroll-behavior: smooth }
+
+    body {
+      font-family: 'Jost', sans-serif;
+      background: var(--cream);
+      color: var(--ink);
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity: .03;
+      pointer-events: none;
+      z-index: 100;
+    }
+
+    #open3D {
+      position: fixed; top: 25px; right: 30px;
+      padding: 10px 18px; font-size: 11px; letter-spacing: 2px;
+      text-transform: uppercase; background: var(--forest); color: #fff;
+      border: none; cursor: pointer; z-index: 1000; transition: .3s;
+    }
+    #open3D:hover { background: var(--gold); color: var(--deep) }
+
+    #viewerModal {
+      position: fixed; inset: 0; z-index: 2000;
+      display: none; flex-direction: column;
+    }
+    #modal-topbar {
+      flex-shrink: 0; height: 58px; background: #111;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 28px 0 32px; border-bottom: 1px solid rgba(255,255,255,.07);
+    }
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif; font-size: 11px; font-weight: 300;
+      letter-spacing: 4.5px; text-transform: uppercase; color: rgba(255,255,255,.72);
+    }
+    #close3D {
+      width: 38px; height: 38px; font-size: 15px; font-weight: 300;
+      background: transparent; color: #fff; border: 1.5px solid rgba(255,255,255,.7);
+      border-radius: 50%; cursor: pointer; display: flex; align-items: center;
+      justify-content: center; transition: background .2s, color .2s, transform .22s; outline: none;
+    }
+    #close3D:hover { background: #fff; color: #111; transform: rotate(90deg) }
+    #viewerModal model-viewer { flex: 1; width: 100%; display: block; background: #fff }
+
+    .bg-circle { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0 }
+    .bg-circle-1 {
+      width: 700px; height: 700px;
+      background: radial-gradient(circle, rgba(59,110,79,.1) 0%, transparent 70%);
+      top: -200px; right: -150px;
+    }
+    .bg-circle-2 {
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(196,146,42,.08) 0%, transparent 70%);
+      bottom: -100px; left: -100px;
+    }
+
+    .botanical-svg { position: fixed; pointer-events: none; z-index: 1; opacity: .09 }
+    .botanical-tl { top: -20px; left: -20px; width: 260px }
+    .botanical-br { bottom: -20px; right: -20px; width: 220px; transform: rotate(180deg) }
+
+    .hero {
+      position: relative; z-index: 10;
+      padding: 54px 40px 0; text-align: center;
+      opacity: 0; animation: fadeUp .9s ease .1s forwards;
+    }
+    .back-link {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+      color: var(--sage); text-decoration: none; margin-bottom: 36px; transition: color .3s;
+    }
+    .back-link:hover { color: var(--gold) }
+
+    .logo-rule { display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 14px }
+    .logo-rule span {
+      display: block; height: 1px; width: 70px;
+      background: linear-gradient(to right, transparent, var(--gold));
+    }
+    .logo-rule span:last-child { background: linear-gradient(to left, transparent, var(--gold)) }
+    .logo-ornament { font-size: 13px; color: var(--gold) }
+
+    .hero-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(56px, 11vw, 104px);
+      font-weight: 300; letter-spacing: 8px; line-height: 1; color: var(--deep);
+    }
+    .hero-subtitle {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 18px; font-style: italic; font-weight: 300;
+      color: var(--earth); letter-spacing: 2px; margin-top: 8px;
+    }
+    .hero-sci {
+      font-size: 11px; font-weight: 200; letter-spacing: 5px;
+      color: var(--sage); margin-top: 6px;
+    }
+
+    .hero-photos {
+      position: relative; z-index: 10;
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 2px; max-width: 900px; margin: 40px auto 0;
+      opacity: 0; animation: fadeUp .9s ease .35s forwards;
+    }
+    .hero-photos img {
+      width: 100%; height: 380px; object-fit: cover; object-position: center;
+      display: block; background: var(--parchment);
+    }
+
+    .photo-caption {
+      text-align: center; font-family: 'Cormorant Garamond', serif;
+      font-size: 12px; font-style: italic; color: var(--sage);
+      letter-spacing: 1px; padding: 10px 0 0; max-width: 900px;
+      margin: 0 auto; position: relative; z-index: 10;
+      opacity: 0; animation: fadeUp .9s ease .5s forwards;
+    }
+
+    .divider {
+      display: flex; align-items: center; justify-content: center;
+      gap: 16px; margin: 50px auto; max-width: 600px;
+      opacity: 0; animation: fadeUp .9s ease .55s forwards;
+      position: relative; z-index: 10;
+    }
+    .divider-line { height: 1px; width: 120px }
+    .divider-line:first-child { background: linear-gradient(to right, transparent, var(--sage)) }
+    .divider-line:last-child { background: linear-gradient(to left, transparent, var(--sage)) }
+    .divider-leaf { color: var(--forest); font-size: 18px }
+
+    .content {
+      position: relative; z-index: 10;
+      max-width: 860px; margin: 0 auto; padding: 0 30px 80px;
+    }
+
+    .intro-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 20px; font-weight: 300; line-height: 1.75;
+      color: var(--ink); text-align: center; max-width: 700px;
+      margin: 0 auto 60px;
+      opacity: 0; animation: fadeUp .9s ease .6s forwards;
+    }
+    .intro-text em { color: var(--forest); font-style: italic }
+
+    .section { margin-bottom: 60px; opacity: 0; animation: fadeUp .9s ease forwards }
+    .section:nth-child(1) { animation-delay: .65s }
+    .section:nth-child(2) { animation-delay: .75s }
+    .section:nth-child(3) { animation-delay: .85s }
+    .section:nth-child(4) { animation-delay: .95s }
+    .section:nth-child(5) { animation-delay: 1.05s }
+    .section:nth-child(6) { animation-delay: 1.15s }
+    .section:nth-child(7) { animation-delay: 1.25s }
+
+    .section-header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px }
+    .section-num { font-family: 'Cormorant Garamond', serif; font-size: 11px; letter-spacing: 4px; color: var(--gold) }
+    .section-title { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 400; color: var(--deep); letter-spacing: 1px }
+    .section-rule { height: 1px; flex: 1; background: linear-gradient(to right, var(--gold), transparent) }
+
+    .section-body { font-size: 13px; font-weight: 300; line-height: 1.9; color: var(--ink); margin-bottom: 24px }
+
+    .data-table { width: 100%; border-collapse: collapse; margin: 16px 0 8px; font-size: 12px }
+    .data-table thead tr { background: var(--deep); color: var(--gold); font-size: 10px; letter-spacing: 3px; text-transform: uppercase }
+    .data-table thead th { padding: 12px 14px; text-align: left; font-weight: 400 }
+    .data-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .data-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .data-table tbody tr { transition: background .2s }
+    .data-table tbody tr:hover { background: #e5dcc4 }
+    .data-table tbody td { padding: 10px 14px; color: var(--ink); border-bottom: 1px solid rgba(92,61,30,.08) }
+    .data-table tbody td:first-child { font-weight: 400; color: var(--deep); width: 28% }
+
+    .dosha-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .dosha-table thead tr { background: var(--forest); color: var(--cream) }
+    .dosha-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .dosha-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .dosha-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .dosha-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(92,61,30,.08) }
+    .dosha-table tbody td:first-child { font-weight: 400; color: var(--forest); width: 18% }
+    .dosha-table tbody td:nth-child(2) { color: var(--earth); width: 20% }
+
+    .consume-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .consume-table thead tr { background: var(--earth); color: var(--cream) }
+    .consume-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .consume-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .consume-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .consume-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(92,61,30,.08) }
+    .consume-table tbody td:first-child { font-weight: 400; color: var(--earth); width: 22% }
+
+    .benefits-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 1px; background: rgba(92,61,30,.12);
+      border: 1px solid rgba(92,61,30,.12); margin: 8px 0;
+    }
+    .benefit-card {
+      background: var(--cream); padding: 24px 22px;
+      transition: background .3s; position: relative; overflow: hidden;
+    }
+    .benefit-card:hover { background: #ede4c8 }
+    .benefit-card::before {
+      content: ''; position: absolute; bottom: 0; left: 0;
+      width: 0; height: 2px; background: var(--gold); transition: width .4s;
+    }
+    .benefit-card:hover::before { width: 100% }
+    .benefit-title { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 600; color: var(--forest); margin-bottom: 8px }
+    .benefit-desc { font-size: 11.5px; font-weight: 300; line-height: 1.75; color: var(--ink); opacity: .85 }
+
+    .precaution-list { list-style: none; margin: 8px 0 }
+    .precaution-list li {
+      display: flex; gap: 12px; align-items: flex-start;
+      padding: 10px 14px; font-size: 12px; font-weight: 300;
+      line-height: 1.7; color: var(--ink); border-bottom: 1px solid rgba(92,61,30,.08);
+    }
+    .precaution-list li:last-child { border-bottom: none }
+    .precaution-list li::before { content: '▸'; color: var(--gold); flex-shrink: 0; margin-top: 1px }
+
+    .nutrition-bar {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 1px; background: rgba(92,61,30,.12);
+      border: 1px solid rgba(92,61,30,.12); margin: 20px 0;
+    }
+    .nutrition-cell { background: var(--cream); padding: 22px 16px; text-align: center; transition: background .3s }
+    .nutrition-cell:hover { background: var(--parchment) }
+    .nutrition-num { font-family: 'Cormorant Garamond', serif; font-size: 36px; font-weight: 300; color: var(--forest); line-height: 1; margin-bottom: 4px }
+    .nutrition-unit { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); font-weight: 300 }
+    .nutrition-label { font-size: 11px; font-weight: 300; color: var(--ink); margin-top: 5px }
+
+    .sources { border-top: 1px solid rgba(92,61,30,.15); padding-top: 24px; margin-top: 20px }
+    .sources-title { font-size: 10px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); margin-bottom: 12px; font-weight: 300 }
+    .sources ul { list-style: none }
+    .sources ul li { font-family: 'Cormorant Garamond', serif; font-size: 13px; font-style: italic; color: var(--earth); padding: 5px 0; border-bottom: 1px solid rgba(92,61,30,.06) }
+    .sources ul li::before { content: '· '; color: var(--sage) }
+
+    footer {
+      position: relative; z-index: 10; text-align: center;
+      padding: 24px 20px 44px; border-top: 1px solid rgba(92,61,30,.12);
+      max-width: 860px; margin: 0 auto;
+    }
+    footer p { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); font-weight: 300 }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(28px) }
+      to { opacity: 1; transform: translateY(0) }
+    }
+
+    @media(max-width:700px) {
+      .hero-photos { grid-template-columns: 1fr }
+      .hero-photos img { height: 260px }
+      .benefits-grid { grid-template-columns: 1fr }
+      .nutrition-bar { grid-template-columns: 1fr 1fr }
+      .content { padding: 0 18px 60px }
+    }
+  </style>
+</head>
+
+<body>
+
+  <button id="open3D">View in 3D</button>
+
+  <div id="viewerModal">
+    <div id="modal-topbar">
+      <span>3D Model — Kutannata</span>
+      <button id="close3D">✕</button>
+    </div>
+    <model-viewer src="kutannata3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+  </div>
+
+  <div class="bg-circle bg-circle-1"></div>
+  <div class="bg-circle bg-circle-2"></div>
+
+  <svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#3b6e4f" stroke-width="1.5" fill="none"/>
+    <circle cx="90" cy="210" r="8" fill="#3b6e4f" opacity="0.7"/>
+    <circle cx="130" cy="175" r="10" fill="#7aab85" opacity="0.6"/>
+    <circle cx="170" cy="135" r="7" fill="#3b6e4f" opacity="0.8"/>
+    <circle cx="210" cy="95" r="9" fill="#c4922a" opacity="0.5"/>
+    <ellipse cx="115" cy="195" rx="20" ry="10" fill="#7aab85" transform="rotate(-30 115 195)"/>
+    <ellipse cx="155" cy="155" rx="18" ry="9" fill="#3b6e4f" transform="rotate(-45 155 155)"/>
+    <ellipse cx="195" cy="115" rx="16" ry="8" fill="#7aab85" transform="rotate(-60 195 115)"/>
+  </svg>
+  <svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#3b6e4f" stroke-width="1.5" fill="none"/>
+    <circle cx="90" cy="210" r="8" fill="#3b6e4f" opacity="0.7"/>
+    <circle cx="130" cy="175" r="10" fill="#7aab85" opacity="0.6"/>
+    <ellipse cx="115" cy="195" rx="20" ry="10" fill="#7aab85" transform="rotate(-30 115 195)"/>
+  </svg>
+
+  <div class="hero">
+    <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+    <div class="logo-rule"><span></span><div class="logo-ornament">✦</div><span></span></div>
+    <div class="hero-title">Kutannata</div>
+    <div class="hero-subtitle">The Woodland Turmeric — Aromatic Rhizome of the Forest Shade</div>
+    <div class="hero-sci">Hedychium spicatum &nbsp;·&nbsp; Spiked Ginger Lily</div>
+  </div>
+
+  <div class="hero-photos">
+    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b4/Hedychium_spicatum_%2820983517245%29.jpg/1280px-Hedychium_spicatum_%2820983517245%29.jpg" alt="Kutannata Hedychium spicatum flowers white fragrant spike"
+      onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e1/Hedychium_spicatum_Ciaojiang_%2815132392575%29.jpg/1280px-Hedychium_spicatum_Ciaojiang_%2815132392575%29.jpg" alt="Hedychium spicatum rhizome aromatic root"
+      onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+  </div>
+  <p class="photo-caption">Fig. 1 — White fragrant flower spikes of Kutannata rising from reed-like stems &nbsp;·&nbsp; Fig. 2 — Aromatic rhizome — the primary drug part — used in classical Ayurvedic preparations</p>
+
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-leaf">❧</div>
+    <div class="divider-line"></div>
+  </div>
+
+  <div class="content">
+    <p class="intro-text">Celebrated in Sanskrit as <em>Kutannata</em>, <em>Sthaulakandaka</em>, and <em>Gandhamula</em> — "the fragrant root" — this stately Himalayan ginger lily has been revered in Ayurveda since Vedic times for its powerfully aromatic rhizome. Charaka lists it as a <em>Shiro-virechana</em> drug and includes it in <em>Dashemani Shiro Virechaniya</em>; Sushruta places it in <em>Pippalyadi, Vacadi</em>, and <em>Eladi</em> ganas, prescribing it in disorders of the head, chest, and digestion — a tradition that modern phytochemistry is now beginning to validate.</p>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">01</span><h2 class="section-title">Botanical Profile</h2><div class="section-rule"></div></div>
+      <p class="section-body">Kutannata (<em>Hedychium spicatum</em> Buch.-Ham.) is a tall, perennial rhizomatous herb of the family Zingiberaceae — the ginger family — native to the subtropical and temperate Himalayas from Himachal Pradesh through Nepal, Sikkim, Bhutan, and into Yunnan province of China, typically found growing in moist shaded forest floors, stream banks, and hill slopes at altitudes of 1,200–2,700 m. The plant is bold and architecturally striking: erect reed-like pseudostems of 1–2 m are clothed in alternate, oblong-lanceolate leaves of 30–50 cm, smooth above and finely pubescent below.</p>
+      <p class="section-body">The rhizome is thick, fleshy, creeping, pale yellow to cream inside, and intensely aromatic — resembling camphor and spice — and is the primary drug part used in Ayurveda. The terminal inflorescence is a dense spike of showy, fragrant white flowers with orange-yellow markings at the centre; the lip (labellum) is deeply bilobed. Flowers from July to September in wild populations, filling hill forests with a distinctive sweet, camphoraceous fragrance. The roots and rhizome are harvested in October–November after the aerial parts die back.</p>
+      <table class="data-table">
+        <thead><tr><th>PROPERTY</th><th>Detail</th></tr></thead>
+        <tbody>
+          <tr><td>Family</td><td>Zingiberaceae (Ginger family)</td></tr>
+          <tr><td>Botanical Name</td><td>Hedychium spicatum Buch.-Ham. ex Sm.</td></tr>
+          <tr><td>Sanskrit Names</td><td>Kutannata, Sthaulakandaka, Gandhamula, Palashapushpaka, Sugandhimula, Gandhasthira</td></tr>
+          <tr><td>Common Names</td><td>Spiked Ginger Lily, Woodland Turmeric, Kapur Kachri (Hindi)</td></tr>
+          <tr><td>Regional Names</td><td>Kapur Kachri (Hindi/Urdu), Shati (Bengali), Kapoor Kachhora (Gujarati), Kapur Kachori (Punjabi)</td></tr>
+          <tr><td>Origin</td><td>Subtropical–temperate Himalayas (1,200–2,700 m)</td></tr>
+          <tr><td>Plant Type</td><td>Tall perennial rhizomatous herb (1–2 m)</td></tr>
+          <tr><td>Flowering Season</td><td>July–September</td></tr>
+          <tr><td>Medicinal Parts</td><td>Rhizome and roots (primary); leaves used topically</td></tr>
+          <tr><td>Taste Profile</td><td>Katu (pungent), Tikta (bitter), Kashaya (astringent)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">02</span><h2 class="section-title">Phytochemistry Composition</h2><div class="section-rule"></div></div>
+      <p class="section-body">The rhizome of Kutannata is phytochemically complex, yielding a rich essential oil (0.2–0.8% yield) dominated by sesquiterpene hydrocarbons and oxygenated sesquiterpenes. Key among these is <em>1,8-cineole</em> (eucalyptol), <em>β-pinene</em>, <em>linalool</em>, <em>β-phellandrene</em>, and the sesquiterpene ketone <em>hedychiol</em>. Fixed constituents include diarylheptanoids, flavonoids, and a family of labdane-type diterpenes — hedychenone A and B — that have attracted significant interest for their anti-inflammatory and neuroprotective profiles.</p>
+      <p class="section-body">Chromatographic analysis by Simonsen (1920), and later more comprehensively by Mallavarapu, Tabanca, and Joshi, revealed a distinctive camphorous–floral–spicy aromatic profile that distinguishes Kutannata from other <em>Hedychium</em> species and correlates with its classical Ayurvedic reputation as a Shiro-virechana (nasal cleansing) drug.</p>
+      <div class="nutrition-bar">
+        <div class="nutrition-cell"><div class="nutrition-num">0.8%</div><div class="nutrition-unit">max yield</div><div class="nutrition-label">Essential oil (rhizome)</div></div>
+        <div class="nutrition-cell"><div class="nutrition-num">40+</div><div class="nutrition-unit">compounds</div><div class="nutrition-label">Identified in volatile oil</div></div>
+        <div class="nutrition-cell"><div class="nutrition-num">6</div><div class="nutrition-unit">diterpenes</div><div class="nutrition-label">Labdane-type incl. hedychenone A–B</div></div>
+        <div class="nutrition-cell"><div class="nutrition-num">1,200</div><div class="nutrition-unit">m alt.</div><div class="nutrition-label">Lower Himalayan habitat limit</div></div>
+      </div>
+      <table class="data-table">
+        <thead><tr><th>Compound</th><th>Category</th><th>Primary Action</th></tr></thead>
+        <tbody>
+          <tr><td>1,8-Cineole (Eucalyptol)</td><td>Oxygenated monoterpene</td><td>Expectorant, bronchodilator, anti-inflammatory, nasal decongestant</td></tr>
+          <tr><td>β-Pinene &amp; α-Pinene</td><td>Monoterpene hydrocarbons</td><td>Antimicrobial, bronchodilatory, anti-inflammatory</td></tr>
+          <tr><td>Linalool</td><td>Monoterpene alcohol</td><td>Anxiolytic, sedative, analgesic, anti-inflammatory</td></tr>
+          <tr><td>Hedychenone A &amp; B</td><td>Labdane diterpenes</td><td>Anti-inflammatory, cytotoxic (in vitro), neuroprotective (emerging)</td></tr>
+          <tr><td>Hedychiol A &amp; B</td><td>Sesquiterpene diols</td><td>Analgesic, anti-inflammatory; contribute to camphoraceous aroma</td></tr>
+          <tr><td>β-Phellandrene</td><td>Monoterpene</td><td>Antimicrobial, antifungal, digestive stimulant</td></tr>
+          <tr><td>Diarylheptanoids</td><td>Phenylpropanoids</td><td>Antioxidant, anti-inflammatory, hepatoprotective</td></tr>
+          <tr><td>Flavonoids (Quercetin, Kaempferol)</td><td>Polyphenols</td><td>Antioxidant, anti-allergic, cardioprotective</td></tr>
+          <tr><td>Terpinen-4-ol</td><td>Monoterpenoid alcohol</td><td>Antimicrobial, anti-inflammatory, immunostimulant</td></tr>
+          <tr><td>Starch &amp; Mucilage</td><td>Polysaccharides</td><td>Demulcent, emollient, soothing to mucous membranes</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">03</span><h2 class="section-title">Ayurvedic Significance</h2><div class="section-rule"></div></div>
+      <p class="section-body">Kutannata holds a well-defined place across all major classical texts. Charaka includes it in <em>Dashemani Shiro Virechaniya</em> — the ten best drugs for nasal purgation — and prescribes the rhizome powder with honey as an errhine to relieve chronic sinusitis, headache, and cranial congestion. Sushruta assigns it to <em>Pippalyadi gana</em> (stimulant/carminative group), <em>Vacadi gana</em> (aromatic group for head disorders), and <em>Eladi gana</em> (expectorant group). It appears in Ashtanga Hridayam's <em>Eladi churna</em> and in the <em>Charaka Samhita's Kalyanaka Ghrita</em> — an important rasayana-rejuvenative formulation.</p>
+      <p class="section-body">The rhizome's exceptional aroma, known in Sanskrit texts as <em>gandha</em>, was regarded as having a direct action on the mind (<em>manas</em>) and on the prana in the head — consistent with the plant's modern application in aromatherapy. Its inclusion in <em>Shiro Virechana</em> formulations reflects both its pungency-driven secretolytic action and its recorded ability to relieve <em>shirahshoola</em> (headache) and clear <em>Kapha sanchaya</em> from the head and chest.</p>
+      <table class="dosha-table">
+        <thead><tr><th>Dosha</th><th>Effect</th><th>Mechanism &amp; Notes</th></tr></thead>
+        <tbody>
+          <tr><td>Vata ↓</td><td>Pacifying</td><td>Ushna virya and oily nature of the rhizome oil nourish and warm Vata; relieves neuralgia, headache, and arthralgia of Vata origin; included in rejuvenative ghee preparations</td></tr>
+          <tr><td>Pitta →</td><td>Neutral / mild increase</td><td>Generally balanced by its bitter and astringent secondary tastes; avoid high doses in acute Pitta conditions; classical texts do not list it as Pittala</td></tr>
+          <tr><td>Kapha ↓↓</td><td>Strongly pacifying</td><td>Primary classical indication — its katu (pungent), tikshna (sharp), ushna (hot) properties powerfully clear Kapha from head, sinuses, and chest; the foundation of its Shiro Virechana use</td></tr>
+        </tbody>
+      </table>
+      <p class="section-body"><strong>Rasa:</strong> Katu (pungent), Tikta (bitter), Kashaya (astringent) &nbsp;·&nbsp; <strong>Guna:</strong> Laghu (light), Tikshna (sharp) &nbsp;·&nbsp; <strong>Virya:</strong> Ushna (hot) &nbsp;·&nbsp; <strong>Vipaka:</strong> Katu (pungent) &nbsp;·&nbsp; <strong>Karma:</strong> Kapha-Vata shamaka, Deepaniya, Pachana, Shiro Virechana</p>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">04</span><h2 class="section-title">Key Health Benefits</h2><div class="section-rule"></div></div>
+      <p class="section-body">Modern scientific investigation of <em>Hedychium spicatum</em> has validated many classical indications, with significant pharmacological activity documented in anti-inflammatory, antimicrobial, antioxidant, analgesic, antispasmodic, and digestive domains. Its essential oil is increasingly studied for fragrance-therapeutic applications.</p>
+      <div class="benefits-grid">
+        <div class="benefit-card">
+          <div class="benefit-title">Sinus, Head &amp; Respiratory Relief</div>
+          <div class="benefit-desc">The richest classical use of Kutannata is as a Shiro Virechana (errhine) drug — the aromatic rhizome powder or oil, insufflated or inhaled, clears sinuses, relieves chronic headache, migraine, and rhinitis. 1,8-cineole and β-pinene in the essential oil act as mucolytics, secretolytics, and mild bronchodilators, supporting the classical Kapha-clearing action.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Anti-inflammatory &amp; Analgesic</div>
+          <div class="benefit-desc">Ethanolic rhizome extract demonstrates significant inhibition of carrageenan-induced paw edema and cotton pellet granuloma in animal models. Hedychenone A and B and diarylheptanoids are identified as principal anti-inflammatory constituents. Topical application of rhizome paste is used in rheumatic joint pain and muscular inflammation.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Digestive Stimulant &amp; Carminative</div>
+          <div class="benefit-desc">Classified by Sushruta in Pippalyadi gana — the group of digestive stimulants — Kutannata's pungent volatile compounds stimulate gastric secretion, relieve flatulence, and improve appetite. Used in anorexia (aruchi), indigestion, nausea, and abdominal distension. The rhizome is a component of several classical Deepaniya (digestive stimulant) formulations.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Antimicrobial &amp; Antifungal</div>
+          <div class="benefit-desc">Essential oil and methanol extract show broad-spectrum activity against E. coli, S. aureus, Bacillus cereus, Aspergillus flavus, and Candida albicans. β-Phellandrene, terpinen-4-ol, and 1,8-cineole are the principal antimicrobial constituents, consistent with the classical use in infected wounds and skin conditions.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Antioxidant &amp; Hepatoprotective</div>
+          <div class="benefit-desc">Diarylheptanoid constituents from the rhizome demonstrate significant free-radical scavenging activity in DPPH and ABTS assays. Hepatoprotective activity of ethanolic extract was demonstrated against CCl₄-induced liver damage in rats, with significant reduction in serum ALT, AST, and bilirubin — supporting inclusion in Kalyanaka Ghrita (a liver-rejuvenating formulation).</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Anxiolytic &amp; CNS Support</div>
+          <div class="benefit-desc">Linalool, a major volatile constituent, has well-established anxiolytic and sedative activity via GABA-A receptor modulation in animal studies. The rhizome's aroma is used in aromatherapy for stress, anxiety, and sleep disorders. Classical texts note its action on manas (mind) and prana — consistent with its mild psychoactive-calming profile.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Skin, Hair &amp; Cosmetic Uses</div>
+          <div class="benefit-desc">Kapur Kachri (the commercial fragrance form of the rhizome) is widely used in Ayurvedic hair oils, skin powders, and shampoos for its fragrance, antimicrobial, and scalp-conditioning properties. The rhizome powder has astringent properties useful in excess sebum production, dandruff, and scalp conditions aggravated by Kapha.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Emmenagogue &amp; Reproductive Support</div>
+          <div class="benefit-desc">Classical Ayurvedic texts include Kutannata in formulations for dysmenorrhea and menstrual irregularity (Artava dusti) due to its Vata-reducing and uterine-muscle-relaxing properties. Its antispasmodic action, demonstrated in isolated smooth muscle preparations, supports this traditional use.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">05</span><h2 class="section-title">Classical Formulations</h2><div class="section-rule"></div></div>
+      <p class="section-body">Kutannata appears as an ingredient in several important classical Ayurvedic formulations, primarily in its role as a fragrant Kapha-clearing and digestive-stimulating drug. Its rhizome is used in both single-drug (Swarasika) and compound formulations across all major schools of Ayurvedic pharmacy.</p>
+      <table class="data-table">
+        <thead><tr><th>Formulation</th><th>Type</th><th>Indication</th></tr></thead>
+        <tbody>
+          <tr><td>Kalyanaka Ghrita</td><td>Medicated ghee (Charaka)</td><td>Mental disorders, epilepsy, liver disorders, general rejuvenation</td></tr>
+          <tr><td>Eladi Churna</td><td>Herbal powder (Ashtanga Hridayam)</td><td>Kasa (cough), Shwasa (dyspnoea), digestive disorders</td></tr>
+          <tr><td>Eladi Vati</td><td>Tablet/pill</td><td>Chronic cough, pharyngitis, hoarseness, voice disorders</td></tr>
+          <tr><td>Shiro Virechana Churna</td><td>Nasal insufflation powder</td><td>Chronic sinusitis, headache, rhinitis, loss of smell</td></tr>
+          <tr><td>Kapur Kachri Hair Oil</td><td>Medicated oil (classical base)</td><td>Dandruff, scalp infections, hair fall, Kapha-type scalp conditions</td></tr>
+          <tr><td>Maha Narayana Taila</td><td>Medicated sesame oil</td><td>Neuromuscular conditions, joint disorders, paralysis (Vata)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">06</span><h2 class="section-title">How to Consume Kutannata</h2><div class="section-rule"></div></div>
+      <p class="section-body">Kutannata is used both internally and externally in classical and folk practice. Internally, the dried rhizome powder or decoction is most common; externally, the rhizome paste or essential oil is applied to the skin, joints, or used for nasal insufflation. All internal use should be under the guidance of a qualified Ayurvedic physician, particularly for ongoing or high-dose administration.</p>
+      <table class="consume-table">
+        <thead><tr><th>Form</th><th>Preparation</th><th>Dosage</th><th>Best Use</th></tr></thead>
+        <tbody>
+          <tr><td>Rhizome Powder (Churna)</td><td>Dried rhizome ground fine; with honey or warm water</td><td>1–3 g twice daily</td><td>Cough, sinusitis, dyspepsia, arthritis</td></tr>
+          <tr><td>Decoction (Kwatha)</td><td>Rhizome pieces boiled; reduced to ¼ volume</td><td>30–50 ml twice daily</td><td>Respiratory congestion, fever, joint pain</td></tr>
+          <tr><td>Shiro Virechana (Nasal)</td><td>Fine powder insufflated into nostrils with a straw</td><td>1–2 pinches per session</td><td>Chronic sinusitis, headache, rhinitis</td></tr>
+          <tr><td>Essential Oil (Aromatherapy)</td><td>2–3 drops in diffuser / steam inhalation</td><td>1–2× daily inhalation</td><td>Anxiety, respiratory congestion, CNS calming</td></tr>
+          <tr><td>Medicated Ghee (Ghrita)</td><td>Kalyanaka Ghrita or similar; classical preparation</td><td>Per physician direction</td><td>Neurological disorders, liver rejuvenation</td></tr>
+          <tr><td>Rhizome Paste (Topical)</td><td>Fresh or soaked dried rhizome ground into paste</td><td>Apply to joints or skin</td><td>Rheumatic pain, skin conditions, headache (temple application)</td></tr>
+          <tr><td>Hair Oil</td><td>Rhizome powder infused in sesame or coconut oil</td><td>Apply to scalp 2–3× weekly</td><td>Dandruff, scalp infections, hair conditioning</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">07</span><h2 class="section-title">Safety &amp; Precautions</h2><div class="section-rule"></div></div>
+      <p class="section-body">Kutannata is generally considered safe when used at classical Ayurvedic doses for short to medium-term therapy. It does not contain hepatotoxic pyrrolizidine alkaloids (unlike some other Ayurvedic herbs). However, its pungent, hot potency and the potency of its essential oil require care in specific populations and situations.</p>
+      <ul class="precaution-list">
+        <li><strong>Pregnancy:</strong> Avoid internal use. Emmenagogue and antispasmodic properties may stimulate uterine contractions; traditionally classified as a drug to avoid during pregnancy.</li>
+        <li><strong>Breastfeeding:</strong> Insufficient safety data; conservative avoidance of internal use recommended during lactation.</li>
+        <li><strong>Pitta excess / Hyperacidity:</strong> Ushna (hot) virya may aggravate Pitta; use with caution in peptic ulcers, GERD, heartburn, and inflammatory bowel conditions.</li>
+        <li><strong>Essential oil undiluted:</strong> Never apply the undiluted essential oil to skin or mucous membranes — always dilute in a carrier oil (1–2%) to avoid irritation.</li>
+        <li><strong>Shiro Virechana:</strong> Nasal insufflation should be performed only under classical supervision, with appropriate pre-oleation and timing. Avoid during acute nasal or sinus infection.</li>
+        <li><strong>Children under 5:</strong> Avoid essential oil inhalation near infants and young children; 1,8-cineole can cause breathing difficulties in very young children at high concentrations.</li>
+        <li><strong>Drug interactions:</strong> May potentiate CNS sedatives (linalool-related effect); use cautiously alongside benzodiazepines or sedative medications.</li>
+        <li><strong>Sustainability:</strong> Kutannata is collected primarily from wild Himalayan populations and is listed in CITES-related trade concerns. Prefer certified sustainably-sourced material and consider cultivated alternatives.</li>
+      </ul>
+    </div>
+
+    <div class="sources">
+      <div class="sources-title">References &amp; Sources</div>
+      <ul>
+        <li>Charaka Samhita — Sūtrasthāna, Dashemani Shiro Virechaniya Dravyas; Chikitsasthana — Kalyanaka Ghrita</li>
+        <li>Sushruta Samhita — Pippalyadi gana, Vacadi gana, Eladi gana references</li>
+        <li>Ashtanga Hridayam — Eladi Churna, Eladi Vati (Chikitsasthana)</li>
+        <li>Mallavarapu GR et al. — "Composition of essential oils of Hedychium spicatum" — Phytochemistry, 1987</li>
+        <li>Tabanca N et al. — "Chemical composition and biological activity of Hedychium spicatum essential oil" — Natural Product Communications, 2010</li>
+        <li>Joshi S et al. — "Bioactive diterpenes from Hedychium spicatum rhizomes" — Phytochemistry Letters, 2015</li>
+        <li>Kumar S et al. — "Anti-inflammatory and analgesic activity of Hedychium spicatum rhizome" — Journal of Ethnopharmacology, 2011</li>
+        <li>Singh G et al. — "Hepatoprotective activity of Hedychium spicatum" — Asian Pacific Journal of Tropical Biomedicine, 2012</li>
+        <li>Priyavrat Sharma — Dravyaguna Vigyana, Vol. II — Properties of Kutannata / Sthaulakandaka</li>
+        <li>P.V. Sharma — Classical Uses of Medicinal Plants — Chaukhambha Visvabharati, Varanasi</li>
+        <li>Database of Medicinal Plants of Nepal — Hedychium spicatum entry, IUCN trade status</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer>
+    <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a qualified practitioner before therapeutic use</p>
+  </footer>
+
+  <script>
+    const open3D = document.getElementById('open3D');
+    const close3D = document.getElementById('close3D');
+    const modal = document.getElementById('viewerModal');
+
+    function openModal() {
+    var _aud = document.getElementById('kutannataAudio'); if(_aud){ _aud.currentTime=0; var playPromise = _aud.play(); if (playPromise !== undefined) { playPromise.catch(function(e){ console.log(e); }); } }
+
+      modal.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+      history.pushState({ modal: 'kutannata3d' }, '', '#3d');
+    }
+    function closeModal() {
+    var _aud = document.getElementById('kutannataAudio'); if(_aud){ _aud.pause(); }
+
+      modal.style.display = 'none';
+      document.body.style.overflow = '';
+      if (window.location.hash === '#3d') history.replaceState(null, '', window.location.pathname);
+    }
+
+    open3D.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); openModal(); });
+    close3D.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); closeModal(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && modal.style.display === 'flex') closeModal(); });
+    window.addEventListener('popstate', () => { if (modal.style.display === 'flex') { modal.style.display = 'none'; document.body.style.overflow = ''; } });
+  </script>
+
+
+  <audio id="kutannataAudio" src="kutannata_benefits.mp3" loop preload="auto"></audio>
+</body>
+</html>

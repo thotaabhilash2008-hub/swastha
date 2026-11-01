@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Patala | Swastha</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+  <style>
+    #open3D {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      padding: 10px 18px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: var(--forest);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      z-index: 1000;
+      transition: .3s;
+    }
+    #open3D:hover {
+      background: var(--gold);
+      color: var(--deep);
+    }
+    #viewerModal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+    }
+    #modal-topbar {
+      flex-shrink: 0;
+      height: 58px;
+      background: #111111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px 0 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      z-index: 99999;
+    }
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 4.5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.72);
+      user-select: none;
+    }
+    #close3D {
+      width: 38px;
+      height: 38px;
+      font-size: 15px;
+      font-weight: 300;
+      background: transparent;
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background .2s, color .2s, transform .22s;
+      outline: none;
+      flex-shrink: 0;
+    }
+    #close3D:hover {
+      background: #ffffff;
+      color: #111111;
+      border-color: #ffffff;
+      transform: rotate(90deg);
+    }
+    #viewerModal model-viewer {
+      flex: 1;
+      width: 100%;
+      display: block;
+      background: #ffffff;
+    }
+
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+    * { margin: 0; padding: 0; box-sizing: border-box }
+    html { scroll-behavior: smooth }
+    body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--ink); min-height: 100vh; overflow-x: hidden; position: relative }
+    body::before { content: ''; position: fixed; inset: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E"); opacity: .03; pointer-events: none; z-index: 100 }
+
+    .bg-circle { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0 }
+    .bg-circle-1 { width: 700px; height: 700px; background: radial-gradient(circle, rgba(74,31,107,.1) 0%, transparent 70%); top: -200px; right: -150px }
+    .bg-circle-2 { width: 500px; height: 500px; background: radial-gradient(circle, rgba(192,132,212,.09) 0%, transparent 70%); bottom: -100px; left: -100px }
+
+    .botanical-svg { position: fixed; pointer-events: none; z-index: 1; opacity: .09 }
+    .botanical-tl { top: -20px; left: -20px; width: 280px }
+    .botanical-br { bottom: -20px; right: -20px; width: 230px; transform: rotate(180deg) }
+
+    .hero { position: relative; z-index: 10; padding: 54px 40px 0; text-align: center; opacity: 0; animation: fadeUp .9s ease .1s forwards }
+    .back-link { display: inline-flex; align-items: center; gap: 8px; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--sage); text-decoration: none; margin-bottom: 36px; transition: color .3s }
+    .back-link:hover { color: var(--gold) }
+    .logo-rule { display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 14px }
+    .logo-rule span { display: block; height: 1px; width: 70px; background: linear-gradient(to right, transparent, var(--gold)) }
+    .logo-rule span:last-child { background: linear-gradient(to left, transparent, var(--gold)) }
+    .logo-ornament { font-size: 13px; color: var(--gold) }
+    .hero-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(64px, 12vw, 110px); font-weight: 300; letter-spacing: 8px; line-height: 1; color: var(--deep) }
+    .hero-subtitle { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-style: italic; font-weight: 300; color: var(--earth); letter-spacing: 2px; margin-top: 8px }
+    .hero-sci { font-size: 11px; font-weight: 200; letter-spacing: 5px; color: var(--sage); margin-top: 6px }
+
+    .hero-photos { position: relative; z-index: 10; display: grid; grid-template-columns: 1fr 1fr; gap: 2px; max-width: 900px; margin: 40px auto 0; opacity: 0; animation: fadeUp .9s ease .35s forwards }
+    .hero-photos img { width: 100%; height: 380px; object-fit: cover; object-position: center; display: block; background: var(--parchment) }
+    .hero-photos img:first-child { object-position: center 40% }
+    .photo-caption { text-align: center; font-family: 'Cormorant Garamond', serif; font-size: 12px; font-style: italic; color: var(--sage); letter-spacing: 1px; padding: 10px 0 0; max-width: 900px; margin: 0 auto; position: relative; z-index: 10; opacity: 0; animation: fadeUp .9s ease .5s forwards }
+
+    .divider { display: flex; align-items: center; justify-content: center; gap: 16px; margin: 50px auto; max-width: 600px; opacity: 0; animation: fadeUp .9s ease .55s forwards; position: relative; z-index: 10 }
+    .divider-line { height: 1px; width: 120px; background: linear-gradient(to right, transparent, var(--sage)) }
+    .divider-line:last-child { background: linear-gradient(to left, transparent, var(--sage)) }
+    .divider-leaf { color: var(--forest); font-size: 18px }
+
+    .content { position: relative; z-index: 10; max-width: 860px; margin: 0 auto; padding: 0 30px 80px }
+    .intro-text { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 300; line-height: 1.75; color: var(--ink); text-align: center; max-width: 700px; margin: 0 auto 60px; opacity: 0; animation: fadeUp .9s ease .6s forwards }
+    .intro-text em { color: var(--forest); font-style: italic }
+
+    .section { margin-bottom: 60px; opacity: 0; animation: fadeUp .9s ease forwards }
+    .section:nth-child(1) { animation-delay: .65s }
+    .section:nth-child(2) { animation-delay: .75s }
+    .section:nth-child(3) { animation-delay: .85s }
+    .section:nth-child(4) { animation-delay: .95s }
+    .section:nth-child(5) { animation-delay: 1.05s }
+    .section:nth-child(6) { animation-delay: 1.15s }
+    .section:nth-child(7) { animation-delay: 1.25s }
+
+    .section-header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px }
+    .section-num { font-family: 'Cormorant Garamond', serif; font-size: 11px; letter-spacing: 4px; color: var(--gold) }
+    .section-title { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 400; color: var(--deep); letter-spacing: 1px }
+    .section-rule { height: 1px; flex: 1; background: linear-gradient(to right, var(--gold), transparent) }
+    .section-body { font-size: 13px; font-weight: 300; line-height: 1.9; color: var(--ink); margin-bottom: 24px }
+
+    .data-table { width: 100%; border-collapse: collapse; margin: 16px 0 8px; font-size: 12px }
+    .data-table thead tr { background: var(--deep); color: var(--gold); font-size: 10px; letter-spacing: 3px; text-transform: uppercase }
+    .data-table thead th { padding: 12px 14px; text-align: left; font-weight: 400 }
+    .data-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .data-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .data-table tbody tr { transition: background .2s }
+    .data-table tbody tr:hover { background: #ddd0ea }
+    .data-table tbody td { padding: 10px 14px; color: var(--ink); border-bottom: 1px solid rgba(107,58,125,.08) }
+    .data-table tbody td:first-child { font-weight: 400; color: var(--deep); width: 28% }
+
+    .dosha-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .dosha-table thead tr { background: var(--forest); color: var(--cream) }
+    .dosha-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .dosha-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .dosha-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .dosha-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(107,58,125,.08) }
+    .dosha-table tbody td:first-child { font-weight: 400; color: var(--forest); width: 18% }
+    .dosha-table tbody td:nth-child(2) { color: var(--earth); width: 20% }
+
+    .consume-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .consume-table thead tr { background: var(--earth); color: var(--cream) }
+    .consume-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .consume-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .consume-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .consume-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(107,58,125,.08) }
+    .consume-table tbody td:first-child { font-weight: 400; color: var(--earth); width: 22% }
+
+    .benefits-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: rgba(107,58,125,.12); border: 1px solid rgba(107,58,125,.12); margin: 8px 0 }
+    .benefit-card { background: var(--cream); padding: 24px 22px; transition: background .3s; position: relative; overflow: hidden }
+    .benefit-card:hover { background: #e2d4ee }
+    .benefit-card::before { content: ''; position: absolute; bottom: 0; left: 0; width: 0; height: 2px; background: var(--gold); transition: width .4s }
+    .benefit-card:hover::before { width: 100% }
+    .benefit-title { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 600; color: var(--forest); margin-bottom: 8px }
+    .benefit-desc { font-size: 11.5px; font-weight: 300; line-height: 1.75; color: var(--ink); opacity: .85 }
+
+    .precaution-list { list-style: none; margin: 8px 0 }
+    .precaution-list li { display: flex; gap: 12px; align-items: flex-start; padding: 10px 14px; font-size: 12px; font-weight: 300; line-height: 1.7; color: var(--ink); border-bottom: 1px solid rgba(107,58,125,.08) }
+    .precaution-list li:last-child { border-bottom: none }
+    .precaution-list li::before { content: '▸'; color: var(--gold); flex-shrink: 0; margin-top: 1px }
+
+    .nutrition-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: rgba(107,58,125,.12); border: 1px solid rgba(107,58,125,.12); margin: 20px 0 }
+    .nutrition-cell { background: var(--cream); padding: 22px 16px; text-align: center; transition: background .3s }
+    .nutrition-cell:hover { background: var(--parchment) }
+    .nutrition-num { font-family: 'Cormorant Garamond', serif; font-size: 36px; font-weight: 300; color: var(--forest); line-height: 1; margin-bottom: 4px }
+    .nutrition-unit { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); font-weight: 300 }
+    .nutrition-label { font-size: 11px; font-weight: 300; color: var(--ink); margin-top: 5px }
+
+    .sources { border-top: 1px solid rgba(107,58,125,.15); padding-top: 24px; margin-top: 20px }
+    .sources-title { font-size: 10px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); margin-bottom: 12px; font-weight: 300 }
+    .sources ul { list-style: none }
+    .sources ul li { font-family: 'Cormorant Garamond', serif; font-size: 13px; font-style: italic; color: var(--earth); padding: 5px 0; border-bottom: 1px solid rgba(107,58,125,.06) }
+    .sources ul li::before { content: '· '; color: var(--sage) }
+
+    footer { position: relative; z-index: 10; text-align: center; padding: 24px 20px 44px; border-top: 1px solid rgba(107,58,125,.12); max-width: 860px; margin: 0 auto }
+    footer p { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); font-weight: 300 }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(28px) } to { opacity: 1; transform: translateY(0) } }
+
+    @media(max-width:700px) {
+      .hero-photos { grid-template-columns: 1fr }
+      .hero-photos img { height: 260px }
+      .benefits-grid { grid-template-columns: 1fr }
+      .nutrition-bar { grid-template-columns: 1fr 1fr }
+      .content { padding: 0 18px 60px }
+    }
+  </style>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+</head>
+<body>
+  <button type="button" id="open3D">View in 3D</button>
+
+
+  <div class="bg-circle bg-circle-1"></div>
+  <div class="bg-circle bg-circle-2"></div>
+
+  <!-- Trumpet flower botanical SVG -->
+  <svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M20 280 Q 70 200 120 150 Q 170 100 240 40" stroke="#4a1f6b" stroke-width="1.5" fill="none"/>
+    <!-- trumpet flower blooms -->
+    <ellipse cx="95" cy="200" rx="22" ry="10" fill="#9b72aa" transform="rotate(-20 95 200)" opacity=".8"/>
+    <ellipse cx="97" cy="198" rx="10" ry="18" fill="#c084d4" transform="rotate(-20 97 198)" opacity=".6"/>
+    <ellipse cx="140" cy="155" rx="20" ry="9" fill="#4a1f6b" transform="rotate(-38 140 155)" opacity=".8"/>
+    <ellipse cx="142" cy="153" rx="9" ry="16" fill="#9b72aa" transform="rotate(-38 142 153)" opacity=".6"/>
+    <ellipse cx="185" cy="112" rx="18" ry="8" fill="#c084d4" transform="rotate(-55 185 112)" opacity=".7"/>
+    <!-- leaves -->
+    <ellipse cx="110" cy="185" rx="24" ry="8" fill="#4a1f6b" transform="rotate(30 110 185)" opacity=".5"/>
+    <ellipse cx="155" cy="140" rx="22" ry="7" fill="#6b3a7d" transform="rotate(15 155 140)" opacity=".5"/>
+  </svg>
+  <svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M20 280 Q 70 200 120 150 Q 170 100 240 40" stroke="#4a1f6b" stroke-width="1.5" fill="none"/>
+    <ellipse cx="95" cy="200" rx="22" ry="10" fill="#9b72aa" transform="rotate(-20 95 200)" opacity=".8"/>
+    <ellipse cx="97" cy="198" rx="10" ry="18" fill="#c084d4" transform="rotate(-20 97 198)" opacity=".6"/>
+    <ellipse cx="140" cy="155" rx="20" ry="9" fill="#4a1f6b" transform="rotate(-38 140 155)" opacity=".8"/>
+    <ellipse cx="110" cy="185" rx="24" ry="8" fill="#4a1f6b" transform="rotate(30 110 185)" opacity=".5"/>
+  </svg>
+
+  <div class="hero">
+    <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+    <div class="logo-rule"><span></span><div class="logo-ornament">✦</div><span></span></div>
+    <div class="hero-title">Patala</div>
+    <div class="hero-subtitle">Trumpet Flower — The Hollow-Stemmed Climber</div>
+    <div class="hero-sci">Stereospermum suaveolens &nbsp;·&nbsp; Bignonia suaveolens</div>
+  </div>
+
+  <div class="hero-photos">
+    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/9/97/Stereospermum_suaveolens.JPG/1280px-Stereospermum_suaveolens.JPG" alt="Patala trumpet flowers pink fragrant clusters" onerror="this.src='';this.style.minHeight='380px';this.style.background='#d8c8e8';">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/5/58/Stereospermum_chelonoides_Blanco2.252-cropped.jpg" alt="Patala Stereospermum suaveolens tree bark and leaves" onerror="this.src='';this.style.minHeight='380px';this.style.background='#c8b8d8';">
+  </div>
+  <p class="photo-caption">Fig. 1 — Fragrant pale-pink trumpet flowers of Patala in pendulous clusters &nbsp;·&nbsp; Fig. 2 — Patala tree with its pinnate leaves and furrowed bark in riparian habitat</p>
+
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-leaf">❧</div>
+    <div class="divider-line"></div>
+  </div>
+
+  <div class="content">
+    <p class="intro-text">Revered as one of the ten roots of the <em>Dashamula</em> — Ayurveda's most celebrated group formulation — Patala (<em>Stereospermum suaveolens</em>) is a fragrant flowering tree whose pale-pink trumpet blooms belie extraordinary medicinal depth. Honoured in the Charaka Samhita across multiple therapeutic categories, Patala is a Tridosha-balancing rasayana with particular affinity for the respiratory tract, liver, and nervous system.</p>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">01</span><h2 class="section-title">Botanical Profile</h2><div class="section-rule"></div></div>
+      <p class="section-body">Patala (<em>Stereospermum suaveolens</em> DC., syn. <em>Bignonia suaveolens</em> Roxb.) is a medium to large deciduous tree of the Bignoniaceae family — the trumpet vine family — growing to 15–25 m tall with a spreading crown and deeply furrowed greyish-brown bark. It is distributed throughout the tropical and subtropical regions of the Indian subcontinent, from the Himalayan foothills down to Sri Lanka and eastward into Myanmar.</p>
+      <p class="section-body">The leaves are imparipinnate (odd-pinnate), 30–40 cm long, bearing 4–5 pairs of ovate leaflets with acuminate tips. Its flowers are the plant's most spectacular feature — large, fragrant, pale pink to purplish-pink trumpets 5–7 cm long, borne in terminal panicles, with a yellow-streaked throat and crinkled corolla lobes. The fruit is a long, slender, cylindrical capsule (30–100 cm), resembling a drumstick, containing winged seeds. It flowers between January and April, the sweet fragrance carrying considerable distance — giving rise to the specific epithet <em>suaveolens</em> ("sweetly scented").</p>
+      <table class="data-table">
+        <thead><tr><th>Property</th><th>Detail</th></tr></thead>
+        <tbody>
+          <tr><td>Family</td><td>Bignoniaceae (Trumpet Vine family)</td></tr>
+          <tr><td>Botanical Name</td><td>Stereospermum suaveolens DC. (syn. Bignonia suaveolens)</td></tr>
+          <tr><td>Sanskrit Names</td><td>Patala, Amoghaa, Krshnvrnta, Madhusrava, Tuntuka, Paatala</td></tr>
+          <tr><td>Common Names</td><td>Trumpet Flower Tree, Fragrant Padri, Pink Trumpet Tree</td></tr>
+          <tr><td>Regional Names</td><td>Paadal (Tam), Paadiri (Tel), Pathiri (Mal), Parala (Hindi), Phadal (Mar)</td></tr>
+          <tr><td>Plant Type</td><td>Medium to large deciduous tree (15–25 m)</td></tr>
+          <tr><td>Flowering Season</td><td>January–April (fragrant pale-pink trumpets)</td></tr>
+          <tr><td>Fruit</td><td>Long cylindrical capsule 30–100 cm (winged seeds)</td></tr>
+          <tr><td>Medicinal Parts</td><td>Root bark (primary), stem bark, flowers, leaves, seeds</td></tr>
+          <tr><td>Classical Grouping</td><td>Dashamula (one of ten roots); Shyamadi, Laghu Panchamula</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">02</span><h2 class="section-title">Phytochemistry &amp; Key Compounds</h2><div class="section-rule"></div></div>
+      <p class="section-body">Phytochemical investigations of <em>Stereospermum suaveolens</em> have identified a rich array of naphthoquinones, iridoids, flavonoids, phenolic acids, terpenoids, and stilbenes — a profile that underlies its broad pharmacological actions. The root bark is the most medicinally concentrated part, yielding the signature lapachol and related naphthoquinones that explain many of its anti-inflammatory, hepatoprotective, and antitumour properties.</p>
+      <div class="nutrition-bar">
+        <div class="nutrition-cell"><div class="nutrition-num">50+</div><div class="nutrition-unit">compounds</div><div class="nutrition-label">Identified in root bark</div></div>
+        <div class="nutrition-cell"><div class="nutrition-num">3</div><div class="nutrition-unit">dosha</div><div class="nutrition-label">Tridosha balancing</div></div>
+        <div class="nutrition-cell"><div class="nutrition-num">10</div><div class="nutrition-unit">roots</div><div class="nutrition-label">Dashamula formulation</div></div>
+        <div class="nutrition-cell"><div class="nutrition-num">5+</div><div class="nutrition-unit">categories</div><div class="nutrition-label">Charaka Samhita ganas</div></div>
+      </div>
+      <table class="data-table">
+        <thead><tr><th>Compound</th><th>Category</th><th>Primary Action</th></tr></thead>
+        <tbody>
+          <tr><td>Lapachol</td><td>Naphthoquinone</td><td>Antitumour, antimalarial, anti-inflammatory, antifungal</td></tr>
+          <tr><td>Dinatin &amp; Scutellarein</td><td>Flavonoids</td><td>Anti-inflammatory, antioxidant, antispasmodic</td></tr>
+          <tr><td>Stereospermoside</td><td>Iridoid glycoside</td><td>Hepatoprotective, anti-inflammatory, bitter tonic</td></tr>
+          <tr><td>Tecomaquinone</td><td>Naphthoquinone</td><td>Antibacterial, antifungal, antitumour</td></tr>
+          <tr><td>p-Coumaric Acid</td><td>Phenolic acid</td><td>Antioxidant, antimicrobial, anti-atherosclerotic</td></tr>
+          <tr><td>Caffeic Acid</td><td>Hydroxycinnamic acid</td><td>Anti-inflammatory, neuroprotective, antiviral</td></tr>
+          <tr><td>β-Sitosterol</td><td>Phytosterol</td><td>Hypolipidaemic, anti-inflammatory, immunomodulatory</td></tr>
+          <tr><td>Oleanolic Acid</td><td>Pentacyclic triterpene</td><td>Hepatoprotective, anti-inflammatory, antidiabetic</td></tr>
+          <tr><td>Ursolic Acid</td><td>Pentacyclic triterpene</td><td>Anti-arthritic, antitumour, antiobesity</td></tr>
+          <tr><td>Baicalein &amp; Oroxylin</td><td>Flavones</td><td>Neuroprotective, anti-anxiety, antiviral</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">03</span><h2 class="section-title">Ayurvedic Significance</h2><div class="section-rule"></div></div>
+      <p class="section-body">Patala holds an exceptionally prominent position in classical Ayurveda — listed by Charaka in no fewer than five therapeutic ganas (groups): <em>Shyamadi</em>, <em>Angamardaprashamana</em> (body-ache relieving), <em>Hikkanigraha</em> (hiccup-suppressing), <em>Asthapanopaga</em> (enema-supporting), and <em>Tiktaskandha</em> (bitter group). Most significantly, it is one of the ten roots of the famous <em>Dashamula</em> compound — specifically belonging to the <em>Laghu Panchamula</em> (lesser five roots) group alongside Shalaparni, Prishnaparni, Brihati, and Kantakari.</p>
+      <p class="section-body">The classical verse from Ashtanga Hridayam describes Patala as: <em>"Paatalam tiktam kashayam madhuramcha kapha-pitta-vaataharam — svadupakam laghu sheetam"</em> — bitter, astringent, and sweet in taste; pacifying all three doshas; sweet in post-digestive effect; light and cool in quality — a remarkably tridoshic profile rare among herbs.</p>
+      <table class="dosha-table">
+        <thead><tr><th>Dosha</th><th>Effect</th><th>Mechanism &amp; Notes</th></tr></thead>
+        <tbody>
+          <tr><td>Vata ↓</td><td>Pacifying</td><td>Madhura (sweet) rasa and vipaka pacify Vata — used in neuralgic pain, body aches (angamarda), hiccup (Vata-origin), and in Dashamula formulations for post-partum Vata restoration</td></tr>
+          <tr><td>Pitta ↓</td><td>Pacifying</td><td>Tikta-kashaya rasa and sheeta virya (cold potency) reduce Pitta — indicated in fever with burning sensation, hepatic inflammation, and skin conditions with Pitta involvement</td></tr>
+          <tr><td>Kapha ↓</td><td>Pacifying</td><td>Tikta (bitter) and laghu (light) qualities reduce Kapha accumulation — used in respiratory Kapha, chronic cough, bronchitis, and oedema; one of Charaka's Hikkanigraha (anti-hiccup) drugs</td></tr>
+        </tbody>
+      </table>
+      <p class="section-body"><strong>Rasa:</strong> Tikta (bitter), Kashaya (astringent), Madhura (sweet) &nbsp;·&nbsp; <strong>Guna:</strong> Laghu (light), Ruksha (dry) &nbsp;·&nbsp; <strong>Virya:</strong> Sheeta (cold) &nbsp;·&nbsp; <strong>Vipaka:</strong> Madhura (sweet) &nbsp;·&nbsp; <strong>Karma:</strong> Tridosha shamaka, Deepana, Pachana, Rasayana</p>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">04</span><h2 class="section-title">Key Health Benefits</h2><div class="section-rule"></div></div>
+      <p class="section-body">Patala's tridoshic nature and rich phytochemical profile translate into a broad therapeutic range — from respiratory and hepatic conditions to pain management, skin disease, and neurological support.</p>
+      <div class="benefits-grid">
+        <div class="benefit-card">
+          <div class="benefit-title">Dashamula &amp; Tridosha Rasayana</div>
+          <div class="benefit-desc">As a constituent of Dashamula — the ten-root formulation central to Ayurvedic practice — Patala contributes tridosha-balancing, rasayana, and vata-anulomana (Vata normalising) properties. Dashamula is the premier post-partum rejuvenative, used to restore depleted Vata after delivery, and is widely prescribed in chronic fever, pain, and systemic weakness.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Respiratory Support</div>
+          <div class="benefit-desc">Classical listing in Hikkanigraha (hiccup-suppressing) gana reflects Patala's ability to pacify upward-moving Vata and Kapha in the respiratory tract. Root bark decoction is used in chronic cough, bronchitis, asthma, and dyspnoea. Its bitter-cold properties reduce inflammatory Pitta in the respiratory mucosa while its Kapha-cutting action clears accumulated phlegm.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Hepatoprotective &amp; Liver Tonic</div>
+          <div class="benefit-desc">Stereospermoside, oleanolic acid, and lapachol all demonstrate significant hepatoprotective activity in carbon tetrachloride and paracetamol-induced liver injury models — reducing ALT, AST, and bilirubin to near-normal levels. Classical use in hepatomegaly (yakrit vriddhi), jaundice (kamala), and liver inflammation (yakrit shotha) is well-supported pharmacologically.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Anti-inflammatory &amp; Analgesic</div>
+          <div class="benefit-desc">Patala root bark extracts show significant inhibition of carrageenan-induced paw oedema in animal models. Its listing in Charaka's Angamardaprashamana gana (body-ache relieving drugs) — alongside drugs like Bala and Ashwagandha — underlines its analgesic utility in generalised myalgia, arthralgia, and rheumatic conditions.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Antipyretic &amp; Anti-infective</div>
+          <div class="benefit-desc">Lapachol and tecomaquinone give Patala potent broad-spectrum antimicrobial activity — demonstrated against Staphylococcus aureus, E. coli, Candida albicans, and malarial Plasmodium species. The root bark decoction is a classical remedy for chronic and intermittent fevers (Vishamajwara) and is used in Dashamula Kwatha for systemic febrile states.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Skin Diseases &amp; Wound Healing</div>
+          <div class="benefit-desc">Charaka lists Patala in formulations for skin disorders (kushtha). Flower paste and leaf decoctions are used topically in chronic skin inflammation, eczema, and wounds. Its antioxidant and antimicrobial phenolics (caffeic acid, p-coumaric acid) accelerate wound healing while preventing microbial colonisation.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Oedema &amp; Diuretic Action</div>
+          <div class="benefit-desc">Classical listing in Asthapanopaga (enema-adjunct drugs) and Shyamadi gana reflects Patala's role in managing fluid accumulation. Its diuretic and oedema-reducing properties are used in ascites (jalodara), anasarca, and post-inflammatory tissue swelling — particularly where Kapha and Pitta doshas are implicated.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Neuroprotective &amp; Adaptogenic</div>
+          <div class="benefit-desc">Baicalein and caffeic acid derivatives isolated from Patala demonstrate neuroprotective effects in oxidative stress models — inhibiting lipid peroxidation in neural tissue. In Dashamula preparations, Patala contributes to the group's documented anti-stress, neuro-restorative, and adaptogenic activity used in convalescence and neurological fatigue.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">05</span><h2 class="section-title">How to Consume Patala</h2><div class="section-rule"></div></div>
+      <p class="section-body">The root bark is the primary medicinal part and is most commonly used as a decoction (kwatha) or as part of classical compound preparations — most notably Dashamula Kwatha, Dashamula Taila, and Dashamula Ghrita. Patala is rarely used as a standalone herb in modern practice; its greatest therapeutic expression is within these classical compounds.</p>
+      <table class="consume-table">
+        <thead><tr><th>Form</th><th>Preparation</th><th>Dosage</th><th>Best Use</th></tr></thead>
+        <tbody>
+          <tr><td>Root Bark Decoction (Kwatha)</td><td>Boil root bark in water; reduce to ¼</td><td>30–50 ml twice daily</td><td>Fever, cough, bronchitis, liver support</td></tr>
+          <tr><td>Dashamula Kwatha</td><td>Classical ten-root decoction</td><td>30–60 ml, per practitioner</td><td>Post-partum care, chronic Vata, systemic weakness</td></tr>
+          <tr><td>Root Bark Powder (Churna)</td><td>Dried root bark powder with honey or warm water</td><td>1–3 g twice daily</td><td>Chronic respiratory conditions, hepatomegaly</td></tr>
+          <tr><td>Dashamula Taila</td><td>Medicated oil — classical preparation</td><td>External application or per practitioner</td><td>Joint pain, neuromuscular conditions, post-partum Vata</td></tr>
+          <tr><td>Dashamula Ghrita</td><td>Medicated ghee — classical preparation</td><td>5–10 g with warm milk; physician-directed</td><td>Neurological debility, convalescence, chronic fever</td></tr>
+          <tr><td>Flower Infusion</td><td>Fresh flowers steeped in warm water</td><td>100–150 ml once daily</td><td>Mild diuretic, skin conditions, general cooling</td></tr>
+          <tr><td>Leaf Paste (Topical)</td><td>Ground fresh leaves applied externally</td><td>Apply to affected area</td><td>Inflammatory skin conditions, minor wounds</td></tr>
+          <tr><td>Dashamula Arishtam</td><td>Classical fermented preparation</td><td>15–25 ml with equal water after meals</td><td>Chronic debility, digestive weakness, Vata disorders</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">06</span><h2 class="section-title">Safety &amp; Precautions</h2><div class="section-rule"></div></div>
+      <p class="section-body">Patala is considered a generally safe and well-tolerated herb with a long classical history of use. Its sheeta (cold) virya and tridoshic action mean it is broadly suitable across constitutions — though its bitter and drying qualities require caution in certain states. As part of Dashamula and other compound formulations, it has been used safely for centuries at classical doses.</p>
+      <ul class="precaution-list">
+        <li><strong>Pregnancy (first trimester):</strong> Though Dashamula is a classical post-partum remedy, avoid unsupervised use in the first trimester — some constituents may stimulate uterine activity. Use only under qualified Ayurvedic supervision during pregnancy.</li>
+        <li><strong>Severe Vata depletion:</strong> Its ruksha (dry) and laghu (light) gunas may further deplete an already extremely Vata-depleted (emaciated, very dry) constitution; in such cases use only in ghee-based preparations that counterbalance dryness.</li>
+        <li><strong>Lapachol content:</strong> High-dose or prolonged use of the isolated root bark (not as classical compound) may carry the anti-coagulant effects of lapachol — use caution with anticoagulant or antiplatelet medications.</li>
+        <li><strong>Hypoglycaemic synergy:</strong> Patala's mild blood-glucose-lowering activity may add to the effect of antidiabetic medications — monitor glucose levels if combining.</li>
+        <li><strong>Quality &amp; substitution:</strong> Taxonomic confusion in the market is significant — <em>Stereospermum chelonoides</em> is often sold interchangeably; ensure authenticated root bark from a reliable source. Classical texts also reference Patala as the flower, not always the root — clarify the plant part being used.</li>
+        <li><strong>Children:</strong> Can be used in classical paediatric formulations (e.g., Dashamularishtam in small doses) but always under a qualified practitioner's guidance.</li>
+        <li><strong>Excessive cold conditions:</strong> As a sheeta (cold) herb, Patala should be used carefully in individuals with predominant cold symptoms — profound cold intolerance, hypothyroid tendency — or combined with warming anupanas.</li>
+      </ul>
+    </div>
+
+    <div class="sources">
+      <div class="sources-title">References &amp; Sources</div>
+      <ul>
+        <li>Charaka Samhita — Shyamadi, Angamardaprashamana, Hikkanigraha, Asthapanopaga, Tiktaskandha gana references</li>
+        <li>Ashtanga Hridayam (Vagbhata) — Sutrasthana: Patala properties and Dashamula classification</li>
+        <li>Sushruta Samhita — Laghu Panchamula: Patala among the lesser five roots</li>
+        <li>Bhavaprakasha Nighantu — Guduchyadi Varga: Patala properties</li>
+        <li>Dymock W, Warden CJH, Hooper D — Pharmacographia Indica Vol. II — description of Stereospermum suaveolens, 1891</li>
+        <li>Aswar PG et al. — "Hepatoprotective activity of Stereospermum suaveolens against paracetamol-induced hepatotoxicity in rats" — Indian Journal of Pharmacology, 2009</li>
+        <li>Girish C et al. — "Phytochemical investigation and evaluation of hepatoprotective activity of Stereospermum chelonoides" — Journal of Ethnopharmacology, 2008</li>
+        <li>Patel RG et al. — "Pharmacological screening of Stereospermum suaveolens root bark for anti-inflammatory activity" — International Journal of Ayurveda Research, 2010</li>
+        <li>Sahoo S et al. — "Antimicrobial activity of Stereospermum suaveolens and its phytoconstituents" — Asian Pacific Journal of Tropical Biomedicine, 2012</li>
+        <li>Sharma PV — Dravyaguna Vigyana Vol. II — Classical properties and indications of Patala</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer>
+    <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a qualified practitioner before therapeutic use</p>
+  </footer>
+
+
+  <div id="viewerModal">
+    <div id="modal-topbar">
+      <span>3D Model — Patala</span>
+      <button type="button" id="close3D">✕</button>
+    </div>
+    <model-viewer src="patala3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+  </div>
+  <script>
+    (function() {
+      var open3D = document.getElementById('open3D');
+      var close3D = document.getElementById('close3D');
+      var modal = document.getElementById('viewerModal');
+      if (!open3D || !close3D || !modal) return;
+      function openModal() {
+        
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+      function closeModal() {
+        
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+      open3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); openModal();
+      });
+      close3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); closeModal();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+      });
+    })();
+  </script>
+
+</body>
+</html>

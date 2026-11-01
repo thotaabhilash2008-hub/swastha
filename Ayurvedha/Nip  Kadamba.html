@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nīpa | Kadamba | Swastha</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+  <style>
+    #open3D {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      padding: 10px 18px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: var(--forest);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      z-index: 1000;
+      transition: .3s;
+    }
+    #open3D:hover {
+      background: var(--gold);
+      color: var(--deep);
+    }
+    #viewerModal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+    }
+    #modal-topbar {
+      flex-shrink: 0;
+      height: 58px;
+      background: #111111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px 0 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      z-index: 99999;
+    }
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 4.5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.72);
+      user-select: none;
+    }
+    #close3D {
+      width: 38px;
+      height: 38px;
+      font-size: 15px;
+      font-weight: 300;
+      background: transparent;
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background .2s, color .2s, transform .22s;
+      outline: none;
+      flex-shrink: 0;
+    }
+    #close3D:hover {
+      background: #ffffff;
+      color: #111111;
+      border-color: #ffffff;
+      transform: rotate(90deg);
+    }
+    #viewerModal model-viewer {
+      flex: 1;
+      width: 100%;
+      display: block;
+      background: #ffffff;
+    }
+
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+    * { margin: 0; padding: 0; box-sizing: border-box }
+    html { scroll-behavior: smooth }
+    body {
+      font-family: 'Jost', sans-serif;
+      background: var(--cream);
+      color: var(--ink);
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity: .030; pointer-events: none; z-index: 100;
+    }
+
+    .bg-circle { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0 }
+    .bg-circle-1 {
+      width: 720px; height: 720px;
+      background: radial-gradient(circle, rgba(232,160,32,.10) 0%, transparent 70%);
+      top: -220px; right: -160px;
+    }
+    .bg-circle-2 {
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(58,122,80,.09) 0%, transparent 70%);
+      bottom: -100px; left: -100px;
+    }
+
+    .botanical-svg { position: fixed; pointer-events: none; z-index: 1; opacity: .09 }
+    .botanical-tl { top: -20px; left: -20px; width: 270px }
+    .botanical-br { bottom: -20px; right: -20px; width: 230px; transform: rotate(180deg) }
+
+    .hero {
+      position: relative; z-index: 10;
+      padding: 54px 40px 0; text-align: center;
+      opacity: 0; animation: fadeUp .9s ease .1s forwards;
+    }
+    .back-link {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+      color: var(--sage); text-decoration: none; margin-bottom: 36px;
+      transition: color .3s;
+    }
+    .back-link:hover { color: var(--saffron) }
+    .logo-rule { display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 14px }
+    .logo-rule span {
+      display: block; height: 1px; width: 70px;
+      background: linear-gradient(to right, transparent, var(--saffron));
+    }
+    .logo-rule span:last-child { background: linear-gradient(to left, transparent, var(--saffron)) }
+    .logo-ornament { font-size: 13px; color: var(--saffron) }
+    .hero-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(58px, 11vw, 105px);
+      font-weight: 300; letter-spacing: 8px; line-height: 1;
+      color: var(--deep);
+    }
+    .hero-subtitle {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 18px; font-style: italic; font-weight: 300;
+      color: var(--moss); letter-spacing: 2px; margin-top: 8px;
+    }
+    .hero-sci {
+      font-size: 11px; font-weight: 200; letter-spacing: 5px;
+      color: var(--sage); margin-top: 6px;
+    }
+
+    .hero-photos {
+      position: relative; z-index: 10;
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 2px; max-width: 900px; margin: 40px auto 0;
+      opacity: 0; animation: fadeUp .9s ease .35s forwards;
+    }
+    .hero-photos img {
+      width: 100%; height: 380px;
+      object-fit: cover; object-position: center;
+      display: block; background: var(--parchment);
+    }
+    .photo-caption {
+      text-align: center;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 12px; font-style: italic;
+      color: var(--sage); letter-spacing: 1px;
+      padding: 10px 0 0; max-width: 900px;
+      margin: 0 auto; position: relative; z-index: 10;
+      opacity: 0; animation: fadeUp .9s ease .5s forwards;
+    }
+
+    .divider {
+      display: flex; align-items: center; justify-content: center;
+      gap: 16px; margin: 50px auto; max-width: 600px;
+      opacity: 0; animation: fadeUp .9s ease .55s forwards;
+      position: relative; z-index: 10;
+    }
+    .divider-line { height: 1px; width: 120px; background: linear-gradient(to right, transparent, var(--saffron)) }
+    .divider-line:last-child { background: linear-gradient(to left, transparent, var(--saffron)) }
+    .divider-leaf { color: var(--moss); font-size: 18px }
+
+    .content {
+      position: relative; z-index: 10;
+      max-width: 860px; margin: 0 auto;
+      padding: 0 30px 80px;
+    }
+    .intro-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 20px; font-weight: 300; line-height: 1.75;
+      color: var(--ink); text-align: center;
+      max-width: 700px; margin: 0 auto 60px;
+      opacity: 0; animation: fadeUp .9s ease .6s forwards;
+    }
+    .intro-text em { color: var(--moss); font-style: italic }
+
+    .section { margin-bottom: 60px; opacity: 0; animation: fadeUp .9s ease forwards }
+    .section:nth-child(1) { animation-delay: .65s }
+    .section:nth-child(2) { animation-delay: .75s }
+    .section:nth-child(3) { animation-delay: .85s }
+    .section:nth-child(4) { animation-delay: .95s }
+    .section:nth-child(5) { animation-delay: 1.05s }
+    .section:nth-child(6) { animation-delay: 1.15s }
+    .section:nth-child(7) { animation-delay: 1.25s }
+
+    .section-header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px }
+    .section-num { font-family: 'Cormorant Garamond', serif; font-size: 11px; letter-spacing: 4px; color: var(--saffron) }
+    .section-title { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 400; color: var(--deep); letter-spacing: 1px }
+    .section-rule { height: 1px; flex: 1; background: linear-gradient(to right, var(--saffron), transparent) }
+    .section-body { font-size: 13px; font-weight: 300; line-height: 1.9; color: var(--ink); margin-bottom: 24px }
+    .section-body strong { color: var(--deep); font-weight: 400 }
+
+    .data-table { width: 100%; border-collapse: collapse; margin: 16px 0 8px; font-size: 12px }
+    .data-table thead tr { background: var(--deep); color: var(--gold); font-size: 10px; letter-spacing: 3px; text-transform: uppercase }
+    .data-table thead th { padding: 12px 14px; text-align: left; font-weight: 400 }
+    .data-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .data-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .data-table tbody tr { transition: background .2s }
+    .data-table tbody tr:hover { background: #c8e8d0 }
+    .data-table tbody td { padding: 10px 14px; color: var(--ink); border-bottom: 1px solid rgba(46,92,58,.08) }
+    .data-table tbody td:first-child { font-weight: 400; color: var(--deep); width: 28% }
+
+    .dosha-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .dosha-table thead tr { background: var(--moss); color: var(--cream) }
+    .dosha-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .dosha-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .dosha-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .dosha-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(46,92,58,.08) }
+    .dosha-table tbody td:first-child { font-weight: 400; color: var(--moss); width: 18% }
+    .dosha-table tbody td:nth-child(2) { color: var(--earth); width: 20% }
+
+    .consume-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .consume-table thead tr { background: var(--earth); color: var(--cream) }
+    .consume-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .consume-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .consume-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .consume-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(46,92,58,.08) }
+    .consume-table tbody td:first-child { font-weight: 400; color: var(--earth); width: 22% }
+
+    .nutrition-bar {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 1px; background: rgba(46,92,58,.12);
+      border: 1px solid rgba(46,92,58,.12); margin: 20px 0;
+    }
+    .nutrition-cell { background: var(--cream); padding: 22px 16px; text-align: center; transition: background .3s }
+    .nutrition-cell:hover { background: var(--parchment) }
+    .nutrition-num { font-family: 'Cormorant Garamond', serif; font-size: 36px; font-weight: 300; color: var(--moss); line-height: 1; margin-bottom: 4px }
+    .nutrition-unit { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--saffron); font-weight: 300 }
+    .nutrition-label { font-size: 11px; font-weight: 300; color: var(--ink); margin-top: 5px }
+
+    .benefits-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 1px; background: rgba(46,92,58,.12);
+      border: 1px solid rgba(46,92,58,.12); margin: 8px 0;
+    }
+    .benefit-card { background: var(--cream); padding: 24px 22px; transition: background .3s; position: relative; overflow: hidden }
+    .benefit-card:hover { background: #d4edda }
+    .benefit-card::before { content: ''; position: absolute; bottom: 0; left: 0; width: 0; height: 2px; background: var(--saffron); transition: width .4s }
+    .benefit-card:hover::before { width: 100% }
+    .benefit-title { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 600; color: var(--moss); margin-bottom: 8px }
+    .benefit-desc { font-size: 11.5px; font-weight: 300; line-height: 1.75; color: var(--ink); opacity: .85 }
+
+    /* Sacred lore card */
+    .lore-band {
+      border: 1px solid rgba(232,160,32,.30);
+      background: #fffbe8;
+      padding: 28px 30px; margin: 8px 0 28px;
+      position: relative;
+    }
+    .lore-band::before {
+      content: '';
+      position: absolute; left: 0; top: 0; bottom: 0;
+      width: 3px; background: var(--saffron);
+    }
+    .lore-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 13px; font-weight: 600; letter-spacing: 3px;
+      text-transform: uppercase; color: var(--saffron);
+      margin-bottom: 12px;
+    }
+    .lore-body {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 17px; font-weight: 300; font-style: italic;
+      line-height: 1.8; color: var(--deep);
+    }
+    .lore-body cite {
+      display: block; margin-top: 10px;
+      font-family: 'Jost', sans-serif;
+      font-size: 10px; letter-spacing: 3px;
+      text-transform: uppercase; font-style: normal;
+      color: var(--sage);
+    }
+
+    .precaution-list { list-style: none; margin: 8px 0 }
+    .precaution-list li {
+      display: flex; gap: 12px; align-items: flex-start;
+      padding: 10px 14px; font-size: 12px; font-weight: 300;
+      line-height: 1.7; color: var(--ink);
+      border-bottom: 1px solid rgba(46,92,58,.08);
+    }
+    .precaution-list li:last-child { border-bottom: none }
+    .precaution-list li::before { content: '▸'; color: var(--saffron); flex-shrink: 0; margin-top: 1px }
+
+    .sources { border-top: 1px solid rgba(46,92,58,.15); padding-top: 24px; margin-top: 20px }
+    .sources-title { font-size: 10px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); margin-bottom: 12px; font-weight: 300 }
+    .sources ul { list-style: none }
+    .sources ul li { font-family: 'Cormorant Garamond', serif; font-size: 13px; font-style: italic; color: var(--earth); padding: 5px 0; border-bottom: 1px solid rgba(46,92,58,.06) }
+    .sources ul li::before { content: '· '; color: var(--sage) }
+
+    footer { position: relative; z-index: 10; text-align: center; padding: 24px 20px 44px; border-top: 1px solid rgba(46,92,58,.12); max-width: 860px; margin: 0 auto }
+    footer p { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); font-weight: 300 }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(28px) } to { opacity: 1; transform: translateY(0) } }
+    @media(max-width:700px) {
+      .hero-photos { grid-template-columns: 1fr }
+      .hero-photos img { height: 260px }
+      .benefits-grid { grid-template-columns: 1fr }
+      .nutrition-bar { grid-template-columns: 1fr 1fr }
+      .content { padding: 0 18px 60px }
+    }
+  </style>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+</head>
+<body>
+  <button type="button" id="open3D">View in 3D</button>
+
+
+  <div class="bg-circle bg-circle-1"></div>
+  <div class="bg-circle bg-circle-2"></div>
+
+  <!-- Botanical corner ornaments — river-green with saffron accents -->
+  <svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#3a7a50" stroke-width="1.5" fill="none"/>
+    <ellipse cx="105" cy="195" rx="26" ry="11" fill="#3a7a50" transform="rotate(-25 105 195)"/>
+    <ellipse cx="148" cy="155" rx="22" ry="10" fill="#2e5c3a" transform="rotate(-40 148 155)"/>
+    <ellipse cx="190" cy="115" rx="18" ry="9" fill="#3a7a50" transform="rotate(-55 190 115)"/>
+    <circle cx="88" cy="215" r="10" fill="#e8a020" opacity="0.55"/>
+    <circle cx="168" cy="133" r="8" fill="#e8a020" opacity="0.45"/>
+    <circle cx="228" cy="72"  r="6" fill="#e8a020" opacity="0.38"/>
+  </svg>
+  <svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#3a7a50" stroke-width="1.5" fill="none"/>
+    <ellipse cx="105" cy="195" rx="26" ry="11" fill="#3a7a50" transform="rotate(-25 105 195)"/>
+    <ellipse cx="148" cy="155" rx="22" ry="10" fill="#2e5c3a" transform="rotate(-40 148 155)"/>
+    <circle cx="88" cy="215" r="10" fill="#e8a020" opacity="0.5"/>
+  </svg>
+
+  <div class="hero">
+    <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+    <div class="logo-rule">
+      <span></span>
+      <div class="logo-ornament">✦</div>
+      <span></span>
+    </div>
+    <div class="hero-title">Nīpa</div>
+    <div class="hero-subtitle">Kadamba — The Tree Beloved of Krishna</div>
+    <div class="hero-sci">Neolamarckia cadamba (Roxb.) Bosser &nbsp;·&nbsp; Rubiaceae</div>
+  </div>
+
+  <div class="hero-photos">
+    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c5/Neolamarckia_Cadamba_Flower_in_tree.jpg/1280px-Neolamarckia_Cadamba_Flower_in_tree.jpg" alt="Kadamba globose orange-gold flower ball on large tree branch"
+      onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b4/Cadamba_tree_Neolamarckia_cadamba_fruit_by_Raju_Kasambe_DSCN5650.JPG_06.jpg/1280px-Cadamba_tree_Neolamarckia_cadamba_fruit_by_Raju_Kasambe_DSCN5650.JPG_06.jpg" alt="Neolamarckia cadamba large cordate leaves with prominent veins"
+      onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+  </div>
+  <p class="photo-caption">Fig. 1 — The unmistakable spherical inflorescence of Kadamba, a densely packed golden-orange ball of tiny tubular flowers &nbsp;·&nbsp; Fig. 2 — Broad, deeply veined leaves of Neolamarckia cadamba, lustrous green above, pale beneath</p>
+
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-leaf">❧</div>
+    <div class="divider-line"></div>
+  </div>
+
+  <div class="content">
+
+    <p class="intro-text">Of all the trees in the sacred groves of Vrindavana, it is the <em>Kadamba</em> beneath whose golden globes Krishna played his flute — its perfume, released on the first monsoon rains, the very scent of longing and devotion. Yet this tree of poetry and divinity is equally a tree of medicine: its bark, leaves, roots, and flowers woven through Ayurveda, Siddha, and the folk traditions of the Indian subcontinent as a wound-healer, fever-resolver, and tonic of deep restorative power.</p>
+
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">01</span>
+        <h2 class="section-title">Botanical Profile</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Neolamarckia cadamba is a large, fast-growing deciduous tree of the Rubiaceae family — kin to coffee, gardenia, and noni — native to South and Southeast Asia, from the Indian subcontinent through Sri Lanka, Myanmar, Thailand, Vietnam, and southern China. In ideal riverine conditions it reaches 45 m in height, its straight cylindrical bole rising clear before spreading into a broad, dense, layered canopy. It is one of the fastest-growing tropical trees on record, capable of 6–8 m of growth per year in optimal conditions.</p>
+      <p class="section-body">The leaves are large — 13–32 cm long — elliptic-ovate with a cordate base, deeply veined, dark and lustrous above and pale beneath. The flowers are the tree's glory: hundreds of tiny, fragrant, tubular orange-yellow corollas packed tightly into a perfect sphere — 3–5 cm in diameter — sitting on stout peduncles at the branch tips. The entire inflorescence glows like a lantern, is intensely sweet-scented, and appears from June through September — precisely the monsoon, when the rains arrive and the forest revives. The fruit is a fleshy aggregate of hundreds of tiny capsules, orange when ripe, eaten by birds and fruit bats.</p>
+      <table class="data-table">
+        <thead><tr><th>PROPERTY</th><th>Detail</th></tr></thead>
+        <tbody>
+          <tr><td>Family</td><td>Rubiaceae (Madayantikadi Kula)</td></tr>
+          <tr><td>Botanical Name</td><td>Neolamarckia cadamba (Roxb.) Bosser</td></tr>
+          <tr><td>Synonyms</td><td>Anthocephalus cadamba, A. chinensis, Sarcocephalus cadamba</td></tr>
+          <tr><td>Sanskrit Names</td><td>Nīpa, Kadamba, Priyaka, Haripriya, Vṛttapushpa, Lalanaka, Bhadra</td></tr>
+          <tr><td>Common Names</td><td>Kadamba, Common Bur-flower Tree, Wild Cinchona</td></tr>
+          <tr><td>Regional Names</td><td>Kadambu (Tel/Tam/Mal), Kadamba (Kan/Hindi/Mar), Kadam (Bengali)</td></tr>
+          <tr><td>Plant Type</td><td>Large deciduous tree (up to 45 m); fast-growing</td></tr>
+          <tr><td>Flowering Season</td><td>June–September (monsoon onset)</td></tr>
+          <tr><td>Habitat</td><td>Riverbanks, moist deciduous forests, alluvial plains; up to 1,000 m</td></tr>
+          <tr><td>Medicinal Parts</td><td>Bark (primary), leaves, roots, flowers, fruit</td></tr>
+          <tr><td>Taste Profile</td><td>Tikta (bitter), Kashaya (astringent), Madhura (sweet — flowers)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">02</span>
+        <h2 class="section-title">Sacred &amp; Cultural Heritage</h2>
+        <div class="section-rule"></div>
+      </div>
+
+      <div class="lore-band">
+        <div class="lore-title">From the Bhāgavata Purāṇa</div>
+        <div class="lore-body">
+          "Seeing the Kadamba trees on the banks of the Yamuna, laden with flowers and buzzing with intoxicated bees, Krishna climbed their branches and played his flute, calling the gopīs with the fragrance that rides upon the monsoon wind."
+          <cite>— Bhāgavata Purāṇa, Daśama Skandha (paraphrase)</cite>
+        </div>
+      </div>
+
+      <p class="section-body">No tree in the Sanskrit literary tradition is more thoroughly woven into the fabric of devotion, longing, and divine play than the Kadamba. It appears in the Mahābhārata, Rāmāyaṇa, Bhāgavata Purāṇa, Matsya Purāṇa, and in nearly every major work of the Bhakti poets — Jayadeva's Gītagovinda, Mirabai's padas, the songs of Surdas and Chandidas — as the tree under which Krishna dances, plays, and steals the garments of the gopīs. The fragrance of Kadamba flowers, released precisely at the onset of monsoon rains, became a universal metaphor in Sanskrit poetry for the bittersweet ache of longing (<em>viraha</em>), for the beloved's arrival, and for divine grace descending upon the earth with the rains.</p>
+      <p class="section-body">The tree is sacred in the Shakta tradition as well — identified with Devi herself in the Devi Bhāgavata, where her celestial forest (<em>Kadambavana</em>) is described as eternally blooming. Kadamba is planted beside temples throughout South India and is a focal tree in the famous Kadamba dynasties of Karnataka, who took their royal name from its association with power, abundance, and divine favour. In Ayurveda, this sacred resonance finds material expression: Kadamba's Sanskrit names — <em>Haripriya</em> (beloved of Hari/Vishnu), <em>Priyaka</em> (the dear one), <em>Bhadra</em> (the auspicious) — reflect a plant whose therapeutic value was considered as much spiritual as physical.</p>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">03</span>
+        <h2 class="section-title">Phytochemistry</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Phytochemical investigations of Neolamarckia cadamba have identified a rich and structurally diverse suite of alkaloids, triterpenoids, flavonoids, phenolic acids, and iridoids across its different parts. The bark is the most studied — containing a distinctive group of indole alkaloids including cadambine, 3α-dihydrocadambine, and isocadambine — alongside pentacyclic triterpenoids and saponins. The flowers contribute a volatile essential oil with unusual ester and sesquiterpene composition; the leaves yield flavonoids, phenolic acids, and the iridoid glycoside cadamboside.</p>
+      <div class="nutrition-bar">
+        <div class="nutrition-cell">
+          <div class="nutrition-num">7+</div>
+          <div class="nutrition-unit">alkaloids</div>
+          <div class="nutrition-label">Indole class; bark-primary</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">45 m</div>
+          <div class="nutrition-unit">max height</div>
+          <div class="nutrition-label">Among fastest tropical trees</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">June</div>
+          <div class="nutrition-unit">first bloom</div>
+          <div class="nutrition-label">At monsoon onset</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">3–5 cm</div>
+          <div class="nutrition-unit">flower ball</div>
+          <div class="nutrition-label">Diameter of inflorescence</div>
+        </div>
+      </div>
+      <table class="data-table">
+        <thead><tr><th>Compound</th><th>Category</th><th>Primary Action</th></tr></thead>
+        <tbody>
+          <tr><td>Cadambine &amp; Isocadambine</td><td>Indole alkaloids</td><td>Antimicrobial, antipyretic, anti-inflammatory; vasodilatory activity</td></tr>
+          <tr><td>3α-Dihydrocadambine</td><td>Indole alkaloid</td><td>Antioxidant, cytotoxic; CNS activity in animal models</td></tr>
+          <tr><td>Cadamboside</td><td>Iridoid glycoside</td><td>Anti-inflammatory, hepatoprotective, antifungal</td></tr>
+          <tr><td>Quinovic Acid Glycosides</td><td>Triterpene glycosides</td><td>Anti-inflammatory, antiviral; characteristic of Rubiaceae family</td></tr>
+          <tr><td>Chlorogenic &amp; Caffeic Acids</td><td>Phenolic acids</td><td>Antioxidant, anti-inflammatory, antimicrobial, hypoglycaemic</td></tr>
+          <tr><td>Ursolic &amp; Oleanolic Acids</td><td>Pentacyclic triterpenes</td><td>Anti-inflammatory, hepatoprotective, antitumour, antimicrobial</td></tr>
+          <tr><td>β-Sitosterol &amp; Stigmasterol</td><td>Phytosterols</td><td>Anti-inflammatory, hypolipidemic, immunomodulatory</td></tr>
+          <tr><td>Luteolin &amp; Quercetin</td><td>Flavonoids</td><td>Antioxidant, anti-allergic, anti-inflammatory, neuroprotective</td></tr>
+          <tr><td>Saponins (bark)</td><td>Triterpenoid saponins</td><td>Expectorant, antimicrobial, wound-healing, haemostatic</td></tr>
+          <tr><td>Kadsurenone analogues</td><td>Neolignans</td><td>PAF (platelet-activating factor) antagonism; anti-inflammatory</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">04</span>
+        <h2 class="section-title">Ayurvedic Significance</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Nīpa (Kadamba) is cited in Charaka Samhita, Sushruta Samhita, and Ashtanga Hridayam principally as a bark drug with astringent, bitter, and fever-reducing properties. Charaka places it in the <em>Mustadi Gana</em> (bitter drugs for metabolic and skin conditions). Sushruta includes it in <em>Nyagrodhadi Gana</em> (astringent bark drugs used for wound healing and bleeding disorders) alongside banyan, fig, and sacred fig. Bhavaprakasha Nighantu catalogues it in <em>Vatadi Varga</em>, recording its properties as cooling, bitter-sweet, and restorative to the blood and uterine tissues.</p>
+      <p class="section-body">Classical texts particularly highlight the bark's role in treating inflammatory swellings, non-healing wounds (<em>dushta vrana</em>), fever of the Pitta type, and disorders of Rakta (blood) — including skin diseases, burning sensations, and haemorrhagic conditions. The flowers are described as <em>hridya</em> (cardiac tonic, pleasing to the heart) and <em>medhya</em> (intellect-promoting) — resonant with both the plant's devotional associations and its emerging neuroprotective pharmacology.</p>
+      <table class="dosha-table">
+        <thead><tr><th>Dosha</th><th>Effect</th><th>Mechanism &amp; Notes</th></tr></thead>
+        <tbody>
+          <tr><td>Vata ↓</td><td>Mildly pacifying</td><td>Madhura vipaka (sweet post-digestive) and nutritive qualities gently calm Vata; bark decoction used in Vata-related weakness, emaciation, and neurological conditions</td></tr>
+          <tr><td>Pitta ↓↓</td><td>Strongly pacifying</td><td>Sheeta virya (cold potency) and Tikta-Kashaya rasa powerfully reduce Pitta — primary indication for fever, burning sensations, inflammatory skin diseases, and blood disorders</td></tr>
+          <tr><td>Kapha ↑/↓</td><td>Context-dependent</td><td>Madhura rasa of the flowers may mildly increase Kapha; the bark's Tikta-Kashaya rasa reduces Kapha accumulation in metabolic and respiratory conditions</td></tr>
+        </tbody>
+      </table>
+      <p class="section-body"><strong>Rasa:</strong> Tikta (bitter), Kashaya (astringent), Madhura (sweet — flowers/fruit) &nbsp;·&nbsp; <strong>Guna:</strong> Laghu (light), Ruksha (dry) — bark; Snigdha (unctuous) — flowers &nbsp;·&nbsp; <strong>Virya:</strong> Sheeta (cold) &nbsp;·&nbsp; <strong>Vipaka:</strong> Madhura (sweet) &nbsp;·&nbsp; <strong>Karma:</strong> Primarily Pitta-Rakta-shamaka; Vranashodhana (wound-purifying)</p>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">05</span>
+        <h2 class="section-title">Key Health Benefits</h2>
+        <div class="section-rule"></div>
+      </div>
+      <div class="benefits-grid">
+        <div class="benefit-card">
+          <div class="benefit-title">Wound Healing &amp; Skin</div>
+          <div class="benefit-desc">Bark decoction wash and paste are Ayurveda's classical treatment for infected, slow-healing wounds, ulcers, and inflammatory skin conditions. Ursolic acid, saponins, and quinovic acid glycosides accelerate re-epithelialisation, reduce biofilm formation, and provide broad antimicrobial cover. Validated in modern wound-healing assays.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Antipyretic &amp; Anti-infective</div>
+          <div class="benefit-desc">Cadambine and isocadambine demonstrate significant antipyretic activity in yeast-induced pyrexia models. The bark decoction is a classical remedy for malarial and intermittent fevers — reflected in its colonial-era name "Wild Cinchona," suggesting observed activity against Plasmodium, consistent with its indole alkaloid chemistry.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Anti-inflammatory</div>
+          <div class="benefit-desc">Ethanolic bark and leaf extracts inhibit carrageenan-induced paw oedema and cotton-pellet granuloma formation in rodent models comparably to indomethacin. Quinovic acid glycosides and ursolic acid contribute COX inhibition and cytokine (TNF-α, IL-6) suppression at the molecular level.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Hepatoprotective</div>
+          <div class="benefit-desc">Cadamboside and chlorogenic acid demonstrate significant hepatoprotection against carbon tetrachloride and paracetamol-induced liver damage in animal studies — reducing AST, ALT, ALP, and bilirubin. Consistent with classical use for jaundice (<em>kamala</em>) and Pitta-Rakta liver disorders.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Antidiabetic</div>
+          <div class="benefit-desc">Bark and leaf extracts lower fasting blood glucose in streptozotocin-induced diabetic animal models through both pancreatic (insulin secretagogue) and extra-pancreatic (GLUT-4 upregulation) mechanisms. Chlorogenic acid — present in the leaves — is one of the most clinically studied plant hypoglycaemic compounds.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Antidiarrhoeal &amp; GI</div>
+          <div class="benefit-desc">Bark astringency (kashaya rasa) from tannins and saponins makes it a classical remedy for dysentery, diarrhoea, and intestinal inflammation. Significant inhibition of castor-oil–induced diarrhoea and PGE2-mediated intestinal hypermotility has been documented for bark extracts at therapeutic doses.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Uterine &amp; Reproductive Tonic</div>
+          <div class="benefit-desc">The flowers and bark are described as <em>shukrala</em> (semen-promoting) and restorative to reproductive tissues in classical texts. Bark decoction is used in Ayurvedic practice for postpartum uterine toning and as a component of formulations for leucorrhoea, menorrhagia, and dysmenorrhoea.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Neuroprotective &amp; Medhya</div>
+          <div class="benefit-desc">Classical designation as <em>medhya</em> (intellect-promoting) finds support in studies showing that cadambine and luteolin protect hippocampal neurons from oxidative damage. Flower essential oil constituents demonstrate anxiolytic activity in animal models — consistent with the tradition of Kadamba's scent as a calming, spiritually elevating presence.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">06</span>
+        <h2 class="section-title">How to Use Nīpa / Kadamba</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">The bark is the primary internal therapeutic part; the flowers are used in aromatherapy, ritual, and as a mild tonic. Roots and leaves feature predominantly in topical and folk preparations. Internal preparations should be used under the guidance of a qualified Ayurvedic physician, particularly decoctions of the bark at therapeutic doses.</p>
+      <table class="consume-table">
+        <thead><tr><th>Form</th><th>Preparation</th><th>Dosage</th><th>Best Use</th></tr></thead>
+        <tbody>
+          <tr><td>Bark Decoction (Kwatha)</td><td>Boil 10–15 g dried bark in 400 ml water; reduce to 100 ml; strain</td><td>30–50 ml twice daily before meals</td><td>Fever, diarrhoea, jaundice, skin diseases, inflammation</td></tr>
+          <tr><td>Bark Powder</td><td>Dried, powdered bark with honey or warm water</td><td>1–3 g twice daily</td><td>Diabetes, wound healing (internal), uterine toning</td></tr>
+          <tr><td>Bark Paste (Topical)</td><td>Fresh or dried bark ground with water into paste</td><td>Apply to affected area; leave 20–30 min</td><td>Wounds, ulcers, skin infections, inflammatory swellings</td></tr>
+          <tr><td>Bark Decoction Wash</td><td>Diluted decoction used as wound wash or gargle</td><td>As needed, 2–3× daily</td><td>Non-healing wounds, mouth ulcers, sore throat, gum disease</td></tr>
+          <tr><td>Leaf Paste (Topical)</td><td>Fresh leaves pounded into poultice</td><td>Apply directly to affected area</td><td>Joint pain, sprains, headache, skin eruptions</td></tr>
+          <tr><td>Root Decoction</td><td>Boil dried root in water; strain</td><td>20–30 ml once daily; physician-directed</td><td>Fever, urinary disorders, blood purification</td></tr>
+          <tr><td>Flower Infusion</td><td>Fresh flowers steeped in warm water or milk</td><td>One flower infusion daily</td><td>General tonic, anxiety, medhya (cognitive) support</td></tr>
+          <tr><td>Flower Essential Oil</td><td>Steam-distilled; used in diffuser or diluted topically</td><td>3–5 drops in diffuser</td><td>Anxiety, nervous exhaustion, devotional / ritual use</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">07</span>
+        <h2 class="section-title">Safety &amp; Precautions</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Kadamba has an excellent long-term safety record across traditional use in India and Southeast Asia. Systematic toxicity studies in animals have shown no significant acute or sub-chronic toxicity at normal therapeutic doses. The precautions below primarily concern concentrated preparations and specific physiological states.</p>
+      <ul class="precaution-list">
+        <li><strong>Pregnancy:</strong> Internal bark decoctions and root preparations should be avoided during pregnancy — the classical description as a uterine stimulant (<em>garbhashaya balya</em> and toning agent) suggests potential uterotonic activity. Flower infusions in culinary quantities are likely safe.</li>
+        <li><strong>Hypoglycaemia:</strong> Kadamba bark and leaf extracts have documented blood-glucose–lowering activity. Those on antidiabetic medications (metformin, insulin, sulphonylureas) should monitor glucose closely to avoid additive hypoglycaemia.</li>
+        <li><strong>Excessive Sheeta (cold) in weak Vata constitutions:</strong> The cold potency (sheeta virya) of the bark may aggravate Vata weakness, fatigue, and coldness in highly Vata-dominant individuals — use warm anupana (vehicle such as ginger water) to offset this.</li>
+        <li><strong>Indole alkaloid sensitivity:</strong> Cadambine and related indole alkaloids may have mild CNS activity at high doses. Avoid very high internal doses of bark extract if concurrently using sedative, anxiolytic, or serotonergic medications.</li>
+        <li><strong>Topical contact (latex):</strong> The fresh bark exudes a mild latex on incision — rare contact sensitivity is possible in latex-sensitive individuals. Use dried bark preparations as a precaution.</li>
+        <li><strong>Liver conditions:</strong> While hepatoprotective at therapeutic doses, very high doses of any bark alkaloid preparation may stress the liver. Individuals with active hepatic disease should use only under medical supervision.</li>
+      </ul>
+    </div>
+
+    <div class="sources">
+      <div class="sources-title">References &amp; Sources</div>
+      <ul>
+        <li>Mondal S et al. — "Phytochemistry and biological activities of Neolamarckia cadamba: A review" — Asian Pacific Journal of Tropical Biomedicine, 2012</li>
+        <li>Shrama A &amp; Bhatt S — "A review on phytochemistry and pharmacological activities of Anthocephalus cadamba" — International Journal of Pharmaceutical Sciences and Research, 2011</li>
+        <li>Gupta M et al. — "Anti-inflammatory and antipyretic activities of Anthocephalus cadamba" — Pharmaceutical Biology, 2004</li>
+        <li>Kumar R et al. — "Hepatoprotective activity of Anthocephalus cadamba bark" — Journal of Ethnopharmacology, 2010</li>
+        <li>Dey YN &amp; Ghosh AK — "Phytochemical and pharmacological review of Anthocephalus cadamba" — International Journal of Pharmaceutical Sciences and Drug Research, 2010</li>
+        <li>Charaka Samhita — Mustadi Gana; references to Nīpa in Sutrasthana, Chikitsasthana</li>
+        <li>Sushruta Samhita — Nyagrodhadi Gana; bark drug applications in wound healing and haemostasis</li>
+        <li>Bhavaprakasha Nighantu — Vatadi Varga; Kadamba/Nīpa entry with Haripriya and Priyaka synonyms</li>
+        <li>Bhāgavata Purāṇa — Daśama Skandha (Krishna's pastimes in Vrindavana); Kadamba references throughout</li>
+        <li>Jayadeva — Gītagovinda — Kadamba as the canopy of Krishna's rāsalīlā; monsoon and longing imagery</li>
+        <li>Priyavrat Sharma — Dravyaguna Vigyana — Classical properties of Nīpa/Kadamba</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer>
+    <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a qualified practitioner before therapeutic use</p>
+  </footer>
+
+
+  <div id="viewerModal">
+    <div id="modal-topbar">
+      <span>3D Model — Nīpa</span>
+      <button type="button" id="close3D">✕</button>
+    </div>
+    <model-viewer src="nipa3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+  </div>
+  <script>
+    (function() {
+      var open3D = document.getElementById('open3D');
+      var close3D = document.getElementById('close3D');
+      var modal = document.getElementById('viewerModal');
+      if (!open3D || !close3D || !modal) return;
+      function openModal() {
+        
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+      function closeModal() {
+        
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+      open3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); openModal();
+      });
+      close3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); closeModal();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+      });
+    })();
+  </script>
+
+</body>
+</html>

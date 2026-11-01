@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ajmoda | Swastha</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+  <style>
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+    *{margin:0;padding:0;box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{font-family:'Jost',sans-serif;background:var(--cream);color:var(--ink);min-height:100vh;overflow-x:hidden;position:relative}
+    body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");opacity:.03;pointer-events:none;z-index:100}
+
+    #open3D{position:fixed;top:25px;right:30px;padding:10px 18px;font-size:11px;letter-spacing:2px;text-transform:uppercase;font-family:'Jost',sans-serif;font-weight:300;background:var(--forest);color:#fff;border:none;cursor:pointer;z-index:1000;transition:.3s}
+    #open3D:hover{background:var(--gold);color:var(--deep)}
+    #viewerModal{position:fixed;inset:0;z-index:2000;display:none;flex-direction:column}
+    #modal-topbar{flex-shrink:0;height:58px;background:#111;display:flex;align-items:center;justify-content:space-between;padding:0 28px 0 32px;border-bottom:1px solid rgba(255,255,255,.07)}
+    #modal-topbar span{font-family:'Jost',sans-serif;font-size:11px;font-weight:300;letter-spacing:4.5px;text-transform:uppercase;color:rgba(255,255,255,.72);user-select:none}
+    #close3D{width:38px;height:38px;font-size:15px;background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.7);border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s,color .2s,transform .22s;outline:none;flex-shrink:0}
+    #close3D:hover{background:#fff;color:#111;border-color:#fff;transform:rotate(90deg)}
+    #viewerModal model-viewer{flex:1;width:100%;display:block;background:#fff}
+
+    .bg-circle{position:fixed;border-radius:50%;pointer-events:none;z-index:0}
+    .bg-circle-1{width:700px;height:700px;background:radial-gradient(circle,rgba(74,107,40,.09) 0%,transparent 70%);top:-200px;right:-150px}
+    .bg-circle-2{width:500px;height:500px;background:radial-gradient(circle,rgba(196,160,48,.08) 0%,transparent 70%);bottom:-100px;left:-100px}
+
+    /* Botanical SVG — stylised Apium umbel + compound leaves */
+    .botanical-svg{position:fixed;pointer-events:none;z-index:1;opacity:.08}
+    .botanical-tl{top:-10px;left:-10px;width:260px}
+    .botanical-br{bottom:-10px;right:-10px;width:230px;transform:rotate(180deg)}
+
+    .hero{position:relative;z-index:10;padding:54px 40px 0;text-align:center;opacity:0;animation:fadeUp .9s ease .1s forwards}
+    .back-link{display:inline-flex;align-items:center;gap:8px;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--sage);text-decoration:none;margin-bottom:36px;transition:color .3s}
+    .back-link:hover{color:var(--gold)}
+    .logo-rule{display:flex;align-items:center;justify-content:center;gap:20px;margin-bottom:14px}
+    .logo-rule span{display:block;height:1px;width:70px;background:linear-gradient(to right,transparent,var(--gold))}
+    .logo-rule span:last-child{background:linear-gradient(to left,transparent,var(--gold))}
+    .logo-ornament{font-size:13px;color:var(--gold)}
+    .hero-title{font-family:'Cormorant Garamond',serif;font-size:clamp(56px,11vw,100px);font-weight:300;letter-spacing:8px;line-height:1;color:var(--deep)}
+    .hero-subtitle{font-family:'Cormorant Garamond',serif;font-size:18px;font-style:italic;font-weight:300;color:var(--earth);letter-spacing:2px;margin-top:8px}
+    .hero-sci{font-size:11px;font-weight:200;letter-spacing:5px;color:var(--sage);margin-top:6px}
+
+    .hero-photos{position:relative;z-index:10;display:grid;grid-template-columns:1fr 1fr;gap:2px;max-width:900px;margin:40px auto 0;opacity:0;animation:fadeUp .9s ease .35s forwards}
+    .hero-photos img{width:100%;height:380px;object-fit:cover;object-position:center;display:block;background:var(--parchment)}
+    .photo-caption{text-align:center;font-family:'Cormorant Garamond',serif;font-size:12px;font-style:italic;color:var(--sage);letter-spacing:1px;padding:10px 0 0;max-width:900px;margin:0 auto;position:relative;z-index:10;opacity:0;animation:fadeUp .9s ease .5s forwards}
+
+    .divider{display:flex;align-items:center;justify-content:center;gap:16px;margin:50px auto;max-width:600px;opacity:0;animation:fadeUp .9s ease .55s forwards;position:relative;z-index:10}
+    .divider-line{height:1px;width:120px;background:linear-gradient(to right,transparent,var(--sage))}
+    .divider-line:last-child{background:linear-gradient(to left,transparent,var(--sage))}
+    .divider-leaf{color:var(--forest);font-size:18px}
+
+    .content{position:relative;z-index:10;max-width:860px;margin:0 auto;padding:0 30px 80px}
+    .intro-text{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:300;line-height:1.75;color:var(--ink);text-align:center;max-width:700px;margin:0 auto 60px;opacity:0;animation:fadeUp .9s ease .6s forwards}
+    .intro-text em{color:var(--forest);font-style:italic}
+
+    .section{margin-bottom:60px;opacity:0;animation:fadeUp .9s ease forwards}
+    .section:nth-child(1){animation-delay:.65s}
+    .section:nth-child(2){animation-delay:.75s}
+    .section:nth-child(3){animation-delay:.85s}
+    .section:nth-child(4){animation-delay:.95s}
+    .section:nth-child(5){animation-delay:1.05s}
+    .section:nth-child(6){animation-delay:1.15s}
+    .section:nth-child(7){animation-delay:1.25s}
+
+    .section-header{display:flex;align-items:center;gap:14px;margin-bottom:20px}
+    .section-num{font-family:'Cormorant Garamond',serif;font-size:11px;letter-spacing:4px;color:var(--gold)}
+    .section-title{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:400;color:var(--deep);letter-spacing:1px}
+    .section-rule{height:1px;flex:1;background:linear-gradient(to right,var(--gold),transparent)}
+    .section-body{font-size:13px;font-weight:300;line-height:1.9;color:var(--ink);margin-bottom:24px}
+
+    /* Tables */
+    .data-table{width:100%;border-collapse:collapse;margin:16px 0 8px;font-size:12px}
+    .data-table thead tr{background:var(--deep);color:var(--gold);font-size:10px;letter-spacing:3px;text-transform:uppercase}
+    .data-table thead th{padding:12px 14px;text-align:left;font-weight:400}
+    .data-table tbody tr:nth-child(even){background:var(--parchment)}
+    .data-table tbody tr:nth-child(odd){background:var(--cream)}
+    .data-table tbody tr{transition:background .2s}
+    .data-table tbody tr:hover{background:#e6dbb8}
+    .data-table tbody td{padding:10px 14px;color:var(--ink);border-bottom:1px solid rgba(122,92,42,.08)}
+    .data-table tbody td:first-child{font-weight:400;color:var(--deep);width:28%}
+
+    .dosha-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:12px}
+    .dosha-table thead tr{background:var(--forest);color:var(--cream)}
+    .dosha-table thead th{padding:12px 14px;text-align:left;font-weight:400;letter-spacing:2px;font-size:10px;text-transform:uppercase}
+    .dosha-table tbody tr:nth-child(even){background:var(--parchment)}
+    .dosha-table tbody tr:nth-child(odd){background:var(--cream)}
+    .dosha-table tbody td{padding:11px 14px;color:var(--ink);border-bottom:1px solid rgba(122,92,42,.08)}
+    .dosha-table tbody td:first-child{font-weight:400;color:var(--forest);width:18%}
+    .dosha-table tbody td:nth-child(2){color:var(--earth);width:20%}
+
+    .consume-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:12px}
+    .consume-table thead tr{background:var(--amber);color:var(--cream)}
+    .consume-table thead th{padding:12px 14px;text-align:left;font-weight:400;letter-spacing:2px;font-size:10px;text-transform:uppercase}
+    .consume-table tbody tr:nth-child(even){background:var(--parchment)}
+    .consume-table tbody tr:nth-child(odd){background:var(--cream)}
+    .consume-table tbody td{padding:11px 14px;color:var(--ink);border-bottom:1px solid rgba(122,92,42,.08)}
+    .consume-table tbody td:first-child{font-weight:400;color:var(--amber);width:22%}
+
+    /* Nutrition strip */
+    .nutrition-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(122,92,42,.12);border:1px solid rgba(122,92,42,.12);margin:20px 0}
+    .nutrition-cell{background:var(--cream);padding:22px 16px;text-align:center;transition:background .3s}
+    .nutrition-cell:hover{background:var(--parchment)}
+    .nutrition-num{font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:300;color:var(--forest);line-height:1;margin-bottom:4px}
+    .nutrition-unit{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);font-weight:300}
+    .nutrition-label{font-size:11px;font-weight:300;color:var(--ink);margin-top:5px}
+
+    /* Part-use strip */
+    .parts-strip{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:rgba(122,92,42,.12);border:1px solid rgba(122,92,42,.12);margin:20px 0}
+    .part-cell{background:var(--cream);padding:18px 10px;text-align:center;transition:background .3s}
+    .part-cell:hover{background:var(--parchment)}
+    .part-icon{font-size:20px;margin-bottom:7px}
+    .part-title{font-family:'Cormorant Garamond',serif;font-size:14px;font-weight:600;color:var(--forest);margin-bottom:4px}
+    .part-use{font-size:10.5px;font-weight:300;line-height:1.6;color:var(--ink);opacity:.8}
+
+    /* Benefits grid */
+    .benefits-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:rgba(122,92,42,.12);border:1px solid rgba(122,92,42,.12);margin:8px 0}
+    .benefit-card{background:var(--cream);padding:24px 22px;transition:background .3s;position:relative;overflow:hidden}
+    .benefit-card:hover{background:#e8ddb8}
+    .benefit-card::before{content:'';position:absolute;bottom:0;left:0;width:0;height:2px;background:var(--gold);transition:width .4s}
+    .benefit-card:hover::before{width:100%}
+    .benefit-title{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:600;color:var(--forest);margin-bottom:8px}
+    .benefit-desc{font-size:11.5px;font-weight:300;line-height:1.75;color:var(--ink);opacity:.85}
+
+    /* Precautions */
+    .precaution-list{list-style:none;margin:8px 0}
+    .precaution-list li{display:flex;gap:12px;align-items:flex-start;padding:10px 14px;font-size:12px;font-weight:300;line-height:1.7;color:var(--ink);border-bottom:1px solid rgba(122,92,42,.08)}
+    .precaution-list li:last-child{border-bottom:none}
+    .precaution-list li::before{content:'▸';color:var(--gold);flex-shrink:0;margin-top:1px}
+
+    /* Sources */
+    .sources{border-top:1px solid rgba(122,92,42,.15);padding-top:24px;margin-top:20px}
+    .sources-title{font-size:10px;letter-spacing:4px;text-transform:uppercase;color:var(--sage);margin-bottom:12px;font-weight:300}
+    .sources ul{list-style:none}
+    .sources ul li{font-family:'Cormorant Garamond',serif;font-size:13px;font-style:italic;color:var(--earth);padding:5px 0;border-bottom:1px solid rgba(122,92,42,.06)}
+    .sources ul li::before{content:'· ';color:var(--sage)}
+
+    footer{position:relative;z-index:10;text-align:center;padding:24px 20px 44px;border-top:1px solid rgba(122,92,42,.12);max-width:860px;margin:0 auto}
+    footer p{font-size:11px;letter-spacing:4px;text-transform:uppercase;color:var(--sage);font-weight:300}
+
+    @keyframes fadeUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
+    @media(max-width:700px){
+      .hero-photos{grid-template-columns:1fr}
+      .hero-photos img{height:260px}
+      .benefits-grid{grid-template-columns:1fr}
+      .nutrition-bar{grid-template-columns:1fr 1fr}
+      .parts-strip{grid-template-columns:1fr 1fr}
+      .content{padding:0 18px 60px}
+      #modal-topbar{padding:0 16px 0 20px}
+      #modal-topbar span{font-size:9px;letter-spacing:3px}
+    }
+  </style>
+</head>
+<body>
+
+<button id="open3D">View in 3D</button>
+<div id="viewerModal">
+  <div id="modal-topbar">
+    <span>3D Model — Ajmoda / Celery</span>
+    <button id="close3D">✕</button>
+  </div>
+  <model-viewer src="ajmoda3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+</div>
+
+<div class="bg-circle bg-circle-1"></div>
+<div class="bg-circle bg-circle-2"></div>
+
+<!-- Botanical SVG — Apium umbel + compound leaf -->
+<svg class="botanical-svg botanical-tl" viewBox="0 0 280 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Main stem -->
+  <path d="M60 295 Q 70 220 90 160 Q 108 100 130 40" stroke="#4a6b28" stroke-width="1.8" fill="none"/>
+  <!-- Side branches for compound leaf -->
+  <path d="M90 160 Q 70 145 52 138" stroke="#4a6b28" stroke-width="1.2" fill="none"/>
+  <path d="M100 130 Q 78 118 62 112" stroke="#4a6b28" stroke-width="1.1" fill="none"/>
+  <path d="M112 100 Q 94 88 80 82" stroke="#4a6b28" stroke-width="1" fill="none"/>
+  <!-- Leaflets -->
+  <ellipse cx="48" cy="137" rx="14" ry="7" fill="#90a84e" transform="rotate(-20 48 137)" opacity=".9"/>
+  <ellipse cx="58" cy="111" rx="13" ry="6" fill="#4a6b28" transform="rotate(-25 58 111)"/>
+  <ellipse cx="76" cy="81" rx="12" ry="5.5" fill="#90a84e" transform="rotate(-30 76 81)" opacity=".8"/>
+  <!-- Umbel at top -->
+  <circle cx="130" cy="40" r="3" fill="#c4a030"/>
+  <line x1="130" y1="40" x2="115" y2="24" stroke="#4a6b28" stroke-width=".9"/>
+  <line x1="130" y1="40" x2="122" y2="20" stroke="#4a6b28" stroke-width=".9"/>
+  <line x1="130" y1="40" x2="130" y2="18" stroke="#4a6b28" stroke-width=".9"/>
+  <line x1="130" y1="40" x2="138" y2="20" stroke="#4a6b28" stroke-width=".9"/>
+  <line x1="130" y1="40" x2="145" y2="24" stroke="#4a6b28" stroke-width=".9"/>
+  <circle cx="115" cy="23" r="2.5" fill="#c4a030" opacity=".8"/>
+  <circle cx="122" cy="19" r="2.5" fill="#c4a030" opacity=".9"/>
+  <circle cx="130" cy="17" r="2.5" fill="#c4a030"/>
+  <circle cx="138" cy="19" r="2.5" fill="#c4a030" opacity=".9"/>
+  <circle cx="145" cy="23" r="2.5" fill="#c4a030" opacity=".8"/>
+</svg>
+<svg class="botanical-svg botanical-br" viewBox="0 0 280 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M60 295 Q 70 220 90 160 Q 108 100 130 40" stroke="#4a6b28" stroke-width="1.8" fill="none"/>
+  <path d="M90 160 Q 70 145 52 138" stroke="#4a6b28" stroke-width="1.2" fill="none"/>
+  <path d="M100 130 Q 78 118 62 112" stroke="#4a6b28" stroke-width="1.1" fill="none"/>
+  <ellipse cx="48" cy="137" rx="14" ry="7" fill="#90a84e" transform="rotate(-20 48 137)" opacity=".9"/>
+  <ellipse cx="58" cy="111" rx="13" ry="6" fill="#4a6b28" transform="rotate(-25 58 111)"/>
+  <circle cx="130" cy="40" r="3" fill="#c4a030"/>
+  <line x1="130" y1="40" x2="122" y2="20" stroke="#4a6b28" stroke-width=".9"/>
+  <line x1="130" y1="40" x2="130" y2="18" stroke="#4a6b28" stroke-width=".9"/>
+  <line x1="130" y1="40" x2="138" y2="20" stroke="#4a6b28" stroke-width=".9"/>
+  <circle cx="122" cy="19" r="2.5" fill="#c4a030" opacity=".9"/>
+  <circle cx="130" cy="17" r="2.5" fill="#c4a030"/>
+  <circle cx="138" cy="19" r="2.5" fill="#c4a030" opacity=".9"/>
+</svg>
+
+<div class="hero">
+  <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+  <div class="logo-rule"><span></span><div class="logo-ornament">✦</div><span></span></div>
+  <div class="hero-title">Ajmoda</div>
+  <div class="hero-subtitle">Celery — The Aromatic Digestive Jewel</div>
+  <div class="hero-sci">Apium graveolens L. &nbsp;·&nbsp; Fam. Apiaceae</div>
+</div>
+
+<div class="hero-photos">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/3/3e/%D0%A1%D0%B5%D0%B2%D0%B5%D1%80%D0%BD%D1%8B%D0%B9_%D0%B6%D0%B5%D0%BB%D0%B5%D0%B7%D0%BD%D0%BE%D0%B4%D0%BE%D1%80%D0%BE%D0%B6%D0%BD%D1%8B%D0%B9_%D0%B2%D0%BE%D0%BA%D0%B7%D0%B0%D0%BB.jpg" alt="Ajmoda celery plant with compound leaves and white umbel flowers"
+    onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+  <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/d/db/%DA%A9%D8%A7%D8%BA%D8%B0%DB%8C.jpg/1280px-%DA%A9%D8%A7%D8%BA%D8%B0%DB%8C.jpg" alt="Dried Ajmoda seeds used in Ayurvedic formulations"
+    onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+</div>
+<p class="photo-caption">Fig. 1 — Apium graveolens with characteristic pinnate compound leaves and delicate white umbel inflorescence &nbsp;·&nbsp; Fig. 2 — Dried Ajmoda seeds (Bijam), the primary medicinal part in Ayurvedic pharmacy</p>
+
+<div class="divider">
+  <div class="divider-line"></div>
+  <div class="divider-leaf">❧</div>
+  <div class="divider-line"></div>
+</div>
+
+<div class="content">
+  <p class="intro-text">Ajmoda — whose Sanskrit name means <em>"goat's delight"</em>, acknowledging the plant's ancient pastoral familiarity — is among the most comprehensively documented herbs in the Ayurvedic pharmacopoeia. Praised across the Charaka Samhita, Sushruta Samhita, and Ashtanga Hridayam as a supreme <em>Deepana</em> (digestive fire kindler) and <em>Shoolahara</em> (pain reliever), its small aromatic seeds carry an outsized therapeutic heritage spanning digestion, renal health, joint care, and respiratory support.</p>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">01</span><h2 class="section-title">Botanical Profile</h2><div class="section-rule"></div></div>
+    <p class="section-body">Ajmoda (<em>Apium graveolens</em> L.) is a stout biennial herb of the Apiaceae (Umbelliferae) family — the same family as coriander, cumin, fennel, dill, and carrot. Native to the Mediterranean basin and cultivated across the Indian subcontinent, it typically grows 30–100 cm tall, bearing glossy, deeply pinnate compound leaves with broad, wedge-shaped leaflets and serrated margins. The pale-green, furrowed petioles (celery stalks) are the most familiar culinary part worldwide, though in Ayurveda it is the dried seeds (<em>bijam</em>) and root (<em>moolam</em>) that hold primary therapeutic status.</p>
+    <p class="section-body">The plant flowers in its second year, producing characteristic compound umbels of tiny white to pale-green flowers. Fruits are very small oval schizocarps — the "seeds" of commerce — 1.5–2 mm, ribbed, greyish-brown, with an intense aromatic smell dominated by phthalides and terpenes. Three cultivated varieties are recognised: <em>var. graveolens</em> (smallage / wild celery), <em>var. dulce</em> (garden celery / stalk celery), and <em>var. rapaceum</em> (celeriac / turnip-rooted celery). In Ayurvedic medicine, <em>var. graveolens</em> — the wild, seed-bearing form — is pharmacologically most valued.</p>
+    <table class="data-table">
+      <thead><tr><th>PROPERTY</th><th>Detail</th></tr></thead>
+      <tbody>
+        <tr><td>Family</td><td>Apiaceae / Umbelliferae</td></tr>
+        <tr><td>Botanical Name</td><td>Apium graveolens L.</td></tr>
+        <tr><td>Sanskrit Names</td><td>Ajamoda, Ajmoda, Ajamodika, Yavanaka, Brahmakushi, Dipyaka, Kharaswa</td></tr>
+        <tr><td>Hindi Names</td><td>Ajmod, Ajmoda, Randhuni</td></tr>
+        <tr><td>Regional Names</td><td>Ajmoda (Mar/Guj), Omam (Tam — though shared with Ajwain), Ajmoda (Ben), Vamu (Tel)</td></tr>
+        <tr><td>English Names</td><td>Celery, Wild Celery, Smallage, Garden Celery</td></tr>
+        <tr><td>Plant Type</td><td>Biennial aromatic herb (30–100 cm)</td></tr>
+        <tr><td>Varieties</td><td>var. graveolens (wild/seed), var. dulce (stalk), var. rapaceum (root)</td></tr>
+        <tr><td>Medicinal Parts</td><td>Seeds (primary), roots, leaves, stem juice, essential oil</td></tr>
+        <tr><td>Taste (Seeds)</td><td>Katu (pungent), Tikta (bitter)</td></tr>
+        <tr><td>Origin</td><td>Mediterranean basin; cultivated pan-tropically</td></tr>
+        <tr><td>Flowering</td><td>2nd year; white-green compound umbels</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">02</span><h2 class="section-title">Plant Parts &amp; Their Uses</h2><div class="section-rule"></div></div>
+    <p class="section-body">Unlike many Ayurvedic herbs used exclusively from a single plant part, Ajmoda offers therapeutic value across seeds, roots, leaves, stalks, and its steam-distilled essential oil — each with a distinct chemical focus and clinical application.</p>
+    <div class="parts-strip">
+      <div class="part-cell">
+        <div class="part-icon">🌱</div>
+        <div class="part-title">Seeds</div>
+        <div class="part-use">Primary Ayurvedic drug. Richest in phthalides, volatile oil, apigenin. Digestive, diuretic, anti-rheumatic, analgesic. Used in churnas, kashayas, and classical formulations.</div>
+      </div>
+      <div class="part-cell">
+        <div class="part-icon">🪴</div>
+        <div class="part-title">Root</div>
+        <div class="part-use">Strongly diuretic; used in urinary retention, renal calculi, and oedema. Aqueous decoction prescribed in urolithiasis and dysuria.</div>
+      </div>
+      <div class="part-cell">
+        <div class="part-icon">🍃</div>
+        <div class="part-title">Leaves</div>
+        <div class="part-use">Rich in vitamins K, C, folate, and flavonoids. Anti-inflammatory; used in poultice for joint pain. Fresh leaf juice for fevers, skin ailments, and as a tonic.</div>
+      </div>
+      <div class="part-cell">
+        <div class="part-icon">🥬</div>
+        <div class="part-title">Stalks</div>
+        <div class="part-use">Primary culinary part. High water content, electrolytes (potassium, sodium), phthalides. Blood-pressure modulating; used as a functional food in cardiovascular support.</div>
+      </div>
+      <div class="part-cell">
+        <div class="part-icon">💧</div>
+        <div class="part-title">Seed Oil</div>
+        <div class="part-use">Steam-distilled; rich in limonene, selinene, phthalides. Used in rheumatic liniments, aromatherapy for anxiety, and as a natural fragrance in pharmaceuticals.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">03</span><h2 class="section-title">Phytochemistry</h2><div class="section-rule"></div></div>
+    <p class="section-body">The pharmacological richness of Ajmoda stems from a remarkable phytochemical diversity — most uniquely characterised by <em>phthalides</em>, a class of bicyclic compounds almost exclusive to the Apiaceae family. The principal phthalides — sedanenolide (3-n-butylphthalide), sedanolide, and 3-n-butylidene phthalide — are responsible for celery's characteristic aroma and its most validated pharmacological activities: vasodilation, smooth-muscle relaxation, anti-hypertensive, and anxiolytic effects.</p>
+    <p class="section-body">The flavonoid fraction is headed by <em>apigenin</em> — one of the most studied anti-inflammatory, anti-cancer, and neuroprotective plant flavones — alongside luteolin, quercetin, and kaempferol. Seed essential oil provides β-selinene, limonene, and α-phellandrene contributing to carminative and antimicrobial activity, while the whole plant is nutritionally exceptional in vitamin K, vitamin C, folate, and dietary fibre.</p>
+    <div class="nutrition-bar">
+      <div class="nutrition-cell">
+        <div class="nutrition-num">2–3%</div>
+        <div class="nutrition-unit">volatile oil</div>
+        <div class="nutrition-label">In dried seeds</div>
+      </div>
+      <div class="nutrition-cell">
+        <div class="nutrition-num">64%</div>
+        <div class="nutrition-unit">selinene</div>
+        <div class="nutrition-label">Major seed oil constituent</div>
+      </div>
+      <div class="nutrition-cell">
+        <div class="nutrition-num">112 μg</div>
+        <div class="nutrition-unit">Vit K / 100 g</div>
+        <div class="nutrition-label">In fresh stalks</div>
+      </div>
+      <div class="nutrition-cell">
+        <div class="nutrition-num">8+</div>
+        <div class="nutrition-unit">phthalides</div>
+        <div class="nutrition-label">Identified in celery</div>
+      </div>
+    </div>
+    <table class="data-table">
+      <thead><tr><th>Compound</th><th>Category</th><th>Primary Action</th></tr></thead>
+      <tbody>
+        <tr><td>3-n-Butylphthalide (3nB)</td><td>Phthalide</td><td>Vasodilatory, antihypertensive, smooth-muscle relaxant, neuroprotective</td></tr>
+        <tr><td>Sedanenolide &amp; Sedanolide</td><td>Phthalides</td><td>Anxiolytic, antispasmodic, characteristic aroma contributor</td></tr>
+        <tr><td>Apigenin</td><td>Flavone</td><td>Anti-inflammatory, anti-cancer, anxiolytic, antioxidant, estrogenic</td></tr>
+        <tr><td>Luteolin</td><td>Flavone</td><td>Anti-inflammatory, neuroprotective, antidiabetic, antihistamine</td></tr>
+        <tr><td>Quercetin</td><td>Flavonol</td><td>Antioxidant, anti-allergic, antiviral, cardioprotective</td></tr>
+        <tr><td>β-Selinene &amp; α-Selinene</td><td>Sesquiterpenes</td><td>Antimicrobial, carminative, anti-inflammatory</td></tr>
+        <tr><td>Limonene</td><td>Monoterpene</td><td>Digestive stimulant, antifungal, anticancer, anxiolytic</td></tr>
+        <tr><td>Apiin (Apigenin 7-apiosylglucoside)</td><td>Flavonoid glycoside</td><td>Anti-inflammatory, diuretic; principal flavonoid in leaves</td></tr>
+        <tr><td>Furanocoumarin (Psoralen, Bergapten)</td><td>Coumarin derivatives</td><td>Photosensitising; antibacterial; used in vitiligo therapy (medical context only)</td></tr>
+        <tr><td>Vitamin K1 (Phylloquinone)</td><td>Fat-soluble vitamin</td><td>Coagulation cascade, bone mineralisation, arterial calcification prevention</td></tr>
+        <tr><td>Potassium &amp; Sodium</td><td>Electrolytes</td><td>Blood pressure regulation, fluid balance, nerve conduction</td></tr>
+        <tr><td>Pthalic Acid Derivatives</td><td>Phenolic acids</td><td>Antioxidant, antimicrobial, diuretic support</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">04</span><h2 class="section-title">Ayurvedic Significance</h2><div class="section-rule"></div></div>
+    <p class="section-body">Ajmoda is enshrined in classical texts as one of the premier <em>Deepana-Pachana dravyas</em> — herbs that kindle digestive fire (<em>agni</em>) and promote proper digestion and assimilation. Charaka Samhita includes it in the <em>Dipaniya Mahakashaya</em> — one of the fifty classical herbal groups — specifically for stimulating digestive capacity. It is also placed in the <em>Shoolaprashamana</em> group (colic-relieving) and in preparations targeting <em>Vatarakta</em> (gout), <em>Arsha</em> (haemorrhoids), <em>Mutrakrichra</em> (dysuria), and <em>Shwasa</em> (respiratory disorders).</p>
+    <p class="section-body">Sushruta Samhita cites Ajmoda in the <em>Pippalyadi gana</em> — a group of pungent, digestive, warming drugs. Ashtanga Hridayam includes it in <em>Mustadi churna</em> and <em>Hingvashtak churna</em> — classical polyherbal formulations for IBS, flatulence, and malabsorption still widely prescribed by Ayurvedic practitioners today. The classical shloka describes it as <em>"deepani pachani grahi hridya shoolanivaarini"</em> — kindling, digestive, absorbent, cardiac-tonic, and pain-relieving.</p>
+    <table class="dosha-table">
+      <thead><tr><th>Dosha</th><th>Effect</th><th>Mechanism &amp; Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Vata ↓</td><td>Strongly pacifying</td><td>Ushna virya (hot potency), carminative phthalides and terpenes relieve Vata accumulation in the gut (bloating, colic, constipation) and joints (arthralgia, sciatica). Primary dosha target of Ajmoda seeds.</td></tr>
+        <tr><td>Pitta ↑</td><td>Mildly aggravating</td><td>Katu-tikta rasa and ushna virya may increase Pitta with prolonged high-dose use; contraindicated in active peptic ulcer, haemorrhagic conditions, and hyperacidity. Leaves and stalks are more Pitta-neutral.</td></tr>
+        <tr><td>Kapha ↓</td><td>Pacifying</td><td>Laghu (light), tikshna (sharp), and ushna properties reduce Kapha stagnation. Used in Kapha-type respiratory congestion, productive cough, oedema, and obesity.</td></tr>
+      </tbody>
+    </table>
+    <p class="section-body"><strong>Rasa:</strong> Katu (pungent), Tikta (bitter) &nbsp;·&nbsp; <strong>Guna:</strong> Laghu (light), Ruksha (dry), Tikshna (sharp) &nbsp;·&nbsp; <strong>Virya:</strong> Ushna (hot) &nbsp;·&nbsp; <strong>Vipaka:</strong> Katu (pungent) &nbsp;·&nbsp; <strong>Karma:</strong> Deepana, Pachana, Shoolahara, Mutrala, Shwasahara, Kaphavatahara</p>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">05</span><h2 class="section-title">Key Health Benefits</h2><div class="section-rule"></div></div>
+    <p class="section-body">Modern pharmacological research on <em>Apium graveolens</em> has generated a substantial evidence base across cardiovascular, renal, digestive, neurological, and anti-inflammatory domains — substantially validating its classical Ayurvedic applications through mechanistic investigation.</p>
+    <div class="benefits-grid">
+      <div class="benefit-card">
+        <div class="benefit-title">Digestive Fire &amp; Carminative</div>
+        <div class="benefit-desc">The most celebrated Ayurvedic application. Phthalides and monoterpenes stimulate bile secretion, pancreatic enzyme activity, and gastric motility. Relieves bloating, flatulence, intestinal colic, and Vata-type constipation. Hingvashtak churna — a principal Ajmoda formulation — is among the most prescribed Ayurvedic digestive remedies.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Antihypertensive</div>
+        <div class="benefit-desc">3-n-Butylphthalide (3nB) relaxes vascular smooth muscle by acting as a calcium channel antagonist and increasing nitric oxide production. Clinical and animal studies show consistent reduction in systolic and diastolic blood pressure. Regular celery stalk consumption is among the best-documented dietary antihypertensive strategies.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Diuretic &amp; Renal Support</div>
+        <div class="benefit-desc">Root and seed decoctions exert significant diuretic action without electrolyte depletion — a major advantage over synthetic diuretics. Reduces oedema in cardiac and renal insufficiency, supports urinary tract clearance, and is used classically in renal calculi (<em>mutrashmari</em>) to facilitate small stone passage by increasing urine volume and flow.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Anti-arthritic &amp; Anti-gout</div>
+        <div class="benefit-desc">Luteolin and apigenin inhibit COX-1, COX-2, and 5-LOX pathways, reducing prostaglandin and leukotriene production in inflamed joints. 3nB reduces uric acid synthesis and promotes renal uric acid excretion, making Ajmoda particularly relevant in gout (<em>Vatarakta</em>) — exactly its classical Charaka Samhita indication. Seed extracts have shown results comparable to indomethacin in animal arthritis models.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Neuroprotective &amp; Anxiolytic</div>
+        <div class="benefit-desc">Apigenin modulates GABA-A receptors with benzodiazepine-like anxiolytic effects, without the dependency risk of pharmaceutical anxiolytics. 3nB has demonstrated neuroprotective activity against ischaemia-induced neuronal damage and cognitive impairment in preclinical models — and is being investigated as a therapeutic for vascular dementia and stroke recovery.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Respiratory Support</div>
+        <div class="benefit-desc">Classical use in <em>Shwasa</em> (asthma/breathlessness) and <em>Kasa</em> (cough) is supported by documented bronchodilatory and antispasmodic activity of seed essential oil terpenes. Luteolin has anti-allergic and mast-cell stabilising effects relevant to atopic asthma. Seed powder in warm water is a traditional household remedy for dry cough and cold.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Anti-inflammatory &amp; Antioxidant</div>
+        <div class="benefit-desc">High flavonoid density — apigenin, luteolin, quercetin — provides broad-spectrum anti-inflammatory activity via NF-κB pathway suppression, alongside strong free-radical scavenging. ORAC (oxygen radical absorbance capacity) of celery leaves is substantially higher than stalks. Regular consumption significantly lowers serum CRP and IL-6 markers in human observational studies.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Antibacterial &amp; Antifungal</div>
+        <div class="benefit-desc">Seed and leaf extracts show inhibitory activity against Staphylococcus aureus, E. coli, Salmonella typhi, Pseudomonas aeruginosa, and Candida albicans. Phthalides disrupt bacterial cell membrane integrity while furanocoumarins (in the photosensitised state) have long been used in antibacterial dermatological therapy.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">06</span><h2 class="section-title">How to Use Ajmoda</h2><div class="section-rule"></div></div>
+    <p class="section-body">Ajmoda's versatility is one of its great strengths — it is simultaneously a culinary spice, a dietary functional food, and a medicinal herb available in multiple classical and contemporary preparations. The seeds (bijam) are the pharmacological workhorse for internal medicine, while fresh stalks and leaves provide gentler nutritional-therapeutic benefit suitable for daily use.</p>
+    <table class="consume-table">
+      <thead><tr><th>Form</th><th>Preparation</th><th>Dosage</th><th>Best Use</th></tr></thead>
+      <tbody>
+        <tr><td>Seed Powder (Churna)</td><td>Dry-roasted and powdered seeds; with warm water or ghee</td><td>1–3 g, twice daily after meals</td><td>Bloating, flatulence, IBS, colic, constipation</td></tr>
+        <tr><td>Seed Decoction (Kwatha)</td><td>Boil 5–10 g seeds in 400 ml water; reduce to 100 ml, strain</td><td>30–50 ml twice daily</td><td>Rheumatism, gout, dysuria, renal calculi</td></tr>
+        <tr><td>Hingvashtak Churna</td><td>Classical formulation (Ajmoda + Ajwain + Jeera + Sendha Namak + Hing)</td><td>1–3 g before meals with ghee</td><td>Vata digestive disorders, malabsorption, IBS</td></tr>
+        <tr><td>Fresh Stalk Juice</td><td>Cold-pressed from fresh stalks; plain or with lemon</td><td>100–150 ml once daily</td><td>Hypertension, oedema, renal support, detox</td></tr>
+        <tr><td>Leaf Infusion (Herbal Tea)</td><td>Steep fresh or dried leaves 5–7 min in hot water</td><td>1–2 cups daily</td><td>Fever, mild inflammatory conditions, tonic</td></tr>
+        <tr><td>Root Decoction</td><td>Boil 10 g dried root in 300 ml water; reduce to 75 ml</td><td>25–30 ml twice daily</td><td>Renal calculi, urinary retention, oedema</td></tr>
+        <tr><td>Seed Oil (Topical)</td><td>Diluted 2–3% in sesame or mustard oil</td><td>Apply to affected joints</td><td>Arthritis, sciatica, muscle pain (liniment)</td></tr>
+        <tr><td>Culinary Spice</td><td>Seeds as tempering spice (tadka) in dals, chutneys, pickles</td><td>As desired in cooking</td><td>Daily digestive support, flavour, food medicine</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">07</span><h2 class="section-title">Safety &amp; Precautions</h2><div class="section-rule"></div></div>
+    <p class="section-body">Ajmoda has an excellent safety profile when used at classical Ayurvedic doses — both as a culinary spice and as a medicinal herb. However, certain specific contraindications require attention, particularly around pregnancy, photosensitivity, anticoagulant interactions, and kidney disease.</p>
+    <ul class="precaution-list">
+      <li><strong>Pregnancy:</strong> Strictly contraindicated in therapeutic doses. Ajmoda seeds stimulate uterine contractions and have been used historically as an emmenagogue and abortifacient. Culinary amounts in food are generally safe, but medicinal seed preparations must be avoided throughout pregnancy.</li>
+      <li><strong>Photosensitivity (Furanocoumarins):</strong> Celery — particularly wild var. graveolens and leaves — contains psoralen and bergapten, which cause phototoxic skin reactions on sun exposure after skin contact. Handle fresh celery with care and wash hands after chopping; avoid topical application of leaf juice before sun exposure.</li>
+      <li><strong>Anticoagulant interaction:</strong> Very high in vitamin K — a co-factor in the clotting cascade. Individuals on warfarin or other vitamin K-dependent anticoagulants should maintain consistent (not excessive) celery intake and inform their physician, as fluctuating vitamin K intake destabilises INR levels.</li>
+      <li><strong>Kidney disease:</strong> Despite its diuretic action, individuals with serious kidney disease (CKD stages 3–5) should use cautiously — high potassium content may exacerbate hyperkalaemia. Consult a nephrologist before therapeutic use.</li>
+      <li><strong>Thyroid disorders:</strong> Celery is a mild goitrogen — it contains compounds that may slightly reduce thyroid iodine uptake. This is clinically negligible at dietary intake, but those with hypothyroidism on levothyroxine should avoid very large daily therapeutic doses of concentrated seed preparations.</li>
+      <li><strong>Celery allergy:</strong> One of the 14 major food allergens listed in EU food law. Celery allergy can be severe, with cross-reactivity to birch pollen (oral allergy syndrome). Individuals with known celery, carrot, or parsley allergy should avoid all preparations.</li>
+      <li><strong>Pitta constitutions:</strong> Prolonged high-dose use of seeds may aggravate Pitta — causing hyperacidity, heartburn, or gastric irritation in Pitta-dominant individuals. Combine with ghee or milk to mitigate if needed.</li>
+      <li><strong>Drug interaction — diuretics &amp; antihypertensives:</strong> Concurrent use with pharmaceutical diuretics or antihypertensive medications may produce additive hypotensive or diuretic effects. Inform your physician if combining Ajmoda therapy with such medications.</li>
+    </ul>
+  </div>
+
+  <div class="sources">
+    <div class="sources-title">References &amp; Sources</div>
+    <ul>
+      <li>Sowbhagya HB — "Chemistry, Technology, and Nutraceutical Functions of Celery (Apium graveolens L.): An Overview" — Critical Reviews in Food Science and Nutrition, 2014</li>
+      <li>Baananou S et al. — "Antiulcerogenic and antibacterial activities of Apium graveolens essential oil and extract" — Natural Product Research, 2013</li>
+      <li>Mencherini T et al. — "An extract of Apium graveolens var. dulce leaves: structure of the major constituent, apiin, and its anti-inflammatory properties" — Journal of Pharmacy and Pharmacology, 2007</li>
+      <li>Moghadam MH et al. — "Hypotensive effect of celery seed on rat blood pressure in chronic administration" — Journal of Medicinal Food, 2013</li>
+      <li>Yu YM et al. — "The flavonoid luteolin as an anti-inflammatory agent" — Journal of Biomedical Science, 2011</li>
+      <li>Sultana S et al. — "Crude extracts of hepatoprotective plants, Solanum nigrum and Cichorium intybus inhibit free radical-mediated DNA damage" — Journal of Ethnopharmacology, 1995</li>
+      <li>Rathee P et al. — "Chemistry, efficacy, safety, and use of Indian natural product Ajmoda" — Der Pharmacia Lettre, 2012</li>
+      <li>Charaka Samhita — Sutrasthana, Ch. 4 (Dipaniya Mahakashaya); Chikitsasthana, Vatarakta Chikitsa</li>
+      <li>Sushruta Samhita — Sutrasthana, Pippalyadi Gana reference</li>
+      <li>Ashtanga Hridayam — Hingvashtak Churna formulation; Mutrala and Shoolaprashamana references</li>
+      <li>API (Ayurvedic Pharmacopoeia of India) — Monograph on Ajamoda (Apium graveolens)</li>
+      <li>Priyavrat Sharma — Dravyaguna Vigyana — Ajamoda monograph, Vol. II</li>
+    </ul>
+  </div>
+</div>
+
+<footer>
+  <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a qualified practitioner before therapeutic use</p>
+</footer>
+
+<script>
+  const open3D = document.getElementById('open3D');
+  const close3D = document.getElementById('close3D');
+  const modal  = document.getElementById('viewerModal');
+  function openModal(){
+    var _aud = document.getElementById('ajmodaAudio'); if(_aud){ _aud.currentTime=0; var playPromise = _aud.play(); if (playPromise !== undefined) { playPromise.catch(function(e){ console.log(e); }); } }
+modal.style.display='flex';document.body.style.overflow='hidden';history.pushState({modal:'ajmoda3d'},'','#3d')}
+  function closeModal(){
+    var _aud = document.getElementById('ajmodaAudio'); if(_aud){ _aud.pause(); }
+modal.style.display='none';document.body.style.overflow='';if(window.location.hash==='#3d')history.replaceState(null,'',window.location.pathname)}
+  open3D.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();openModal()});
+  close3D.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();closeModal()});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&modal.style.display==='flex')closeModal()});
+  window.addEventListener('popstate',()=>{if(modal.style.display==='flex'){modal.style.display='none';document.body.style.overflow=''}});
+</script>
+
+  <audio id="ajmodaAudio" src="ajmoda_benefits.mp3" loop preload="auto"></audio>
+</body>
+</html>

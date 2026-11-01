@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.log
+
+# Large binary backups and test files
+*_backup.glb
+_image_fill_log*.txt
+_image_fill_report.json
+_image_url_cache.json
+
+# OS & Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bakula — Spanish Cherry | Swastha</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap"
+    rel="stylesheet">
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+  <style>
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box
+    }
+
+    html {
+      scroll-behavior: smooth
+    }
+
+    body {
+      font-family: 'Jost', sans-serif;
+      background: var(--cream);
+      color: var(--ink);
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity: .035;
+      pointer-events: none;
+      z-index: 100
+    }
+
+    #open3D {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      padding: 10px 18px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: var(--forest);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      z-index: 1000;
+      transition: .3s
+    }
+
+    #open3D:hover {
+      background: var(--gold);
+      color: var(--deep)
+    }
+
+    #viewerModal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+    }
+
+    #modal-topbar {
+      flex-shrink: 0;
+      height: 58px;
+      background: #111111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px 0 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      z-index: 99999;
+    }
+
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 4.5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.72);
+      user-select: none;
+    }
+
+    #close3D {
+      width: 38px;
+      height: 38px;
+      font-size: 15px;
+      font-weight: 300;
+      background: transparent;
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background .2s, color .2s, transform .22s;
+      outline: none;
+      flex-shrink: 0;
+    }
+
+    #close3D:hover {
+      background: #ffffff;
+      color: #111111;
+      border-color: #ffffff;
+      transform: rotate(90deg)
+    }
+
+    #viewerModal model-viewer {
+      flex: 1;
+      width: 100%;
+      display: block;
+      background: #ffffff;
+    }
+
+    .bg-circle {
+      position: fixed;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0
+    }
+
+    .bg-circle-1 {
+      width: 700px;
+      height: 700px;
+      background: radial-gradient(circle, rgba(42, 92, 63, .1) 0%, transparent 70%);
+      top: -200px;
+      right: -150px
+    }
+
+    .bg-circle-2 {
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(201, 168, 76, .08) 0%, transparent 70%);
+      bottom: -100px;
+      left: -100px
+    }
+
+    .botanical-svg {
+      position: fixed;
+      pointer-events: none;
+      z-index: 1;
+      opacity: .1
+    }
+
+    .botanical-tl {
+      top: -20px;
+      left: -20px;
+      width: 260px
+    }
+
+    .botanical-br {
+      bottom: -20px;
+      right: -20px;
+      width: 220px;
+      transform: rotate(180deg)
+    }
+
+    .hero {
+      position: relative;
+      z-index: 10;
+      padding: 54px 40px 0;
+      text-align: center;
+      opacity: 0;
+      animation: fadeUp .9s ease .1s forwards
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--sage);
+      text-decoration: none;
+      margin-bottom: 36px;
+      transition: color .3s
+    }
+
+    .back-link:hover {
+      color: var(--gold)
+    }
+
+    .logo-rule {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 14px
+    }
+
+    .logo-rule span {
+      display: block;
+      height: 1px;
+      width: 70px;
+      background: linear-gradient(to right, transparent, var(--gold))
+    }
+
+    .logo-rule span:last-child {
+      background: linear-gradient(to left, transparent, var(--gold))
+    }
+
+    .logo-ornament {
+      font-size: 13px;
+      color: var(--gold)
+    }
+
+    .hero-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(64px, 12vw, 110px);
+      font-weight: 300;
+      letter-spacing: 8px;
+      line-height: 1;
+      color: var(--deep)
+    }
+
+    .hero-subtitle {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 18px;
+      font-style: italic;
+      font-weight: 300;
+      color: var(--earth);
+      letter-spacing: 2px;
+      margin-top: 8px
+    }
+
+    .hero-sci {
+      font-size: 11px;
+      font-weight: 200;
+      letter-spacing: 5px;
+      color: var(--sage);
+      margin-top: 6px
+    }
+
+    .hero-photos {
+      position: relative;
+      z-index: 10;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2px;
+      max-width: 900px;
+      margin: 40px auto 0;
+      opacity: 0;
+      animation: fadeUp .9s ease .35s forwards
+    }
+
+    .hero-photos img {
+      width: 100%;
+      height: 380px;
+      object-fit: cover;
+      object-position: center;
+      display: block;
+      background: var(--parchment);
+    }
+
+    .hero-photos img:first-child {
+      object-position: center 40%
+    }
+
+    .photo-caption {
+      text-align: center;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 12px;
+      font-style: italic;
+      color: var(--sage);
+      letter-spacing: 1px;
+      padding: 10px 0 0;
+      max-width: 900px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 10;
+      opacity: 0;
+      animation: fadeUp .9s ease .5s forwards
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin: 50px auto;
+      max-width: 600px;
+      opacity: 0;
+      animation: fadeUp .9s ease .55s forwards;
+      position: relative;
+      z-index: 10
+    }
+
+    .divider-line {
+      height: 1px;
+      width: 120px;
+      background: linear-gradient(to right, transparent, var(--sage))
+    }
+
+    .divider-line:last-child {
+      background: linear-gradient(to left, transparent, var(--sage))
+    }
+
+    .divider-leaf {
+      color: var(--forest);
+      font-size: 18px
+    }
+
+    .content {
+      position: relative;
+      z-index: 10;
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 30px 80px
+    }
+
+    .intro-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 20px;
+      font-weight: 300;
+      line-height: 1.75;
+      color: var(--ink);
+      text-align: center;
+      max-width: 700px;
+      margin: 0 auto 60px;
+      opacity: 0;
+      animation: fadeUp .9s ease .6s forwards
+    }
+
+    .intro-text em {
+      color: var(--forest);
+      font-style: italic
+    }
+
+    .section {
+      margin-bottom: 60px;
+      opacity: 0;
+      animation: fadeUp .9s ease forwards
+    }
+
+    .section:nth-child(1) {
+      animation-delay: .65s
+    }
+
+    .section:nth-child(2) {
+      animation-delay: .75s
+    }
+
+    .section:nth-child(3) {
+      animation-delay: .85s
+    }
+
+    .section:nth-child(4) {
+      animation-delay: .95s
+    }
+
+    .section:nth-child(5) {
+      animation-delay: 1.05s
+    }
+
+    .section:nth-child(6) {
+      animation-delay: 1.15s
+    }
+
+    .section:nth-child(7) {
+      animation-delay: 1.25s
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 20px
+    }
+
+    .section-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 11px;
+      letter-spacing: 4px;
+      color: var(--gold)
+    }
+
+    .section-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 28px;
+      font-weight: 400;
+      color: var(--deep);
+      letter-spacing: 1px
+    }
+
+    .section-rule {
+      height: 1px;
+      flex: 1;
+      background: linear-gradient(to right, var(--gold), transparent)
+    }
+
+    .section-body {
+      font-size: 13px;
+      font-weight: 300;
+      line-height: 1.9;
+      color: var(--ink);
+      margin-bottom: 24px
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0 8px;
+      font-size: 12px
+    }
+
+    .data-table thead tr {
+      background: var(--deep);
+      color: var(--gold);
+      font-size: 10px;
+      letter-spacing: 3px;
+      text-transform: uppercase
+    }
+
+    .data-table thead th {
+      padding: 12px 14px;
+      text-align: left;
+      font-weight: 400
+    }
+
+    .data-table tbody tr:nth-child(even) {
+      background: var(--parchment)
+    }
+
+    .data-table tbody tr:nth-child(odd) {
+      background: var(--cream)
+    }
+
+    .data-table tbody tr {
+      transition: background .2s
+    }
+
+    .data-table tbody tr:hover {
+      background: rgba(200, 164, 93, 0.15)
+    }
+
+    .data-table tbody td {
+      padding: 10px 14px;
+      color: var(--ink);
+      border-bottom: 1px solid rgba(107, 79, 45, .08)
+    }
+
+    .data-table tbody td:first-child {
+      font-weight: 400;
+      color: var(--deep);
+      width: 28%
+    }
+
+    .dosha-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 12px
+    }
+
+    .dosha-table thead tr {
+      background: var(--forest);
+      color: var(--cream)
+    }
+
+    .dosha-table thead th {
+      padding: 12px 14px;
+      text-align: left;
+      font-weight: 400;
+      letter-spacing: 2px;
+      font-size: 10px;
+      text-transform: uppercase
+    }
+
+    .dosha-table tbody tr:nth-child(even) {
+      background: var(--parchment)
+    }
+
+    .dosha-table tbody tr:nth-child(odd) {
+      background: var(--cream)
+    }
+
+    .dosha-table tbody td {
+      padding: 11px 14px;
+      color: var(--ink);
+      border-bottom: 1px solid rgba(107, 79, 45, .08)
+    }
+
+    .dosha-table tbody td:first-child {
+      font-weight: 400;
+      color: var(--forest);
+      width: 18%
+    }
+
+    .dosha-table tbody td:nth-child(2) {
+      color: var(--earth);
+      width: 20%
+    }
+
+    .consume-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 12px
+    }
+
+    .consume-table thead tr {
+      background: var(--earth);
+      color: var(--cream)
+    }
+
+    .consume-table thead th {
+      padding: 12px 14px;
+      text-align: left;
+      font-weight: 400;
+      letter-spacing: 2px;
+      font-size: 10px;
+      text-transform: uppercase
+    }
+
+    .consume-table tbody tr:nth-child(even) {
+      background: var(--parchment)
+    }
+
+    .consume-table tbody tr:nth-child(odd) {
+      background: var(--cream)
+    }
+
+    .consume-table tbody td {
+      padding: 11px 14px;
+      color: var(--ink);
+      border-bottom: 1px solid rgba(107, 79, 45, .08)
+    }
+
+    .consume-table tbody td:first-child {
+      font-weight: 400;
+      color: var(--earth);
+      width: 22%
+    }
+
+    .benefits-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: rgba(107, 79, 45, .12);
+      border: 1px solid rgba(107, 79, 45, .12);
+      margin: 8px 0
+    }
+
+    .benefit-card {
+      background: var(--cream);
+      padding: 24px 22px;
+      transition: background .3s;
+      position: relative;
+      overflow: hidden
+    }
+
+    .benefit-card:hover {
+      background: #ede4ce
+    }
+
+    .benefit-card::before {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: var(--gold);
+      transition: width .4s
+    }
+
+    .benefit-card:hover::before {
+      width: 100%
+    }
+
+    .benefit-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--forest);
+      margin-bottom: 8px
+    }
+
+    .benefit-desc {
+      font-size: 11.5px;
+      font-weight: 300;
+      line-height: 1.75;
+      color: var(--ink);
+      opacity: .85
+    }
+
+    .precaution-list {
+      list-style: none;
+      margin: 8px 0
+    }
+
+    .precaution-list li {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      padding: 10px 14px;
+      font-size: 12px;
+      font-weight: 300;
+      line-height: 1.7;
+      color: var(--ink);
+      border-bottom: 1px solid rgba(107, 79, 45, .08)
+    }
+
+    .precaution-list li:last-child {
+      border-bottom: none
+    }
+
+    .precaution-list li::before {
+      content: '▸';
+      color: var(--gold);
+      flex-shrink: 0;
+      margin-top: 1px
+    }
+
+    .sources {
+      border-top: 1px solid rgba(107, 79, 45, .15);
+      padding-top: 24px;
+      margin-top: 20px
+    }
+
+    .sources-title {
+      font-size: 10px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--sage);
+      margin-bottom: 12px;
+      font-weight: 300
+    }
+
+    .sources ul {
+      list-style: none
+    }
+
+    .sources ul li {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 13px;
+      font-style: italic;
+      color: var(--earth);
+      padding: 5px 0;
+      border-bottom: 1px solid rgba(107, 79, 45, .06)
+    }
+
+    .sources ul li::before {
+      content: '· ';
+      color: var(--sage)
+    }
+
+    .nutrition-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: rgba(107, 79, 45, .12);
+      border: 1px solid rgba(107, 79, 45, .12);
+      margin: 20px 0
+    }
+
+    .nutrition-cell {
+      background: var(--cream);
+      padding: 22px 16px;
+      text-align: center;
+      transition: background .3s
+    }
+
+    .nutrition-cell:hover {
+      background: var(--parchment)
+    }
+
+    .nutrition-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 36px;
+      font-weight: 300;
+      color: var(--forest);
+      line-height: 1;
+      margin-bottom: 4px
+    }
+
+    .nutrition-unit {
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--gold);
+      font-weight: 300
+    }
+
+    .nutrition-label {
+      font-size: 11px;
+      font-weight: 300;
+      color: var(--ink);
+      margin-top: 5px
+    }
+
+    footer {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      padding: 24px 20px 44px;
+      border-top: 1px solid rgba(107, 79, 45, .12);
+      max-width: 860px;
+      margin: 0 auto
+    }
+
+    footer p {
+      font-size: 11px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--sage);
+      font-weight: 300
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(28px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
+
+    @media(max-width:700px) {
+      .hero-photos {
+        grid-template-columns: 1fr
+      }
+
+      .hero-photos img {
+        height: 260px
+      }
+
+      .benefits-grid {
+        grid-template-columns: 1fr
+      }
+
+      .nutrition-bar {
+        grid-template-columns: 1fr 1fr
+      }
+
+      .content {
+        padding: 0 18px 60px
+      }
+
+      #modal-topbar {
+        padding: 0 16px 0 20px
+      }
+
+      #modal-topbar span {
+        font-size: 9px;
+        letter-spacing: 3px
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <button id="open3D">View in 3D</button>
+
+  <div id="viewerModal">
+    <div id="modal-topbar">
+      <span>3D Model — Bakula</span>
+      <button id="close3D">✕</button>
+    </div>
+    <model-viewer src="bakula3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+  </div>
+
+  <div class="bg-circle bg-circle-1"></div>
+  <div class="bg-circle bg-circle-2"></div>
+
+  <svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#2a5c3f" stroke-width="1.5" fill="none" />
+    <circle cx="90" cy="210" r="8" fill="#2a5c3f" opacity="0.7" />
+    <circle cx="130" cy="175" r="10" fill="#7a9e7e" opacity="0.6" />
+    <circle cx="170" cy="135" r="7" fill="#2a5c3f" opacity="0.8" />
+    <circle cx="210" cy="95" r="9" fill="#c9a84c" opacity="0.5" />
+    <ellipse cx="115" cy="195" rx="20" ry="10" fill="#7a9e7e" transform="rotate(-30 115 195)" />
+    <ellipse cx="155" cy="155" rx="18" ry="9" fill="#2a5c3f" transform="rotate(-45 155 155)" />
+    <ellipse cx="195" cy="115" rx="16" ry="8" fill="#7a9e7e" transform="rotate(-60 195 115)" />
+  </svg>
+  <svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#2a5c3f" stroke-width="1.5" fill="none" />
+    <circle cx="90" cy="210" r="8" fill="#2a5c3f" opacity="0.7" />
+    <circle cx="130" cy="175" r="10" fill="#7a9e7e" opacity="0.6" />
+    <circle cx="170" cy="135" r="7" fill="#2a5c3f" opacity="0.8" />
+    <ellipse cx="115" cy="195" rx="20" ry="10" fill="#7a9e7e" transform="rotate(-30 115 195)" />
+  </svg>
+
+  <div class="hero">
+    <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+    <div class="logo-rule"><span></span>
+      <div class="logo-ornament">✦</div><span></span>
+    </div>
+    <div class="hero-title">Bakula</div>
+    <div class="hero-subtitle">Maulsari — The Tooth-Strengthening Tree</div>
+    <div class="hero-sci">Mimusops elengi &nbsp;·&nbsp; Sapotaceae</div>
+  </div>
+
+  <div class="hero-photos">
+    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/1/17/Mimusops_Elengi_at_Tasik_Y_Recreational_Park.jpg/1280px-Mimusops_Elengi_at_Tasik_Y_Recreational_Park.jpg" alt="Fragrant cream-coloured Bakula flowers"
+      onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/0/0f/Spanish_cherry_%28Mimusops_elengi%29_Ereke_Buton_Island_7.jpg/1280px-Spanish_cherry_%28Mimusops_elengi%29_Ereke_Buton_Island_7.jpg" alt="Bakula evergreen tree with glossy leaves"
+      onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+  </div>
+  <p class="photo-caption">Fig. 1 — The famously fragrant cream-white star-shaped Bakula flowers, prized in temple offerings &nbsp;·&nbsp; Fig. 2 — The dense evergreen Bakula tree with its glossy elliptic leaves and edible orange-red berries</p>
+
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-leaf">❧</div>
+    <div class="divider-line"></div>
+  </div>
+
+  <div class="content">
+    <p class="intro-text">Where Bilva belongs to Shiva and Ashvattha to the divine, Bakula belongs to the breath that moves through poetry. Its perfume is so haunting that ancient Sanskrit poets wrote of brides garlanded in its blossoms; its bark, ground into <em>Vajradanti</em> tooth powder, has held shut the gums of grandparents for centuries. A tree of fragrance and form, of song and dentistry, of literature and longevity.</p>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">01</span>
+        <h2 class="section-title">Botanical Profile</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Bakula (<em>Mimusops elengi</em> L.) is a large, dense, slow-growing evergreen tree of the Sapotaceae family — the same family as sapodilla and shea — reaching 12–18 metres in height with a thick, dome-shaped crown and dark-grey, fissured bark exuding a milky latex when wounded. The leaves are alternate, simple, glossy, elliptic, dark green, 6–13 cm long, with wavy margins and a leathery texture.</p>
+      <p class="section-body">The signature flowers are small, cream-white to pale yellow, star-shaped with eight slender petal segments, intensely fragrant, blooming in clusters in the leaf axils between March and July. Their famous perfume — at once sweet, floral, and faintly camphorous — has made Bakula a temple-garden staple for over two millennia, mentioned repeatedly in ancient Sanskrit literature and Hindu religious texts as a sacred tree. The fruit is a small ovoid orange-red berry containing a single hard, glossy brown seed. Native to the western peninsular regions of South India, Sri Lanka, and Myanmar, Bakula is now cultivated across India, Andaman Islands, and tropical Asia.</p>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>PROPERTY</th>
+            <th>Detail</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Family</td>
+            <td>Sapotaceae (Madhuka Kula)</td>
+          </tr>
+          <tr>
+            <td>Botanical Name</td>
+            <td>Mimusops elengi L.</td>
+          </tr>
+          <tr>
+            <td>Sanskrit Names</td>
+            <td>Bakula, Anangaka, Chirapushpa, Dhanvi, Gudhpushpa, Kantha, Karuka, Kesha, Mukula, Padyamoda, Sharadika, Sindhugandha, Simhakeshara, Surabhi, Visharada</td>
+          </tr>
+          <tr>
+            <td>Common Names</td>
+            <td>Bakula, Bakul, Maulsari, Maulsiri, Bullet Wood, Spanish Cherry, Indian Medlar, Bolasari, Babhuli, Magilam, Pogada</td>
+          </tr>
+          <tr>
+            <td>Origin</td>
+            <td>Western peninsular South India, Sri Lanka, Myanmar; widespread across tropical Asia</td>
+          </tr>
+          <tr>
+            <td>Plant Type</td>
+            <td>Large dense evergreen tree (12–18 m)</td>
+          </tr>
+          <tr>
+            <td>Flowering Season</td>
+            <td>March – July; intensely fragrant nocturnal blooms</td>
+          </tr>
+          <tr>
+            <td>Medicinal Parts</td>
+            <td>Bark (primary), flowers, fruits, seeds, leaves, roots — entire plant</td>
+          </tr>
+          <tr>
+            <td>Taste Profile</td>
+            <td>Astringent (kashaya), sweet (madhura — ripe fruit)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">02</span>
+        <h2 class="section-title">Phytochemistry Composition</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Different parts of Bakula produce distinct phytochemical profiles. The leaves contain sterols, tannins, and reducing sugars; the flowers yield D-mannitol, β-sitosterol, and D-glucoside, plus the volatile oil that produces their famous perfume. The seeds contain fixed fatty oils and pentacyclic triterpene acids, including the species-named <em>mimusopic acid</em>. The stem bark — the most heavily used part medicinally — is rich in <em>spinasterol</em>, <em>taraxerol</em>, tannins, caoutchouc (natural rubber), wax, and starch.</p>
+      <p class="section-body">Modern research has additionally identified <em>lupeol</em> and <em>betulinic acid</em> in the bark, both pentacyclic triterpenes with documented anti-inflammatory and antiviral activity. Across the plant, alkaloids, tannins, flavonoids, and saponins together give Bakula its astringent, antimicrobial, and antioxidant character — explaining its longstanding reputation as the foundational dental herb in Ayurvedic <em>Vajradanti</em> tooth powder formulations.</p>
+      <div class="nutrition-bar">
+        <div class="nutrition-cell">
+          <div class="nutrition-num">12+</div>
+          <div class="nutrition-unit">documented</div>
+          <div class="nutrition-label">Pharmacological actions</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">5</div>
+          <div class="nutrition-unit">parts used</div>
+          <div class="nutrition-label">Bark, flower, fruit, seed, leaf</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">2000+</div>
+          <div class="nutrition-unit">years of</div>
+          <div class="nutrition-label">Sanskrit literary mention</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">8</div>
+          <div class="nutrition-unit">petal segments</div>
+          <div class="nutrition-label">of star-shaped flower</div>
+        </div>
+      </div>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Compound</th>
+            <th>Category</th>
+            <th>Primary Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Mimusopic Acid</td>
+            <td>Pentacyclic triterpene acid</td>
+            <td>Plant-specific marker; anti-inflammatory, hepatoprotective</td>
+          </tr>
+          <tr>
+            <td>Lupeol &amp; Betulinic Acid</td>
+            <td>Triterpenoids</td>
+            <td>Anti-inflammatory, antiviral, anticancer (bark constituents)</td>
+          </tr>
+          <tr>
+            <td>Spinasterol &amp; Taraxerol</td>
+            <td>Phytosterols / triterpenoids</td>
+            <td>Anti-inflammatory, lipid-lowering, immunomodulatory</td>
+          </tr>
+          <tr>
+            <td>β-Sitosterol &amp; D-Mannitol</td>
+            <td>Phytosterol / sugar alcohol</td>
+            <td>Cholesterol-lowering, mild diuretic, demulcent</td>
+          </tr>
+          <tr>
+            <td>Tannins (in bark)</td>
+            <td>Polyphenols</td>
+            <td>Astringent — gum-strengthening, antidiarrhoeal, hemostatic</td>
+          </tr>
+          <tr>
+            <td>D-Glucoside</td>
+            <td>Glycoside</td>
+            <td>Bioactive carrier, anti-inflammatory</td>
+          </tr>
+          <tr>
+            <td>Volatile Floral Oil</td>
+            <td>Essential oil</td>
+            <td>Aromatic, antimicrobial, mildly sedative</td>
+          </tr>
+          <tr>
+            <td>Saponins &amp; Flavonoids</td>
+            <td>Polyphenols / glycosides</td>
+            <td>Antioxidant, anti-inflammatory, immune-modulating</td>
+          </tr>
+          <tr>
+            <td>Alkaloids</td>
+            <td>Nitrogenous bioactives</td>
+            <td>Analgesic, antimicrobial, cardiotonic</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">03</span>
+        <h2 class="section-title">Ayurvedic Significance</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Bakula occupies a special place in Ayurveda as the <em>Dantya</em> — the tooth-protector — drug par excellence. Charaka and Sushruta both prescribe it for <em>Dantaroga</em> (tooth decay), <em>Mukharoga</em> (oral diseases), bleeding gums, halitosis, and pyorrhoea, with the bark and seed coat featuring as the cornerstone ingredient of the classical tooth powder <em>Vajradanti</em> (which translates as "diamond-strong teeth"). Beyond dentistry, Bakula is indicated for <em>Visha</em> (toxic conditions, poisoning), <em>Shvitra</em> (leucoderma, vitiligo), <em>Krumi</em> (worm infestation), and as a general cardiac tonic.</p>
+      <p class="section-body">Different parts have different doshic profiles. <em>Fruit</em>: madhura (sweet), snigdha (unctuous), kashaya (astringent), vishada (clarity, non-slimy), hima (cooling), guru (heavy), sangrahi (absorbent), hrudya (cardiotonic), dantya (tooth-strengthening), kaphapittahara (Kapha-Pitta pacifier), but vatala (Vata-aggravating). <em>Bark</em>: predominantly kashaya, with ushna (warming) and ropana (healing) effect — the part used in tooth powders and gargles. <em>Flowers</em>: cooling, fragrant, used in eye washes and as cardiac tonic.</p>
+      <table class="dosha-table">
+        <thead>
+          <tr>
+            <th>Dosha</th>
+            <th>Effect</th>
+            <th>Mechanism &amp; Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Vata ↑</td>
+            <td>May aggravate</td>
+            <td>Heaviness (guru) and astringency may marginally increase Vata, especially fruit consumption in excess; pair with warm anupana for Vata-prone individuals</td>
+          </tr>
+          <tr>
+            <td>Pitta ↓</td>
+            <td>Pacifying</td>
+            <td>Cooling potency (hima virya), sweet-astringent taste, and unctuous quality calm inflammation, burning, and bleeding disorders driven by Pitta</td>
+          </tr>
+          <tr>
+            <td>Kapha ↓</td>
+            <td>Pacifying</td>
+            <td>Astringent and absorbent (sangrahi) qualities reduce excess mucus, heaviness, and stagnation; useful in Kapha-related digestive and oral disorders</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">04</span>
+        <h2 class="section-title">Key Health Benefits</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Modern preclinical research has confirmed Bakula's traditional medicinal range across analgesic, antibiotic, antihyperlipidemic, anti-inflammatory, antimicrobial, antioxidant, antipyretic, cytotoxic, and cognitive-enhancing domains — with a particular emphasis on its dental, oral, and cardiovascular applications first described over two thousand years ago.</p>
+      <div class="benefits-grid">
+        <div class="benefit-card">
+          <div class="benefit-title">Dental &amp; Gum Health</div>
+          <div class="benefit-desc">The flagship classical use. Bakula bark is the foundational ingredient of <em>Vajradanti</em> tooth powder — used for centuries to strengthen teeth, reduce sensitivity, treat gingivitis, control bleeding gums, eliminate halitosis, and address pyorrhoea. Tender twigs serve as natural toothbrushes; bark decoction makes a classical mouthwash.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Cardiotonic (Hrudya)</div>
+          <div class="benefit-desc">Classical <em>Hrudya</em> herb — strengthens the heart muscle, supports cardiac function, and improves circulation. Modern research validates antihyperlipidemic activity, reducing total cholesterol and triglycerides while supporting lipid balance — useful in cardiovascular health programmes.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Astringent &amp; Anti-Diarrhoeal</div>
+          <div class="benefit-desc">Bark and unripe fruit decoction is a classical remedy for diarrhoea, dysentery, and chronic gut inflammation. Tannin-rich astringent action tightens gut mucosa, reduces excess secretion, and normalises bowel motility — well documented in Ayurvedic texts and modern reviews.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Anti-inflammatory &amp; Analgesic</div>
+          <div class="benefit-desc">Lupeol, betulinic acid, and mimusopic acid in the bark provide documented anti-inflammatory action useful in headache, joint pain, and arthritis. Used in classical formulations like <em>Baladhatryadi Tail</em> for headache, eye disorders, burning sensations, and gout-arthritis.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Wound Healing &amp; Skin</div>
+          <div class="benefit-desc">Bark and seed paste applied externally accelerates wound healing, reduces ulcers, and treats skin disorders including <em>Shvitra</em> (vitiligo). Antimicrobial saponins and tannins prevent infection while astringent action promotes tissue contraction. Useful for boils, abscesses, and slow-healing wounds.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Antimicrobial &amp; Antioxidant</div>
+          <div class="benefit-desc">Broad-spectrum antibacterial and antifungal activity demonstrated in modern research, including against multi-drug-resistant clinical isolates. Antioxidant compounds in leaves and bark combat free-radical damage — supporting traditional use in chronic infections and inflammatory disease.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Cognitive Enhancement</div>
+          <div class="benefit-desc">Recent pharmacological studies have documented cognitive-enhancing activity in animal models, suggesting nootropic potential. Combined with mild sedative properties of the floral aroma, Bakula has historical use as both a calming and concentration-supporting herb.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Urinary &amp; Reproductive</div>
+          <div class="benefit-desc">Documented uses in <em>urethrorrhoea</em>, <em>cystorrhoea</em>, and chronic urinary discharge. Astringent action helps tone urinary tract mucosa. Bark decoction is also used as a vaginal douche for leucorrhoea and other gynaecological complaints with discharge.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">06</span>
+        <h2 class="section-title">How to Consume Bakula</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Bakula's most celebrated use is dental — and even today, traditional <em>Vajradanti</em> tooth powders blend Bakula bark with catechu, pomegranate bark, and other tannin-rich herbs as a daily oral health routine. Internally, bark decoction, fruit pulp, and flower preparations serve different therapeutic purposes. Always source authentic material; the bark should have a slightly bitter-astringent taste and the flowers a strong characteristic perfume.</p>
+      <table class="consume-table">
+        <thead>
+          <tr>
+            <th>Form</th>
+            <th>Preparation</th>
+            <th>Dosage</th>
+            <th>Best Time</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Bark Powder for Teeth</td>
+            <td>Bakula bark powder, often blended in Vajradanti</td>
+            <td>Apply &amp; brush 1–2× daily</td>
+            <td>Morning &amp; bedtime (oral hygiene)</td>
+          </tr>
+          <tr>
+            <td>Twig Toothbrush</td>
+            <td>Fresh tender Bakula twig, chewed at one end</td>
+            <td>Once daily, fresh twig</td>
+            <td>Morning, after rinsing mouth</td>
+          </tr>
+          <tr>
+            <td>Bark Decoction (Mouthwash)</td>
+            <td>Boil 1 tbsp bark powder in 2 cups water; reduce to ½</td>
+            <td>Gargle 2× daily</td>
+            <td>For pyorrhoea, halitosis, bleeding gums</td>
+          </tr>
+          <tr>
+            <td>Bark Decoction (Internal)</td>
+            <td>Boil 1 tbsp bark in 4 cups water; reduce to 1 cup</td>
+            <td>30–50 ml twice daily</td>
+            <td>For diarrhoea, urethrorrhoea, fever</td>
+          </tr>
+          <tr>
+            <td>Fruit (Ripe)</td>
+            <td>Eat fresh ripe fruit as edible berry</td>
+            <td>2–4 fruits daily</td>
+            <td>For mild cardiotonic, dental support</td>
+          </tr>
+          <tr>
+            <td>Flower Infusion</td>
+            <td>Steep dried flowers in hot water for 5 min</td>
+            <td>1 cup daily</td>
+            <td>Morning, for cardiotonic &amp; calming</td>
+          </tr>
+          <tr>
+            <td>Baladhatryadi Tail</td>
+            <td>Classical medicated oil with Bakula</td>
+            <td>External application</td>
+            <td>For headache, eye disorders, gout</td>
+          </tr>
+          <tr>
+            <td>Topical Bark / Seed Paste</td>
+            <td>Powder mixed with water or oil into paste</td>
+            <td>Applied as needed</td>
+            <td>On wounds, ulcers, skin eruptions</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">07</span>
+        <h2 class="section-title">Safety &amp; Precautions</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Bakula is considered among the safer Ayurvedic herbs, with centuries of routine dental and oral use across India without major reported adverse effects. However, its astringent and Vata-aggravating qualities, along with limited modern toxicology data, call for measured use in specific conditions and at therapeutic doses.</p>
+      <ul class="precaution-list">
+        <li><strong>Pregnancy:</strong> Insufficient safety data for medicinal doses during pregnancy. Avoid concentrated extracts and high-dose internal preparations; small amounts of ripe fruit pulp are generally regarded as safe. Consult a qualified Ayurvedic physician.</li>
+        <li><strong>Breastfeeding:</strong> Limited safety data. Avoid medicinal preparations during lactation; topical use of bark powder for oral hygiene is generally considered safe.</li>
+        <li><strong>High Vata constitution:</strong> The fruit's heavy (guru) and astringent qualities may aggravate Vata, causing dryness, gas, or constipation. Vata types should pair with ghee, warm milk, or warming spices, and limit fruit consumption.</li>
+        <li><strong>Chronic constipation:</strong> The astringent and absorbent (sangrahi) action may worsen constipation. Avoid prolonged internal use without addressing underlying bowel sluggishness.</li>
+        <li><strong>Cold constitution:</strong> Cooling potency (hima virya) of fruit and flowers may worsen chilliness, hypothyroid symptoms, or sluggish circulation. Combine with warming adjuvants if needed.</li>
+        <li><strong>Surgery:</strong> Discontinue concentrated bark extracts at least 2 weeks before scheduled surgery, given documented anti-inflammatory and possible bleeding-time effects.</li>
+        <li><strong>Source authentication:</strong> Modern bark substitutes from related Sapotaceae trees may differ pharmacologically. Source authentic <em>Mimusops elengi</em> from reputable Ayurvedic suppliers, particularly for tooth-powder preparations.</li>
+        <li><strong>Children:</strong> Bakula bark in classical tooth powders has been used safely for children's dental care for centuries. For internal medicinal use, paediatric dosing requires qualified practitioner supervision.</li>
+      </ul>
+    </div>
+
+    <div class="sources">
+      <div class="sources-title">References &amp; Sources</div>
+      <ul>
+        <li>Gami B, Pathak S, Parabia M — "Mimusops elengi Linn. — A review on its ethnobotany, phytochemistry and pharmacology" — Pharmacognosy Reviews / Asian Pacific Journal of Tropical Biomedicine, 2012</li>
+        <li>"Mimusops elengi: A comprehensive review" — ScienceDirect, 2023</li>
+        <li>"Phytochemical &amp; Pharmacological Profile of Mimusops Elengi: A Review" — International Journal of Pharmaceutical Sciences, 2025</li>
+        <li>"Chemistry and medicinal properties of the Bakul (Mimusops elengi Linn): A review" — Food Research International / ScienceDirect, 2011</li>
+        <li>Mimusops elengi Linn. (Bakul) — A Potential Medicinal Plant: A Review — ResearchGate, 2013</li>
+        <li>Charaka Samhita &amp; Sushruta Samhita — Classical descriptions of Bakula in Dantaroga, Mukharoga, Visha, and Shvitra contexts</li>
+        <li>Bhavaprakasha Nighantu — Classical description of Bakula properties</li>
+        <li>The Ayurvedic Pharmacopoeia of India, Part I, Volume IV — Government of India, Ministry of AYUSH</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer>
+    <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a
+      qualified practitioner before therapeutic use</p>
+  </footer>
+
+  <audio id="bakulaAudio" src="bakula_benefits.mp3" loop preload="auto"></audio>
+
+  <script>
+    const open3D = document.getElementById('open3D');
+    const close3D = document.getElementById('close3D');
+    const modal = document.getElementById('viewerModal');
+    const bakulaAudio = document.getElementById('bakulaAudio');
+
+    function openModal() {
+      modal.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+      history.pushState({ modal: 'bakula3d' }, '', '#3d');
+      bakulaAudio.play().catch(e => console.log('Audio autoplay blocked', e));
+    }
+
+    function closeModal() {
+      modal.style.display = 'none';
+      document.body.style.overflow = '';
+      if (window.location.hash === '#3d') {
+        history.replaceState(null, '', window.location.pathname);
+      }
+      bakulaAudio.pause();
+      bakulaAudio.currentTime = 0;
+    }
+
+    open3D.addEventListener('click', function (e) {
+      e.preventDefault(); e.stopPropagation();
+      openModal();
+    });
+
+    close3D.addEventListener('click', function (e) {
+      e.preventDefault(); e.stopPropagation();
+      closeModal();
+    });
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+    });
+
+    window.addEventListener('popstate', function (e) {
+      if (modal.style.display === 'flex') {
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+    });
+  </script>
+</body>
+
+</html>

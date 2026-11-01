@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tvak | Cinnamon | Swastha</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+  <style>
+    #open3D {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      padding: 10px 18px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: var(--forest);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      z-index: 1000;
+      transition: .3s;
+    }
+    #open3D:hover {
+      background: var(--gold);
+      color: var(--deep);
+    }
+    #viewerModal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+    }
+    #modal-topbar {
+      flex-shrink: 0;
+      height: 58px;
+      background: #111111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px 0 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      z-index: 99999;
+    }
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 4.5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.72);
+      user-select: none;
+    }
+    #close3D {
+      width: 38px;
+      height: 38px;
+      font-size: 15px;
+      font-weight: 300;
+      background: transparent;
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background .2s, color .2s, transform .22s;
+      outline: none;
+      flex-shrink: 0;
+    }
+    #close3D:hover {
+      background: #ffffff;
+      color: #111111;
+      border-color: #ffffff;
+      transform: rotate(90deg);
+    }
+    #viewerModal model-viewer {
+      flex: 1;
+      width: 100%;
+      display: block;
+      background: #ffffff;
+    }
+
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+    * { margin: 0; padding: 0; box-sizing: border-box }
+    html { scroll-behavior: smooth }
+    body {
+      font-family: 'Jost', sans-serif;
+      background: var(--cream);
+      color: var(--ink);
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity: .03; pointer-events: none; z-index: 100;
+    }
+    .bg-circle { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0 }
+    .bg-circle-1 { width: 700px; height: 700px; background: radial-gradient(circle, rgba(181,69,27,.12) 0%, transparent 70%); top: -200px; right: -150px }
+    .bg-circle-2 { width: 500px; height: 500px; background: radial-gradient(circle, rgba(196,98,45,.1) 0%, transparent 70%); bottom: -100px; left: -100px }
+
+    /* Botanical bark-curl SVG decorations */
+    .botanical-svg { position: fixed; pointer-events: none; z-index: 1; opacity: .09 }
+    .botanical-tl { top: -10px; left: -10px; width: 280px }
+    .botanical-br { bottom: -10px; right: -10px; width: 240px; transform: rotate(180deg) }
+
+    .hero {
+      position: relative; z-index: 10;
+      padding: 54px 40px 0; text-align: center;
+      opacity: 0; animation: fadeUp .9s ease .1s forwards;
+    }
+    .back-link {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+      color: var(--sage); text-decoration: none; margin-bottom: 36px; transition: color .3s;
+    }
+    .back-link:hover { color: var(--cinna) }
+    .logo-rule { display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 14px }
+    .logo-rule span { display: block; height: 1px; width: 70px; background: linear-gradient(to right, transparent, var(--gold)) }
+    .logo-rule span:last-child { background: linear-gradient(to left, transparent, var(--gold)) }
+    .logo-ornament { font-size: 13px; color: var(--gold) }
+    .hero-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(64px, 12vw, 110px);
+      font-weight: 300; letter-spacing: 8px; line-height: 1; color: var(--deep);
+    }
+    .hero-subtitle {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 18px; font-style: italic; font-weight: 300;
+      color: var(--cinna-mid); letter-spacing: 2px; margin-top: 8px;
+    }
+    .hero-sci { font-size: 11px; font-weight: 200; letter-spacing: 5px; color: var(--sage); margin-top: 6px }
+
+    .hero-photos {
+      position: relative; z-index: 10;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 2px;
+      max-width: 900px; margin: 40px auto 0;
+      opacity: 0; animation: fadeUp .9s ease .35s forwards;
+    }
+    .hero-photos img {
+      width: 100%; height: 380px; object-fit: cover; object-position: center;
+      display: block; background: var(--parchment);
+    }
+    .photo-caption {
+      text-align: center; font-family: 'Cormorant Garamond', serif;
+      font-size: 12px; font-style: italic; color: var(--sage); letter-spacing: 1px;
+      padding: 10px 0 0; max-width: 900px; margin: 0 auto;
+      position: relative; z-index: 10;
+      opacity: 0; animation: fadeUp .9s ease .5s forwards;
+    }
+    .divider {
+      display: flex; align-items: center; justify-content: center;
+      gap: 16px; margin: 50px auto; max-width: 600px;
+      opacity: 0; animation: fadeUp .9s ease .55s forwards;
+      position: relative; z-index: 10;
+    }
+    .divider-line { height: 1px; width: 120px; background: linear-gradient(to right, transparent, var(--sage)) }
+    .divider-line:last-child { background: linear-gradient(to left, transparent, var(--sage)) }
+    .divider-leaf { color: var(--cinna); font-size: 18px }
+
+    .content { position: relative; z-index: 10; max-width: 860px; margin: 0 auto; padding: 0 30px 80px }
+    .intro-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 20px; font-weight: 300; line-height: 1.75;
+      color: var(--ink); text-align: center; max-width: 700px; margin: 0 auto 60px;
+      opacity: 0; animation: fadeUp .9s ease .6s forwards;
+    }
+    .intro-text em { color: var(--cinna-dark); font-style: italic }
+
+    .section { margin-bottom: 60px; opacity: 0; animation: fadeUp .9s ease forwards }
+    .section:nth-child(1) { animation-delay: .65s }
+    .section:nth-child(2) { animation-delay: .75s }
+    .section:nth-child(3) { animation-delay: .85s }
+    .section:nth-child(4) { animation-delay: .95s }
+    .section:nth-child(5) { animation-delay: 1.05s }
+    .section:nth-child(6) { animation-delay: 1.15s }
+    .section:nth-child(7) { animation-delay: 1.25s }
+
+    .section-header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px }
+    .section-num { font-family: 'Cormorant Garamond', serif; font-size: 11px; letter-spacing: 4px; color: var(--gold) }
+    .section-title { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 400; color: var(--deep); letter-spacing: 1px }
+    .section-rule { height: 1px; flex: 1; background: linear-gradient(to right, var(--gold), transparent) }
+    .section-body { font-size: 13px; font-weight: 300; line-height: 1.9; color: var(--ink); margin-bottom: 24px }
+
+    /* Cinnamon species comparison box */
+    .species-box {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 1px;
+      background: rgba(122,62,30,.15); border: 1px solid rgba(122,62,30,.15);
+      margin: 20px 0;
+    }
+    .species-card {
+      background: var(--cream); padding: 22px 20px;
+      transition: background .3s; position: relative; overflow: hidden;
+    }
+    .species-card:hover { background: #f5e4d0 }
+    .species-card::after {
+      content: ''; position: absolute; top: 0; left: 0;
+      width: 3px; height: 100%; background: var(--cinna);
+      transform: scaleY(0); transform-origin: top; transition: transform .3s;
+    }
+    .species-card:hover::after { transform: scaleY(1) }
+    .species-name { font-family: 'Cormorant Garamond', serif; font-size: 17px; font-weight: 600; color: var(--cinna-dark); margin-bottom: 4px }
+    .species-tag { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); margin-bottom: 10px }
+    .species-desc { font-size: 11.5px; font-weight: 300; line-height: 1.75; color: var(--ink); opacity: .9 }
+
+    .data-table { width: 100%; border-collapse: collapse; margin: 16px 0 8px; font-size: 12px }
+    .data-table thead tr { background: var(--deep); color: var(--gold); font-size: 10px; letter-spacing: 3px; text-transform: uppercase }
+    .data-table thead th { padding: 12px 14px; text-align: left; font-weight: 400 }
+    .data-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .data-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .data-table tbody tr { transition: background .2s }
+    .data-table tbody tr:hover { background: #f0d5b8 }
+    .data-table tbody td { padding: 10px 14px; color: var(--ink); border-bottom: 1px solid rgba(122,62,30,.08) }
+    .data-table tbody td:first-child { font-weight: 400; color: var(--deep); width: 28% }
+
+    .dosha-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .dosha-table thead tr { background: var(--cinna-dark); color: var(--cream) }
+    .dosha-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .dosha-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .dosha-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .dosha-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(122,62,30,.08) }
+    .dosha-table tbody td:first-child { font-weight: 400; color: var(--cinna-dark); width: 18% }
+    .dosha-table tbody td:nth-child(2) { color: var(--earth); width: 20% }
+
+    .consume-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .consume-table thead tr { background: var(--earth); color: var(--cream) }
+    .consume-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .consume-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .consume-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .consume-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(122,62,30,.08) }
+    .consume-table tbody td:first-child { font-weight: 400; color: var(--earth); width: 22% }
+
+    .benefits-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: rgba(122,62,30,.12); border: 1px solid rgba(122,62,30,.12); margin: 8px 0 }
+    .benefit-card { background: var(--cream); padding: 24px 22px; transition: background .3s; position: relative; overflow: hidden }
+    .benefit-card:hover { background: #f5e0cc }
+    .benefit-card::before { content: ''; position: absolute; bottom: 0; left: 0; width: 0; height: 2px; background: var(--cinna); transition: width .4s }
+    .benefit-card:hover::before { width: 100% }
+    .benefit-title { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 600; color: var(--cinna-dark); margin-bottom: 8px }
+    .benefit-desc { font-size: 11.5px; font-weight: 300; line-height: 1.75; color: var(--ink); opacity: .85 }
+
+    .precaution-list { list-style: none; margin: 8px 0 }
+    .precaution-list li { display: flex; gap: 12px; align-items: flex-start; padding: 10px 14px; font-size: 12px; font-weight: 300; line-height: 1.7; color: var(--ink); border-bottom: 1px solid rgba(122,62,30,.08) }
+    .precaution-list li:last-child { border-bottom: none }
+    .precaution-list li::before { content: '▸'; color: var(--cinna); flex-shrink: 0; margin-top: 1px }
+
+    .nutrition-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: rgba(122,62,30,.12); border: 1px solid rgba(122,62,30,.12); margin: 20px 0 }
+    .nutrition-cell { background: var(--cream); padding: 22px 16px; text-align: center; transition: background .3s }
+    .nutrition-cell:hover { background: var(--parchment) }
+    .nutrition-num { font-family: 'Cormorant Garamond', serif; font-size: 36px; font-weight: 300; color: var(--cinna-dark); line-height: 1; margin-bottom: 4px }
+    .nutrition-unit { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); font-weight: 300 }
+    .nutrition-label { font-size: 11px; font-weight: 300; color: var(--ink); margin-top: 5px }
+
+    /* Coumarin warning banner */
+    .coumarin-banner {
+      background: linear-gradient(135deg, #fdf0e8, #f5d9c0);
+      border-left: 3px solid var(--cinna);
+      padding: 18px 20px; margin: 20px 0; font-size: 12px;
+      font-weight: 300; line-height: 1.8; color: var(--deep);
+    }
+    .coumarin-banner strong { color: var(--cinna-dark) }
+
+    .sources { border-top: 1px solid rgba(122,62,30,.15); padding-top: 24px; margin-top: 20px }
+    .sources-title { font-size: 10px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); margin-bottom: 12px; font-weight: 300 }
+    .sources ul { list-style: none }
+    .sources ul li { font-family: 'Cormorant Garamond', serif; font-size: 13px; font-style: italic; color: var(--earth); padding: 5px 0; border-bottom: 1px solid rgba(122,62,30,.06) }
+    .sources ul li::before { content: '· '; color: var(--sage) }
+
+    footer { position: relative; z-index: 10; text-align: center; padding: 24px 20px 44px; border-top: 1px solid rgba(122,62,30,.12); max-width: 860px; margin: 0 auto }
+    footer p { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); font-weight: 300 }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(28px) } to { opacity: 1; transform: translateY(0) } }
+    @media(max-width:700px) {
+      .hero-photos, .species-box { grid-template-columns: 1fr }
+      .hero-photos img { height: 260px }
+      .benefits-grid { grid-template-columns: 1fr }
+      .nutrition-bar { grid-template-columns: 1fr 1fr }
+      .content { padding: 0 18px 60px }
+    }
+  </style>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+</head>
+<body>
+  <button type="button" id="open3D">View in 3D</button>
+
+
+<div class="bg-circle bg-circle-1"></div>
+<div class="bg-circle bg-circle-2"></div>
+
+<!-- Bark-curl botanical SVGs -->
+<svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M20 280 Q 60 220 90 170 Q 130 110 200 40" stroke="#b5451b" stroke-width="1.5" fill="none"/>
+  <path d="M40 270 Q 75 215 105 165 Q 145 105 210 38" stroke="#c4622d" stroke-width="1" fill="none" opacity=".5"/>
+  <!-- Cinnamon quill curls -->
+  <path d="M70 200 Q 90 185 80 170 Q 70 155 90 145" stroke="#b5451b" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M110 155 Q 130 140 120 125 Q 110 110 130 100" stroke="#c4622d" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M150 110 Q 170 95 160 80 Q 150 65 170 55" stroke="#b5451b" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  <ellipse cx="75" cy="220" rx="18" ry="7" fill="#b5451b" opacity="0.5" transform="rotate(-40 75 220)"/>
+  <ellipse cx="115" cy="175" rx="16" ry="6" fill="#c4622d" opacity="0.4" transform="rotate(-55 115 175)"/>
+  <ellipse cx="158" cy="130" rx="14" ry="6" fill="#b5451b" opacity="0.5" transform="rotate(-65 158 130)"/>
+</svg>
+<svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M20 280 Q 60 220 90 170 Q 130 110 200 40" stroke="#b5451b" stroke-width="1.5" fill="none"/>
+  <path d="M70 200 Q 90 185 80 170 Q 70 155 90 145" stroke="#b5451b" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M110 155 Q 130 140 120 125 Q 110 110 130 100" stroke="#c4622d" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <ellipse cx="75" cy="220" rx="18" ry="7" fill="#b5451b" opacity="0.5" transform="rotate(-40 75 220)"/>
+</svg>
+
+<div class="hero">
+  <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+  <div class="logo-rule"><span></span><div class="logo-ornament">✦</div><span></span></div>
+  <div class="hero-title">Tvak</div>
+  <div class="hero-subtitle">Cinnamon — The Sacred Bark of Antiquity</div>
+  <div class="hero-sci">Cinnamomum verum J.Presl &nbsp;·&nbsp; Cinnamomum cassia (L.) J.Presl &nbsp;·&nbsp; Lauraceae</div>
+</div>
+
+<div class="hero-photos">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/Cinnamomum_verum1.jpg/800px-Cinnamomum_verum1.jpg"
+       alt="Cinnamon tree branches with glossy leaves"
+       onerror="this.style.minHeight='380px';this.style.background='var(--parchment)';">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7d/Cinnamon_bark.jpg/800px-Cinnamon_bark.jpg"
+       alt="Cinnamon quills and bark showing characteristic curl"
+       onerror="this.style.minHeight='380px';this.style.background='var(--parchment)';">
+</div>
+<p class="photo-caption">Fig. 1 — Cinnamomum verum tree with its distinctive glossy, ovate leaves and aromatic bark &nbsp;·&nbsp; Fig. 2 — Dried inner bark hand-rolled into characteristic quills — the true cinnamon of Ayurveda</p>
+
+<div class="divider">
+  <div class="divider-line"></div>
+  <div class="divider-leaf">❧</div>
+  <div class="divider-line"></div>
+</div>
+
+<div class="content">
+  <p class="intro-text">Among the oldest-known spices in human history, <em>Tvak</em> — "that which is the skin" — is the inner bark of the cinnamon tree, traded across the ancient world long before the Silk Road existed. Mentioned in the <em>Charaka Samhita</em>, the <em>Sushruta Samhita</em>, and the <em>Ashtanga Hridayam</em>, it is one of the principal <em>Tridoshahara</em> spices, simultaneously warming, digestive, cardiac, and carminative — the rare herb that improves nearly every system it touches.</p>
+
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">01</span>
+      <h2 class="section-title">Botanical Profile</h2>
+      <div class="section-rule"></div>
+    </div>
+    <p class="section-body">Cinnamon belongs to the Lauraceae (laurel) family — the same family as bay leaf, avocado, and camphor — and comprises several commercially important species. The tree is an evergreen reaching 10–15 m in wild stands, with thick, leathery, glossy ovate leaves, small yellowish flowers, and a berry-like drupe fruit. The medicinal and culinary bark is harvested from young branches of 2–3 year coppiced shoots: the outer rough bark is scraped away and the thin inner bark is peeled and sun-dried, curling into the familiar quill as it dries.</p>
+    <p class="section-body">In Ayurveda, <em>Tvak</em> refers primarily to <em>Cinnamomum verum</em> (true or Ceylon cinnamon, native to Sri Lanka), though <em>C. cassia</em> (Chinese cinnamon) and <em>C. zeylanicum</em> are used interchangeably in many traditions. The two species differ critically in coumarin content — a distinction with important safety implications detailed below.</p>
+    <div class="species-box">
+      <div class="species-card">
+        <div class="species-name">Cinnamomum verum</div>
+        <div class="species-tag">True Ceylon Cinnamon · Preferred in Ayurveda</div>
+        <div class="species-desc">Native to Sri Lanka; also called "soft" or "true" cinnamon. Thin, multi-layered, papery quills with a complex, delicate, mildly sweet flavour profile. Coumarin content is very low (0.017 g/kg) — safe for daily therapeutic use. This is the <em>Tvak</em> of classical Ayurvedic texts.</div>
+      </div>
+      <div class="species-card">
+        <div class="species-name">Cinnamomum cassia</div>
+        <div class="species-tag">Cassia / Chinese Cinnamon · Common in Commerce</div>
+        <div class="species-desc">Native to China and widely cultivated across Southeast Asia. Thick, single-layer hard quills with a more intense, spicy-pungent flavour and higher cinnamaldehyde. Coumarin content is significantly higher (0.31–6.97 g/kg) — limits safe daily intake, especially for hepatically vulnerable individuals.</div>
+      </div>
+    </div>
+    <table class="data-table">
+      <thead><tr><th>PROPERTY</th><th>Detail</th></tr></thead>
+      <tbody>
+        <tr><td>Family</td><td>Lauraceae (Laurel Family)</td></tr>
+        <tr><td>Botanical Names</td><td>Cinnamomum verum J.Presl; C. cassia (L.) J.Presl; C. zeylanicum Blume</td></tr>
+        <tr><td>Sanskrit Names</td><td>Tvak, Twak, Darchini, Svadvi, Utkata, Darusita, Varaanga</td></tr>
+        <tr><td>Hindi / Common</td><td>Dalchini, Darchini, Cinnamon</td></tr>
+        <tr><td>Regional Names</td><td>Karuvapatta (Tam/Mal), Dalchina Chekka (Tel), Dalchini (Mar/Beng)</td></tr>
+        <tr><td>Plant Type</td><td>Evergreen tree, 10–15 m; cultivated as coppiced shrub</td></tr>
+        <tr><td>Origin</td><td>C. verum: Sri Lanka; C. cassia: Southern China</td></tr>
+        <tr><td>Medicinal Parts</td><td>Inner bark (primary), bark oil, leaves, root bark, fruit</td></tr>
+        <tr><td>Taste Profile</td><td>Madhura (sweet), Katu (pungent), Tikta (bitter)</td></tr>
+        <tr><td>Key Active</td><td>Cinnamaldehyde (60–90% of essential oil), eugenol, coumarin</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">02</span>
+      <h2 class="section-title">Phytochemistry</h2>
+      <div class="section-rule"></div>
+    </div>
+    <p class="section-body">The essential oil of cinnamon bark (0.5–4% of dry weight) is dominated by <em>trans-cinnamaldehyde</em> — the compound responsible for cinnamon's characteristic aroma and most of its pharmacological activity. Beyond the volatile fraction, the bark yields a complex matrix of polyphenols, proanthocyanidins, flavonoids, diterpenes, and the uniquely named <em>cinnamate esters</em>. The leaves of <em>C. verum</em> are rich in eugenol (70–90% of leaf oil) rather than cinnamaldehyde, giving them a clove-like aroma and distinct antimicrobial profile.</p>
+    <div class="nutrition-bar">
+      <div class="nutrition-cell">
+        <div class="nutrition-num">90%</div>
+        <div class="nutrition-unit">bark oil</div>
+        <div class="nutrition-label">Cinnamaldehyde (max)</div>
+      </div>
+      <div class="nutrition-cell">
+        <div class="nutrition-num">4%</div>
+        <div class="nutrition-unit">essential oil</div>
+        <div class="nutrition-label">Yield from dry bark</div>
+      </div>
+      <div class="nutrition-cell">
+        <div class="nutrition-num">2000+</div>
+        <div class="nutrition-unit">studies</div>
+        <div class="nutrition-label">On cinnamon / cinnamaldehyde</div>
+      </div>
+      <div class="nutrition-cell">
+        <div class="nutrition-num">3</div>
+        <div class="nutrition-unit">key species</div>
+        <div class="nutrition-label">Medicinally used</div>
+      </div>
+    </div>
+    <table class="data-table">
+      <thead><tr><th>Compound</th><th>Category</th><th>Primary Action</th></tr></thead>
+      <tbody>
+        <tr><td>trans-Cinnamaldehyde</td><td>Phenylpropanoid aldehyde</td><td>Antimicrobial, antifungal, anti-inflammatory, hypoglycaemic; primary bioactive</td></tr>
+        <tr><td>Eugenol</td><td>Phenylpropanoid (leaf oil)</td><td>Analgesic, anti-inflammatory, antifungal, anaesthetic (local); high in leaf oil</td></tr>
+        <tr><td>Cinnamyl Acetate</td><td>Phenylpropanoid ester</td><td>Anti-inflammatory, antimicrobial, antispasmodic</td></tr>
+        <tr><td>Coumarin</td><td>Benzopyranone</td><td>Anticoagulant, hepatotoxic at high doses (high in cassia, negligible in verum)</td></tr>
+        <tr><td>Procyanidins (Type-A)</td><td>Condensed tannins / polyphenols</td><td>Insulin mimetic, antioxidant, anti-diabetic — key to blood sugar action</td></tr>
+        <tr><td>Cinnamate (cinnamic acid)</td><td>Hydroxycinnamic acid</td><td>Anti-inflammatory, antimicrobial, neuroprotective</td></tr>
+        <tr><td>Camphor</td><td>Bicyclic monoterpenoid</td><td>Stimulant, carminative, topical analgesic</td></tr>
+        <tr><td>β-Caryophyllene</td><td>Sesquiterpene</td><td>Anti-inflammatory (CB2 agonist), analgesic, antifungal</td></tr>
+        <tr><td>Quercetin &amp; Kaempferol</td><td>Flavonoids</td><td>Antioxidant, anti-allergic, capillary protective</td></tr>
+        <tr><td>Methylhydroxychalcone Polymer</td><td>Polyphenol (MHCP)</td><td>Insulin sensitiser — activates insulin receptor signalling pathway</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">03</span>
+      <h2 class="section-title">Ayurvedic Significance</h2>
+      <div class="section-rule"></div>
+    </div>
+    <p class="section-body">Tvak is classified as one of the <em>Triphala</em>-adjacent spices in Ayurvedic practice and is listed among the <em>Trikatu</em>-complementary aromatics — occupying an exalted position in both <em>Charaka Samhita</em> (under <em>Hridya dravyas</em> — heart-beneficial substances) and <em>Ashtanga Hridayam</em> (in <em>Sheetaprashamana</em> — cold-pacifying medicines). It appears as a key ingredient in <em>Trikatu</em>-based formulations, <em>Chyawanprash</em>, <em>Dashamoola</em> preparations, and dozens of classical <em>churnas</em>, <em>kwathas</em>, and <em>asavas</em>.</p>
+    <p class="section-body">Classical verse from Bhavaprakasha — <em>"Tvak cha madhura tikta syad ushnaveerya laghugunam, tridoshaghni vishaghni cha krimighni hridyam param"</em> — describes Tvak as sweet and bitter in taste, hot in potency, light in quality, destroyer of all three doshas, anti-toxic, anti-parasitic, and supremely beneficial to the heart.</p>
+    <table class="dosha-table">
+      <thead><tr><th>Dosha</th><th>Effect</th><th>Mechanism &amp; Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Vata ↓</td><td>Strongly pacifying</td><td>Ushna virya (hot potency) and snigdha (slightly unctuous) qualities warm and ground Vata; excellent for cold limbs, joint stiffness, neurological Vata, and poor circulation</td></tr>
+        <tr><td>Pitta ↓↑</td><td>Mildly pacifying at low dose; may aggravate at high dose</td><td>Madhura (sweet) rasa and hridya (cardiac-tonic) action mildly reduces Pitta-related cardiovascular tension; however, ushna virya at high doses may aggravate inflammatory Pitta — use cautiously in excess Pitta</td></tr>
+        <tr><td>Kapha ↓</td><td>Strongly pacifying</td><td>Katu-tikta rasa, laghu (light), and ushna (hot) properties powerfully digest Kapha; principal spice for respiratory congestion, sluggish digestion, obesity, and cold, damp Kapha conditions</td></tr>
+      </tbody>
+    </table>
+    <p class="section-body"><strong>Rasa:</strong> Madhura (sweet), Katu (pungent), Tikta (bitter) &nbsp;·&nbsp; <strong>Guna:</strong> Laghu (light), Ruksha (dry), Tikshna (sharp) &nbsp;·&nbsp; <strong>Virya:</strong> Ushna (hot) &nbsp;·&nbsp; <strong>Vipaka:</strong> Katu &nbsp;·&nbsp; <strong>Karma:</strong> Tridoshaghna, Hridya (cardiotonic), Deepana (digestive stimulant), Pachana (digestant), Shula prashamana (analgesic)</p>
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">04</span>
+      <h2 class="section-title">Key Health Benefits</h2>
+      <div class="section-rule"></div>
+    </div>
+    <p class="section-body">Cinnamon is among the most scientifically investigated spices for metabolic, cardiovascular, antimicrobial, and neurological health. Its Type-A procyanidins and methylhydroxychalcone polymers (MHCP) exhibit insulin-mimetic activity at the cellular level — making it pharmacologically unique among all culinary spices.</p>
+    <div class="benefits-grid">
+      <div class="benefit-card">
+        <div class="benefit-title">Blood Sugar Regulation</div>
+        <div class="benefit-desc">Cinnamon's most clinically validated benefit. MHCP activates insulin receptor tyrosine kinase and inhibits protein tyrosine phosphatase, essentially mimicking insulin signalling. Meta-analyses of randomised controlled trials show significant reductions in fasting blood glucose (–24 mg/dL), HbA1c, and insulin resistance in Type 2 diabetes patients at 1–6 g/day.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Cardiovascular &amp; Lipid Health</div>
+        <div class="benefit-desc">Clinical trials demonstrate significant reduction in total cholesterol, LDL cholesterol, and triglycerides with 1–3 g cinnamon daily. Cinnamaldehyde inhibits thromboxane A2 synthesis and platelet aggregation, reducing clotting risk. Hridya (cardiotonic) action in classical texts is supported by improved endothelial function and reduced blood pressure in hypertensive models.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Antimicrobial &amp; Antifungal</div>
+        <div class="benefit-desc">Among the most potent antimicrobial spices known. Cinnamaldehyde disrupts bacterial cell membranes and inhibits biofilm formation in Staphylococcus aureus, E. coli, Salmonella, Helicobacter pylori, and Candida albicans. Cinnamon bark oil is one of very few natural agents with documented activity against drug-resistant Candida species.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Digestive Deepana &amp; Pachana</div>
+        <div class="benefit-desc">Classically the foremost <em>Deepana dravya</em> (digestive fire-kindler) among spices. Cinnamaldehyde and camphor stimulate secretion of digestive enzymes and bile, accelerate gastric emptying, and relieve intestinal spasm. Used in flatulence, bloating, nausea, IBS-C (constipation-predominant), and loss of appetite — the classical <em>aruchi</em>.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Neuroprotective &amp; Cognitive</div>
+        <div class="benefit-desc">Cinnamaldehyde inhibits tau aggregation and protects against amyloid-β toxicity — two hallmarks of Alzheimer's pathology. Animal studies show improved learning and spatial memory. Cinnamic acid and procyanidins also suppress neuroinflammation. A 2020 review identified cinnamon as a candidate neuroprotective food for cognitive decline prevention.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Anti-inflammatory &amp; Analgesic</div>
+        <div class="benefit-desc">Cinnamaldehyde inhibits NF-κB and AP-1 transcription factors, suppressing prostaglandin synthesis. Eugenol (abundant in leaf oil) is a potent COX-2 inhibitor comparable to ibuprofen at the molecular level. Tvak paste is classically applied to headache (shirahshula) and arthritic pain.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Respiratory &amp; Warming</div>
+        <div class="benefit-desc">Its ushna (hot) virya and katu-tikta rasa make it a principal Kapha-clearing herb for the respiratory tract. Used in cough, bronchitis, sinusitis, and cold. The volatile cinnamaldehyde acts as a mucolytic and bronchodilator. Classical decoctions with honey are used for chronic cough, congestion, and cold-induced asthma.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Women's Health &amp; Dysmenorrhea</div>
+        <div class="benefit-desc">A 2015 randomised controlled trial in Iran demonstrated that 420 mg cinnamon powder three times daily significantly reduced primary dysmenorrhea (menstrual pain) and menstrual bleeding compared to placebo. Classical Ayurveda uses Tvak in <em>Artavajanana</em> (menstrual-stimulating) formulations and for PCOS-related cycle irregularities.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">05</span>
+      <h2 class="section-title">How to Consume Tv

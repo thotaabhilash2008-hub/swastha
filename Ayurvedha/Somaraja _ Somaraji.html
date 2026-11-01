@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Somaraja | Swastha</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+  <style>
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+    * { margin:0; padding:0; box-sizing:border-box }
+    html { scroll-behavior:smooth }
+    body { font-family:'Jost',sans-serif; background:var(--cream); color:var(--ink); min-height:100vh; overflow-x:hidden; position:relative }
+    body::before { content:''; position:fixed; inset:0; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E"); opacity:.035; pointer-events:none; z-index:100 }
+
+    #open3D { position:fixed; top:25px; right:30px; padding:10px 18px; font-size:11px; letter-spacing:2px; text-transform:uppercase; background:var(--forest); color:#fff; border:none; cursor:pointer; z-index:1000; transition:.3s }
+    #open3D:hover { background:var(--gold); color:var(--deep) }
+    #viewerModal { position:fixed; inset:0; z-index:2000; display:none; flex-direction:column }
+    #modal-topbar { flex-shrink:0; height:58px; background:#111; display:flex; align-items:center; justify-content:space-between; padding:0 28px 0 32px; border-bottom:1px solid rgba(255,255,255,.07) }
+    #modal-topbar span { font-family:'Jost',sans-serif; font-size:11px; font-weight:300; letter-spacing:4.5px; text-transform:uppercase; color:rgba(255,255,255,.72); user-select:none }
+    #close3D { width:38px; height:38px; font-size:15px; font-weight:300; background:transparent; color:#fff; border:1.5px solid rgba(255,255,255,.7); border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background .2s,color .2s,transform .22s; outline:none }
+    #close3D:hover { background:#fff; color:#111; border-color:#fff; transform:rotate(90deg) }
+    #viewerModal model-viewer { flex:1; width:100%; display:block; background:#fff }
+
+    .bg-circle { position:fixed; border-radius:50%; pointer-events:none; z-index:0 }
+    .bg-circle-1 { width:700px; height:700px; background:radial-gradient(circle,rgba(61,107,42,.1) 0%,transparent 70%); top:-200px; right:-150px }
+    .bg-circle-2 { width:500px; height:500px; background:radial-gradient(circle,rgba(184,149,42,.08) 0%,transparent 70%); bottom:-100px; left:-100px }
+
+    .botanical-svg { position:fixed; pointer-events:none; z-index:1; opacity:.09 }
+    .botanical-tl { top:-20px; left:-20px; width:260px }
+    .botanical-br { bottom:-20px; right:-20px; width:220px; transform:rotate(180deg) }
+
+    .hero { position:relative; z-index:10; padding:54px 40px 0; text-align:center; opacity:0; animation:fadeUp .9s ease .1s forwards }
+    .back-link { display:inline-flex; align-items:center; gap:8px; font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--sage); text-decoration:none; margin-bottom:36px; transition:color .3s }
+    .back-link:hover { color:var(--gold) }
+    .logo-rule { display:flex; align-items:center; justify-content:center; gap:20px; margin-bottom:14px }
+    .logo-rule span { display:block; height:1px; width:70px; background:linear-gradient(to right,transparent,var(--gold)) }
+    .logo-rule span:last-child { background:linear-gradient(to left,transparent,var(--gold)) }
+    .logo-ornament { font-size:13px; color:var(--gold) }
+    .hero-title { font-family:'Cormorant Garamond',serif; font-size:clamp(64px,12vw,110px); font-weight:300; letter-spacing:8px; line-height:1; color:var(--deep) }
+    .hero-subtitle { font-family:'Cormorant Garamond',serif; font-size:18px; font-style:italic; font-weight:300; color:var(--earth); letter-spacing:2px; margin-top:8px }
+    .hero-sci { font-size:11px; font-weight:200; letter-spacing:5px; color:var(--sage); margin-top:6px }
+
+    .hero-photos { position:relative; z-index:10; display:grid; grid-template-columns:1fr 1fr; gap:2px; max-width:900px; margin:40px auto 0; opacity:0; animation:fadeUp .9s ease .35s forwards }
+    .hero-photos img { width:100%; height:380px; object-fit:cover; object-position:center; display:block; background:var(--parchment) }
+    .photo-caption { text-align:center; font-family:'Cormorant Garamond',serif; font-size:12px; font-style:italic; color:var(--sage); letter-spacing:1px; padding:10px 0 0; max-width:900px; margin:0 auto; position:relative; z-index:10; opacity:0; animation:fadeUp .9s ease .5s forwards }
+
+    .divider { display:flex; align-items:center; justify-content:center; gap:16px; margin:50px auto; max-width:600px; opacity:0; animation:fadeUp .9s ease .55s forwards; position:relative; z-index:10 }
+    .divider-line { height:1px; width:120px; background:linear-gradient(to right,transparent,var(--sage)) }
+    .divider-line:last-child { background:linear-gradient(to left,transparent,var(--sage)) }
+    .divider-leaf { color:var(--forest); font-size:18px }
+
+    .content { position:relative; z-index:10; max-width:860px; margin:0 auto; padding:0 30px 80px }
+    .intro-text { font-family:'Cormorant Garamond',serif; font-size:20px; font-weight:300; line-height:1.75; color:var(--ink); text-align:center; max-width:700px; margin:0 auto 60px; opacity:0; animation:fadeUp .9s ease .6s forwards }
+    .intro-text em { color:var(--forest); font-style:italic }
+
+    .section { margin-bottom:60px; opacity:0; animation:fadeUp .9s ease forwards }
+    .section:nth-child(1){animation-delay:.65s} .section:nth-child(2){animation-delay:.75s} .section:nth-child(3){animation-delay:.85s} .section:nth-child(4){animation-delay:.95s} .section:nth-child(5){animation-delay:1.05s} .section:nth-child(6){animation-delay:1.15s} .section:nth-child(7){animation-delay:1.25s}
+
+    .section-header { display:flex; align-items:center; gap:14px; margin-bottom:20px }
+    .section-num { font-family:'Cormorant Garamond',serif; font-size:11px; letter-spacing:4px; color:var(--gold) }
+    .section-title { font-family:'Cormorant Garamond',serif; font-size:28px; font-weight:400; color:var(--deep); letter-spacing:1px }
+    .section-rule { height:1px; flex:1; background:linear-gradient(to right,var(--gold),transparent) }
+    .section-body { font-size:13px; font-weight:300; line-height:1.9; color:var(--ink); margin-bottom:24px }
+
+    .data-table { width:100%; border-collapse:collapse; margin:16px 0 8px; font-size:12px }
+    .data-table thead tr { background:var(--deep); color:var(--gold); font-size:10px; letter-spacing:3px; text-transform:uppercase }
+    .data-table thead th { padding:12px 14px; text-align:left; font-weight:400 }
+    .data-table tbody tr:nth-child(even){background:var(--parchment)} .data-table tbody tr:nth-child(odd){background:var(--cream)}
+    .data-table tbody tr { transition:background .2s }
+    .data-table tbody tr:hover { background:#e5d8b8 }
+    .data-table tbody td { padding:10px 14px; color:var(--ink); border-bottom:1px solid rgba(90,62,27,.08) }
+    .data-table tbody td:first-child { font-weight:400; color:var(--deep); width:28% }
+
+    .dosha-table { width:100%; border-collapse:collapse; margin:16px 0; font-size:12px }
+    .dosha-table thead tr { background:var(--forest); color:var(--cream) }
+    .dosha-table thead th { padding:12px 14px; text-align:left; font-weight:400; letter-spacing:2px; font-size:10px; text-transform:uppercase }
+    .dosha-table tbody tr:nth-child(even){background:var(--parchment)} .dosha-table tbody tr:nth-child(odd){background:var(--cream)}
+    .dosha-table tbody td { padding:11px 14px; color:var(--ink); border-bottom:1px solid rgba(90,62,27,.08) }
+    .dosha-table tbody td:first-child { font-weight:400; color:var(--forest); width:18% }
+    .dosha-table tbody td:nth-child(2) { color:var(--earth); width:20% }
+
+    .consume-table { width:100%; border-collapse:collapse; margin:16px 0; font-size:12px }
+    .consume-table thead tr { background:var(--earth); color:var(--cream) }
+    .consume-table thead th { padding:12px 14px; text-align:left; font-weight:400; letter-spacing:2px; font-size:10px; text-transform:uppercase }
+    .consume-table tbody tr:nth-child(even){background:var(--parchment)} .consume-table tbody tr:nth-child(odd){background:var(--cream)}
+    .consume-table tbody td { padding:11px 14px; color:var(--ink); border-bottom:1px solid rgba(90,62,27,.08) }
+    .consume-table tbody td:first-child { font-weight:400; color:var(--earth); width:22% }
+
+    .benefits-grid { display:grid; grid-template-columns:1fr 1fr; gap:1px; background:rgba(90,62,27,.12); border:1px solid rgba(90,62,27,.12); margin:8px 0 }
+    .benefit-card { background:var(--cream); padding:24px 22px; transition:background .3s; position:relative; overflow:hidden }
+    .benefit-card:hover { background:#e8dab8 }
+    .benefit-card::before { content:''; position:absolute; bottom:0; left:0; width:0; height:2px; background:var(--gold); transition:width .4s }
+    .benefit-card:hover::before { width:100% }
+    .benefit-title { font-family:'Cormorant Garamond',serif; font-size:16px; font-weight:600; color:var(--forest); margin-bottom:8px }
+    .benefit-desc { font-size:11.5px; font-weight:300; line-height:1.75; color:var(--ink); opacity:.85 }
+
+    .precaution-list { list-style:none; margin:8px 0 }
+    .precaution-list li { display:flex; gap:12px; align-items:flex-start; padding:10px 14px; font-size:12px; font-weight:300; line-height:1.7; color:var(--ink); border-bottom:1px solid rgba(90,62,27,.08) }
+    .precaution-list li:last-child { border-bottom:none }
+    .precaution-list li::before { content:'▸'; color:var(--gold); flex-shrink:0; margin-top:1px }
+
+    .nutrition-bar { display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:rgba(90,62,27,.12); border:1px solid rgba(90,62,27,.12); margin:20px 0 }
+    .nutrition-cell { background:var(--cream); padding:22px 16px; text-align:center; transition:background .3s }
+    .nutrition-cell:hover { background:var(--parchment) }
+    .nutrition-num { font-family:'Cormorant Garamond',serif; font-size:36px; font-weight:300; color:var(--forest); line-height:1; margin-bottom:4px }
+    .nutrition-unit { font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--gold); font-weight:300 }
+    .nutrition-label { font-size:11px; font-weight:300; color:var(--ink); margin-top:5px }
+
+    .sources { border-top:1px solid rgba(90,62,27,.15); padding-top:24px; margin-top:20px }
+    .sources-title { font-size:10px; letter-spacing:4px; text-transform:uppercase; color:var(--sage); margin-bottom:12px; font-weight:300 }
+    .sources ul { list-style:none }
+    .sources ul li { font-family:'Cormorant Garamond',serif; font-size:13px; font-style:italic; color:var(--earth); padding:5px 0; border-bottom:1px solid rgba(90,62,27,.06) }
+    .sources ul li::before { content:'· '; color:var(--sage) }
+
+    footer { position:relative; z-index:10; text-align:center; padding:24px 20px 44px; border-top:1px solid rgba(90,62,27,.12); max-width:860px; margin:0 auto }
+    footer p { font-size:11px; letter-spacing:4px; text-transform:uppercase; color:var(--sage); font-weight:300 }
+
+    @keyframes fadeUp { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:translateY(0)} }
+    @media(max-width:700px){
+      .hero-photos{grid-template-columns:1fr} .hero-photos img{height:260px}
+      .benefits-grid{grid-template-columns:1fr} .nutrition-bar{grid-template-columns:1fr 1fr}
+      .content{padding:0 18px 60px} #modal-topbar{padding:0 16px 0 20px} #modal-topbar span{font-size:9px;letter-spacing:3px}
+    }
+  </style>
+</head>
+<body>
+
+<button id="open3D">View in 3D</button>
+<div id="viewerModal">
+  <div id="modal-topbar">
+    <span>3D Model — Somaraja</span>
+    <button id="close3D">✕</button>
+  </div>
+  <model-viewer src="somaraja3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+</div>
+
+<div class="bg-circle bg-circle-1"></div>
+<div class="bg-circle bg-circle-2"></div>
+
+<svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#3d6b2a" stroke-width="1.5" fill="none"/>
+  <circle cx="90" cy="210" r="8" fill="#3d6b2a" opacity="0.7"/>
+  <circle cx="130" cy="175" r="10" fill="#7a9e5e" opacity="0.6"/>
+  <circle cx="170" cy="135" r="7" fill="#3d6b2a" opacity="0.8"/>
+  <circle cx="210" cy="95" r="9" fill="#b8952a" opacity="0.5"/>
+  <ellipse cx="115" cy="195" rx="20" ry="10" fill="#7a9e5e" transform="rotate(-30 115 195)"/>
+  <ellipse cx="155" cy="155" rx="18" ry="9" fill="#3d6b2a" transform="rotate(-45 155 155)"/>
+</svg>
+<svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#3d6b2a" stroke-width="1.5" fill="none"/>
+  <circle cx="90" cy="210" r="8" fill="#3d6b2a" opacity="0.7"/>
+  <circle cx="130" cy="175" r="10" fill="#7a9e5e" opacity="0.6"/>
+  <ellipse cx="115" cy="195" rx="20" ry="10" fill="#7a9e5e" transform="rotate(-30 115 195)"/>
+</svg>
+
+<div class="hero">
+  <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+  <div class="logo-rule"><span></span><div class="logo-ornament">✦</div><span></span></div>
+  <div class="hero-title">Somaraja</div>
+  <div class="hero-subtitle">The King of Soma — Sacred Skin Healer</div>
+  <div class="hero-sci">Psoralea corylifolia &nbsp;·&nbsp; Cullen corylifolium</div>
+</div>
+
+<div class="hero-photos">
+  <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/4/49/Psoralea_corylifolia_-_Agri-Horticultural_Society_of_India_-_Alipore_-_Kolkata_2013-01-05_2282.JPG/1280px-Psoralea_corylifolia_-_Agri-Horticultural_Society_of_India_-_Alipore_-_Kolkata_2013-01-05_2282.JPG" alt="Somaraja seeds — dark, lens-shaped bakuchi seeds" onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+  <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ae/Psoralea_corylifolia_-_Agri-Horticultural_Society_of_India_-_Alipore_-_Kolkata_2013-01-05_2279.JPG/1280px-Psoralea_corylifolia_-_Agri-Horticultural_Society_of_India_-_Alipore_-_Kolkata_2013-01-05_2279.JPG" alt="Somaraja plant flowering in the field" onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+</div>
+<p class="photo-caption">Fig. 1 — Dark lens-shaped seeds of Somaraja (Bakuchi), primary medicinal part &nbsp;·&nbsp; Fig. 2 — Somaraja in bloom, with characteristic small violet flowers on erect spikes</p>
+
+<div class="divider">
+  <div class="divider-line"></div>
+  <div class="divider-leaf">❧</div>
+  <div class="divider-line"></div>
+</div>
+
+<div class="content">
+  <p class="intro-text">Known across Sanskrit texts as <em>Somaraja</em> — "King of Soma" — and <em>Bakuchi</em> in vernacular tradition, this small erect herb bears seeds of remarkable potency. Revered since the Atharva Veda as a sovereign remedy for <em>Shvitra</em> (leucoderma / vitiligo), it remains one of Ayurveda's most clinically validated herbs — its psoralen compounds now forming the pharmacological basis of modern PUVA phototherapy for skin disorders worldwide.</p>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">01</span><h2 class="section-title">Botanical Profile</h2><div class="section-rule"></div></div>
+    <p class="section-body">Somaraja (<em>Psoralea corylifolia</em>, syn. <em>Cullen corylifolium</em>) is an erect, branching annual herb of the Fabaceae (Leguminosae) family, native to the Indian subcontinent, southern China, and tropical Asia. The plant grows to 60–120 cm tall. Its leaves are simple, broadly ovate, gland-dotted, with toothed or entire margins. Flowers are small, violet-blue, borne in compact axillary racemes; pods are small, indehiscent, one-seeded, and blackish at maturity.</p>
+    <p class="section-body">The seeds — <em>Bakuchi beeja</em> — are the primary medicinal part: small, kidney-shaped, resinous, almost black, with a characteristic aromatic-bitter odour arising from their rich furocoumarin content. The plant thrives in dry, well-drained soils, wastelands, and rocky slopes across peninsular India, particularly in Madhya Pradesh, Rajasthan, and the Deccan plateau, flowering from August to October.</p>
+    <table class="data-table">
+      <thead><tr><th>PROPERTY</th><th>Detail</th></tr></thead>
+      <tbody>
+        <tr><td>Family</td><td>Fabaceae / Leguminosae</td></tr>
+        <tr><td>Botanical Name</td><td>Psoralea corylifolia L. / Cullen corylifolium (L.) Medik.</td></tr>
+        <tr><td>Sanskrit Names</td><td>Somaraja, Bakuchi, Somavalli, Chandrika, Krishnaphala, Suprabha</td></tr>
+        <tr><td>Common Names</td><td>Babchi, Bakuchi, Bavachi, Indian Breadroot, Babci</td></tr>
+        <tr><td>Regional Names</td><td>Bavachi (Hindi), Bavanchalu (Tel), Karpogari (Tam), Baavachi (Kan)</td></tr>
+        <tr><td>Origin</td><td>Indian subcontinent, southern China, tropical Asia</td></tr>
+        <tr><td>Plant Type</td><td>Erect annual herb (60–120 cm)</td></tr>
+        <tr><td>Flowering Season</td><td>August–October</td></tr>
+        <tr><td>Medicinal Parts</td><td>Seeds (primary), roots, leaves, fixed oil</td></tr>
+        <tr><td>Taste Profile</td><td>Katu (pungent), Tikta (bitter), Kashaya (astringent)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">02</span><h2 class="section-title">Phytochemistry Composition</h2><div class="section-rule"></div></div>
+    <p class="section-body">The seeds of Somaraja contain one of the most pharmacologically rich profiles among Ayurvedic herbs. Furocoumarins — primarily psoralen and isopsoralen (bakuchicin) — are the signature compounds, responsible for photosensitising the skin and stimulating melanocyte proliferation. These are the same compounds now purified and used in PUVA phototherapy globally.</p>
+    <p class="section-body">Beyond furocoumarins, the seeds yield a fixed oil (approx. 20%), flavonoids (bavachin, isobavachalcone, bakuchiol), meroterpenes (bakuchiol — now widely used in cosmetics as a retinol alternative), monoterpenes, and a range of phenolic compounds with antioxidant, antibacterial, and oestrogenic activity.</p>
+    <div class="nutrition-bar">
+      <div class="nutrition-cell"><div class="nutrition-num">20%</div><div class="nutrition-unit">seed oil</div><div class="nutrition-label">Fixed oil yield</div></div>
+      <div class="nutrition-cell"><div class="nutrition-num">2</div><div class="nutrition-unit">key PSO</div><div class="nutrition-label">Psoralen + Isopsoralen</div></div>
+      <div class="nutrition-cell"><div class="nutrition-num">50+</div><div class="nutrition-unit">compounds</div><div class="nutrition-label">Identified phytochemicals</div></div>
+      <div class="nutrition-cell"><div class="nutrition-num">5000+</div><div class="nutrition-unit">years</div><div class="nutrition-label">Documented therapeutic use</div></div>
+    </div>
+    <table class="data-table">
+      <thead><tr><th>Compound</th><th>Category</th><th>Primary Action</th></tr></thead>
+      <tbody>
+        <tr><td>Psoralen (Ficusin)</td><td>Furocoumarin</td><td>Photosensitising, melanogenesis stimulation; core of PUVA therapy</td></tr>
+        <tr><td>Isopsoralen (Bakuchicin)</td><td>Furocoumarin</td><td>Repigmentation, antitumour, anti-proliferative</td></tr>
+        <tr><td>Bakuchiol</td><td>Meroterpene phenol</td><td>Retinol-like collagen induction; antibacterial, anti-ageing</td></tr>
+        <tr><td>Bavachin &amp; Isobavachin</td><td>Flavanones</td><td>Oestrogenic, anti-osteoporotic, anti-inflammatory</td></tr>
+        <tr><td>Isobavachalcone</td><td>Chalcone</td><td>Antimicrobial, antifungal, anticancer</td></tr>
+        <tr><td>Corylifolin &amp; Neobavaisoflavone</td><td>Isoflavones</td><td>Anti-osteoporotic, antioxidant, neuroprotective</td></tr>
+        <tr><td>Psoralidin</td><td>Coumestan</td><td>Antitumour, antifungal, oestrogenic</td></tr>
+        <tr><td>β-Sitosterol</td><td>Phytosterol</td><td>Anti-inflammatory, hypolipidemic</td></tr>
+        <tr><td>Fixed Oil (20%)</td><td>Fatty acids</td><td>Oleic, linoleic — emollient, topical carrier</td></tr>
+        <tr><td>Tannins &amp; Resins</td><td>Polyphenols</td><td>Astringent, antimicrobial, wound-healing</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">03</span><h2 class="section-title">Ayurvedic Significance</h2><div class="section-rule"></div></div>
+    <p class="section-body">Somaraja holds an exceptional position in Ayurveda — one of very few herbs explicitly named for a specific disease (<em>Shvitra</em> — vitiligo/leucoderma) across multiple classical texts. The Atharva Veda contains hymns to Somaraja as a purifier of skin diseases. Charaka classifies it under <em>Kushtaghna</em> (skin disease destroyers) and <em>Krimighna</em> (anti-parasitic) groups. Sushruta places it in <em>Priyangvadi Gana</em>. Vagbhata emphasises it for <em>Shvitra Chikitsa</em>.</p>
+    <p class="section-body">Bhavaprakasha Nighantu places Bakuchi in <em>Haritakyadi Varga</em>; Dhanvantari Nighantu in <em>Karaveeradi Varga</em>; Raja Nighantu in <em>Prabhadradi Varga</em>. Classical shloka: <em>"Bakuchi katu tikta cha shvitraghnee krishnaphalaka, deepanee pachani hridya krimivatakaphapraNut"</em> — describing it as pungent-bitter, a destroyer of vitiligo, digestive stimulant, heart tonic, and eliminator of worms, Vata, and Kapha.</p>
+    <table class="dosha-table">
+      <thead><tr><th>Dosha</th><th>Effect</th><th>Mechanism &amp; Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Vata ↓</td><td>Pacifying</td><td>Ushna virya and tikshna guna penetrate deep tissues; relieves neuralgic, arthritic, and musculoskeletal Vata disorders. Key in Vata-type skin conditions and paralysis.</td></tr>
+        <tr><td>Pitta →</td><td>Neutral / mild ↑</td><td>Ushna potency may slightly increase Pitta. Paradoxically used in Pitta-type skin disease (leucoderma) because its photosensitising action stimulates melanocytes rather than causing overt Pitta aggravation at correct doses.</td></tr>
+        <tr><td>Kapha ↓</td><td>Pacifying</td><td>Katu-tikta rasa with laghu-tikshna guna strongly reduces Kapha accumulation; used in respiratory disorders, obesity, oedema, and Kapha-type skin conditions.</td></tr>
+      </tbody>
+    </table>
+    <p class="section-body"><strong>Rasa:</strong> Katu, Tikta, Kashaya &nbsp;·&nbsp; <strong>Guna:</strong> Laghu (light), Tikshna (sharp), Snigdha (oily — oil) &nbsp;·&nbsp; <strong>Virya:</strong> Ushna (hot) &nbsp;·&nbsp; <strong>Vipaka:</strong> Katu &nbsp;·&nbsp; <strong>Karma:</strong> Kushtaghna, Krimighna, Shvitrahara, Deepana, Pachana, Rasayana</p>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">04</span><h2 class="section-title">Key Health Benefits</h2><div class="section-rule"></div></div>
+    <p class="section-body">Somaraja is remarkable for the depth and breadth of modern clinical and pharmacological validation it has received — bridging classical Ayurvedic applications with contemporary dermatology, oncology, and bone medicine. Its seed compounds are among the most studied in the Ayurvedic pharmacopoeia.</p>
+    <div class="benefits-grid">
+      <div class="benefit-card">
+        <div class="benefit-title">Vitiligo &amp; Leucoderma (Shvitra)</div>
+        <div class="benefit-desc">Somaraja's signature indication. Psoralen and isopsoralen are photosensitisers that, when combined with UVA light (PUVA therapy), stimulate dormant melanocytes to proliferate and produce melanin — restoring pigmentation. Bakuchi oil applied topically followed by sun exposure is the classical protocol still used widely in integrative dermatology.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Psoriasis &amp; Skin Disorders (Kushtha)</div>
+        <div class="benefit-desc">Classically foremost in all <em>Kushtha</em> (skin disease) formulations, Somaraja's furocoumarins reduce keratinocyte proliferation and inflammatory cytokines in psoriatic plaques. Modern PUVA treatment for psoriasis is a direct pharmacological derivative of Ayurvedic Bakuchi therapy codified millennia ago.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Anti-ageing &amp; Skin Renewal</div>
+        <div class="benefit-desc">Bakuchiol — isolated from Somaraja seeds — has emerged as a leading plant-based retinol alternative. Multiple randomised clinical trials confirm it matches retinol in reducing fine lines, photoageing, and hyperpigmentation while producing significantly fewer side effects. It is now a flagship ingredient in premium clean-beauty skincare globally.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Bone Health &amp; Anti-osteoporotic</div>
+        <div class="benefit-desc">Flavonoids bavachin, isobavachin, and neobavaisoflavone demonstrate potent oestrogenic receptor activity, stimulating osteoblast differentiation and inhibiting osteoclast activity in animal and cell studies. Somaraja is a classical ingredient in bone-strengthening formulations and postmenopausal skeletal support.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Antimicrobial &amp; Anti-parasitic (Krimighna)</div>
+        <div class="benefit-desc">Isobavachalcone and psoralidin show significant antifungal activity against dermatophytes (Trichophyton), antibacterial action against drug-resistant Staphylococcus aureus (MRSA), and antiparasitic effects against intestinal worms — validating classical use in ringworm, scabies, and intestinal helminthiasis.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Digestive Stimulant (Deepana-Pachana)</div>
+        <div class="benefit-desc">Classically used to kindle digestive fire (<em>Agni deepana</em>) and promote digestion. The volatile oils and bitters stimulate bile secretion and intestinal motility. Used in loss of appetite, malabsorption, and intestinal dysbiosis — often combined with Haritaki and Pippali in digestive formulations.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Kidney Tonic &amp; Diuretic</div>
+        <div class="benefit-desc">Classical texts describe Somaraja as a strengthener of kidney function (<em>Vrishya</em>) and mild diuretic. Bakuchicin supports renal cell protection and the seeds are traditionally used in treating kidney stones, dysuria, and renal insufficiency — often as a decoction combined with Gokshura.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Antitumour &amp; Neuroprotective Potential</div>
+        <div class="benefit-desc">Psoralidin and neobavaisoflavone demonstrate apoptotic activity against multiple cancer cell lines (breast, colon, lung) in preclinical studies. Isoflavone fractions show neuroprotective effects in Alzheimer's models by inhibiting amyloid aggregation and acetylcholinesterase — emergent research areas with growing scientific interest.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">05</span><h2 class="section-title">Classical Formulations</h2><div class="section-rule"></div></div>
+    <p class="section-body">Somaraja is a constituent of many classical polyherbal formulations, most prominently in dermatological and Rasayana (rejuvenative) preparations. Below are key formulations from the Ayurvedic pharmacopoeia.</p>
+    <table class="data-table">
+      <thead><tr><th>Formulation</th><th>Type</th><th>Primary Indication</th></tr></thead>
+      <tbody>
+        <tr><td>Bakuchi Taila</td><td>Medicated oil (Taila)</td><td>Vitiligo, leucoderma, psoriasis — topical application + sunlight</td></tr>
+        <tr><td>Somaraji Ghrita</td><td>Medicated ghee</td><td>Shvitra (vitiligo), Kushtha (skin diseases), Rasayana</td></tr>
+        <tr><td>Arogyavardhini Vati</td><td>Tablet (Vati)</td><td>Liver disorders, skin disease, obesity, digestion</td></tr>
+        <tr><td>Mahatiktaka Ghrita</td><td>Classical ghee</td><td>Chronic skin disorders, blood purification, Pitta conditions</td></tr>
+        <tr><td>Khadirarishta</td><td>Fermented liquid (Arishta)</td><td>Skin diseases, worm infestation, anaemia</td></tr>
+        <tr><td>Bakuchi Churna</td><td>Powder (Churna)</td><td>Vitiligo, digestive stimulation, intestinal worms</td></tr>
+        <tr><td>Psoralea Seed Oil</td><td>Cold-pressed fixed oil</td><td>Topical skin repigmentation, anti-ageing, cosmetic use</td></tr>
+        <tr><td>Navayasa Churna</td><td>Compound powder</td><td>Iron deficiency, anaemia, skin pallor</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">06</span><h2 class="section-title">How to Use Somaraja</h2><div class="section-rule"></div></div>
+    <p class="section-body">Somaraja seeds are potent and require careful dosing. Both internal and external applications are classical. Topical use for vitiligo (Bakuchi oil + controlled sun exposure) is the most documented application and relatively safe under guidance. Internal use must be strictly physician-supervised due to phototoxic and hepatotoxic potential at excess doses.</p>
+    <table class="consume-table">
+      <thead><tr><th>Form</th><th>Preparation</th><th>Dosage</th><th>Best Use</th></tr></thead>
+      <tbody>
+        <tr><td>Seed Powder (Churna)</td><td>Finely powdered dried seeds; with milk or honey</td><td>1–3 g/day under guidance</td><td>Vitiligo (internal), digestive stimulation</td></tr>
+        <tr><td>Bakuchi Oil (Taila)</td><td>Seeds processed in sesame oil; topical application</td><td>Apply to patches; expose to morning sun 15–20 min</td><td>Vitiligo, psoriasis, leucoderma</td></tr>
+        <tr><td>Seed Decoction (Kwatha)</td><td>Boil seeds in water 1:16; reduce to ¼</td><td>25–40 ml twice daily</td><td>Skin diseases, intestinal worms, kidney support</td></tr>
+        <tr><td>Seed Paste (Topical)</td><td>Seeds ground with water or lemon juice</td><td>Apply to affected skin patches</td><td>Ringworm, scabies, fungal skin infections</td></tr>
+        <tr><td>Bakuchiol Serum (Modern)</td><td>Standardised bakuchiol extract in base oil</td><td>Apply 2–3 drops nightly</td><td>Anti-ageing, fine lines, hyperpigmentation</td></tr>
+        <tr><td>Classical Ghrita</td><td>Somaraji Ghrita per Ayurvedic pharmacy</td><td>5–10 g with warm milk (physician)</td><td>Deep skin Rasayana, Shvitra, chronic Kushtha</td></tr>
+        <tr><td>Seed Milk</td><td>Seeds soaked overnight; blended with warm milk</td><td>1 tsp seeds per glass; once daily</td><td>Bone strengthening, kidney tonic</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">07</span><h2 class="section-title">Safety &amp; Precautions</h2><div class="section-rule"></div></div>
+    <p class="section-body">Somaraja is a potent photosensitising herb. While externally applied Bakuchi oil is relatively safe under controlled conditions, internal use requires strict medical supervision. The furocoumarins can cause severe phototoxic burns if excessive sun exposure occurs after consumption, and high doses have been associated with liver stress.</p>
+    <ul class="precaution-list">
+      <li><strong>Phototoxicity:</strong> Psoralen and isopsoralen make the skin highly sensitive to UV radiation. Uncontrolled sun or UV exposure after internal consumption or topical application can cause severe burns, blistering, and paradoxical hyperpigmentation — exposure must be carefully timed and limited.</li>
+      <li><strong>Pregnancy:</strong> Contraindicated internally. Oestrogenic flavonoids and photosensitising compounds make internal use during pregnancy inadvisable; topical use over large skin areas should also be avoided.</li>
+      <li><strong>Hepatotoxicity:</strong> High or prolonged internal doses may cause liver stress. Periodic liver function monitoring is advised for patients on sustained internal Bakuchi therapy. Not recommended in pre-existing liver disease.</li>
+      <li><strong>Eye protection:</strong> During PUVA-type sun exposure therapy, protective eyewear is essential — furocoumarins can sensitise the ocular lens to UV and increase cataract risk with repeated unprotected exposure.</li>
+      <li><strong>Children:</strong> Internal use in children under 12 should only be under qualified Ayurvedic physician supervision. Topical oil use should be patch-tested first.</li>
+      <li><strong>Excess skin burning:</strong> If topical Bakuchi oil application causes burning, redness, or blistering, wash immediately with cold water and reduce sun exposure duration. Start with 5–10 minutes and gradually increase.</li>
+      <li><strong>Drug interactions:</strong> Avoid combining with other photosensitising drugs (tetracyclines, fluoroquinolones, thiazide diuretics, St. John's Wort) as additive phototoxicity may result.</li>
+      <li><strong>Pitta excess states:</strong> In strongly Pitta-dominant constitutions with active skin inflammation, bleeding disorders, or ulcerative conditions, use cautiously — its ushna (hot) potency may aggravate active Pitta flares.</li>
+      <li><strong>Allergic contact sensitivity:</strong> Patch-test before broad topical application. Some individuals develop contact dermatitis to furocoumarin-containing preparations, particularly on facial skin.</li>
+    </ul>
+  </div>
+
+  <div class="sources">
+    <div class="sources-title">References &amp; Sources</div>
+    <ul>
+      <li>Chopra RN et al. — Glossary of Indian Medicinal Plants, CSIR — Bakuchi / Psoralea corylifolia entry</li>
+      <li>Lim TK — "Psoralea corylifolia" in Edible Medicinal and Non-Medicinal Plants, Springer, 2012</li>
+      <li>Adhikari A et al. — "Comprehensive review on Bakuchi (Psoralea corylifolia Linn.)" — Journal of Pharmacognosy and Phytochemistry, 2019</li>
+      <li>Chaudhary H et al. — "Bakuchiol: A retinoid-like functional compound with anti-ageing effects" — British Journal of Dermatology, 2018</li>
+      <li>Yin S et al. — "Pharmacological activities of Psoralea corylifolia and its constituents" — Phytomedicine, 2020</li>
+      <li>Zhao Z et al. — "Anti-osteoporotic activity of bavachin and isobavachin from Psoralea corylifolia" — Journal of Natural Products, 2011</li>
+      <li>Charaka Samhita — Kushtaghna Gana, Krimighna Gana, Priyangvadi Gana references</li>
+      <li>Bhavaprakasha Nighantu — Haritakyadi Varga; Dhanvantari Nighantu — Karaveeradi Varga</li>
+      <li>Atharva Veda, Kanda 1 — Hymns referencing Somaraja for skin purification</li>
+      <li>Priyavrat Sharma — Dravyaguna Vigyana — Classical properties and formulations of Bakuchi</li>
+      <li>Pharmacopoeia of India, Vol. II — Monograph on Psoralea corylifolia seeds</li>
+    </ul>
+  </div>
+</div>
+
+<footer>
+  <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a qualified practitioner before therapeutic use</p>
+</footer>
+
+<script>
+  const open3D = document.getElementById('open3D');
+  const close3D = document.getElementById('close3D');
+  const modal = document.getElementById('viewerModal');
+  function openModal(){
+    var _aud = document.getElementById('somarajaAudio'); if(_aud){ _aud.currentTime=0; var playPromise = _aud.play(); if (playPromise !== undefined) { playPromise.catch(function(e){ console.log(e); }); } }
+ modal.style.display='flex'; document.body.style.overflow='hidden'; history.pushState({modal:'somaraja3d'},'','#3d') }
+  function closeModal(){
+    var _aud = document.getElementById('somarajaAudio'); if(_aud){ _aud.pause(); }
+ modal.style.display='none'; document.body.style.overflow=''; if(window.location.hash==='#3d') history.replaceState(null,'',window.location.pathname) }
+  open3D.addEventListener('click',e=>{ e.preventDefault(); e.stopPropagation(); openModal() });
+  close3D.addEventListener('click',e=>{ e.preventDefault(); e.stopPropagation(); closeModal() });
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&modal.style.display==='flex') closeModal() });
+  window.addEventListener('popstate',()=>{ if(modal.style.display==='flex'){ modal.style.display='none'; document.body.style.overflow='' } });
+</script>
+
+  <audio id="somarajaAudio" src="somaraja_benefits.mp3" loop preload="auto"></audio>
+</body>
+</html>

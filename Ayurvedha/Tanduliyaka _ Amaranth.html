@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tanduliyaka | Swastha</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+  <style>
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+    *{margin:0;padding:0;box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{font-family:'Jost',sans-serif;background:var(--cream);color:var(--ink);min-height:100vh;overflow-x:hidden;position:relative}
+    body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");opacity:.03;pointer-events:none;z-index:100}
+
+    #open3D{position:fixed;top:25px;right:30px;padding:10px 18px;font-size:11px;letter-spacing:2px;text-transform:uppercase;font-family:'Jost',sans-serif;font-weight:300;background:var(--forest);color:#fff;border:none;cursor:pointer;z-index:1000;transition:.3s}
+    #open3D:hover{background:var(--gold);color:var(--deep)}
+    #viewerModal{position:fixed;inset:0;z-index:2000;display:none;flex-direction:column}
+    #modal-topbar{flex-shrink:0;height:58px;background:#111;display:flex;align-items:center;justify-content:space-between;padding:0 28px 0 32px;border-bottom:1px solid rgba(255,255,255,.07)}
+    #modal-topbar span{font-family:'Jost',sans-serif;font-size:11px;font-weight:300;letter-spacing:4.5px;text-transform:uppercase;color:rgba(255,255,255,.72)}
+    #close3D{width:38px;height:38px;font-size:15px;background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.7);border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s,color .2s,transform .22s}
+    #close3D:hover{background:#fff;color:#111;transform:rotate(90deg)}
+    #viewerModal model-viewer{flex:1;width:100%;display:block;background:#fff}
+
+    .bg-circle{position:fixed;border-radius:50%;pointer-events:none;z-index:0}
+    .bg-circle-1{width:700px;height:700px;background:radial-gradient(circle,rgba(140,58,90,.08) 0%,transparent 70%);top:-200px;right:-150px}
+    .bg-circle-2{width:500px;height:500px;background:radial-gradient(circle,rgba(196,122,58,.07) 0%,transparent 70%);bottom:-100px;left:-100px}
+
+    .botanical-svg{position:fixed;pointer-events:none;z-index:1;opacity:.09}
+    .botanical-tl{top:-10px;left:-10px;width:250px}
+    .botanical-br{bottom:-10px;right:-10px;width:220px;transform:rotate(180deg)}
+
+    .hero{position:relative;z-index:10;padding:54px 40px 0;text-align:center;opacity:0;animation:fadeUp .9s ease .1s forwards}
+    .back-link{display:inline-flex;align-items:center;gap:8px;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--sage);text-decoration:none;margin-bottom:36px;transition:color .3s}
+    .back-link:hover{color:var(--gold)}
+    .logo-rule{display:flex;align-items:center;justify-content:center;gap:20px;margin-bottom:14px}
+    .logo-rule span{display:block;height:1px;width:70px;background:linear-gradient(to right,transparent,var(--gold))}
+    .logo-rule span:last-child{background:linear-gradient(to left,transparent,var(--gold))}
+    .logo-ornament{font-size:13px;color:var(--gold)}
+    .hero-title{font-family:'Cormorant Garamond',serif;font-size:clamp(48px,9.5vw,96px);font-weight:300;letter-spacing:8px;line-height:1;color:var(--deep)}
+    .hero-subtitle{font-family:'Cormorant Garamond',serif;font-size:18px;font-style:italic;font-weight:300;color:var(--earth);letter-spacing:2px;margin-top:8px}
+    .hero-sci{font-size:11px;font-weight:200;letter-spacing:5px;color:var(--sage);margin-top:6px}
+
+    .hero-photos{position:relative;z-index:10;display:grid;grid-template-columns:1fr 1fr;gap:2px;max-width:900px;margin:40px auto 0;opacity:0;animation:fadeUp .9s ease .35s forwards}
+    .hero-photos img{width:100%;height:380px;object-fit:cover;object-position:center;display:block;background:var(--parchment)}
+    .photo-caption{text-align:center;font-family:'Cormorant Garamond',serif;font-size:12px;font-style:italic;color:var(--sage);letter-spacing:1px;padding:10px 0 0;max-width:900px;margin:0 auto;position:relative;z-index:10;opacity:0;animation:fadeUp .9s ease .5s forwards}
+
+    .divider{display:flex;align-items:center;justify-content:center;gap:16px;margin:50px auto;max-width:600px;opacity:0;animation:fadeUp .9s ease .55s forwards;position:relative;z-index:10}
+    .divider-line{height:1px;width:120px;background:linear-gradient(to right,transparent,var(--sage))}
+    .divider-line:last-child{background:linear-gradient(to left,transparent,var(--sage))}
+    .divider-leaf{color:var(--earth);font-size:18px}
+
+    .content{position:relative;z-index:10;max-width:860px;margin:0 auto;padding:0 30px 80px}
+    .intro-text{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:300;line-height:1.75;color:var(--ink);text-align:center;max-width:700px;margin:0 auto 60px;opacity:0;animation:fadeUp .9s ease .6s forwards}
+    .intro-text em{color:var(--earth);font-style:italic}
+
+    .section{margin-bottom:60px;opacity:0;animation:fadeUp .9s ease forwards}
+    .section:nth-child(1){animation-delay:.65s}.section:nth-child(2){animation-delay:.75s}.section:nth-child(3){animation-delay:.85s}.section:nth-child(4){animation-delay:.95s}.section:nth-child(5){animation-delay:1.05s}.section:nth-child(6){animation-delay:1.15s}.section:nth-child(7){animation-delay:1.25s}
+
+    .section-header{display:flex;align-items:center;gap:14px;margin-bottom:20px}
+    .section-num{font-family:'Cormorant Garamond',serif;font-size:11px;letter-spacing:4px;color:var(--gold)}
+    .section-title{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:400;color:var(--deep);letter-spacing:1px}
+    .section-rule{height:1px;flex:1;background:linear-gradient(to right,var(--gold),transparent)}
+    .section-body{font-size:13px;font-weight:300;line-height:1.9;color:var(--ink);margin-bottom:24px}
+
+    .data-table{width:100%;border-collapse:collapse;margin:16px 0 8px;font-size:12px}
+    .data-table thead tr{background:var(--deep);color:var(--gold);font-size:10px;letter-spacing:3px;text-transform:uppercase}
+    .data-table thead th{padding:12px 14px;text-align:left;font-weight:400}
+    .data-table tbody tr:nth-child(even){background:var(--parchment)}.data-table tbody tr:nth-child(odd){background:var(--cream)}
+    .data-table tbody tr{transition:background .2s}
+    .data-table tbody tr:hover{background:#e0d0c4}
+    .data-table tbody td{padding:10px 14px;color:var(--ink);border-bottom:1px solid rgba(140,58,90,.08)}
+    .data-table tbody td:first-child{font-weight:400;color:var(--deep);width:28%}
+
+    .dosha-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:12px}
+    .dosha-table thead tr{background:var(--forest);color:var(--cream)}
+    .dosha-table thead th{padding:12px 14px;text-align:left;font-weight:400;letter-spacing:2px;font-size:10px;text-transform:uppercase}
+    .dosha-table tbody tr:nth-child(even){background:var(--parchment)}.dosha-table tbody tr:nth-child(odd){background:var(--cream)}
+    .dosha-table tbody td{padding:11px 14px;color:var(--ink);border-bottom:1px solid rgba(140,58,90,.08)}
+    .dosha-table tbody td:first-child{font-weight:400;color:var(--forest);width:18%}
+    .dosha-table tbody td:nth-child(2){color:var(--earth);width:20%}
+
+    .consume-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:12px}
+    .consume-table thead tr{background:var(--earth);color:var(--cream)}
+    .consume-table thead th{padding:12px 14px;text-align:left;font-weight:400;letter-spacing:2px;font-size:10px;text-transform:uppercase}
+    .consume-table tbody tr:nth-child(even){background:var(--parchment)}.consume-table tbody tr:nth-child(odd){background:var(--cream)}
+    .consume-table tbody td{padding:11px 14px;color:var(--ink);border-bottom:1px solid rgba(140,58,90,.08)}
+    .consume-table tbody td:first-child{font-weight:400;color:var(--earth);width:22%}
+
+    .benefits-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:rgba(140,58,90,.13);border:1px solid rgba(140,58,90,.13);margin:8px 0}
+    .benefit-card{background:var(--cream);padding:24px 22px;transition:background .3s;position:relative;overflow:hidden}
+    .benefit-card:hover{background:#e8d8d0}
+    .benefit-card::before{content:'';position:absolute;bottom:0;left:0;width:0;height:2px;background:var(--gold);transition:width .4s}
+    .benefit-card:hover::before{width:100%}
+    .benefit-title{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:600;color:var(--forest);margin-bottom:8px}
+    .benefit-desc{font-size:11.5px;font-weight:300;line-height:1.75;color:var(--ink);opacity:.85}
+
+    .precaution-list{list-style:none;margin:8px 0}
+    .precaution-list li{display:flex;gap:12px;align-items:flex-start;padding:10px 14px;font-size:12px;font-weight:300;line-height:1.7;color:var(--ink);border-bottom:1px solid rgba(140,58,90,.08)}
+    .precaution-list li:last-child{border-bottom:none}
+    .precaution-list li::before{content:'▸';color:var(--gold);flex-shrink:0;margin-top:1px}
+
+    .nutrition-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(140,58,90,.13);border:1px solid rgba(140,58,90,.13);margin:20px 0}
+    .nutrition-cell{background:var(--cream);padding:22px 16px;text-align:center;transition:background .3s}
+    .nutrition-cell:hover{background:var(--parchment)}
+    .nutrition-num{font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:300;color:var(--forest);line-height:1;margin-bottom:4px}
+    .nutrition-unit{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);font-weight:300}
+    .nutrition-label{font-size:11px;font-weight:300;color:var(--ink);margin-top:5px}
+
+    .sources{border-top:1px solid rgba(140,58,90,.15);padding-top:24px;margin-top:20px}
+    .sources-title{font-size:10px;letter-spacing:4px;text-transform:uppercase;color:var(--sage);margin-bottom:12px;font-weight:300}
+    .sources ul{list-style:none}
+    .sources ul li{font-family:'Cormorant Garamond',serif;font-size:13px;font-style:italic;color:var(--earth);padding:5px 0;border-bottom:1px solid rgba(140,58,90,.06)}
+    .sources ul li::before{content:'· ';color:var(--sage)}
+
+    footer{position:relative;z-index:10;text-align:center;padding:24px 20px 44px;border-top:1px solid rgba(140,58,90,.12);max-width:860px;margin:0 auto}
+    footer p{font-size:11px;letter-spacing:4px;text-transform:uppercase;color:var(--sage);font-weight:300}
+
+    @keyframes fadeUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
+    @media(max-width:700px){
+      .hero-photos{grid-template-columns:1fr}.hero-photos img{height:260px}
+      .benefits-grid{grid-template-columns:1fr}.nutrition-bar{grid-template-columns:1fr 1fr}
+      .content{padding:0 18px 60px}
+    }
+  </style>
+</head>
+<body>
+
+<button id="open3D">View in 3D</button>
+<div id="viewerModal">
+  <div id="modal-topbar"><span>3D Model — Tanduliyaka</span><button id="close3D">✕</button></div>
+  <model-viewer src="tanduliyaka3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+</div>
+
+<div class="bg-circle bg-circle-1"></div>
+<div class="bg-circle bg-circle-2"></div>
+
+<!-- Amaranth plume SVG -->
+<svg class="botanical-svg botanical-tl" viewBox="0 0 250 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- main stem -->
+  <path d="M80 395 Q 82 300 85 220 Q 88 140 100 40" stroke="#5c2040" stroke-width="3" stroke-linecap="round" fill="none"/>
+  <!-- large drooping plume at top -->
+  <path d="M100 40 Q 130 60 155 100 Q 170 130 160 160 Q 148 185 130 175 Q 108 162 100 140 Q 90 115 100 40Z" fill="#8c3a5a" opacity=".7"/>
+  <path d="M100 40 Q 72 58 50 95 Q 36 122 48 150 Q 60 174 80 165 Q 100 154 104 130 Q 110 105 100 40Z" fill="#a06070" opacity=".6"/>
+  <!-- side plumes -->
+  <path d="M88 140 Q 55 148 35 170 Q 20 188 30 205 Q 42 220 60 210 Q 78 198 84 178 Q 90 158 88 140Z" fill="#8c3a5a" opacity=".55"/>
+  <path d="M90 155 Q 120 158 142 175 Q 158 190 152 208 Q 144 224 126 218 Q 108 210 100 192 Q 92 172 90 155Z" fill="#a06070" opacity=".5"/>
+  <!-- lower side branches -->
+  <path d="M84 210 Q 52 215 34 234 Q 20 250 28 264 Q 38 277 56 270 Q 72 262 78 246 Q 84 228 84 210Z" fill="#8c3a5a" opacity=".45"/>
+  <path d="M86 225 Q 115 228 134 244 Q 148 258 142 272 Q 134 285 116 279 Q 100 271 93 255 Q 86 238 86 225Z" fill="#a06070" opacity=".4"/>
+  <!-- tiny seed dots on plumes -->
+  <circle cx="130" cy="110" r="2" fill="#c47a3a" opacity=".6"/>
+  <circle cx="118" cy="128" r="2" fill="#c47a3a" opacity=".6"/>
+  <circle cx="140" cy="140" r="1.5" fill="#c47a3a" opacity=".5"/>
+  <circle cx="65" cy="120" r="2" fill="#c47a3a" opacity=".6"/>
+  <circle cx="54" cy="142" r="1.5" fill="#c47a3a" opacity=".5"/>
+  <!-- leaves along stem -->
+  <ellipse cx="83" cy="270" rx="28" ry="10" fill="#5c2040" transform="rotate(-18 83 270)" opacity=".55"/>
+  <ellipse cx="87" cy="315" rx="24" ry="9" fill="#8c3a5a" transform="rotate(15 87 315)" opacity=".5"/>
+  <ellipse cx="82" cy="358" rx="20" ry="8" fill="#5c2040" transform="rotate(-10 82 358)" opacity=".45"/>
+</svg>
+<svg class="botanical-svg botanical-br" viewBox="0 0 250 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M80 395 Q 82 300 85 220 Q 88 140 100 40" stroke="#5c2040" stroke-width="3" stroke-linecap="round" fill="none"/>
+  <path d="M100 40 Q 130 60 155 100 Q 170 130 160 160 Q 148 185 130 175 Q 108 162 100 140 Q 90 115 100 40Z" fill="#8c3a5a" opacity=".7"/>
+  <path d="M100 40 Q 72 58 50 95 Q 36 122 48 150 Q 60 174 80 165 Q 100 154 104 130 Q 110 105 100 40Z" fill="#a06070" opacity=".6"/>
+  <path d="M88 140 Q 55 148 35 170 Q 20 188 30 205 Q 42 220 60 210 Q 78 198 84 178 Q 90 158 88 140Z" fill="#8c3a5a" opacity=".55"/>
+  <ellipse cx="83" cy="270" rx="28" ry="10" fill="#5c2040" transform="rotate(-18 83 270)" opacity=".55"/>
+  <ellipse cx="87" cy="315" rx="24" ry="9" fill="#8c3a5a" transform="rotate(15 87 315)" opacity=".5"/>
+</svg>
+
+<div class="hero">
+  <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+  <div class="logo-rule"><span></span><div class="logo-ornament">✦</div><span></span></div>
+  <div class="hero-title">Tanduliyaka</div>
+  <div class="hero-subtitle">Amaranth — The Grain That Never Fades</div>
+  <div class="hero-sci">Amaranthus spinosus L. &nbsp;·&nbsp; Amaranthus tricolor L. &nbsp;·&nbsp; Amaranthaceae</div>
+</div>
+
+<div class="hero-photos">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/b/b9/Amaranthus.spinosus1web.jpg" alt="Amaranthus spinosus — the spiny amaranth with crimson-flushed stems used medicinally"
+    onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+  <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ae/Arya_-_amaranthus_spinosus_-_bayam_duri_Kramat_2019_0.jpg/1280px-Arya_-_amaranthus_spinosus_-_bayam_duri_Kramat_2019_0.jpg" alt="Amaranth grain — tiny golden seeds poured from a wooden scoop"
+    onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+</div>
+<p class="photo-caption">Fig. 1 — Amaranthus spinosus, the primary medicinal species in Ayurveda, with characteristic spiny axils and crimson-flushed stems &nbsp;·&nbsp; Fig. 2 — Amaranth grain — one of the most nutritionally complete pseudo-cereals known</p>
+
+<div class="divider">
+  <div class="divider-line"></div>
+  <div class="divider-leaf">❧</div>
+  <div class="divider-line"></div>
+</div>
+
+<div class="content">
+  <p class="intro-text">Its Sanskrit name <em>Tanduliyaka</em> — "resembling rice grains" — hints at the ancient recognition of amaranth's seed as a grain-like superfood, yet this humble roadside weed has been simultaneously one of Ayurveda's most valued leafy medicinal vegetables, a diuretic, haemostatic, anti-diarrhoeal, and cooling agent documented by Charaka, Sushruta, and Vagbhata across three millennia of unbroken clinical tradition.</p>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">01</span><h2 class="section-title">Botanical Profile</h2><div class="section-rule"></div></div>
+    <p class="section-body">Tanduliyaka refers primarily to <em>Amaranthus spinosus</em> L. (spiny amaranth) in Ayurvedic classical texts, though <em>A. tricolor</em> (Chinese spinach / garden amaranth) and <em>A. viridis</em> (slender amaranth) are recognised as functionally related and therapeutically interchangeable in many contexts. The genus Amaranthus comprises about 70 species of annual or short-lived perennial herbs in the family Amaranthaceae — now reclassified to include the former Chenopodiaceae, making amaranth a botanical relative of beet, quinoa, and spinach.</p>
+    <p class="section-body"><em>Amaranthus spinosus</em> is an erect, much-branched herb growing to 30–100 cm, identified by the distinctive paired spines at each leaf axil from which it derives both its species name and folk caution. Stems are green to reddish-purple; leaves are ovate to rhombic, glabrous, with long petioles. Flowers are tiny, borne in dense terminal and axillary spikes. Seeds are minute, lens-shaped, shining black or dark red — and in the grain varieties, creamy-white — harvested in enormous quantities from the dense floral spikes. <em>A. tricolor</em> is grown as a leaf vegetable and ornamental, prized for its brilliant red, yellow, and green foliaged forms.</p>
+    <table class="data-table">
+      <thead><tr><th>Property</th><th>Detail</th></tr></thead>
+      <tbody>
+        <tr><td>Family</td><td>Amaranthaceae</td></tr>
+        <tr><td>Primary Species</td><td>Amaranthus spinosus L. (medicinal); A. tricolor L. (culinary/medicinal); A. hypochondriacus (grain)</td></tr>
+        <tr><td>Sanskrit Names</td><td>Tanduliyaka, Tandulja, Meghanaada, Alpamarga (regional overlap), Shitapushpa</td></tr>
+        <tr><td>Hindi Names</td><td>Chaulai, Cholai, Kateli Chaulai (A. spinosus), Ramdana / Rajgira (grain)</td></tr>
+        <tr><td>Regional Names</td><td>Mullukkeerai (Tam), Mullu Thotakura (Tel), Mullu Harive (Kan), Mullanchira (Mal)</td></tr>
+        <tr><td>Origin</td><td>Pantropical; A. spinosus likely native to tropical America, naturalised globally</td></tr>
+        <tr><td>Plant Type</td><td>Erect annual herb (30–100 cm); spiny axils in A. spinosus</td></tr>
+        <tr><td>Habitat</td><td>Wastelands, roadsides, cultivated fields, disturbed soils — up to 1,800 m</td></tr>
+        <tr><td>Medicinal Parts</td><td>Whole plant, roots (primary), leaves, seeds</td></tr>
+        <tr><td>Taste Profile</td><td>Madhura (sweet), Kashaya (astringent); cooling sensation</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">02</span><h2 class="section-title">Phytochemical Composition</h2><div class="section-rule"></div></div>
+    <p class="section-body">Amaranth's chemical complexity varies significantly by plant part. The leaves are exceptional sources of vitamin K, vitamin A (as β-carotene), vitamin C, folate, calcium, iron, and manganese — nutritional densities that rival or exceed spinach and kale. The seeds are one of the very few plant sources of complete protein, containing all essential amino acids including lysine (typically limiting in cereals), with a protein content of 13–17% and a protein digestibility-corrected amino acid score (PDCAAS) approaching that of milk.</p>
+    <p class="section-body">The medicinal roots of <em>A. spinosus</em> are rich in betacyanins (the red-violet betalain pigments), saponins, tannins, and alkaloids including amaranthine. The leaves contain rutin, quercetin, kaempferol glycosides, and oxalic acid (a consideration for those with kidney stones). Squalene — an important triterpene with antioxidant and immunostimulant properties — is notably concentrated in amaranth seed oil at levels (5–8%) far exceeding shark liver oil, the traditional commercial source.</p>
+    <div class="nutrition-bar">
+      <div class="nutrition-cell"><div class="nutrition-num">13–17</div><div class="nutrition-unit">% protein</div><div class="nutrition-label">Complete amino acid profile (seeds)</div></div>
+      <div class="nutrition-cell"><div class="nutrition-num">5–8</div><div class="nutrition-unit">% squalene</div><div class="nutrition-label">In seed oil — exceptional concentration</div></div>
+      <div class="nutrition-cell"><div class="nutrition-num">159</div><div class="nutrition-unit">mg Ca/100g</div><div class="nutrition-label">Calcium in raw leaves</div></div>
+      <div class="nutrition-cell"><div class="nutrition-num
+  <audio id="tanduliyakaAudio" src="tanduliyaka_benefits.mp3" loop preload="auto"></audio>

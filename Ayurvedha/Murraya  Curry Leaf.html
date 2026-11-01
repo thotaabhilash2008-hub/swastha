@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Murraya koenigii | Curry Leaf | Swastha</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+  <style>
+    #open3D {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      padding: 10px 18px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: var(--forest);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      z-index: 1000;
+      transition: .3s;
+    }
+    #open3D:hover {
+      background: var(--gold);
+      color: var(--deep);
+    }
+    #viewerModal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+    }
+    #modal-topbar {
+      flex-shrink: 0;
+      height: 58px;
+      background: #111111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px 0 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      z-index: 99999;
+    }
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 4.5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.72);
+      user-select: none;
+    }
+    #close3D {
+      width: 38px;
+      height: 38px;
+      font-size: 15px;
+      font-weight: 300;
+      background: transparent;
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background .2s, color .2s, transform .22s;
+      outline: none;
+      flex-shrink: 0;
+    }
+    #close3D:hover {
+      background: #ffffff;
+      color: #111111;
+      border-color: #ffffff;
+      transform: rotate(90deg);
+    }
+    #viewerModal model-viewer {
+      flex: 1;
+      width: 100%;
+      display: block;
+      background: #ffffff;
+    }
+
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+    * { margin: 0; padding: 0; box-sizing: border-box }
+    html { scroll-behavior: smooth }
+    body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--ink); min-height: 100vh; overflow-x: hidden; position: relative }
+    body::before { content: ''; position: fixed; inset: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E"); opacity: .03; pointer-events: none; z-index: 100 }
+
+    .bg-circle { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0 }
+    .bg-circle-1 { width: 700px; height: 700px; background: radial-gradient(circle, rgba(45,90,27,.12) 0%, transparent 70%); top: -200px; right: -150px }
+    .bg-circle-2 { width: 500px; height: 500px; background: radial-gradient(circle, rgba(196,168,50,.09) 0%, transparent 70%); bottom: -100px; left: -100px }
+
+    .botanical-svg { position: fixed; pointer-events: none; z-index: 1; opacity: .09 }
+    .botanical-tl { top: -10px; left: -10px; width: 280px }
+    .botanical-br { bottom: -10px; right: -10px; width: 240px; transform: rotate(180deg) }
+
+    .hero { position: relative; z-index: 10; padding: 54px 40px 0; text-align: center; opacity: 0; animation: fadeUp .9s ease .1s forwards }
+    .back-link { display: inline-flex; align-items: center; gap: 8px; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--sage); text-decoration: none; margin-bottom: 36px; transition: color .3s }
+    .back-link:hover { color: var(--gold) }
+    .logo-rule { display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 14px }
+    .logo-rule span { display: block; height: 1px; width: 70px; background: linear-gradient(to right, transparent, var(--gold)) }
+    .logo-rule span:last-child { background: linear-gradient(to left, transparent, var(--gold)) }
+    .logo-ornament { font-size: 13px; color: var(--gold) }
+    .hero-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(56px, 10vw, 100px); font-weight: 300; letter-spacing: 7px; line-height: 1; color: var(--deep) }
+    .hero-subtitle { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-style: italic; font-weight: 300; color: var(--earth); letter-spacing: 2px; margin-top: 8px }
+    .hero-sci { font-size: 11px; font-weight: 200; letter-spacing: 5px; color: var(--sage); margin-top: 6px }
+
+    .hero-photos { position: relative; z-index: 10; display: grid; grid-template-columns: 1fr 1fr; gap: 2px; max-width: 900px; margin: 40px auto 0; opacity: 0; animation: fadeUp .9s ease .35s forwards }
+    .hero-photos img { width: 100%; height: 380px; object-fit: cover; object-position: center; display: block; background: var(--parchment) }
+    .photo-placeholder { width: 100%; height: 380px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--parchment); gap: 12px }
+    .photo-placeholder svg { opacity: .35 }
+    .photo-placeholder span { font-family: 'Cormorant Garamond', serif; font-size: 13px; font-style: italic; color: var(--earth); opacity: .6 }
+
+    .photo-caption { text-align: center; font-family: 'Cormorant Garamond', serif; font-size: 12px; font-style: italic; color: var(--sage); letter-spacing: 1px; padding: 10px 0 0; max-width: 900px; margin: 0 auto; position: relative; z-index: 10; opacity: 0; animation: fadeUp .9s ease .5s forwards }
+
+    .divider { display: flex; align-items: center; justify-content: center; gap: 16px; margin: 50px auto; max-width: 600px; opacity: 0; animation: fadeUp .9s ease .55s forwards; position: relative; z-index: 10 }
+    .divider-line { height: 1px; width: 120px; background: linear-gradient(to right, transparent, var(--sage)) }
+    .divider-line:last-child { background: linear-gradient(to left, transparent, var(--sage)) }
+    .divider-leaf { color: var(--forest); font-size: 18px }
+
+    .content { position: relative; z-index: 10; max-width: 860px; margin: 0 auto; padding: 0 30px 80px }
+    .intro-text { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 300; line-height: 1.75; color: var(--ink); text-align: center; max-width: 700px; margin: 0 auto 60px; opacity: 0; animation: fadeUp .9s ease .6s forwards }
+    .intro-text em { color: var(--forest); font-style: italic }
+
+    .section { margin-bottom: 60px; opacity: 0; animation: fadeUp .9s ease forwards }
+    .section:nth-child(1) { animation-delay: .65s } .section:nth-child(2) { animation-delay: .75s } .section:nth-child(3) { animation-delay: .85s } .section:nth-child(4) { animation-delay: .95s } .section:nth-child(5) { animation-delay: 1.05s } .section:nth-child(6) { animation-delay: 1.15s } .section:nth-child(7) { animation-delay: 1.25s }
+
+    .section-header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px }
+    .section-num { font-family: 'Cormorant Garamond', serif; font-size: 11px; letter-spacing: 4px; color: var(--gold) }
+    .section-title { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 400; color: var(--deep); letter-spacing: 1px }
+    .section-rule { height: 1px; flex: 1; background: linear-gradient(to right, var(--gold), transparent) }
+    .section-body { font-size: 13px; font-weight: 300; line-height: 1.9; color: var(--ink); margin-bottom: 24px }
+
+    .data-table { width: 100%; border-collapse: collapse; margin: 16px 0 8px; font-size: 12px }
+    .data-table thead tr { background: var(--deep); color: var(--gold); font-size: 10px; letter-spacing: 3px; text-transform: uppercase }
+    .data-table thead th { padding: 12px 14px; text-align: left; font-weight: 400 }
+    .data-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .data-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .data-table tbody tr { transition: background .2s }
+    .data-table tbody tr:hover { background: #e5dfc4 }
+    .data-table tbody td { padding: 10px 14px; color: var(--ink); border-bottom: 1px solid rgba(90,74,30,.08) }
+    .data-table tbody td:first-child { font-weight: 400; color: var(--deep); width: 28% }
+
+    .dosha-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .dosha-table thead tr { background: var(--forest); color: var(--cream) }
+    .dosha-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .dosha-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .dosha-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .dosha-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(90,74,30,.08) }
+    .dosha-table tbody td:first-child { font-weight: 400; color: var(--forest); width: 18% }
+    .dosha-table tbody td:nth-child(2) { color: var(--earth); width: 20% }
+
+    .consume-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .consume-table thead tr { background: var(--earth); color: var(--cream) }
+    .consume-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .consume-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .consume-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .consume-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(90,74,30,.08) }
+    .consume-table tbody td:first-child { font-weight: 400; color: var(--earth); width: 22% }
+
+    .benefits-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: rgba(90,74,30,.12); border: 1px solid rgba(90,74,30,.12); margin: 8px 0 }
+    .benefit-card { background: var(--cream); padding: 24px 22px; transition: background .3s; position: relative; overflow: hidden }
+    .benefit-card:hover { background: #ece5cb }
+    .benefit-card::before { content: ''; position: absolute; bottom: 0; left: 0; width: 0; height: 2px; background: var(--gold); transition: width .4s }
+    .benefit-card:hover::before { width: 100% }
+    .benefit-title { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 600; color: var(--forest); margin-bottom: 8px }
+    .benefit-desc { font-size: 11.5px; font-weight: 300; line-height: 1.75; color: var(--ink); opacity: .85 }
+
+    .precaution-list { list-style: none; margin: 8px 0 }
+    .precaution-list li { display: flex; gap: 12px; align-items: flex-start; padding: 10px 14px; font-size: 12px; font-weight: 300; line-height: 1.7; color: var(--ink); border-bottom: 1px solid rgba(90,74,30,.08) }
+    .precaution-list li:last-child { border-bottom: none }
+    .precaution-list li::before { content: '▸'; color: var(--gold); flex-shrink: 0; margin-top: 1px }
+
+    .nutrition-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: rgba(90,74,30,.12); border: 1px solid rgba(90,74,30,.12); margin: 20px 0 }
+    .nutrition-cell { background: var(--cream); padding: 22px 16px; text-align: center; transition: background .3s }
+    .nutrition-cell:hover { background: var(--parchment) }
+    .nutrition-num { font-family: 'Cormorant Garamond', serif; font-size: 36px; font-weight: 300; color: var(--forest); line-height: 1; margin-bottom: 4px }
+    .nutrition-unit { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); font-weight: 300 }
+    .nutrition-label { font-size: 11px; font-weight: 300; color: var(--ink); margin-top: 5px }
+
+    .sources { border-top: 1px solid rgba(90,74,30,.15); padding-top: 24px; margin-top: 20px }
+    .sources-title { font-size: 10px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); margin-bottom: 12px; font-weight: 300 }
+    .sources ul { list-style: none }
+    .sources ul li { font-family: 'Cormorant Garamond', serif; font-size: 13px; font-style: italic; color: var(--earth); padding: 5px 0; border-bottom: 1px solid rgba(90,74,30,.06) }
+    .sources ul li::before { content: '· '; color: var(--sage) }
+
+    footer { position: relative; z-index: 10; text-align: center; padding: 24px 20px 44px; border-top: 1px solid rgba(90,74,30,.12); max-width: 860px; margin: 0 auto }
+    footer p { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); font-weight: 300 }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(28px) } to { opacity: 1; transform: translateY(0) } }
+
+    @media(max-width:700px) {
+      .hero-photos { grid-template-columns: 1fr }
+      .photo-placeholder, .hero-photos img { height: 260px }
+      .benefits-grid { grid-template-columns: 1fr }
+      .nutrition-bar { grid-template-columns: 1fr 1fr }
+      .content { padding: 0 18px 60px }
+    }
+  </style>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+</head>
+<body>
+  <button type="button" id="open3D">View in 3D</button>
+
+
+<div class="bg-circle bg-circle-1"></div>
+<div class="bg-circle bg-circle-2"></div>
+
+<!-- Botanical corner SVGs — curry leaf silhouettes -->
+<svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M20 280 Q60 220 90 170 Q130 110 200 40" stroke="#2d5a1b" stroke-width="1.5" fill="none"/>
+  <!-- pinnate leaflets along stem -->
+  <ellipse cx="60" cy="225" rx="22" ry="9" fill="#2d5a1b" transform="rotate(-35 60 225)" opacity=".8"/>
+  <ellipse cx="85" cy="195" rx="24" ry="10" fill="#6b9e4e" transform="rotate(-45 85 195)" opacity=".7"/>
+  <ellipse cx="112" cy="162" rx="22" ry="9" fill="#2d5a1b" transform="rotate(-52 112 162)" opacity=".85"/>
+  <ellipse cx="142" cy="128" rx="20" ry="8" fill="#6b9e4e" transform="rotate(-58 142 128)" opacity=".7"/>
+  <ellipse cx="170" cy="96" rx="18" ry="7" fill="#2d5a1b" transform="rotate(-65 170 96)" opacity=".8"/>
+  <circle cx="200" cy="65" r="5" fill="#c4a832" opacity=".5"/>
+</svg>
+<svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M20 280 Q60 220 90 170 Q130 110 200 40" stroke="#2d5a1b" stroke-width="1.5" fill="none"/>
+  <ellipse cx="60" cy="225" rx="22" ry="9" fill="#2d5a1b" transform="rotate(-35 60 225)" opacity=".8"/>
+  <ellipse cx="85" cy="195" rx="24" ry="10" fill="#6b9e4e" transform="rotate(-45 85 195)" opacity=".7"/>
+  <ellipse cx="112" cy="162" rx="22" ry="9" fill="#2d5a1b" transform="rotate(-52 112 162)" opacity=".85"/>
+  <ellipse cx="142" cy="128" rx="20" ry="8" fill="#6b9e4e" transform="rotate(-58 142 128)" opacity=".7"/>
+</svg>
+
+<div class="hero">
+  <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+  <div class="logo-rule"><span></span><div class="logo-ornament">✦</div><span></span></div>
+  <div class="hero-title">Murraya</div>
+  <div class="hero-subtitle">Curry Leaf Tree — The Fragrant Healer of South Asia</div>
+  <div class="hero-sci">Murraya koenigii (L.) Spreng &nbsp;·&nbsp; Bergera koenigii</div>
+</div>
+
+<div class="hero-photos">
+  <div class="photo-placeholder">
+    <svg width="64" height="64" viewBox="0 0 64 64" fill="none"><ellipse cx="32" cy="32" rx="20" ry="10" fill="#2d5a1b"/><path d="M32 22 Q 50 14 56 28" stroke="#6b9e4e" stroke-width="1.5" fill="none"/><path d="M32 22 Q 14 14 8 28" stroke="#6b9e4e" stroke-width="1.5" fill="none"/><circle cx="32" cy="48" r="4" fill="#c4a832"/></svg>
+    <span>Murraya koenigii — fresh leaf cluster</span>
+  </div>
+  <div class="photo-placeholder">
+    <svg width="64" height="64" viewBox="0 0 64 64" fill="none"><path d="M32 8 Q32 56 32 56" stroke="#2d5a1b" stroke-width="2" fill="none"/><ellipse cx="18" cy="24" rx="14" ry="6" fill="#6b9e4e" transform="rotate(-20 18 24)"/><ellipse cx="46" cy="24" rx="14" ry="6" fill="#2d5a1b" transform="rotate(20 46 24)"/><ellipse cx="18" cy="38" rx="13" ry="5" fill="#2d5a1b" transform="rotate(-20 18 38)"/><ellipse cx="46" cy="38" rx="13" ry="5" fill="#6b9e4e" transform="rotate(20 46 38)"/><circle cx="32" cy="10" r="5" fill="white" stroke="#c4a832" stroke-width="1"/></svg>
+    <span>Murraya koenigii — pinnate leaf & white flower cluster</span>
+  </div>
+</div>
+<p class="photo-caption">Fig. 1 — Aromatic pinnate leaflets of Murraya koenigii, the culinary and medicinal curry leaf &nbsp;·&nbsp; Fig. 2 — Small white fragrant flowers borne in terminal corymbs</p>
+
+<div class="divider">
+  <div class="divider-line"></div>
+  <div class="divider-leaf">❧</div>
+  <div class="divider-line"></div>
+</div>
+
+<div class="content">
+  <p class="intro-text">Known across South Asia as <em>Kadi Patta</em>, this small tropical tree is far more than a tadka ingredient — honoured in Ayurveda as <em>Surabhi</em> and <em>Krishnanim</em>, its leaves, bark, roots, and berries have been used for millennia to pacify Kapha and Pitta, strengthen digestion, sharpen vision, and purify the blood, earning it a place in both the kitchen and the classical formulary.</p>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">01</span><h2 class="section-title">Botanical Profile</h2><div class="section-rule"></div></div>
+    <p class="section-body">Murraya koenigii is a small, aromatic, nearly evergreen tree or large shrub of the Rutaceae family (the citrus family), native to the Indian subcontinent and Sri Lanka, now naturalised throughout tropical and subtropical Asia. It typically grows to 4–6 m in height, with a slender trunk, spreading crown, and dark green, glossy, pinnate leaves bearing 11–21 leaflets — each oblique-ovate, acuminate, and intensely aromatic when bruised, owing to a rich suite of volatile carbazole alkaloids and essential oils.</p>
+    <p class="section-body">Small white flowers are borne in terminal corymbs and carry a sweet, jasmine-like fragrance. The fruits ripen to a shiny black berry containing a single large seed. The tree is propagated through seeds or root suckers, prefers well-drained, fertile soil, and thrives in warm, humid climates — commonly found in home gardens, forest margins, and village groves across peninsular India.</p>
+    <table class="data-table">
+      <thead><tr><th>Property</th><th>Detail</th></tr></thead>
+      <tbody>
+        <tr><td>Family</td><td>Rutaceae (Citrus family)</td></tr>
+        <tr><td>Botanical Name</td><td>Murraya koenigii (L.) Spreng.</td></tr>
+        <tr><td>Sanskrit Names</td><td>Surabhi, Krishnanim, Girinimba, Kallasaka, Mishreya</td></tr>
+        <tr><td>Common Names</td><td>Curry Leaf Tree, Sweet Neem, Indian Curry Leaf</td></tr>
+        <tr><td>Regional Names</td><td>Kadi Patta (Hindi), Karivepallai (Tam/Tel), Karivembu (Mal), Mitha Neem (Ben)</td></tr>
+        <tr><td>Origin</td><td>Indian Subcontinent, Sri Lanka; naturalised in SE Asia</td></tr>
+        <tr><td>Plant Type</td><td>Small aromatic evergreen tree / large shrub (4–6 m)</td></tr>
+        <tr><td>Flowering Season</td><td>March–May; occasionally September–October</td></tr>
+        <tr><td>Medicinal Parts</td><td>Leaves (primary), bark, roots, fruits, seeds</td></tr>
+        <tr><td>Taste Profile</td><td>Tikta (bitter), Katu (pungent), slightly Kashaya (astringent)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">02</span><h2 class="section-title">Phytochemical Composition</h2><div class="section-rule"></div></div>
+    <p class="section-body">Murraya koenigii is one of the most phytochemically rich members of the Rutaceae family. Over 200 compounds have been identified across its parts, with carbazole alkaloids — a class unique to and emblematic of this species — being the most pharmacologically significant. The leaves alone contain a complex volatile essential oil (0.8–2.6% yield) dominated by sabinene, β-caryophyllene, α-pinene, and β-phellandrene, which accounts for the herb's distinctive aroma.</p>
+    <div class="nutrition-bar">
+      <div class="nutrition-cell"><div class="nutrition-num">200+</div><div class="nutrition-unit">compounds</div><div class="nutrition-label">Identified across plant parts</div></div>
+      <div class="nutrition-cell"><div class="nutrition-num">50+</div><div class="nutrition-unit">alkaloids</div><div class="nutrition-label">Carbazole-type (mahanimbine etc.)</div></div>
+      <div class="nutrition-cell"><div class="nutrition-num">2.6%</div><div class="nutrition-unit">essential oil</div><div class="nutrition-label">Leaf volatile yield</div></div>
+      <div class="nutrition-cell"><div class="nutrition-num">6.1%</div><div class="nutrition-unit">seed oil</div><div class="nutrition-label">Rich in linoleic acid</div></div>
+    </div>
+    <table class="data-table">
+      <thead><tr><th>Compound</th><th>Category</th><th>Primary Action</th></tr></thead>
+      <tbody>
+        <tr><td>Mahanimbine</td><td>Carbazole alkaloid</td><td>Antidiabetic, antitumour, antimicrobial — flagship bioactive</td></tr>
+        <tr><td>Koenigine, Murrayanine</td><td>Carbazole alkaloids</td><td>Antibacterial, anti-inflammatory, cytotoxic</td></tr>
+        <tr><td>Mahanine</td><td>Carbazole alkaloid</td><td>Antileishmanial, antiproliferative, apoptosis-inducing</td></tr>
+        <tr><td>Girinimbine</td><td>Carbazole alkaloid</td><td>Antifungal, antitumour, anti-platelet aggregation</td></tr>
+        <tr><td>Murrayazoline</td><td>Quinolone alkaloid</td><td>Smooth muscle relaxant, antispasmodic</td></tr>
+        <tr><td>β-Caryophyllene &amp; Sabinene</td><td>Sesquiterpenes (EO)</td><td>Anti-inflammatory, analgesic, antimicrobial</td></tr>
+        <tr><td>Quercetin, Rutin</td><td>Flavonoids</td><td>Antioxidant, anti-inflammatory, capillary protection</td></tr>
+        <tr><td>Carbazole 3-carbaldehyde</td><td>Carbazole derivative</td><td>Strong antioxidant, metal chelation</td></tr>
+        <tr><td>Vitamin A, B, C, E</td><td>Micronutrients</td><td>Vision, immunity, skin health, antioxidant</td></tr>
+        <tr><td>Iron, Calcium, Phosphorus</td><td>Minerals</td><td>Haematopoiesis, bone health, enzyme co-factors</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">03</span><h2 class="section-title">Ayurvedic Significance</h2><div class="section-rule"></div></div>
+    <p class="section-body">Murraya koenigii is described in the classical Ayurvedic texts under the name <em>Surabhi</em> (the fragrant one) and <em>Girinimba</em> (the mountain nimba, owing to its resemblance to neem in leaf form but sweetness in taste). Charaka and Sushruta both reference <em>Nimba kula</em> preparations with affinity for Kapha and Pitta disorders of the digestive and dermal systems. Bhavaprakasha Nighantu classifies it under <em>Aamra Phaladi Varga</em>, attributing to it the properties of deepana (digestive stimulant), pachana (carminative), krimighna (anthelmintic), and raktashodhaka (blood purifier).</p>
+    <p class="section-body">The classical shloka describes: <em>"Surabhi tikta katu sheetala laghu, Kapha-pittahara, chakshu, raktashodhana"</em> — bitter and pungent in taste, cooling in effect, light in quality, pacifying Kapha and Pitta, beneficial to the eyes, and purifying to the blood.</p>
+    <table class="dosha-table">
+      <thead><tr><th>Dosha</th><th>Effect</th><th>Mechanism &amp; Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Vata →</td><td>Neutral / mild ↓</td><td>Pungent quality and deepana action mildly pacify Vata in the digestive channel; less indicated for pure Vata disorders than Kapha-Pitta ones</td></tr>
+        <tr><td>Pitta ↓</td><td>Pacifying</td><td>Tikta (bitter) rasa and Sheeta virya (cooling potency) clear excess Pitta from the blood, liver, and skin; used in jaundice, skin disorders, and hyperacidity</td></tr>
+        <tr><td>Kapha ↓</td><td>Pacifying</td><td>Katu (pungent), tikta (bitter), and laghu (light) qualities strongly clear Kapha; indicated in obesity, congestion, high cholesterol, and sluggish digestion</td></tr>
+      </tbody>
+    </table>
+    <p class="section-body"><strong>Rasa:</strong> Tikta (bitter), Katu (pungent) &nbsp;·&nbsp; <strong>Guna:</strong> Laghu (light), Snigdha (slightly unctuous) &nbsp;·&nbsp; <strong>Virya:</strong> Sheeta (cooling) &nbsp;·&nbsp; <strong>Vipaka:</strong> Katu (pungent) &nbsp;·&nbsp; <strong>Karma:</strong> Deepana, Pachana, Krimighna, Raktashodhaka, Chaksushya</p>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">04</span><h2 class="section-title">Key Health Benefits</h2><div class="section-rule"></div></div>
+    <p class="section-body">Modern pharmacological research has validated Murraya koenigii's remarkable range of therapeutic activities — its antidiabetic, antioxidant, hepatoprotective, antidiarrhoeal, and anti-obesity properties are among the most extensively studied, supported by both <em>in vitro</em> and <em>in vivo</em> evidence.</p>
+    <div class="benefits-grid">
+      <div class="benefit-card">
+        <div class="benefit-title">Antidiabetic &amp; Glycaemic Control</div>
+        <div class="benefit-desc">The carbazole alkaloid mahanimbine significantly inhibits α-amylase and α-glucosidase enzymes, slowing postprandial glucose absorption. Animal studies show leaf extract lowers blood glucose comparably to metformin. Traditionally recommended for Prameha (diabetes and metabolic disorders) — a key use in folk Ayurveda of South India.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Digestive Stimulant &amp; Carminative</div>
+        <div class="benefit-desc">The quintessential digestive herb of South Asian cooking — fresh leaves in tadka stimulate digestive enzymes, relieve flatulence, nausea, and indigestion. Classically indicated for ajirna (indigestion), aruchi (anorexia), and grahani (IBS). Leaf decoction is a traditional remedy for diarrhoea and dysentery.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Antioxidant &amp; Anti-ageing</div>
+        <div class="benefit-desc">Among the highest antioxidant activities reported in any culinary herb — DPPH radical scavenging attributed to carbazole alkaloids, quercetin, rutin, and vitamin C. Protects cells from oxidative stress, reduces lipid peroxidation, and is associated with anti-ageing effects in traditional dermatological use (Varnya karma).</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Hair Growth &amp; Scalp Health</div>
+        <div class="benefit-desc">Perhaps its most iconic folk use in modern times — curry leaf oil or paste applied to the scalp is traditionally used to prevent premature greying, reduce hair fall, and stimulate follicles. Research attributes these effects to high iron content, antioxidants preventing follicle oxidative damage, and alkaloids improving scalp microcirculation.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Hepatoprotective Action</div>
+        <div class="benefit-desc">Mahanimbine and carbazole-3-carbaldehyde demonstrate significant liver protection — reducing hepatic enzymes (ALT, AST), preventing lipid accumulation, and attenuating paracetamol-induced hepatotoxicity in animal models. Traditionally used in pandu (anaemia) and kamala (jaundice) to support liver function and bile flow.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Anti-obesity &amp; Lipid Regulation</div>
+        <div class="benefit-desc">Mahanimbine demonstrated significant reduction in body weight, fat accumulation, cholesterol, and triglycerides in high-fat-diet mouse models. Mechanism involves inhibition of pancreatic lipase and adipogenesis. Supports classical use in sthaulya (obesity) and medoroga (hyperlipidaemia).</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Antimicrobial &amp; Anti-infective</div>
+        <div class="benefit-desc">Leaf and bark extracts show broad-spectrum activity against E. coli, Salmonella, Staphylococcus aureus, Candida albicans, and Mycobacterium tuberculosis in vitro. Root bark paste is a traditional application for skin infections, scabies, and fungal conditions — classical Krimighna (anti-parasitic) karma.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Vision &amp; Eye Health (Chaksushya)</div>
+        <div class="benefit-desc">Classically listed as Chaksushya — beneficial to the eyes — due to high β-carotene and Vitamin A content in the leaves. Regular consumption is a traditional preventive for night blindness and age-related macular degeneration. Vitamin A concentration rivals that of carrots on a fresh-weight basis.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">05</span><h2 class="section-title">Nutritional Composition</h2><div class="section-rule"></div></div>
+    <p class="section-body">Fresh curry leaves are a nutritional powerhouse — their role as a daily culinary ingredient in South Indian cooking is not merely flavouristic but constitutes a genuine functional food habit. Per 100 g of fresh leaves:</p>
+    <table class="data-table">
+      <thead><tr><th>Nutrient</th><th>Per 100 g Fresh Leaf</th><th>Significance</th></tr></thead>
+      <tbody>
+        <tr><td>Energy</td><td>108 kcal</td><td>Moderate caloric density</td></tr>
+        <tr><td>Protein</td><td>6.1 g</td><td>Unusually high for a leafy herb</td></tr>
+        <tr><td>Dietary Fibre</td><td>6.4 g</td><td>Supports gut motility and glycaemic control</td></tr>
+        <tr><td>Calcium</td><td>830 mg</td><td>Exceptional — 83% of adult RDA</td></tr>
+        <tr><td>Iron</td><td>7.0 mg</td><td>Important for anaemia management</td></tr>
+        <tr><td>Phosphorus</td><td>57 mg</td><td>Bone and energy metabolism</td></tr>
+        <tr><td>β-Carotene (Vit A)</td><td>7560 µg</td><td>Exceeds daily requirement; eye health</td></tr>
+        <tr><td>Vitamin C</td><td>4 mg</td><td>Antioxidant, immunity</td></tr>
+        <tr><td>Nicotinic Acid (B3)</td><td>2.3 mg</td><td>Metabolic health</td></tr>
+        <tr><td>Oxalic Acid</td><td>Low</td><td>Calcium bioavailability adequate</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">06</span><h2 class="section-title">How to Consume Murraya</h2><div class="section-rule"></div></div>
+    <p class="section-body">Murraya koenigii is uniquely versatile — equally a daily kitchen ingredient and a classical Ayurvedic medicinal. For therapeutic use, fresh leaves are always superior to dried; the volatile alkaloids and essential oils that carry most of the pharmacological activity degrade significantly upon drying. Internal preparations are generally safe for long-term use when consumed as food; concentrated extracts warrant physician guidance.</p>
+    <table class="consume-table">
+      <thead><tr><th>Form</th><th>Preparation</th><th>Dosage</th><th>Best Use</th></tr></thead>
+      <tbody>
+        <tr><td>Fresh Leaves — Culinary</td><td>Temper in ghee or oil at start of cooking (tadka)</td><td>8–15 leaves daily</td><td>Digestion, blood sugar, daily nutrition</td></tr>
+        <tr><td>Raw Chewing</td><td>Chew 8–10 fresh leaves on an empty stomach</td><td>Morning, daily</td><td>Diabetes, weight management, hair health</td></tr>
+        <tr><td>Leaf Decoction (Kwatha)</td><td>Boil 20 leaves in 2 cups water; reduce by half; strain</td><td>30–40 ml twice daily</td><td>Diarrhoea, jaundice, liver support</td></tr>
+        <tr><td>Fresh Juice (Swarasa)</td><td>Blend fresh leaves + minimal water; strain</td><td>15–20 ml, 1–2× daily</td><td>Nausea, vomiting, morning sickness</td></tr>
+        <tr><td>Leaf Powder (Churna)</td><td>Shade-dry; powder finely; store airtight</td><td>1–3 g with warm water</td><td>Hyperlipidaemia, obesity, glycaemic control</td></tr>
+        <tr><td>Curry Leaf Tea</td><td>Steep 10–12 leaves in hot water 5–7 min; add honey</td><td>1–2 cups daily</td><td>Antioxidant, general wellness</td></tr>
+        <tr><td>Hair Oil (Topical)</td><td>Simmer leaves in coconut oil till leaves blacken; strain</td><td>Apply 2–3× weekly</td><td>Hair fall, premature greying, scalp health</td></tr>
+        <tr><td>Root Bark Paste (Topical)</td><td>Ground root bark with water</td><td>Apply to affected skin</td><td>Skin infections, insect bites</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">07</span><h2 class="section-title">Safety &amp; Precautions</h2><div class="section-rule"></div></div>
+    <p class="section-body">Murraya koenigii is among the safest Ayurvedic herbs for long-term use when consumed as food — its millennia-long use as a daily culinary ingredient in South Asian cooking is itself a safety record. Therapeutic doses in the form of extracts or concentrated supplements warrant a little more care in specific contexts.</p>
+    <ul class="precaution-list">
+      <li><strong>Pregnancy:</strong> Culinary use (8–15 leaves in cooking) is safe and nutritious. Concentrated leaf juice or root preparations in high doses are traditionally considered uterine stimulants and should be avoided. Consult physician before supplemental use.</li>
+      <li><strong>Hypoglycaemia risk:</strong> Individuals on antidiabetic medications (insulin, metformin, sulphonylureas) should monitor blood glucose closely — additive hypoglycaemic effect is well-documented. Dose adjustment of pharmaceutical agents may be necessary.</li>
+      <li><strong>Drug interactions:</strong> May potentiate anticoagulant medications (warfarin) due to Vitamin K content in large doses. Use with caution alongside hepatic CYP450-metabolised drugs, as carbazole alkaloids may modulate enzyme activity.</li>
+      <li><strong>Vata-dominant constitutions:</strong> The cooling virya and bitter taste may occasionally aggravate Vata in highly depleted or constitutionally cold individuals — combine with a warming carrier (ghee, ginger) if this is a concern.</li>
+      <li><strong>Allergy:</strong> Rare contact dermatitis reported from topical oil application in Rutaceae-sensitive individuals. Patch test before applying curry leaf oil over large skin areas.</li>
+      <li><strong>Concentrated supplements:</strong> Standardised extract capsules at doses above 500 mg should be taken with medical supervision — carbazole alkaloids show cytotoxic activity at high concentrations in cell studies.</li>
+      <li><strong>Kidney stones:</strong> High calcium content in very large therapeutic doses is theoretically relevant in calcium-oxalate stone formers — though culinary amounts pose no concern.</li>
+    </ul>
+  </div>
+
+  <div class="sources">
+    <div class="sources-title">References &amp; Sources</div>
+    <ul>
+      <li>Tachibana Y et al. — "Antioxidative activity of carbazoles from Murraya koenigii leaves" — Journal of Agricultural and Food Chemistry, 2001</li>
+      <li>Gupta S et al. — "Phytochemical and pharmacological properties of Murraya koenigii" — Journal of Chemistry, 2012</li>
+      <li>Handral HK et al. — "A review on Murraya koenigii: multipotential medicinal plant" — Asian Journal of Pharmaceutical and Clinical Research, 2012</li>
+      <li>Dinesh Kumar C et al. — "Antidiabetic activity of Murraya koenigii: a review" — Asian Pacific Journal of Tropical Disease, 2013</li>
+      <li>Rajagopal K &amp; Sasikumar JM — "Antidiabetic property of Murraya koenigii and its alkaloids" — Asian Pacific Journal of Tropical Biomedicine, 2012</li>
+      <li>Kesari AN et al. — "Antihyperglycemic effects of Murraya koenigii in rats" — Journal of Ethnopharmacology, 2005</li>
+      <li>Baramaki H et al. — "Girinimbine from Murraya koenigii: antitumour activity" — Phytomedicine, 2010</li>
+      <li>Bhavaprakasha Nighantu — Aamra Phaladi Varga; Charaka Samhita — Krimighna &amp; Raktashodhaka references</li>
+      <li>Indian Council of Medical Research — Nutritional Value of Indian Foods (ICMR-NIN), 2017 edition</li>
+      <li>Priyavrat Sharma — Dravyaguna Vigyana — Classical properties of Girinimba / Surabhi</li>
+    </ul>
+  </div>
+</div>
+
+<footer>
+  <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a qualified practitioner before therapeutic use</p>
+</footer>
+
+
+  <div id="viewerModal">
+    <div id="modal-topbar">
+      <span>3D Model — Murraya</span>
+      <button type="button" id="close3D">✕</button>
+    </div>
+    <model-viewer src="murraya3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+  </div>
+  <script>
+    (function() {
+      var open3D = document.getElementById('open3D');
+      var close3D = document.getElementById('close3D');
+      var modal = document.getElementById('viewerModal');
+      if (!open3D || !close3D || !modal) return;
+      function openModal() {
+        
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+      function closeModal() {
+        
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+      open3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); openModal();
+      });
+      close3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); closeModal();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+      });
+    })();
+  </script>
+
+</body>
+</html>

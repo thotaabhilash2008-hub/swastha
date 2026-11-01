@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Boswellia / Shallaki | Swastha</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+  <style>
+    #open3D {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      padding: 10px 18px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: var(--forest);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      z-index: 1000;
+      transition: .3s;
+    }
+    #open3D:hover {
+      background: var(--gold);
+      color: var(--deep);
+    }
+    #viewerModal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+    }
+    #modal-topbar {
+      flex-shrink: 0;
+      height: 58px;
+      background: #111111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px 0 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      z-index: 99999;
+    }
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 4.5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.72);
+      user-select: none;
+    }
+    #close3D {
+      width: 38px;
+      height: 38px;
+      font-size: 15px;
+      font-weight: 300;
+      background: transparent;
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background .2s, color .2s, transform .22s;
+      outline: none;
+      flex-shrink: 0;
+    }
+    #close3D:hover {
+      background: #ffffff;
+      color: #111111;
+      border-color: #ffffff;
+      transform: rotate(90deg);
+    }
+    #viewerModal model-viewer {
+      flex: 1;
+      width: 100%;
+      display: block;
+      background: #ffffff;
+    }
+
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+    * { margin: 0; padding: 0; box-sizing: border-box }
+    html { scroll-behavior: smooth }
+    body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--ink); min-height: 100vh; overflow-x: hidden; position: relative }
+    body::before { content: ''; position: fixed; inset: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E"); opacity: .035; pointer-events: none; z-index: 100 }
+    .bg-circle { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0 }
+    .bg-circle-1 { width: 700px; height: 700px; background: radial-gradient(circle, rgba(42,92,63,.1) 0%, transparent 70%); top: -200px; right: -150px }
+    .bg-circle-2 { width: 500px; height: 500px; background: radial-gradient(circle, rgba(201,168,76,.08) 0%, transparent 70%); bottom: -100px; left: -100px }
+    .botanical-svg { position: fixed; pointer-events: none; z-index: 1; opacity: .1 }
+    .botanical-tl { top: -20px; left: -20px; width: 260px }
+    .botanical-br { bottom: -20px; right: -20px; width: 220px; transform: rotate(180deg) }
+    .entry-badge { position: fixed; top: 24px; left: 30px; font-family: 'Cormorant Garamond', serif; font-size: 12px; letter-spacing: 4px; color: var(--gold); z-index: 1000; font-weight: 300 }
+    .hero { position: relative; z-index: 10; padding: 54px 40px 0; text-align: center; opacity: 0; animation: fadeUp .9s ease .1s forwards }
+    .back-link { display: inline-flex; align-items: center; gap: 8px; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--sage); text-decoration: none; margin-bottom: 36px; transition: color .3s }
+    .back-link:hover { color: var(--gold) }
+    .logo-rule { display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 14px }
+    .logo-rule span { display: block; height: 1px; width: 70px; background: linear-gradient(to right, transparent, var(--gold)) }
+    .logo-rule span:last-child { background: linear-gradient(to left, transparent, var(--gold)) }
+    .logo-ornament { font-size: 13px; color: var(--gold) }
+    .hero-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(52px, 10vw, 100px); font-weight: 300; letter-spacing: 8px; line-height: 1; color: var(--deep) }
+    .hero-subtitle { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-style: italic; font-weight: 300; color: var(--earth); letter-spacing: 2px; margin-top: 8px }
+    .hero-sci { font-size: 11px; font-weight: 200; letter-spacing: 5px; color: var(--sage); margin-top: 6px }
+    .hero-photos { position: relative; z-index: 10; display: grid; grid-template-columns: 1fr 1fr; gap: 2px; max-width: 900px; margin: 40px auto 0; opacity: 0; animation: fadeUp .9s ease .35s forwards }
+    .hero-photos img { width: 100%; height: 380px; object-fit: cover; object-position: center; display: block; background: var(--parchment) }
+    .photo-caption { text-align: center; font-family: 'Cormorant Garamond', serif; font-size: 12px; font-style: italic; color: var(--sage); letter-spacing: 1px; padding: 10px 0 0; max-width: 900px; margin: 0 auto; position: relative; z-index: 10; opacity: 0; animation: fadeUp .9s ease .5s forwards }
+    .divider { display: flex; align-items: center; justify-content: center; gap: 16px; margin: 50px auto; max-width: 600px; opacity: 0; animation: fadeUp .9s ease .55s forwards; position: relative; z-index: 10 }
+    .divider-line { height: 1px; width: 120px; background: linear-gradient(to right, transparent, var(--sage)) }
+    .divider-line:last-child { background: linear-gradient(to left, transparent, var(--sage)) }
+    .divider-leaf { color: var(--forest); font-size: 18px }
+    .content { position: relative; z-index: 10; max-width: 860px; margin: 0 auto; padding: 0 30px 80px }
+    .intro-text { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 300; line-height: 1.75; color: var(--ink); text-align: center; max-width: 700px; margin: 0 auto 60px; opacity: 0; animation: fadeUp .9s ease .6s forwards }
+    .intro-text em { color: var(--forest); font-style: italic }
+    .section { margin-bottom: 60px; opacity: 0; animation: fadeUp .9s ease forwards }
+    .section:nth-child(1) { animation-delay: .65s } .section:nth-child(2) { animation-delay: .75s }
+    .section:nth-child(3) { animation-delay: .85s } .section:nth-child(4) { animation-delay: .95s }
+    .section:nth-child(5) { animation-delay: 1.05s } .section:nth-child(6) { animation-delay: 1.15s }
+    .section:nth-child(7) { animation-delay: 1.25s } .section:nth-child(8) { animation-delay: 1.35s }
+    .section-header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px }
+    .section-num { font-family: 'Cormorant Garamond', serif; font-size: 11px; letter-spacing: 4px; color: var(--gold) }
+    .section-title { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 400; color: var(--deep); letter-spacing: 1px }
+    .section-rule { height: 1px; flex: 1; background: linear-gradient(to right, var(--gold), transparent) }
+    .section-body { font-size: 13px; font-weight: 300; line-height: 1.9; color: var(--ink); margin-bottom: 24px }
+    .data-table { width: 100%; border-collapse: collapse; margin: 16px 0 8px; font-size: 12px }
+    .data-table thead tr { background: var(--deep); color: var(--gold); font-size: 10px; letter-spacing: 3px; text-transform: uppercase }
+    .data-table thead th { padding: 12px 14px; text-align: left; font-weight: 400 }
+    .data-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .data-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .data-table tbody tr { transition: background .2s }
+    .data-table tbody tr:hover { background: rgba(200, 164, 93, 0.15) }
+    .data-table tbody td { padding: 10px 14px; color: var(--ink); border-bottom: 1px solid rgba(107,79,45,.08) }
+    .data-table tbody td:first-child { font-weight: 400; color: var(--deep); width: 28% }
+    .dosha-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .dosha-table thead tr { background: var(--forest); color: var(--cream) }
+    .dosha-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .dosha-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .dosha-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .dosha-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(107,79,45,.08) }
+    .dosha-table tbody td:first-child { font-weight: 400; color: var(--forest); width: 18% }
+    .dosha-table tbody td:nth-child(2) { color: var(--earth); width: 20% }
+    .consume-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .consume-table thead tr { background: var(--earth); color: var(--cream) }
+    .consume-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .consume-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .consume-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .consume-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(107,79,45,.08) }
+    .consume-table tbody td:first-child { font-weight: 400; color: var(--earth); width: 22% }
+    .benefits-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: rgba(107,79,45,.12); border: 1px solid rgba(107,79,45,.12); margin: 8px 0 }
+    .benefit-card { background: var(--cream); padding: 24px 22px; transition: background .3s; position: relative; overflow: hidden }
+    .benefit-card:hover { background: #ede4ce }
+    .benefit-card::before { content: ''; position: absolute; bottom: 0; left: 0; width: 0; height: 2px; background: var(--gold); transition: width .4s }
+    .benefit-card:hover::before { width: 100% }
+    .benefit-title { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 600; color: var(--forest); margin-bottom: 8px }
+    .benefit-desc { font-size: 11.5px; font-weight: 300; line-height: 1.75; color: var(--ink); opacity: .85 }
+    .precaution-list { list-style: none; margin: 8px 0 }
+    .precaution-list li { display: flex; gap: 12px; align-items: flex-start; padding: 10px 14px; font-size: 12px; font-weight: 300; line-height: 1.7; color: var(--ink); border-bottom: 1px solid rgba(107,79,45,.08) }
+    .precaution-list li:last-child { border-bottom: none }
+    .precaution-list li::before { content: '▸'; color: var(--gold); flex-shrink: 0; margin-top: 1px }
+    .nutrition-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: rgba(107,79,45,.12); border: 1px solid rgba(107,79,45,.12); margin: 20px 0 }
+    .nutrition-cell { background: var(--cream); padding: 22px 16px; text-align: center; transition: background .3s }
+    .nutrition-cell:hover { background: var(--parchment) }
+    .nutrition-num { font-family: 'Cormorant Garamond', serif; font-size: 34px; font-weight: 300; color: var(--forest); line-height: 1; margin-bottom: 4px }
+    .nutrition-unit { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); font-weight: 300 }
+    .nutrition-label { font-size: 11px; font-weight: 300; color: var(--ink); margin-top: 5px }
+    .script-box { border-left: 3px solid var(--gold); background: var(--parchment); padding: 18px 22px; margin: 18px 0 24px; font-family: 'Cormorant Garamond', serif; font-size: 15px; font-style: italic; color: var(--deep); line-height: 1.8 }
+    .script-box span { display: block; font-family: 'Jost', sans-serif; font-size: 11px; font-style: normal; letter-spacing: 3px; color: var(--sage); margin-top: 8px; text-transform: uppercase }
+    /* Resin spotlight — amber tones */
+    .spotlight { background: linear-gradient(135deg, rgba(201,168,76,.1), rgba(107,79,45,.07)); border: 1px solid rgba(201,168,76,.35); padding: 20px 24px; margin: 20px 0 28px; position: relative }
+    .spotlight::before { content: '◈'; position: absolute; top: -11px; left: 20px; background: var(--cream); padding: 0 8px; color: var(--gold); font-size: 16px }
+    .spotlight-title { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 600; color: var(--deep); margin-bottom: 8px }
+    .spotlight-body { font-size: 12px; font-weight: 300; line-height: 1.8; color: var(--ink) }
+    /* AKBA compound highlight strip */
+    .akba-strip { display: grid; grid-template-columns: repeat(3,1fr); gap: 1px; background: rgba(107,79,45,.12); border: 1px solid rgba(107,79,45,.12); margin: 18px 0 }
+    .akba-cell { background: var(--parchment); padding: 16px 18px }
+    .akba-label { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); margin-bottom: 5px; font-weight: 300 }
+    .akba-value { font-family: 'Cormorant Garamond', serif; font-size: 15px; color: var(--deep); line-height: 1.5 }
+    .sources { border-top: 1px solid rgba(107,79,45,.15); padding-top: 24px; margin-top: 20px }
+    .sources-title { font-size: 10px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); margin-bottom: 12px; font-weight: 300 }
+    .sources ul { list-style: none }
+    .sources ul li { font-family: 'Cormorant Garamond', serif; font-size: 13px; font-style: italic; color: var(--earth); padding: 5px 0; border-bottom: 1px solid rgba(107,79,45,.06) }
+    .sources ul li::before { content: '· '; color: var(--sage) }
+    footer { position: relative; z-index: 10; text-align: center; padding: 24px 20px 44px; border-top: 1px solid rgba(107,79,45,.12); max-width: 860px; margin: 0 auto }
+    footer p { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); font-weight: 300 }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(28px) } to { opacity: 1; transform: translateY(0) } }
+    @media(max-width:700px) {
+      .hero-photos { grid-template-columns: 1fr } .hero-photos img { height: 260px }
+      .benefits-grid { grid-template-columns: 1fr } .nutrition-bar { grid-template-columns: 1fr 1fr }
+      .akba-strip { grid-template-columns: 1fr } .content { padding: 0 18px 60px }
+    }
+  </style>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+</head>
+<body>
+  <button type="button" id="open3D">View in 3D</button>
+
+
+<div class="entry-badge">No. 43</div>
+<div class="bg-circle bg-circle-1"></div>
+<div class="bg-circle bg-circle-2"></div>
+
+<svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#2a5c3f" stroke-width="1.5" fill="none"/>
+  <circle cx="90" cy="210" r="8" fill="#2a5c3f" opacity="0.7"/><circle cx="130" cy="175" r="10" fill="#7a9e7e" opacity="0.6"/>
+  <circle cx="170" cy="135" r="7" fill="#2a5c3f" opacity="0.8"/><circle cx="210" cy="95" r="9" fill="#c9a84c" opacity="0.5"/>
+  <ellipse cx="115" cy="195" rx="20" ry="10" fill="#7a9e7e" transform="rotate(-30 115 195)"/>
+  <ellipse cx="155" cy="155" rx="18" ry="9" fill="#2a5c3f" transform="rotate(-45 155 155)"/>
+</svg>
+<svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#2a5c3f" stroke-width="1.5" fill="none"/>
+  <circle cx="90" cy="210" r="8" fill="#2a5c3f" opacity="0.7"/><circle cx="130" cy="175" r="10" fill="#7a9e7e" opacity="0.6"/>
+  <ellipse cx="115" cy="195" rx="20" ry="10" fill="#7a9e7e" transform="rotate(-30 115 195)"/>
+</svg>
+
+<div class="hero">
+  <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+  <div class="logo-rule"><span></span><div class="logo-ornament">✦</div><span></span></div>
+  <div class="hero-title">Shallaki</div>
+  <div class="hero-subtitle">Indian Frankincense — The Sacred Resin of the Dry Forests</div>
+  <div class="hero-sci">Boswellia serrata Roxb. ex Colebr. &nbsp;·&nbsp; Salai Guggul</div>
+</div>
+
+<div class="hero-photos">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/b/bf/Boswellia_serrata_%28Salai%29_in_Kinnarsani_WS%2C_AP_W2_IMG_5840.jpg" alt="Boswellia serrata tree with peeling papery bark on a dry Deccan hillside"
+    onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/c/cc/Boswellia_serrata_%28Salai%29_in_Kinnarsani_WS%2C_AP_W_IMG_5844.jpg" alt="Golden-amber Shallaki oleoresin oozing from tapped Boswellia trunk"
+    onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+</div>
+<p class="photo-caption">Fig. 1 — Boswellia serrata on the dry rocky slopes of the Deccan; characteristic papery bark peeling in translucent sheets &nbsp;·&nbsp; Fig. 2 — Golden-amber Shallaki oleoresin (Salai guggul) weeping from a tapped trunk — the source of its therapeutic potency</p>
+
+<div class="divider">
+  <div class="divider-line"></div>
+  <div class="divider-leaf">❧</div>
+  <div class="divider-line"></div>
+</div>
+
+<div class="content">
+  <p class="intro-text">Where the landscape turns to dry thorn-forest and rocky escarpment, the Boswellia tree rises alone, its bark peeling like parchment, weeping golden resin into the sun. Known to the world as Indian Frankincense and to Ayurveda as <em>Shallaki</em>, this resin has been burned in temples, prescribed for arthritis, and — in the twenty-first century — subjected to rigorous double-blind clinical trials that have confirmed what classical physicians wrote four thousand years ago: that it is among the most powerful anti-inflammatory substances in the plant kingdom.</p>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">01</span><h2 class="section-title">Botanical Profile</h2><div class="section-rule"></div></div>
+    <p class="section-body"><em>Boswellia serrata</em> Roxb. ex Colebr. is a medium-to-large deciduous tree of the Burseraceae family — the same resin-bearing family as myrrh (<em>Commiphora</em>) and copal (<em>Bursera</em>). It grows to 8–15 m, typically on dry rocky hillsides, steep escarpments, and mixed deciduous forests of peninsular India at altitudes up to 1,000 m. Its natural range spans the sub-Himalayan tract from Rajasthan and Madhya Pradesh through Maharashtra, Gujarat, Andhra Pradesh, and into the Eastern Ghats.</p>
+    <p class="section-body">The tree is unmistakable in its habitat: the smooth, thin outer bark peels off in papery translucent greenish-grey or reddish-brown sheets, revealing a pale inner surface. The leaves are imparipinnate with 11–23 pairs of opposite, serrate leaflets and appear at the tips of branches after the first rains. Small white flowers appear in racemes from January to March; the fruits are 3-valved capsules containing winged seeds dispersed by wind. The defining feature is the oleoresin — a milky-white latex that oxidises to a pale amber gum upon air exposure — which the tree exudes from bark incisions or natural wounds throughout the dry season.</p>
+    <table class="data-table">
+      <thead><tr><th>PROPERTY</th><th>Detail</th></tr></thead>
+      <tbody>
+        <tr><td>Family</td><td>Burseraceae (Frankincense &amp; Myrrh family)</td></tr>
+        <tr><td>Botanical Name</td><td>Boswellia serrata Roxb. ex Colebr.</td></tr>
+        <tr><td>Sanskrit Names</td><td>Shallaki, Sallaki, Gajabhakshya, Susravaa, Kundurukkam, Shukladhupa</td></tr>
+        <tr><td>Common Names</td><td>Indian Frankincense, Indian Olibanum, Salai Guggul, Dhup</td></tr>
+        <tr><td>Regional Names</td><td>Salai (Hindi), Kundrikam (Mal/Tam), Anduga (Tel), Salayi (Mar), Luban (Urdu/Arab)</td></tr>
+        <tr><td>Related Species</td><td>B. sacra (Arabian Frankincense), B. papyrifera (African), B. carterii (Somali)</td></tr>
+        <tr><td>Habitat</td><td>Dry rocky hillsides, mixed deciduous forest; 0–1,000 m altitude</td></tr>
+        <tr><td>Distribution</td><td>Rajasthan, MP, Maharashtra, Gujarat, AP, Eastern Ghats, sub-Himalayan tracts</td></tr>
+        <tr><td>Plant Type</td><td>Deciduous tree, 8–15 m; papery peeling bark</td></tr>
+        <tr><td>Medicinal Parts</td><td>Oleoresin / gum-resin (primary), bark, leaves, essential oil</td></tr>
+        <tr><td>Resin Description</td><td>Milky latex → pale amber gum on oxidation; balsamic-lemony aroma</td></tr>
+        <tr><td>Taste Profile</td><td>Tikta (bitter), Madhura (sweet), Katu (pungent)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">02</span><h2 class="section-title">Phytochemistry &amp; Composition</h2><div class="section-rule"></div></div>
+    <p class="section-body">The oleoresin of Boswellia serrata is a complex mixture of approximately 60–70% resin acids, 6–8% essential oil, and 20–30% polysaccharides. The therapeutically active fraction is the resin acid portion — specifically the pentacyclic triterpenoid boswellic acids, of which over a dozen have been characterised. Among these, <strong>11-keto-β-boswellic acid (KBA)</strong> and <strong>acetyl-11-keto-β-boswellic acid (AKBA)</strong> are the most potent anti-inflammatory agents and serve as the primary standardisation markers for pharmaceutical-grade Shallaki extracts.</p>
+    <p class="section-body">AKBA is among the most selective 5-lipoxygenase (5-LOX) inhibitors found in nature — blocking the enzyme responsible for leukotriene biosynthesis, the key inflammatory pathway in asthma, arthritis, and inflammatory bowel disease. Unlike NSAIDs, which inhibit both COX-1 and COX-2 (causing gastric damage), AKBA selectively targets 5-LOX without the gastrointestinal side effects — a pharmacological distinction that has made Shallaki one of the most important plants in anti-inflammatory drug discovery.</p>
+    <div class="akba-strip">
+      <div class="akba-cell">
+        <div class="akba-label">Primary Active</div>
+        <div class="akba-value">AKBA — Acetyl-11-keto-β-boswellic acid: most potent 5-LOX inhibitor in plant kingdom</div>
+      </div>
+      <div class="akba-cell">
+        <div class="akba-label">Mechanism</div>
+        <div class="akba-value">Selective 5-lipoxygenase inhibition → blocks leukotriene synthesis → no gastric COX side effects</div>
+      </div>
+      <div class="akba-cell">
+        <div class="akba-label">Standardisation</div>
+        <div class="akba-value">Pharmaceutical extracts standardised to ≥30% total boswellic acids, ≥10% AKBA content</div>
+      </div>
+    </div>
+    <div class="nutrition-bar">
+      <div class="nutrition-cell">
+        <div class="nutrition-num">60–70%</div>
+        <div class="nutrition-unit">resin acids</div>
+        <div class="nutrition-label">Oleoresin composition</div>
+      </div>
+      <div class="nutrition-cell">
+        <div class="nutrition-num">12+</div>
+        <div class="nutrition-unit">boswellic acids</div>
+        <div class="nutrition-label">Characterised from resin</div>
+      </div>
+      <div class="nutrition-cell">
+        <div class="nutrition-num">5-LOX</div>
+        <div class="nutrition-unit">target enzyme</div>
+        <div class="nutrition-label">Selective inhibition by AKBA</div>
+      </div>
+      <div class="nutrition-cell">
+        <div class="nutrition-num">6–8%</div>
+        <div class="nutrition-unit">essential oil</div>
+        <div class="nutrition-label">α-Thujene, α-pinene, limonene</div>
+      </div>
+    </div>
+    <table class="data-table">
+      <thead><tr><th>Compound</th><th>Category</th><th>Primary Action</th></tr></thead>
+      <tbody>
+        <tr><td>AKBA (Acetyl-11-keto-β-boswellic acid)</td><td>Pentacyclic triterpenoid</td><td>Potent 5-LOX inhibitor; reduces leukotriene B4; anti-arthritic, anti-asthmatic, anti-tumour</td></tr>
+        <tr><td>KBA (11-keto-β-boswellic acid)</td><td>Boswellic acid</td><td>5-LOX inhibition; anti-inflammatory, complement cascade inhibition</td></tr>
+        <tr><td>α-Boswellic Acid</td><td>Pentacyclic triterpenoid</td><td>Anti-inflammatory, cytotoxic against leukaemia cell lines</td></tr>
+        <tr><td>β-Boswellic Acid</td><td>Pentacyclic triterpenoid</td><td>Topoisomerase inhibition; anti-proliferative in cancer</td></tr>
+        <tr><td>Acetyl-β-boswellic Acid</td><td>Triterpenoid ester</td><td>Cathepsin G inhibition; anti-inflammatory, anti-neutrophil</td></tr>
+        <tr><td>Incensol Acetate</td><td>Diterpene</td><td>Psychoactive (anxiolytic) via TRPV3 ion channel; anti-depressant; unique to Boswellia</td></tr>
+        <tr><td>α-Thujene &amp; α-Pinene</td><td>Monoterpenes (essential oil)</td><td>Antimicrobial, anti-inflammatory, analgesic; responsible for frankincense aroma</td></tr>
+        <tr><td>Lupeol &amp; Tirucallol</td><td>Triterpenoids</td><td>Hepatoprotective, anti-inflammatory, cytotoxic</td></tr>
+        <tr><td>Boswellan Polysaccharides</td><td>Gum polysaccharides</td><td>Emollient, prebiotic, wound-healing; primary bulk of the gum fraction</td></tr>
+        <tr><td>Serratol</td><td>Diterpene</td><td>Antimicrobial, anti-proliferative (prostate cancer models)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">03</span><h2 class="section-title">Ayurvedic Significance</h2><div class="section-rule"></div></div>
+    <p class="section-body">Shallaki occupies a central position in Ayurvedic rheumatology. Charaka Samhita mentions the Shallaki tree and its resin (<em>niyasa</em>) as a wound-healing drug. Sushruta Samhita is more specific — classifying Shallaki resin among <em>sandhaniya</em> (bone-joining) drugs and including it in treatment of <em>asthi-bhagna</em> (fractures) and <em>amavata</em> (rheumatoid arthritis). Ashtanga Hridaya lists it in <em>Vata-Vyadhi Chikitsa</em> (treatment of Vataja diseases) — the classical umbrella for all joint, nerve, and musculoskeletal conditions.</p>
+    <div class="script-box">
+      "Shallaki tikta madhura laghu snigdha vatapittajit, vranashotha visarpaghni raktashodhani smritaa"
+      <span>— Dhanvantari Nighantu, Shatapushpadi Varga — Classical properties of Shallaki resin</span>
+    </div>
+    <p class="section-body">The verse describes Shallaki as bitter-sweet, light, and unctuous — a pacifier of Vata and Pitta, a healer of wounds and inflammatory swellings (<em>vrana-shotha</em>), a destroyer of spreading skin conditions, and a purifier of the blood. Sharangadhara Samhita includes Shallaki in compound preparations for <em>sandhivata</em> (osteoarthritis) and <em>katishula</em> (low back pain). In Unani medicine (<em>Kundur</em>), the resin is a principal drug in <em>Murakkabat Mukawwiyat-e-Aza</em> — compound tonics for joints and nerves.</p>
+    <table class="dosha-table">
+      <thead><tr><th>Dosha</th><th>Effect</th><th>Mechanism &amp; Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Vata ↓↓</td><td>Strongly pacifying</td><td>Snigdha (unctuous) guna and Madhura vipaka directly counter Vata's dry, rough qualities in joints; primary indication is Vata-dominant joint degeneration, nerve pain, and musculoskeletal stiffness</td></tr>
+        <tr><td>Pitta ↓</td><td>Pacifying</td><td>Tikta-Madhura rasa cools inflammatory Pitta; used in hot, swollen arthritic joints (Pitta-type arthritis), inflammatory bowel disease, and skin conditions with inflammatory base</td></tr>
+        <tr><td>Kapha ↑</td><td>Mildly aggravating</td><td>Snigdha (unctuous/oily) quality may increase Kapha marginally; use with caution in obese individuals with Kapha-dominant constitution — combine with dry, warming herbs like Shunthi (ginger) in formulations</td></tr>
+      </tbody>
+    </table>
+    <p class="section-body"><strong>Rasa:</strong> Tikta (bitter), Madhura (sweet), Katu (pungent) &nbsp;·&nbsp; <strong>Guna:</strong> Laghu (light), Snigdha (unctuous) &nbsp;·&nbsp; <strong>Virya:</strong> Ushna (hot) &nbsp;·&nbsp; <strong>Vipaka:</strong> Madhura (sweet) &nbsp;·&nbsp; <strong>Karma:</strong> Vata-Pitta shamaka, Shothahara (anti-inflammatory), Vedanasthapana (analgesic)</p>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">04</span><h2 class="section-title">Key Health Benefits</h2><div class="section-rule"></div></div>
+
+    <div class="spotlight">
+      <div class="spotlight-title">The Gold Standard Herbal Anti-Inflammatory — With Randomised Clinical Trial Evidence</div>
+      <div class="spotlight-body">Shallaki / Boswellia serrata is the only Ayurvedic herb with multiple Phase II and Phase III randomised double-blind clinical trials demonstrating efficacy comparable to prescription anti-inflammatory drugs in osteoarthritis, rheumatoid arthritis, and Crohn's disease — published in journals including Phytomedicine, Arthritis Research &amp; Therapy, and the European Journal of Medical Research. Its 5-LOX selectivity means it achieves this without the gastrointestinal bleeding, cardiovascular risk, or renal toxicity associated with NSAIDs and COX-2 inhibitors — a distinction that has made it the subject of multiple pharmaceutical patent applications and licensed drug extracts (Loxin®, 5-Loxin®).</div>
+    </div>
+
+    <div class="benefits-grid">
+      <div class="benefit-card">
+        <div class="benefit-title">Osteoarthritis &amp; Joint Degeneration</div>
+        <div class="benefit-desc">The best-evidenced indication. A landmark Kimmatkar et al. (2003) RCT in knee OA demonstrated significant reductions in knee pain, swelling, and walking distance impairment versus placebo, with cartilage-protecting effects. Phytomedicine 2008 trial of 5-Loxin® showed 90-day sustained benefit. AKBA directly inhibits matrix metalloproteinase activity, slowing articular cartilage breakdown — a disease-modifying effect rare among natural compounds.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Rheumatoid Arthritis</div>
+        <div class="benefit-desc">Clinical studies show significant improvement in morning stiffness, joint swelling, and pain scores in RA patients treated with standardised Boswellia extract. Mechanism involves inhibition of leukotriene B4 — a principal inflammatory mediator in RA synovium — and suppression of NF-κB–driven cytokine release (TNF-α, IL-1β, IL-6). Works synergistically with conventional DMARDs.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Inflammatory Bowel Disease</div>
+        <div class="benefit-desc">H15 extract (standardised Boswellia) was evaluated against mesalazine in Crohn's disease and ulcerative colitis in two European RCTs. Results were non-inferior to the standard drug with a markedly better tolerability profile. AKBA selectively inhibits 5-LOX in intestinal mucosa — directly targeting the leukotriene-driven inflammation of IBD without systemic immunosuppression.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Asthma &amp; Bronchial Inflammation</div>
+        <div class="benefit-desc">Gupta et al. (1998) randomised trial of 300 mg Boswellia extract thrice daily for 6 weeks produced significant improvement in FEV1, PEFR, and symptoms in bronchial asthma. Mechanism: 5-LOX inhibition directly reduces cysteinyl leukotrienes (the primary bronchoconstrictors in asthma), offering a leukotriene modifier action comparable to montelukast through a natural pathway.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Brain Tumours &amp; Cerebral Oedema</div>
+        <div class="benefit-desc">Boswellic acids — particularly AKBA and β-boswellic acid — inhibit topoisomerase I and II and induce apoptosis in glioblastoma cell lines. A clinical pilot study (Streffer et al., 2001) found Boswellia extract significantly reduced cerebral oedema in patients with brain tumours, proposing it as an alternative to corticosteroids for peri-tumoral oedema with fewer metabolic side effects.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Analgesic &amp; Back Pain</div>
+        <div class="benefit-desc">Classical indication as <em>vedanasthapana</em> (pain stabiliser) is validated in multiple clinical evaluations for low back pain, sciatica, and cervical spondylitis. Anti-inflammatory action at both the 5-LOX and complement cascade level reduces neurogenic inflammation around irritated nerve roots. Topical application of Shallaki formulations provides local analgesic relief in musculoskeletal pain.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Wound Healing &amp; Skin</div>
+        <div class="benefit-desc">Classical Sushruta surgical texts include Shallaki resin as a <em>sandhaniya</em> (tissue-joining) wound dressing. The resin's antimicrobial essential oils (α-thujene, α-pinene) prevent secondary infection; the polysaccharide fraction promotes granulation. Modern applications include burn wound management and anti-scarring formulations using Boswellia essential oil in cosmetic preparations.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Neuroprotection &amp; Anxiety</div>
+        <div class="benefit-desc">Incensol acetate — a unique diterpene found only in Boswellia resins — activates TRPV3 ion channels in the brain, producing anxiolytic and antidepressant effects validated in mouse models. This compound may underlie the long-established religious use of frankincense smoke in meditation, prayer, and sacred ritual — the first biochemical explanation for incense-induced states of calm.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">05</span><h2 class="section-title">Sacred &amp; Cultural Heritage</h2><div class="section-rule"></div></div>
+    <p class="section-body">Boswellia resin is among the most ancient sacred substances on earth. The Arabic-derived word <em>frankincense</em> means "high-quality incense" (franc encens), but the trade in Indian and Arabian Boswellia resin predates Arabic trade by millennia — ancient Egyptian papyri record the import of <em>sntr</em> (incense) from Punt (Somalia/Yemen) from at least 2,500 BCE, while Harappan sites in the Indus Valley show evidence of resin burning by 2,000 BCE. The Vedic fire ceremony uses Shallaki resin — <em>Shukladhupa</em> (white incense) — as a purifying offering.</p>
+    <p class="section-body">In Christian tradition, frankincense was one of the three gifts of the Magi to the infant Jesus — a gift befitting a king, symbolising prayer and divinity. In Ayurvedic temple medicine, Shallaki resin was burned in hospital courtyards (<em>arogya-shalas</em>) as fumigant and air purifier. The resin continues to be a central element of Catholic, Orthodox, Buddhist, and Hindu liturgical practice across the world — arguably the most globally worshipped plant substance in human history.</p>
+    <table class="data-table">
+      <thead><tr><th>Tradition</th><th>Use &amp; Significance</th></tr></thead>
+      <tbody>
+        <tr><td>Vedic / Hindu</td><td>Shukladhupa (white incense) in havan; Shallaki resin offered in Shiva puja and yagna fire ceremonies; sacred to Dhanvantari (god of Ayurveda)</td></tr>
+        <tr><td>Ancient Egyptian</td><td>Kyphi incense blends; used in mummification, temple rites, and cosmetics from at least 2,500 BCE; imported via the incense trade route from Punt</td></tr>
+        <tr><td>Christian / Catholic</td><td>One of the Three Gifts of the Magi; used in Catholic, Orthodox, and Anglican liturgy as thurifer incense; symbolises prayer rising to God</td></tr>
+        <tr><td>Buddhist</td><td>Altar incense in Theravada and Tibetan Buddhism; used in cleansing spaces before meditation and ritual</td></tr>
+        <tr><td>Unani / Islamic</td><td>Kundur — a principal drug in Unani medicine; mentioned in Ibn Sina's Canon of Medicine for joints, memory, and respiratory conditions</td></tr>
+        <tr><td>Ayurvedic Surgical</td><td>Sushruta's sandhaniya (tissue-joining) drug for wounds, fractures, and burns; fumigant in clinical spaces</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">06</span><h2 class="section-title">How to Use Shallaki</h2><div class="section-rule"></div></div>
+    <p class="section-body">Shallaki is primarily used in its gum-resin form — either as raw resin, standardised extract tablets, churna (powder), or in compound Ayurvedic formulations. Standardised pharmaceutical-grade extracts (Loxin®, 5-Loxin®, Aflapin®) are used in clinical settings; traditional Ayurvedic preparations use raw resin and compound formulations. Fat-soluble boswellic acids are significantly better absorbed when taken with food containing fat.</p>
+    <table class="consume-table">
+      <thead><tr><th>Form</th><th>Preparation</th><th>Dosage</th><th>Best Use</th></tr></thead>
+      <tbody>
+        <tr><td>Standardised Extract (Tablet)</td><td>Standardised to ≥30% boswellic acids or ≥10% AKBA; commercial preparations</td><td>300–500 mg, 2–3× daily with food containing fat</td><td>Osteoarthritis, RA, IBD, asthma — clinical-grade use</td></tr>
+        <tr><td>Raw Resin Powder (Churna)</td><td>Dried, powdered oleoresin; with ghee or warm water</td><td>3–6 g twice daily after meals</td><td>Joint pain, back pain, inflammatory conditions</td></tr>
+        <tr><td>Shallaki Ghrita</td><td>Resin processed in cow's ghee; classical preparation</td><td>5–10 g once daily on empty stomach or per physician</td><td>Vata-dominant joint degeneration, sciatica, nerve pain</td></tr>
+        <tr><td>Shallaki Taila (Oil)</td><td>Medicated oil with Shallaki resin; for external use</td><td>Warm oil massage to affected joints daily</td><td>Osteoarthritis, rheumatoid arthritis, back pain, sports injuries</td></tr>
+        <tr><td>Essential Oil (Diluted)</td><td>Steam-distilled resin oil; 2–3% in carrier oil</td><td>Topical application to joints or chest</td><td>Analgesic massage, asthma chest rub, wound care</td></tr>
+        <tr><td>Incense / Fumigation</td><td>Raw resin burned on charcoal or wood</td><td>As needed for ritual, meditation, or air purification</td><td>Anxiety, meditation support (incensol acetate), air antimicrobial</td></tr>
+        <tr><td>Compound Formulations</td><td>Shallakadi Vati, Yogaraj Guggulu, Mahayogaraj Guggulu</td><td>Per classical formula and physician direction</td><td>Complex arthritis, Vata-vyadhi, musculoskeletal conditions</td></tr>
+        <tr><td>Rasayana (Tonic)</td><td>Long-term low-dose resin with Ashwagandha and Guggulu</td><td>Physician-directed tonic protocol</td><td>Chronic joint maintenance, prevention of age-related degeneration</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">07</span><h2 class="section-title">Safety &amp; Precautions</h2><div class="section-rule"></div></div>
+    <p class="section-body">Boswellia serrata extract has an excellent clinical safety profile across multiple trials up to 12 months of continuous use. It does not cause the gastric ulceration associated with NSAIDs, does not elevate cardiovascular risk like COX-2 inhibitors, and does not cause the immunosuppression of corticosteroids. However, several specific considerations apply.</p>
+    <ul class="precaution-list">
+      <li><strong>Pregnancy:</strong> Traditionally used cautiously; Shallaki's uterine smooth-muscle activity is documented in classical texts — some formulations are used specifically for obstetric conditions. Internal use during pregnancy should only be undertaken under specialist Ayurvedic supervision.</li>
+      <li><strong>Gastric sensitivity:</strong> A small minority of users report mild gastric discomfort, nausea, or diarrhoea — occurring in approximately 3–5% of trial participants. Taking with food substantially reduces this. Enteric-coated preparations are preferred for sensitive stomachs.</li>
+      <li><strong>Anticoagulant interaction:</strong> Boswellic acids mildly inhibit platelet aggregation. Use caution alongside warfarin, heparin, clopidogrel, or aspirin therapy. Inform surgeon of Shallaki use at least 2 weeks before elective surgery.</li>
+      <li><strong>Immunosuppressant interaction:</strong> In IBD patients on azathioprine, methotrexate, or biologics, Boswellia's immune-modulating action may theoretically potentiate effects — monitor with treating gastroenterologist.</li>
+      <li><strong>Cytochrome P450 interaction:</strong> Boswellic acids moderately inhibit CYP3A4 and CYP2C9 hepatic enzymes at high doses — potentially elevating blood levels of drugs metabolised by these pathways (certain statins, calcium channel blockers, immunosuppressants). Disclose to physician.</li>
+      <li><strong>Kapha aggravation:</strong> Snigdha (unctuous) quality may increase heaviness in very Kapha-dominant obese individuals. Classical formulations always combine Shallaki with stimulating herbs like Shunthi (dry ginger) and Pippali (long pepper) to counteract this.</li>
+      <li><strong>Topical resin:</strong> Raw resin or essential oil can cause contact dermatitis in sensitive individuals — patch test 24 hours before widespread topical application.</li>
+      <li><strong>IUCN status:</strong> Boswellia serrata is listed as Vulnerable on the IUCN Red List due to unsustainable tapping practices, fire damage, and poor regeneration. Source only from certified sustainable suppliers or FairWild-certified products. Over-tapping weakens and kills trees.</li>
+    </ul>
+  </div>
+
+  <div class="sources">
+    <div class="sources-title">References &amp; Sources</div>
+    <ul>
+      <li>Kimmatkar N et al. — "Efficacy and tolerability of Boswellia serrata extract in treatment of osteoarthritis of knee" — Phytomedicine, 2003</li>
+      <li>Sengupta K et al. — "A double blind, randomized, placebo controlled study of the efficacy and safety of 5-Loxin® for treatment of osteoarthritis of the knee" — Arthritis Research &amp; Therapy, 2008</li>
+      <li>Gupta I et al. — "Effects of Boswellia serrata gum resin in patients with bronchial asthma" — European Journal of Medical Research, 1998</li>
+      <li>Gerhardt H et al. — "Therapy of active Crohn disease with Boswellia serrata extract H15" — Zeitschrift für Gastroenterologie, 2001</li>
+      <li>Streffer JR et al. — "Response of radiochemotherapy-associated cerebral oedema to a phytotherapeutic agent Boswellia serrata (H15)" — European Journal of Neurology, 2001</li>
+      <li>Moussaieff A et al. — "Incensole acetate, an incense component, elicits psychoactivity by activating TRPV3 channels in the brain" — FASEB Journal, 2008</li>
+      <li>Ammon HPT — "Boswellic acids in chronic inflammatory diseases" — Planta Medica, 2006</li>
+      <li>Sushruta Samhita — Sutrasthana, Chikitsasthana — Shallaki in sandhaniya varga and vrana-shotha treatment</li>
+      <li>Ashtanga Hridaya — Chikitsasthana, Vatavyadhi Chikitsa — Shallaki in joint and neurological disease management</li>
+      <li>Dhanvantari Nighantu — Shatapushpadi Varga — Classical description of Shallaki rasa-guna-virya-karma</li>
+      <li>IUCN Red List — Boswellia serrata — Vulnerability assessment, 2019</li>
+      <li>Cooksley VG — "Aromatherapy: Soothing Remedies to Restore, Rejuvenate and Heal" — Frankincense ethnobotanical overview, 2002</li>
+    </ul>
+  </div>
+</div>
+
+<footer>
+  <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a qualified practitioner before therapeutic use</p>
+</footer>
+
+  <div id="viewerModal">
+    <div id="modal-topbar">
+      <span>3D Model — Shallaki</span>
+      <button type="button" id="close3D">✕</button>
+    </div>
+    <model-viewer src="shallaki3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+  </div>
+  <script>
+    (function() {
+      var open3D = document.getElementById('open3D');
+      var close3D = document.getElementById('close3D');
+      var modal = document.getElementById('viewerModal');
+      if (!open3D || !close3D || !modal) return;
+      function openModal() {
+        
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+      function closeModal() {
+        
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+      open3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); openModal();
+      });
+      close3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); closeModal();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+      });
+    })();
+  </script>
+
+</body>
+</html>

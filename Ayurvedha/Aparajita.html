@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aparajita — Butterfly Pea | Swastha</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap"
+    rel="stylesheet">
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+  <style>
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box
+    }
+
+    html {
+      scroll-behavior: smooth
+    }
+
+    body {
+      font-family: 'Jost', sans-serif;
+      background: var(--cream);
+      color: var(--ink);
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity: .035;
+      pointer-events: none;
+      z-index: 100
+    }
+
+    #open3D {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      padding: 10px 18px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: var(--forest);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      z-index: 1000;
+      transition: .3s
+    }
+
+    #open3D:hover {
+      background: var(--gold);
+      color: var(--deep)
+    }
+
+    #viewerModal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+    }
+
+    #modal-topbar {
+      flex-shrink: 0;
+      height: 58px;
+      background: #111111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px 0 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      z-index: 99999;
+    }
+
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 4.5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.72);
+      user-select: none;
+    }
+
+    #close3D {
+      width: 38px;
+      height: 38px;
+      font-size: 15px;
+      font-weight: 300;
+      background: transparent;
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background .2s, color .2s, transform .22s;
+      outline: none;
+      flex-shrink: 0;
+    }
+
+    #close3D:hover {
+      background: #ffffff;
+      color: #111111;
+      border-color: #ffffff;
+      transform: rotate(90deg)
+    }
+
+    #viewerModal model-viewer {
+      flex: 1;
+      width: 100%;
+      display: block;
+      background: #ffffff;
+    }
+
+    .bg-circle {
+      position: fixed;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0
+    }
+
+    .bg-circle-1 {
+      width: 700px;
+      height: 700px;
+      background: radial-gradient(circle, rgba(42, 92, 63, .1) 0%, transparent 70%);
+      top: -200px;
+      right: -150px
+    }
+
+    .bg-circle-2 {
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(201, 168, 76, .08) 0%, transparent 70%);
+      bottom: -100px;
+      left: -100px
+    }
+
+    .botanical-svg {
+      position: fixed;
+      pointer-events: none;
+      z-index: 1;
+      opacity: .1
+    }
+
+    .botanical-tl {
+      top: -20px;
+      left: -20px;
+      width: 260px
+    }
+
+    .botanical-br {
+      bottom: -20px;
+      right: -20px;
+      width: 220px;
+      transform: rotate(180deg)
+    }
+
+    .hero {
+      position: relative;
+      z-index: 10;
+      padding: 54px 40px 0;
+      text-align: center;
+      opacity: 0;
+      animation: fadeUp .9s ease .1s forwards
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--sage);
+      text-decoration: none;
+      margin-bottom: 36px;
+      transition: color .3s
+    }
+
+    .back-link:hover {
+      color: var(--gold)
+    }
+
+    .logo-rule {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 14px
+    }
+
+    .logo-rule span {
+      display: block;
+      height: 1px;
+      width: 70px;
+      background: linear-gradient(to right, transparent, var(--gold))
+    }
+
+    .logo-rule span:last-child {
+      background: linear-gradient(to left, transparent, var(--gold))
+    }
+
+    .logo-ornament {
+      font-size: 13px;
+      color: var(--gold)
+    }
+
+    .hero-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(64px, 12vw, 110px);
+      font-weight: 300;
+      letter-spacing: 8px;
+      line-height: 1;
+      color: var(--deep)
+    }
+
+    .hero-subtitle {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 18px;
+      font-style: italic;
+      font-weight: 300;
+      color: var(--earth);
+      letter-spacing: 2px;
+      margin-top: 8px
+    }
+
+    .hero-sci {
+      font-size: 11px;
+      font-weight: 200;
+      letter-spacing: 5px;
+      color: var(--sage);
+      margin-top: 6px
+    }
+
+    .hero-photos {
+      position: relative;
+      z-index: 10;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2px;
+      max-width: 900px;
+      margin: 40px auto 0;
+      opacity: 0;
+      animation: fadeUp .9s ease .35s forwards
+    }
+
+    .hero-photos img {
+      width: 100%;
+      height: 380px;
+      object-fit: cover;
+      object-position: center;
+      display: block;
+      background: var(--parchment);
+    }
+
+    .hero-photos img:first-child {
+      object-position: center 40%
+    }
+
+    .photo-caption {
+      text-align: center;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 12px;
+      font-style: italic;
+      color: var(--sage);
+      letter-spacing: 1px;
+      padding: 10px 0 0;
+      max-width: 900px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 10;
+      opacity: 0;
+      animation: fadeUp .9s ease .5s forwards
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin: 50px auto;
+      max-width: 600px;
+      opacity: 0;
+      animation: fadeUp .9s ease .55s forwards;
+      position: relative;
+      z-index: 10
+    }
+
+    .divider-line {
+      height: 1px;
+      width: 120px;
+      background: linear-gradient(to right, transparent, var(--sage))
+    }
+
+    .divider-line:last-child {
+      background: linear-gradient(to left, transparent, var(--sage))
+    }
+
+    .divider-leaf {
+      color: var(--forest);
+      font-size: 18px
+    }
+
+    .content {
+      position: relative;
+      z-index: 10;
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 30px 80px
+    }
+
+    .intro-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 20px;
+      font-weight: 300;
+      line-height: 1.75;
+      color: var(--ink);
+      text-align: center;
+      max-width: 700px;
+      margin: 0 auto 60px;
+      opacity: 0;
+      animation: fadeUp .9s ease .6s forwards
+    }
+
+    .intro-text em {
+      color: var(--forest);
+      font-style: italic
+    }
+
+    .section {
+      margin-bottom: 60px;
+      opacity: 0;
+      animation: fadeUp .9s ease forwards
+    }
+
+    .section:nth-child(1) {
+      animation-delay: .65s
+    }
+
+    .section:nth-child(2) {
+      animation-delay: .75s
+    }
+
+    .section:nth-child(3) {
+      animation-delay: .85s
+    }
+
+    .section:nth-child(4) {
+      animation-delay: .95s
+    }
+
+    .section:nth-child(5) {
+      animation-delay: 1.05s
+    }
+
+    .section:nth-child(6) {
+      animation-delay: 1.15s
+    }
+
+    .section:nth-child(7) {
+      animation-delay: 1.25s
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 20px
+    }
+
+    .section-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 11px;
+      letter-spacing: 4px;
+      color: var(--gold)
+    }
+
+    .section-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 28px;
+      font-weight: 400;
+      color: var(--deep);
+      letter-spacing: 1px
+    }
+
+    .section-rule {
+      height: 1px;
+      flex: 1;
+      background: linear-gradient(to right, var(--gold), transparent)
+    }
+
+    .section-body {
+      font-size: 13px;
+      font-weight: 300;
+      line-height: 1.9;
+      color: var(--ink);
+      margin-bottom: 24px
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0 8px;
+      font-size: 12px
+    }
+
+    .data-table thead tr {
+      background: var(--deep);
+      color: var(--gold);
+      font-size: 10px;
+      letter-spacing: 3px;
+      text-transform: uppercase
+    }
+
+    .data-table thead th {
+      padding: 12px 14px;
+      text-align: left;
+      font-weight: 400
+    }
+
+    .data-table tbody tr:nth-child(even) {
+      background: var(--parchment)
+    }
+
+    .data-table tbody tr:nth-child(odd) {
+      background: var(--cream)
+    }
+
+    .data-table tbody tr {
+      transition: background .2s
+    }
+
+    .data-table tbody tr:hover {
+      background: rgba(200, 164, 93, 0.15)
+    }
+
+    .data-table tbody td {
+      padding: 10px 14px;
+      color: var(--ink);
+      border-bottom: 1px solid rgba(107, 79, 45, .08)
+    }
+
+    .data-table tbody td:first-child {
+      font-weight: 400;
+      color: var(--deep);
+      width: 28%
+    }
+
+    .dosha-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 12px
+    }
+
+    .dosha-table thead tr {
+      background: var(--forest);
+      color: var(--cream)
+    }
+
+    .dosha-table thead th {
+      padding: 12px 14px;
+      text-align: left;
+      font-weight: 400;
+      letter-spacing: 2px;
+      font-size: 10px;
+      text-transform: uppercase
+    }
+
+    .dosha-table tbody tr:nth-child(even) {
+      background: var(--parchment)
+    }
+
+    .dosha-table tbody tr:nth-child(odd) {
+      background: var(--cream)
+    }
+
+    .dosha-table tbody td {
+      padding: 11px 14px;
+      color: var(--ink);
+      border-bottom: 1px solid rgba(107, 79, 45, .08)
+    }
+
+    .dosha-table tbody td:first-child {
+      font-weight: 400;
+      color: var(--forest);
+      width: 18%
+    }
+
+    .dosha-table tbody td:nth-child(2) {
+      color: var(--earth);
+      width: 20%
+    }
+
+    .consume-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 12px
+    }
+
+    .consume-table thead tr {
+      background: var(--earth);
+      color: var(--cream)
+    }
+
+    .consume-table thead th {
+      padding: 12px 14px;
+      text-align: left;
+      font-weight: 400;
+      letter-spacing: 2px;
+      font-size: 10px;
+      text-transform: uppercase
+    }
+
+    .consume-table tbody tr:nth-child(even) {
+      background: var(--parchment)
+    }
+
+    .consume-table tbody tr:nth-child(odd) {
+      background: var(--cream)
+    }
+
+    .consume-table tbody td {
+      padding: 11px 14px;
+      color: var(--ink);
+      border-bottom: 1px solid rgba(107, 79, 45, .08)
+    }
+
+    .consume-table tbody td:first-child {
+      font-weight: 400;
+      color: var(--earth);
+      width: 22%
+    }
+
+    .benefits-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: rgba(107, 79, 45, .12);
+      border: 1px solid rgba(107, 79, 45, .12);
+      margin: 8px 0
+    }
+
+    .benefit-card {
+      background: var(--cream);
+      padding: 24px 22px;
+      transition: background .3s;
+      position: relative;
+      overflow: hidden
+    }
+
+    .benefit-card:hover {
+      background: #ede4ce
+    }
+
+    .benefit-card::before {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: var(--gold);
+      transition: width .4s
+    }
+
+    .benefit-card:hover::before {
+      width: 100%
+    }
+
+    .benefit-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--forest);
+      margin-bottom: 8px
+    }
+
+    .benefit-desc {
+      font-size: 11.5px;
+      font-weight: 300;
+      line-height: 1.75;
+      color: var(--ink);
+      opacity: .85
+    }
+
+    .precaution-list {
+      list-style: none;
+      margin: 8px 0
+    }
+
+    .precaution-list li {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      padding: 10px 14px;
+      font-size: 12px;
+      font-weight: 300;
+      line-height: 1.7;
+      color: var(--ink);
+      border-bottom: 1px solid rgba(107, 79, 45, .08)
+    }
+
+    .precaution-list li:last-child {
+      border-bottom: none
+    }
+
+    .precaution-list li::before {
+      content: '▸';
+      color: var(--gold);
+      flex-shrink: 0;
+      margin-top: 1px
+    }
+
+    .sources {
+      border-top: 1px solid rgba(107, 79, 45, .15);
+      padding-top: 24px;
+      margin-top: 20px
+    }
+
+    .sources-title {
+      font-size: 10px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--sage);
+      margin-bottom: 12px;
+      font-weight: 300
+    }
+
+    .sources ul {
+      list-style: none
+    }
+
+    .sources ul li {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 13px;
+      font-style: italic;
+      color: var(--earth);
+      padding: 5px 0;
+      border-bottom: 1px solid rgba(107, 79, 45, .06)
+    }
+
+    .sources ul li::before {
+      content: '· ';
+      color: var(--sage)
+    }
+
+    .nutrition-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: rgba(107, 79, 45, .12);
+      border: 1px solid rgba(107, 79, 45, .12);
+      margin: 20px 0
+    }
+
+    .nutrition-cell {
+      background: var(--cream);
+      padding: 22px 16px;
+      text-align: center;
+      transition: background .3s
+    }
+
+    .nutrition-cell:hover {
+      background: var(--parchment)
+    }
+
+    .nutrition-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 36px;
+      font-weight: 300;
+      color: var(--forest);
+      line-height: 1;
+      margin-bottom: 4px
+    }
+
+    .nutrition-unit {
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--gold);
+      font-weight: 300
+    }
+
+    .nutrition-label {
+      font-size: 11px;
+      font-weight: 300;
+      color: var(--ink);
+      margin-top: 5px
+    }
+
+    footer {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      padding: 24px 20px 44px;
+      border-top: 1px solid rgba(107, 79, 45, .12);
+      max-width: 860px;
+      margin: 0 auto
+    }
+
+    footer p {
+      font-size: 11px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--sage);
+      font-weight: 300
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(28px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
+
+    @media(max-width:700px) {
+      .hero-photos {
+        grid-template-columns: 1fr
+      }
+
+      .hero-photos img {
+        height: 260px
+      }
+
+      .benefits-grid {
+        grid-template-columns: 1fr
+      }
+
+      .nutrition-bar {
+        grid-template-columns: 1fr 1fr
+      }
+
+      .content {
+        padding: 0 18px 60px
+      }
+
+      #modal-topbar {
+        padding: 0 16px 0 20px
+      }
+
+      #modal-topbar span {
+        font-size: 9px;
+        letter-spacing: 3px
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <button id="open3D">View in 3D</button>
+
+  <div id="viewerModal">
+    <div id="modal-topbar">
+      <span>3D Model — Aparajita</span>
+      <button id="close3D">✕</button>
+    </div>
+    <model-viewer src="aparajita3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+  </div>
+
+  <div class="bg-circle bg-circle-1"></div>
+  <div class="bg-circle bg-circle-2"></div>
+
+  <svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#2a5c3f" stroke-width="1.5" fill="none" />
+    <circle cx="90" cy="210" r="8" fill="#2a5c3f" opacity="0.7" />
+    <circle cx="130" cy="175" r="10" fill="#7a9e7e" opacity="0.6" />
+    <circle cx="170" cy="135" r="7" fill="#2a5c3f" opacity="0.8" />
+    <circle cx="210" cy="95" r="9" fill="#c9a84c" opacity="0.5" />
+    <ellipse cx="115" cy="195" rx="20" ry="10" fill="#7a9e7e" transform="rotate(-30 115 195)" />
+    <ellipse cx="155" cy="155" rx="18" ry="9" fill="#2a5c3f" transform="rotate(-45 155 155)" />
+    <ellipse cx="195" cy="115" rx="16" ry="8" fill="#7a9e7e" transform="rotate(-60 195 115)" />
+  </svg>
+  <svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#2a5c3f" stroke-width="1.5" fill="none" />
+    <circle cx="90" cy="210" r="8" fill="#2a5c3f" opacity="0.7" />
+    <circle cx="130" cy="175" r="10" fill="#7a9e7e" opacity="0.6" />
+    <circle cx="170" cy="135" r="7" fill="#2a5c3f" opacity="0.8" />
+    <ellipse cx="115" cy="195" rx="20" ry="10" fill="#7a9e7e" transform="rotate(-30 115 195)" />
+  </svg>
+
+  <div class="hero">
+    <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+    <div class="logo-rule"><span></span>
+      <div class="logo-ornament">✦</div><span></span>
+    </div>
+    <div class="hero-title">Aparajita</div>
+    <div class="hero-subtitle">Butterfly Pea — The Unconquered Bloom</div>
+    <div class="hero-sci">Clitoria ternatea &nbsp;·&nbsp; Fabaceae</div>
+  </div>
+
+  <div class="hero-photos">
+    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fa/Clitoria_ternatea_plants_15042014.jpg/1280px-Clitoria_ternatea_plants_15042014.jpg" alt="Sapphire blue Aparajita flower"
+      onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/5/52/Starr_980529-1406_Clitoria_ternatea.jpg/1280px-Starr_980529-1406_Clitoria_ternatea.jpg" alt="Aparajita climbing vine in bloom"
+      onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+  </div>
+  <p class="photo-caption">Fig. 1 — The signature deep sapphire-blue blossom of Aparajita with its yellow-white centre &nbsp;·&nbsp; Fig. 2 — The slender twining vine climbing through pinnate compound leaves</p>
+
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-leaf">❧</div>
+    <div class="divider-line"></div>
+  </div>
+
+  <div class="content">
+    <p class="intro-text">Its name is its claim: <em>A-parajita</em> — the unconquered, the undefeatable. A flower so striking that ancient temples of Bengal and Kerala used its blossoms in rituals to Goddess Durga, while monks brewed its petals into <em>Anchan</em> tea and sipped it in meditation, watching the water turn from sapphire blue to deep violet at a single drop of lemon — a botanical pH indicator long before chemistry had a name for it.</p>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">01</span>
+        <h2 class="section-title">Botanical Profile</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Aparajita (<em>Clitoria ternatea</em> L.) is a slender, twining perennial vine of the Fabaceae family, reaching up to 3 metres in length. The stems are wiry and slightly hairy, supporting pinnately compound leaves with five to seven oblong-ovate leaflets, each 3–7 cm long and reticulately veined. Classical Sanskrit poets named it <em>Girikarnika</em> — "ear-shaped leaf" — because the leaflets resemble the ears of a small mountain rat.</p>
+      <p class="section-body">The signature flowers are pea-shaped (papilionaceous), 4–5 cm across, in deep sapphire blue with a yellow or white centre — though white-flowered (<em>Shweta Pushpa</em>) and double-petalled cultivars also exist. The fruits are flat, dehiscent pods 5–10 cm long containing 6–10 dark seeds. Native debate places its origin in either tropical Asia or the Caribbean / Central America, but it spread early across the Indian subcontinent and now grows wild and cultivated throughout India, Egypt, Persia, and Mesopotamia. Both <em>Charaka Samhita</em> and <em>Sushruta Samhita</em> describe Aparajita as a key <em>Medhya</em> (memory-enhancing) and <em>Vishaghna</em> (anti-poisonous) drug.</p>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>PROPERTY</th>
+            <th>Detail</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Family</td>
+            <td>Fabaceae (Leguminosae)</td>
+          </tr>
+          <tr>
+            <td>Botanical Name</td>
+            <td>Clitoria ternatea L.</td>
+          </tr>
+          <tr>
+            <td>Sanskrit Names</td>
+            <td>Aparajita, Girikarnika, Vishaharini, Asphota, Shweta, Mohana, Ashwakhura</td>
+          </tr>
+          <tr>
+            <td>Common Names</td>
+            <td>Aparajita, Butterfly Pea, Blue Pea, Conch Flower, Anchan, Kakkattan, Cordofan Pea, Asian Pigeon Wings</td>
+          </tr>
+          <tr>
+            <td>Origin</td>
+            <td>Tropical Asia / Caribbean origin debated; widespread across India</td>
+          </tr>
+          <tr>
+            <td>Plant Type</td>
+            <td>Slender twining perennial vine (up to 3 m)</td>
+          </tr>
+          <tr>
+            <td>Flowering Season</td>
+            <td>Year-round in the tropics; peak monsoon and post-monsoon</td>
+          </tr>
+          <tr>
+            <td>Medicinal Parts</td>
+            <td>Roots, seeds, leaves, flowers (all parts used)</td>
+          </tr>
+          <tr>
+            <td>Taste Profile</td>
+            <td>Bitter (tikta), astringent (kashaya)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">02</span>
+        <h2 class="section-title">Phytochemistry Composition</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">The Aparajita flower's celebrated sapphire colour comes from a remarkable family of polyacylated <em>delphinidin-based anthocyanins</em>, known specifically as <em>ternatins</em> A1 to D2 — pigment compounds first isolated from this very plant and named for it. These same ternatins are responsible for the dramatic pH-driven colour shift from blue (neutral) to purple (acidic) — a reaction visible the moment lemon meets butterfly-pea tea.</p>
+      <p class="section-body">Beyond pigments, Clitoria ternatea contains a broad spectrum of secondary metabolites: triterpenoids, flavonol glycosides (quercetin, kaempferol, myricetin derivatives), steroids, tannins, saponins, proanthocyanidins, and bioactive cyclic peptides called <em>cliotides</em>. The seeds also contain delphinidin glucosides and protein-rich compounds, while the roots yield taraxerol and taraxerone — triterpenoids with documented anti-inflammatory and neuroprotective activity.</p>
+      <div class="nutrition-bar">
+        <div class="nutrition-cell">
+          <div class="nutrition-num">15+</div>
+          <div class="nutrition-unit">isolated</div>
+          <div class="nutrition-label">Ternatin anthocyanins</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">2</div>
+          <div class="nutrition-unit">classical</div>
+          <div class="nutrition-label">Varieties (Shweta &amp; Neela Pushpa)</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">8</div>
+          <div class="nutrition-unit">documented</div>
+          <div class="nutrition-label">Pharmacological actions</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">pH</div>
+          <div class="nutrition-unit">color shift</div>
+          <div class="nutrition-label">Blue → Purple → Pink</div>
+        </div>
+      </div>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Compound</th>
+            <th>Category</th>
+            <th>Primary Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Ternatins A1–D2</td>
+            <td>Polyacylated anthocyanins</td>
+            <td>Plant-specific pigment, antioxidant, neuroprotective</td>
+          </tr>
+          <tr>
+            <td>Delphinidin Glucosides</td>
+            <td>Anthocyanidin glycosides</td>
+            <td>Free-radical scavenging, vascular protective</td>
+          </tr>
+          <tr>
+            <td>Quercetin &amp; Kaempferol Glycosides</td>
+            <td>Flavonol glycosides</td>
+            <td>Anti-inflammatory, anti-allergic, cardioprotective</td>
+          </tr>
+          <tr>
+            <td>Myricetin Glycosides</td>
+            <td>Flavonol glycosides</td>
+            <td>Antioxidant, antiviral, anti-tumour</td>
+          </tr>
+          <tr>
+            <td>Cliotides</td>
+            <td>Cyclic peptides (cyclotides)</td>
+            <td>Antimicrobial, insecticidal, plant-specific</td>
+          </tr>
+          <tr>
+            <td>Taraxerol &amp; Taraxerone</td>
+            <td>Triterpenoids</td>
+            <td>Anti-inflammatory, neuroprotective, hepatoprotective</td>
+          </tr>
+          <tr>
+            <td>β-Sitosterol &amp; Stigmasterol</td>
+            <td>Phytosterols</td>
+            <td>Cholesterol-lowering, anti-inflammatory</td>
+          </tr>
+          <tr>
+            <td>Proanthocyanidins</td>
+            <td>Condensed tannins</td>
+            <td>Astringent, antioxidant, capillary-strengthening</td>
+          </tr>
+          <tr>
+            <td>Saponins &amp; Tannins</td>
+            <td>Glycosides / polyphenols</td>
+            <td>Anti-inflammatory, antimicrobial, immunomodulatory</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">03</span>
+        <h2 class="section-title">Ayurvedic Significance</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Charaka Samhita places Aparajita among the <em>Shirovirechanopaga Mahakashaya</em> — the group of herbs used to facilitate <em>Nasya</em> (medicated nasal therapy) for cleansing the head and sinuses. It is also categorised as a <em>Medhya Rasayana</em> alongside Brahmi, Mandukaparni, and Shankhpushpi — the four classical brain-and-memory tonics. <em>Bhavaprakasha Nighantu</em> (verse 327) and <em>Kaiyadeva Nighantu</em> both highlight Aparajita's role as <em>Vishaghna</em> (anti-poisonous), and the Sanskrit name itself proclaims its undefeatable medicinal action.</p>
+      <p class="section-body">Two classical varieties are recognised: <em>Shweta Pushpa Aparajita</em> (white-flowered) and <em>Neela Pushpa Aparajita</em> (blue-flowered). Its rasa (taste) is <em>tikta</em> (bitter) and <em>kashaya</em> (astringent); guna is <em>laghu</em> (light) and <em>ruksha</em> (dry); vipaka is <em>katu</em> (pungent); and veerya is <em>sheeta</em> (cold). The cooling potency makes it an excellent Pitta-pacifier; some South Indian schools controversially classify it as a source for Shankhpushpi.</p>
+      <table class="dosha-table">
+        <thead>
+          <tr>
+            <th>Dosha</th>
+            <th>Effect</th>
+            <th>Mechanism &amp; Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Vata ~</td>
+            <td>Mixed effect</td>
+            <td>Light and dry qualities may slightly aggravate Vata if used excessively; combined with ghee or milk for Vata-prone individuals</td>
+          </tr>
+          <tr>
+            <td>Pitta ↓</td>
+            <td>Pacifying</td>
+            <td>Cooling potency (sheeta virya) and bitter taste calm inflammation, mental heat, anxiety, and Pitta-driven skin conditions; ideal in summer</td>
+          </tr>
+          <tr>
+            <td>Kapha ↓</td>
+            <td>Pacifying</td>
+            <td>Bitter, astringent, light, and dry qualities reduce mucus, oedema, and metabolic heaviness; supports detoxification of accumulated Ama</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">04</span>
+        <h2 class="section-title">Key Health Benefits</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Modern pharmacology has confirmed Aparajita's role as a multi-target medicinal plant, with documented activity across cognitive, anti-stress, antimicrobial, anti-inflammatory, and metabolic domains. A landmark 2008 review in the <em>Journal of Ethnopharmacology</em> consolidated its status as a serious nootropic worthy of further pharmaceutical investigation.</p>
+      <div class="benefits-grid">
+        <div class="benefit-card">
+          <div class="benefit-title">Memory &amp; Cognitive Enhancement</div>
+          <div class="benefit-desc">The flagship use — classical <em>Medhya Rasayana</em>. Compounds in the plant elevate brain acetylcholine levels, improving memory retention, learning capacity, and concentration. Used traditionally for paediatric speech delay, age-related cognitive decline, and as a supportive measure during periods of intense study.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Anxiety, Stress &amp; Mood</div>
+          <div class="benefit-desc">Documented anxiolytic, antidepressant, antistress, and mild sedative properties make Anchan tea a calming evening ritual. Modern studies show modulation of GABA receptors and adrenocortical stress markers, validating its centuries-old use as a meditation aid in temple traditions.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Antioxidant Powerhouse</div>
+          <div class="benefit-desc">Rich in delphinidin-based anthocyanins (ternatins) and flavonol glycosides, butterfly pea provides one of the highest plant-source anthocyanin loads available — neutralising free radicals, supporting healthy ageing, and protecting against oxidative damage at the cellular level.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Anti-Poisonous (Vishaghna)</div>
+          <div class="benefit-desc">Both Bhavaprakasha and Kaiyadeva Nighantu classify Aparajita as <em>Vishaghna</em> — anti-poisonous. Traditional rural use against insect stings, scorpion stings, and snakebites is supported by preclinical research into its venom-neutralising compounds. Adjunctive role only — not a substitute for emergency care.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Skin &amp; Hair Health</div>
+          <div class="benefit-desc">Anti-inflammatory and antimicrobial action soothes acne, eczema, and itching. Flower extracts feature in modern haircare for promoting hair growth, reducing scalp inflammation, and combating premature greying. The blue pigments are increasingly valued in natural cosmetics.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Antidiabetic &amp; Metabolic Support</div>
+          <div class="benefit-desc">Preclinical research has shown plant extracts reduce fasting blood glucose, improve insulin sensitivity, and inhibit α-glucosidase enzymes. Polyphenols and flavonoids together address oxidative stress in pancreatic tissue — a complementary tool, not a substitute for prescribed therapy.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Anti-inflammatory &amp; Analgesic</div>
+          <div class="benefit-desc">Documented inhibition of inflammatory mediators including COX-2 and TNF-α. Useful in inflammatory headaches, joint pain, and chronic Pitta-related inflammation. Topical paste of leaves and flowers is applied to swollen joints, boils, and skin eruptions.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Eye Health &amp; Microcirculation</div>
+          <div class="benefit-desc">Anthocyanins improve capillary integrity and blood flow, especially in delicate vasculature like the retina. Traditional eye washes prepared from Aparajita decoction are used for tired eyes and mild ocular inflammation; modern interest in macular health is growing.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">06</span>
+        <h2 class="section-title">How to Consume Aparajita</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Aparajita has crossed beautifully from temple ritual to global wellness culture — its tea is now famous worldwide for its colour-changing magic. Internally, the dried flowers and roots are most commonly used; externally, leaves and flowers form pastes for skin and scalp. Best taken in the morning or early evening, paired with warm water, milk, or honey to suit the dosha.</p>
+      <table class="consume-table">
+        <thead>
+          <tr>
+            <th>Form</th>
+            <th>Preparation</th>
+            <th>Dosage</th>
+            <th>Best Time</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Butterfly Pea Tea (Anchan)</td>
+            <td>Steep 5–10 dried flowers in 1 cup hot water for 5 minutes</td>
+            <td>1–2 cups daily</td>
+            <td>Morning or early evening</td>
+          </tr>
+          <tr>
+            <td>Flower Powder</td>
+            <td>Dried flowers ground; mix with warm milk or honey</td>
+            <td>1–3 g once or twice daily</td>
+            <td>Morning, with breakfast</td>
+          </tr>
+          <tr>
+            <td>Root Decoction (Kashayam)</td>
+            <td>Boil 1 tbsp coarse root powder in 4 cups water; reduce to 1 cup</td>
+            <td>30–50 ml twice daily</td>
+            <td>Empty stomach</td>
+          </tr>
+          <tr>
+            <td>Seed Powder</td>
+            <td>Dried seeds ground; used for laxative or nootropic effect</td>
+            <td>500 mg – 1 g daily</td>
+            <td>Bedtime (laxative); morning (nootropic)</td>
+          </tr>
+          <tr>
+            <td>Leaf Juice (Swarasa)</td>
+            <td>Fresh leaves crushed and strained</td>
+            <td>10–20 ml daily</td>
+            <td>Morning, empty stomach</td>
+          </tr>
+          <tr>
+            <td>Nasya (Nasal Drops)</td>
+            <td>Leaf or flower juice as nasal instillation</td>
+            <td>2–3 drops per nostril</td>
+            <td>Morning (for sinus, headache, cognitive support)</td>
+          </tr>
+          <tr>
+            <td>Capsules / Extract</td>
+            <td>Standardised Clitoria ternatea flower extract</td>
+            <td>250–500 mg, 1–2 capsules daily</td>
+            <td>With water, after meals</td>
+          </tr>
+          <tr>
+            <td>Topical Paste (Kalka)</td>
+            <td>Leaves &amp; flowers ground with rose water or coconut milk</td>
+            <td>Applied as needed</td>
+            <td>On skin disorders, joint pain, scalp</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">07</span>
+        <h2 class="section-title">Safety &amp; Precautions</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Aparajita is generally regarded as safe at culinary doses, with butterfly pea tea consumed widely across Southeast Asia and increasingly globally without significant reported adverse effects. However, its potent uterine, antiplatelet, and central-nervous-system activities call for thoughtful use in specific clinical contexts and at medicinal dosages.</p>
+      <ul class="precaution-list">
+        <li><strong>Pregnancy:</strong> Avoid medicinal doses entirely. Aparajita has documented uterine-stimulating activity and is used in some classical formulations (Garbhapal Ras) under careful supervision; high doses or unsupervised use during pregnancy is strongly discouraged.</li>
+        <li><strong>Breastfeeding:</strong> Limited safety data for concentrated extracts. Avoid medicinal preparations during lactation; consult an Ayurvedic physician for personalised guidance.</li>
+        <li><strong>Bleeding disorders &amp; surgery:</strong> Possesses platelet-aggregation-inhibiting activity. Discontinue at least 2 weeks before scheduled surgery. Use with caution alongside warfarin, heparin, aspirin, or other anticoagulants.</li>
+        <li><strong>Antidiabetic medications:</strong> The hypoglycaemic effect may potentiate insulin and oral antidiabetics. Monitor blood glucose regularly if combining; adjust dosage with medical supervision.</li>
+        <li><strong>Hypotension:</strong> Vascular smooth-muscle relaxant action may further reduce blood pressure. Use with caution in those on antihypertensive medications or prone to dizziness.</li>
+        <li><strong>Sedative interactions:</strong> The mild sedative and tranquilising effects may add to other CNS depressants — avoid combining with sleep medications, anxiolytics, or alcohol without medical guidance.</li>
+        <li><strong>Excessive intake:</strong> Some individuals report mild nausea, diarrhoea, or stomach discomfort with high doses. Stay within recommended dosage; introduce gradually.</li>
+        <li><strong>Children:</strong> Generally safe in mild doses for paediatric cognitive support, but always under qualified supervision. Butterfly pea tea is widely consumed by children as a colour-changing novelty drink without issue.</li>
+      </ul>
+    </div>
+
+    <div class="sources">
+      <div class="sources-title">References &amp; Sources</div>
+      <ul>
+        <li>Mukherjee PK, Kumar V, Kumar NS, Heinrich M — "The Ayurvedic medicine Clitoria ternatea — From traditional use to scientific assessment" — Journal of Ethnopharmacology, 2008</li>
+        <li>Jeyaraj EJ, Lim YY, Choo WS — "Extraction methods of butterfly pea (Clitoria ternatea) flower and biological activities of its phytochemicals" — Journal of Food Science and Technology, 2021</li>
+        <li>"Role of Aparajita (Clitoria ternatea Linn.) in Cancer Prevention and Therapy: Evidence from Ethnomedicine, Phytochemistry and Pharmacology" — Journal of Natural Remedies, 2025</li>
+        <li>Fu X et al. — "Spectral Characteristic, Storage Stability and Antioxidant Properties of Anthocyanin from Butterfly Pea Flower" — 2021</li>
+        <li>Charaka Samhita — Shirovirechanopaga Mahakashaya, Medhya Rasayana (Sutrasthana 4 &amp; Chikitsasthana 1)</li>
+        <li>Bhavaprakasha Nighantu — Verse 327 — Classical description of Aparajita as Vishaghna</li>
+        <li>Kaiyadeva Nighantu — References to Aparajita as anti-poisonous drug</li>
+        <li>The Ayurvedic Pharmacopoeia of India — Ministry of AYUSH, Government of India</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer>
+    <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a
+      qualified practitioner before therapeutic use</p>
+  </footer>
+
+  <audio id="aparajitaAudio" src="aparajita_benefits.mp3" loop preload="auto"></audio>
+
+  <script>
+    const open3D = document.getElementById('open3D');
+    const close3D = document.getElementById('close3D');
+    const modal = document.getElementById('viewerModal');
+    const aparajitaAudio = document.getElementById('aparajitaAudio');
+
+    function openModal() {
+      modal.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+      history.pushState({ modal: 'aparajita3d' }, '', '#3d');
+      aparajitaAudio.play().catch(e => console.log('Audio autoplay blocked', e));
+    }
+
+    function closeModal() {
+      modal.style.display = 'none';
+      document.body.style.overflow = '';
+      if (window.location.hash === '#3d') {
+        history.replaceState(null, '', window.location.pathname);
+      }
+      aparajitaAudio.pause();
+      aparajitaAudio.currentTime = 0;
+    }
+
+    open3D.addEventListener('click', function (e) {
+      e.preventDefault(); e.stopPropagation();
+      openModal();
+    });
+
+    close3D.addEventListener('click', function (e) {
+      e.preventDefault(); e.stopPropagation();
+      closeModal();
+    });
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+    });
+
+    window.addEventListener('popstate', function (e) {
+      if (modal.style.display === 'flex') {
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+    });
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mashaparni | Swastha</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap"
+    rel="stylesheet">
+  <style>
+    #open3D {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      padding: 10px 18px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: var(--forest);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      z-index: 1000;
+      transition: .3s;
+    }
+    #open3D:hover {
+      background: var(--gold);
+      color: var(--deep);
+    }
+    #viewerModal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+    }
+    #modal-topbar {
+      flex-shrink: 0;
+      height: 58px;
+      background: #111111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px 0 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      z-index: 99999;
+    }
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 4.5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.72);
+      user-select: none;
+    }
+    #close3D {
+      width: 38px;
+      height: 38px;
+      font-size: 15px;
+      font-weight: 300;
+      background: transparent;
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background .2s, color .2s, transform .22s;
+      outline: none;
+      flex-shrink: 0;
+    }
+    #close3D:hover {
+      background: #ffffff;
+      color: #111111;
+      border-color: #ffffff;
+      transform: rotate(90deg);
+    }
+    #viewerModal model-viewer {
+      flex: 1;
+      width: 100%;
+      display: block;
+      background: #ffffff;
+    }
+
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+    * { margin: 0; padding: 0; box-sizing: border-box }
+    html { scroll-behavior: smooth }
+    body {
+      font-family: 'Jost', sans-serif;
+      background: var(--cream);
+      color: var(--ink);
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity: .035;
+      pointer-events: none;
+      z-index: 100;
+    }
+    .bg-circle { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0 }
+    .bg-circle-1 { width: 700px; height: 700px; background: radial-gradient(circle, rgba(42,92,63,.1) 0%, transparent 70%); top: -200px; right: -150px }
+    .bg-circle-2 { width: 500px; height: 500px; background: radial-gradient(circle, rgba(201,168,76,.08) 0%, transparent 70%); bottom: -100px; left: -100px }
+
+    .botanical-svg { position: fixed; pointer-events: none; z-index: 1; opacity: .1 }
+    .botanical-tl { top: -20px; left: -20px; width: 260px }
+    .botanical-br { bottom: -20px; right: -20px; width: 220px; transform: rotate(180deg) }
+
+    .hero {
+      position: relative; z-index: 10;
+      padding: 54px 40px 0;
+      text-align: center;
+      opacity: 0; animation: fadeUp .9s ease .1s forwards;
+    }
+    .back-link {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+      color: var(--sage); text-decoration: none; margin-bottom: 36px; transition: color .3s;
+    }
+    .back-link:hover { color: var(--gold) }
+    .logo-rule { display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 14px }
+    .logo-rule span { display: block; height: 1px; width: 70px; background: linear-gradient(to right, transparent, var(--gold)) }
+    .logo-rule span:last-child { background: linear-gradient(to left, transparent, var(--gold)) }
+    .logo-ornament { font-size: 13px; color: var(--gold) }
+    .hero-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(60px, 11vw, 104px); font-weight: 300; letter-spacing: 8px; line-height: 1; color: var(--deep) }
+    .hero-subtitle { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-style: italic; font-weight: 300; color: var(--earth); letter-spacing: 2px; margin-top: 8px }
+    .hero-sci { font-size: 11px; font-weight: 200; letter-spacing: 5px; color: var(--sage); margin-top: 6px }
+
+    .hero-photos {
+      position: relative; z-index: 10;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 2px;
+      max-width: 900px; margin: 40px auto 0;
+      opacity: 0; animation: fadeUp .9s ease .35s forwards;
+    }
+    .hero-photos img { width: 100%; height: 380px; object-fit: cover; object-position: center; display: block; background: var(--parchment) }
+    .hero-photos img:first-child { object-position: center 40% }
+    .photo-caption {
+      text-align: center; font-family: 'Cormorant Garamond', serif; font-size: 12px; font-style: italic;
+      color: var(--sage); letter-spacing: 1px; padding: 10px 0 0; max-width: 900px; margin: 0 auto;
+      position: relative; z-index: 10; opacity: 0; animation: fadeUp .9s ease .5s forwards;
+    }
+    .divider {
+      display: flex; align-items: center; justify-content: center; gap: 16px;
+      margin: 50px auto; max-width: 600px;
+      opacity: 0; animation: fadeUp .9s ease .55s forwards;
+      position: relative; z-index: 10;
+    }
+    .divider-line { height: 1px; width: 120px; background: linear-gradient(to right, transparent, var(--sage)) }
+    .divider-line:last-child { background: linear-gradient(to left, transparent, var(--sage)) }
+    .divider-leaf { color: var(--forest); font-size: 18px }
+
+    .content { position: relative; z-index: 10; max-width: 860px; margin: 0 auto; padding: 0 30px 80px }
+    .intro-text {
+      font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 300; line-height: 1.75;
+      color: var(--ink); text-align: center; max-width: 700px; margin: 0 auto 60px;
+      opacity: 0; animation: fadeUp .9s ease .6s forwards;
+    }
+    .intro-text em { color: var(--forest); font-style: italic }
+
+    .section { margin-bottom: 60px; opacity: 0; animation: fadeUp .9s ease forwards }
+    .section:nth-child(1) { animation-delay: .65s }
+    .section:nth-child(2) { animation-delay: .75s }
+    .section:nth-child(3) { animation-delay: .85s }
+    .section:nth-child(4) { animation-delay: .95s }
+    .section:nth-child(5) { animation-delay: 1.05s }
+    .section:nth-child(6) { animation-delay: 1.15s }
+    .section:nth-child(7) { animation-delay: 1.25s }
+
+    .section-header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px }
+    .section-num { font-family: 'Cormorant Garamond', serif; font-size: 11px; letter-spacing: 4px; color: var(--gold) }
+    .section-title { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 400; color: var(--deep); letter-spacing: 1px }
+    .section-rule { height: 1px; flex: 1; background: linear-gradient(to right, var(--gold), transparent) }
+    .section-body { font-size: 13px; font-weight: 300; line-height: 1.9; color: var(--ink); margin-bottom: 24px }
+
+    .data-table { width: 100%; border-collapse: collapse; margin: 16px 0 8px; font-size: 12px }
+    .data-table thead tr { background: var(--deep); color: var(--gold); font-size: 10px; letter-spacing: 3px; text-transform: uppercase }
+    .data-table thead th { padding: 12px 14px; text-align: left; font-weight: 400 }
+    .data-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .data-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .data-table tbody tr { transition: background .2s }
+    .data-table tbody tr:hover { background: rgba(200, 164, 93, 0.15) }
+    .data-table tbody td { padding: 10px 14px; color: var(--ink); border-bottom: 1px solid rgba(107,79,45,.08) }
+    .data-table tbody td:first-child { font-weight: 400; color: var(--deep); width: 28% }
+
+    .dosha-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .dosha-table thead tr { background: var(--forest); color: var(--cream) }
+    .dosha-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .dosha-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .dosha-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .dosha-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(107,79,45,.08) }
+    .dosha-table tbody td:first-child { font-weight: 400; color: var(--forest); width: 18% }
+    .dosha-table tbody td:nth-child(2) { color: var(--earth); width: 20% }
+
+    .consume-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .consume-table thead tr { background: var(--earth); color: var(--cream) }
+    .consume-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .consume-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .consume-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .consume-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(107,79,45,.08) }
+    .consume-table tbody td:first-child { font-weight: 400; color: var(--earth); width: 22% }
+
+    .benefits-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: rgba(107,79,45,.12); border: 1px solid rgba(107,79,45,.12); margin: 8px 0 }
+    .benefit-card { background: var(--cream); padding: 24px 22px; transition: background .3s; position: relative; overflow: hidden }
+    .benefit-card:hover { background: #ede4ce }
+    .benefit-card::before { content: ''; position: absolute; bottom: 0; left: 0; width: 0; height: 2px; background: var(--gold); transition: width .4s }
+    .benefit-card:hover::before { width: 100% }
+    .benefit-title { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 600; color: var(--forest); margin-bottom: 8px }
+    .benefit-desc { font-size: 11.5px; font-weight: 300; line-height: 1.75; color: var(--ink); opacity: .85 }
+
+    .precaution-list { list-style: none; margin: 8px 0 }
+    .precaution-list li { display: flex; gap: 12px; align-items: flex-start; padding: 10px 14px; font-size: 12px; font-weight: 300; line-height: 1.7; color: var(--ink); border-bottom: 1px solid rgba(107,79,45,.08) }
+    .precaution-list li:last-child { border-bottom: none }
+    .precaution-list li::before { content: '▸'; color: var(--gold); flex-shrink: 0; margin-top: 1px }
+
+    .nutrition-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: rgba(107,79,45,.12); border: 1px solid rgba(107,79,45,.12); margin: 20px 0 }
+    .nutrition-cell { background: var(--cream); padding: 22px 16px; text-align: center; transition: background .3s }
+    .nutrition-cell:hover { background: var(--parchment) }
+    .nutrition-num { font-family: 'Cormorant Garamond', serif; font-size: 36px; font-weight: 300; color: var(--forest); line-height: 1; margin-bottom: 4px }
+    .nutrition-unit { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); font-weight: 300 }
+    .nutrition-label { font-size: 11px; font-weight: 300; color: var(--ink); margin-top: 5px }
+
+    .sources { border-top: 1px solid rgba(107,79,45,.15); padding-top: 24px; margin-top: 20px }
+    .sources-title { font-size: 10px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); margin-bottom: 12px; font-weight: 300 }
+    .sources ul { list-style: none }
+    .sources ul li { font-family: 'Cormorant Garamond', serif; font-size: 13px; font-style: italic; color: var(--earth); padding: 5px 0; border-bottom: 1px solid rgba(107,79,45,.06) }
+    .sources ul li::before { content: '· '; color: var(--sage) }
+
+    footer { position: relative; z-index: 10; text-align: center; padding: 24px 20px 44px; border-top: 1px solid rgba(107,79,45,.12); max-width: 860px; margin: 0 auto }
+    footer p { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); font-weight: 300 }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(28px) } to { opacity: 1; transform: translateY(0) } }
+
+    @media(max-width:700px) {
+      .hero-photos { grid-template-columns: 1fr }
+      .hero-photos img { height: 260px }
+      .benefits-grid { grid-template-columns: 1fr }
+      .nutrition-bar { grid-template-columns: 1fr 1fr }
+      .content { padding: 0 18px 60px }
+    }
+  </style>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+</head>
+<body>
+  <button type="button" id="open3D">View in 3D</button>
+
+
+  <div class="bg-circle bg-circle-1"></div>
+  <div class="bg-circle bg-circle-2"></div>
+
+  <svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#2a5c3f" stroke-width="1.5" fill="none"/>
+    <circle cx="90" cy="210" r="8" fill="#2a5c3f" opacity="0.7"/>
+    <circle cx="130" cy="175" r="10" fill="#7a9e7e" opacity="0.6"/>
+    <circle cx="170" cy="135" r="7" fill="#2a5c3f" opacity="0.8"/>
+    <circle cx="210" cy="95" r="9" fill="#c9a84c" opacity="0.5"/>
+    <ellipse cx="115" cy="195" rx="20" ry="10" fill="#7a9e7e" transform="rotate(-30 115 195)"/>
+    <ellipse cx="155" cy="155" rx="18" ry="9" fill="#2a5c3f" transform="rotate(-45 155 155)"/>
+    <ellipse cx="195" cy="115" rx="16" ry="8" fill="#7a9e7e" transform="rotate(-60 195 115)"/>
+  </svg>
+  <svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#2a5c3f" stroke-width="1.5" fill="none"/>
+    <circle cx="90" cy="210" r="8" fill="#2a5c3f" opacity="0.7"/>
+    <circle cx="130" cy="175" r="10" fill="#7a9e7e" opacity="0.6"/>
+    <circle cx="170" cy="135" r="7" fill="#2a5c3f" opacity="0.8"/>
+    <ellipse cx="115" cy="195" rx="20" ry="10" fill="#7a9e7e" transform="rotate(-30 115 195)"/>
+  </svg>
+
+  <div class="hero">
+    <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+    <div class="logo-rule"><span></span><div class="logo-ornament">✦</div><span></span></div>
+    <div class="hero-title">Mashaparni</div>
+    <div class="hero-subtitle">The Black Gram Leaf Herb — Jewel of the Dashamula &amp; Jivaniya Gana</div>
+    <div class="hero-sci">Teramnus labialis (L.) Spreng. &nbsp;·&nbsp; Syn. Glycine labialis</div>
+  </div>
+
+  <div class="hero-photos">
+    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/d/de/Teramnus_labialis_%286425599505%29.jpg/1280px-Teramnus_labialis_%286425599505%29.jpg" alt="Mashaparni plant with trifoliate leaves and small purple flowers"
+      onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/0/00/Teramnus_labialis_%28L.f.%29_Spreng._%2852533961559%29.jpg/1280px-Teramnus_labialis_%28L.f.%29_Spreng._%2852533961559%29.jpg" alt="Mashaparni climbing herb with dense leaf growth"
+      onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+  </div>
+  <p class="photo-caption">Fig. 1 — Mashaparni's characteristic trifoliate leaves resembling Black Gram (Masha) &nbsp;·&nbsp; Fig. 2 — Climbing, slender herb twining in its natural forest-edge habitat</p>
+
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-leaf">❧</div>
+    <div class="divider-line"></div>
+  </div>
+
+  <div class="content">
+    <p class="intro-text">Named for its striking resemblance to the leaves of <em>Masha</em> (Black Gram), Mashaparni is among the most revered herbs of classical Ayurveda — a constituent of both the <em>Jivaniya Gana</em> (life-promoting group) and the celebrated <em>Dashamula</em> formulation, honoured across Charaka, Sushruta, and Vagbhata as a supreme tonic, nervine, and reproductive strengthener that sustains the deepest tissues of the body.</p>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">01</span>
+        <h2 class="section-title">Botanical Profile</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Mashaparni (<em>Teramnus labialis</em>) is a slender, twining perennial herb of the Fabaceae (Leguminosae) family, native to the Indian subcontinent, Southeast Asia, tropical Africa, and Australia. It grows typically along forest margins, roadsides, hedgerows, and moist grasslands from sea level up to about 1,800 m, scrambling over other vegetation with its delicate twining stems.</p>
+      <p class="section-body">The leaves are trifoliate — the defining feature that lent it the name "Masha-parni" (leaves resembling Masha/Black Gram). Leaflets are elliptic-oblong to ovate, 2–5 cm long, with a dense silky hair covering on the underside. Flowers are small, pale purple to violet, papilionaceous, borne in axillary racemes. The pods are linear, 3–5 cm, densely hairy, containing 4–6 small, dark seeds. Flowering occurs August to October, with fruiting following November onward.</p>
+      <table class="data-table">
+        <thead><tr><th>PROPERTY</th><th>Detail</th></tr></thead>
+        <tbody>
+          <tr><td>Family</td><td>Fabaceae / Leguminosae (Shimbi Kula)</td></tr>
+          <tr><td>Botanical Name</td><td>Teramnus labialis (L.) Spreng.</td></tr>
+          <tr><td>Synonyms</td><td>Glycine labialis L.f., Dolichos labialis, Teramnus mollis</td></tr>
+          <tr><td>Sanskrit Names</td><td>Mashaparni, Mahamasha, Mahaparni, Rajimati, Kandula</td></tr>
+          <tr><td>Common Names</td><td>Wild Black Gram, Creeping Glycine, Perennial Groundnut (incorrect)</td></tr>
+          <tr><td>Regional Names</td><td>Mashaparni (Hindi), Masaparni (Tel), Kadambai (Tam), Mudukuparanda (Mal)</td></tr>
+          <tr><td>Plant Type</td><td>Slender twining perennial herb</td></tr>
+          <tr><td>Habitat</td><td>Forest margins, moist grasslands, hedgerows; 0–1,800 m altitude</td></tr>
+          <tr><td>Medicinal Parts</td><td>Whole plant (primary), roots, leaves, seeds</td></tr>
+          <tr><td>Taste Profile</td><td>Madhura (sweet), Tikta (bitter)</td></tr>
+          <tr><td>Gana Membership</td><td>Jivaniya, Bruhmaniya, Balya, Vata Shamaka ganas (Charaka); Dashamula ingredient (Sushruta)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">02</span>
+        <h2 class="section-title">Phytochemistry &amp; Composition</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Mashaparni has yielded a rich array of phytochemicals through modern analysis, with its leguminous nature contributing significant protein, isoflavones, and saponins alongside a spectrum of terpenoids, alkaloids, and phenolic compounds. The seeds, leaves, and roots each offer distinct chemical profiles that collectively explain its remarkable breadth of therapeutic applications.</p>
+      <div class="nutrition-bar">
+        <div class="nutrition-cell">
+          <div class="nutrition-num">18</div>
+          <div class="nutrition-unit">% protein</div>
+          <div class="nutrition-label">Seed content (high biological value)</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">6</div>
+          <div class="nutrition-unit">flavonoids</div>
+          <div class="nutrition-label">Major isolated compounds</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">3</div>
+          <div class="nutrition-unit">ganas</div>
+          <div class="nutrition-label">Charaka's principal groups</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">10</div>
+          <div class="nutrition-unit">roots</div>
+          <div class="nutrition-label">Dashamula compound (Mashaparni = 1 of 10)</div>
+        </div>
+      </div>
+      <table class="data-table">
+        <thead><tr><th>Compound</th><th>Category</th><th>Primary Action</th></tr></thead>
+        <tbody>
+          <tr><td>Teramnine &amp; Labialine</td><td>Indole alkaloids</td><td>Nervine tonic, CNS adaptogenic, anti-fatigue</td></tr>
+          <tr><td>Genistein &amp; Daidzein</td><td>Isoflavones</td><td>Phytoestrogenic, antioxidant, bone-protective</td></tr>
+          <tr><td>Luteolin &amp; Apigenin</td><td>Flavones</td><td>Anti-inflammatory, anti-spasmodic, anti-anxiety</td></tr>
+          <tr><td>β-Sitosterol</td><td>Phytosterol</td><td>Immunomodulatory, hypolipidemic, androgenic support</td></tr>
+          <tr><td>Soyasaponins</td><td>Triterpenoid saponins</td><td>Adaptogenic, liver-protective, cholesterol-modulating</td></tr>
+          <tr><td>Stigmasterol</td><td>Phytosterol</td><td>Anti-osteoarthritic, progesterone precursor, anti-inflammatory</td></tr>
+          <tr><td>Gallic &amp; Caffeic Acids</td><td>Phenolic acids</td><td>Antioxidant, astringent, antimicrobial</td></tr>
+          <tr><td>Amino Acids (Arg, Lys, Trp)</td><td>Essential amino acids</td><td>Tissue building (Bruhmaniya), neurotransmitter precursors</td></tr>
+          <tr><td>Mucilaginous Polysaccharides</td><td>Complex carbohydrates</td><td>Demulcent, soothing to mucous membranes</td></tr>
+          <tr><td>Fixed Oils (Linolenic, Oleic)</td><td>Seed fatty acids</td><td>Anti-inflammatory, nervine nourishment</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">03</span>
+        <h2 class="section-title">Ayurvedic Significance</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Mashaparni is among the select herbs mentioned consistently across the three pillars of classical Ayurveda — Charaka, Sushruta, and Ashtanga Hridayam. Charaka places it in the <em>Jivaniya Gana</em> (group of herbs promoting life and vitality), the <em>Bruhmaniya Gana</em> (body mass-promoting herbs), and the <em>Balya Gana</em> (strength-promoting group), making it one of the few herbs simultaneously present in multiple cardinal therapeutic groups. Sushruta includes Mashaparni root as one of the ten ingredients of the celebrated <em>Dashamula</em> formulation — the cornerstone of Vata-pacifying Panchakarma therapies and Basti (enema) preparations.</p>
+      <p class="section-body">Classical shloka from Bhavaprakasha: <em>"Mashaparni guru madhura snigdha balyarasayana, vata pitta hara shukra shonita vardhini"</em> — describing it as heavy, sweet, unctuous, strength-promoting, rejuvenating (rasayana), Vata-Pitta pacifying, and a promoter of both reproductive essence (Shukra) and blood (Shonita). Dhanvantari Nighantu catalogues it under <em>Guduchyadi Varga</em>; Priya Nighantu under <em>Shatpushpadi Varga</em>.</p>
+      <table class="dosha-table">
+        <thead><tr><th>Dosha</th><th>Effect</th><th>Mechanism &amp; Notes</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Vata ↓↓</td>
+            <td>Strongly pacifying</td>
+            <td>Guru (heavy), snigdha (unctuous), madhura (sweet) properties deeply nourish depleted Vata; key herb in Dashamula Kashaya and all Vata-pacifying Basti formulations; excellent for neurological debility, emaciation, and tremors</td>
+          </tr>
+          <tr>
+            <td>Pitta ↓</td>
+            <td>Pacifying</td>
+            <td>Madhura rasa and madhura vipaka cool excess Pitta; useful in Pitta-type fevers, burning sensations, and inflammatory conditions; tikta (bitter) component adds depth to Pitta modulation</td>
+          </tr>
+          <tr>
+            <td>Kapha ↑</td>
+            <td>Mildly aggravating</td>
+            <td>Guru (heavy) and snigdha (unctuous) qualities may increase Kapha accumulation; use cautiously in obesity, congestion, and excess Kapha states; typically combined with digestive herbs (Trikatu) to offset this tendency</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="section-body"><strong>Rasa:</strong> Madhura (sweet), Tikta (bitter) &nbsp;·&nbsp; <strong>Guna:</strong> Guru (heavy), Snigdha (unctuous) &nbsp;·&nbsp; <strong>Virya:</strong> Sheeta (cold) &nbsp;·&nbsp; <strong>Vipaka:</strong> Madhura (sweet) &nbsp;·&nbsp; <strong>Karma:</strong> Vata-Pitta shamaka, Jivaniya, Rasayana</p>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">04</span>
+        <h2 class="section-title">Key Health Benefits</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">As a member of the Jivaniya Gana, Mashaparni's primary therapeutic identity is that of a <em>rasayana</em> — a rejuvenative that promotes longevity, tissue quality, and vitality. Modern pharmacological studies have begun to substantiate these classical claims across neurological, reproductive, metabolic, and immunological domains.</p>
+      <div class="benefits-grid">
+        <div class="benefit-card">
+          <div class="benefit-title">Rasayana &amp; Rejuvenation</div>
+          <div class="benefit-desc">As a Jivaniya (life-promoting) herb, Mashaparni nourishes all seven dhatus (tissues), particularly Shukra (reproductive) and Ojas (vital essence). Regular consumption is prescribed in classical Ayurveda for recovery from chronic illness, wasting conditions, and general debility. It promotes cellular vitality and slows degenerative processes.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Nervine Tonic &amp; Neurological Support</div>
+          <div class="benefit-desc">Its indole alkaloids and isoflavones support nerve tissue (Majja dhatu) nourishment. Used classically in hemiplegia, facial palsy, neuralgia, and Vata-origin neurological conditions. Modern research indicates adaptogenic and neuroprotective activity, reducing oxidative stress on neural tissue. One of the foremost Majja-rasayana herbs.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Reproductive &amp; Sexual Vitality</div>
+          <div class="benefit-desc">A premier Shukrala (semen-promoting) herb in classical Ayurveda — included in formulations for oligospermia, erectile dysfunction, and male infertility. Its phytoestrogenic isoflavones support female hormonal balance, ease dysmenorrhea, and improve follicular health. Used in both male and female reproductive rasayana preparations.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Anti-inflammatory &amp; Analgesic</div>
+          <div class="benefit-desc">Ethanolic extracts demonstrate significant inhibition of COX-mediated inflammatory pathways in preclinical studies. Luteolin and apigenin contribute synergistic anti-inflammatory action. Traditional applications include Vata-related joint pains, myalgia, and post-fever body ache — often administered as part of Dashamula Kashaya.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Fever Management (Jwara)</div>
+          <div class="benefit-desc">Specifically listed in classical Vata-Pitta jwara (fever) management. Its sheeta virya (cold potency) and pitta-shamaka action lower pathological heat while its jivaniya properties prevent tissue catabolism during illness. Dashamula Kashaya — containing Mashaparni — remains a gold-standard preparation for post-febrile debility.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Muscle Building &amp; Weight Restoration</div>
+          <div class="benefit-desc">Membership in the Bruhmaniya Gana (mass-promoting group) reflects its anabolic, tissue-building properties. High biological-value protein content alongside anabolic phytosterols supports lean tissue recovery in cachexia, post-surgical patients, and athletes. Classical preparations with milk and ghee maximize this action.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Antioxidant &amp; Immunomodulatory</div>
+          <div class="benefit-desc">Phenolic acids, flavonoids, and soyasaponins collectively confer potent free radical scavenging capacity. Immune-modulatory effects documented in studies of saponin fractions. As an Ojas-promoting herb, it enhances non-specific immunity and resilience against recurrent infections — particularly valuable in post-COVID and post-viral recovery.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Cardiovascular &amp; Metabolic Support</div>
+          <div class="benefit-desc">β-Sitosterol and stigmasterol contribute to cholesterol modulation and vascular protection. Phytoestrogenic isoflavones exert cardioprotective effects similar to soy-derived compounds. Classical Ayurveda uses Mashaparni in formulations for Hridroga (heart disease) and Prameha (metabolic-urinary disorders including diabetes) — areas where modern isoflavone research shows promising concordance.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">05</span>
+        <h2 class="section-title">Classical Formulations</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Mashaparni features prominently in some of Ayurveda's most revered compound formulations, often combined with its botanical counterpart Mudgaparni (<em>Phaseolus trilobus</em>) in classical pairs. These formulations leverage its synergistic properties with complementary herbs to deliver targeted therapeutic outcomes.</p>
+      <table class="data-table">
+        <thead><tr><th>Formulation</th><th>Type</th><th>Key Indication</th></tr></thead>
+        <tbody>
+          <tr><td>Dashamula Kashaya</td><td>Decoction of 10 roots</td><td>Vata disorders, Panchakarma Basti, post-fever debility, neurological conditions</td></tr>
+          <tr><td>Jivaniya Ghrita</td><td>Medicated ghee</td><td>Rasayana, tissue rejuvenation, strength promotion, paediatric tonic</td></tr>
+          <tr><td>Mashaparni-Mudgaparni Kwatha</td><td>Decoction pair</td><td>Jwara (fever), Pitta-Vata disorders, tissue catabolism during illness</td></tr>
+          <tr><td>Ashwagandhadi Lehyam</td><td>Electuary / herbal jam</td><td>Male reproductive tonic, muscle building, general debility</td></tr>
+          <tr><td>Chyawanprash</td><td>Herbal confection</td><td>Classical Rasayana formulation — Mashaparni as one of 40+ ingredients</td></tr>
+          <tr><td>Dashamula Taila</td><td>Medicated oil</td><td>Abhyanga (oil massage) for neurological conditions, paralysis, joint diseases</td></tr>
+          <tr><td>Bala-Mashaparni Ghrita</td><td>Compound medicated ghee</td><td>Paediatric tonic, underweight children, developmental support</td></tr>
+          <tr><td>Shukrala Yoga</td><td>Various classical combinations</td><td>Male infertility, oligospermia, sexual debility</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">06</span>
+        <h2 class="section-title">How to Consume Mashaparni</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Mashaparni is most effectively used under the guidance of a qualified Ayurvedic physician, particularly since its optimal form, dose, and adjuvant (anupana) vary considerably based on the condition being treated and the individual's constitution. Milk is the classical anupana of choice for most internal preparations, maximising its Jivaniya and Bruhmaniya properties.</p>
+      <table class="consume-table">
+        <thead><tr><th>Form</th><th>Preparation</th><th>Dosage</th><th>Best Use</th></tr></thead>
+        <tbody>
+          <tr><td>Whole Plant Decoction (Kwatha)</td><td>Boil dried whole plant in 8× water; reduce to ¼</td><td>30–60 ml twice daily with milk</td><td>Fever, Vata disorders, post-illness recovery</td></tr>
+          <tr><td>Root Decoction (Dashamula)</td><td>As part of Dashamula Kashaya formulation</td><td>Per practitioner direction</td><td>Neurological, Vata-Pitta conditions, Basti preparation</td></tr>
+          <tr><td>Whole Plant Powder (Churna)</td><td>Dried, powdered whole plant</td><td>3–5 g with warm milk and honey</td><td>Rasayana, reproductive tonic, debility</td></tr>
+          <tr><td>Seed Powder</td><td>Dried seed powder</td><td>2–4 g with ghee and milk</td><td>Bruhmaniya — tissue building, male tonic</td></tr>
+          <tr><td>Medicated Ghee (Ghrita)</td><td>Classical Jivaniya Ghrita preparation</td><td>5–10 ml before meals with warm milk</td><td>Rasayana, paediatric tonic, reproductive support</td></tr>
+          <tr><td>Cold Infusion (Hima)</td><td>Powder steeped in cold water overnight; strained</td><td>50–80 ml once daily</td><td>Pitta-type fever, burning sensations, inflammatory conditions</td></tr>
+          <tr><td>Paste (Kalka) — Topical</td><td>Fresh or dried herb ground with water/oil</td><td>Apply to affected area 1–2× daily</td><td>Skin inflammation, joint swelling, neuralgia</td></tr>
+          <tr><td>Medicated Oil (Taila)</td><td>Dashamula Taila / Bala Taila (classical)</td><td>Per Abhyanga protocol</td><td>Paralysis, neurological disorders, joint diseases</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">07</span>
+        <h2 class="section-title">Safety &amp; Precautions</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Mashaparni is classified as a safe, well-tolerated herb across classical texts and modern pharmacological assessments, with no significant documented toxicity at standard therapeutic doses. As a food-grade leguminous herb, its safety profile is considerably more favourable than many medicinal plants. However, its heavy, unctuous qualities necessitate consideration in specific conditions.</p>
+      <ul class="precaution-list">
+        <li><strong>Pregnancy:</strong> Generally considered safe in classical Ayurveda as part of Garbhini Paricharya (antenatal care); however, its phytoestrogenic content warrants caution — use only under qualified supervision during pregnancy.</li>
+        <li><strong>Kapha-dominant constitutions:</strong> Its guru (heavy) and snigdha (unctuous) qualities can increase Kapha; individuals with obesity, sluggish digestion, oedema, or excess mucus should use it in combination with digestive stimulants (e.g., Trikatu).</li>
+        <li><strong>Hormone-sensitive conditions:</strong> Due to isoflavone content with phytoestrogenic activity, women with oestrogen-receptor positive cancers, endometriosis, or uterine fibroids should seek medical guidance before internal use.</li>
+        <li><strong>Botanical identity verification:</strong> Mashaparni (<em>Teramnus labialis</em>) is frequently confused with Mudgaparni (<em>Phaseolus trilobus</em>) in trade and clinical practice — ensure correct botanical identity when sourcing raw herbs or formulations.</li>
+        <li><strong>Digestive weakness (Mandagni):</strong> Given its heavy quality, those with significantly impaired digestive fire should take Mashaparni with digestive adjuvants and begin with lower doses to prevent ama (metabolic toxin) accumulation.</li>
+        <li><strong>Drug interactions:</strong> Phytoestrogenic isoflavones may theoretically interact with hormone therapies, anticoagulants, or thyroid medications — inform your physician if taking these medicines.</li>
+        <li><strong>Quality sourcing:</strong> Wild Mashaparni populations are declining due to habitat loss and collection pressure; preference should be given to sustainably cultivated or organically verified sources to ensure authenticity and ecological responsibility.</li>
+      </ul>
+    </div>
+
+    <div class="sources">
+      <div class="sources-title">References &amp; Sources</div>
+      <ul>
+        <li>Charaka Samhita — Sutrasthana: Jivaniya Gana, Bruhmaniya Gana, Balya Gana; Chikitsasthana: Vatarakta Chikitsa</li>
+        <li>Sushruta Samhita — Sutrasthana: Dashamula formulation; Chikitsasthana: Vata disorders</li>
+        <li>Ashtanga Hridayam (Vagbhata) — References in Jivaniya context and Vata management</li>
+        <li>Bhavaprakasha Nighantu — Guduchyadi Varga: classical properties shloka of Mashaparni</li>
+        <li>Dhanvantari Nighantu — Guduchyadi Varga; Priya Nighantu — Shatpushpadi Varga</li>
+        <li>Priyavrat Sharma — Dravyaguna Vigyana Vol. II — Mashaparni monograph</li>
+        <li>Khare CP — Indian Medicinal Plants: An Illustrated Dictionary — Teramnus labialis entry</li>
+        <li>Patel DK et al. — "Phytochemical investigation and pharmacological evaluation of Teramnus labialis" — Journal of Ethnopharmacology, 2011</li>
+        <li>Singh RH — Panchakarma Therapy — Dashamula in Basti procedures</li>
+        <li>Warrier PK et al. — Indian Medicinal Plants Vol. 5 — Orient Longman, Madras</li>
+        <li>Gogte VM — Ayurvedic Pharmacology and Therapeutic Uses of Medicinal Plants — Mashaparni, Jivaniya group</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer>
+    <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a qualified practitioner before therapeutic use</p>
+  </footer>
+
+
+  <div id="viewerModal">
+    <div id="modal-topbar">
+      <span>3D Model — Mashaparni</span>
+      <button type="button" id="close3D">✕</button>
+    </div>
+    <model-viewer src="mashaparni3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+  </div>
+  <script>
+    (function() {
+      var open3D = document.getElementById('open3D');
+      var close3D = document.getElementById('close3D');
+      var modal = document.getElementById('viewerModal');
+      if (!open3D || !close3D || !modal) return;
+      function openModal() {
+        
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+      function closeModal() {
+        
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+      open3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); openModal();
+      });
+      close3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); closeModal();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+      });
+    })();
+  </script>
+
+</body>
+</html>

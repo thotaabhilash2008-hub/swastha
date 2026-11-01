@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Guduchi | Swastha</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+  <style>
+    #open3D {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      padding: 10px 18px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: var(--forest);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      z-index: 1000;
+      transition: .3s;
+    }
+    #open3D:hover {
+      background: var(--gold);
+      color: var(--deep);
+    }
+    #viewerModal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+    }
+    #modal-topbar {
+      flex-shrink: 0;
+      height: 58px;
+      background: #111111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px 0 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      z-index: 99999;
+    }
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 4.5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.72);
+      user-select: none;
+    }
+    #close3D {
+      width: 38px;
+      height: 38px;
+      font-size: 15px;
+      font-weight: 300;
+      background: transparent;
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background .2s, color .2s, transform .22s;
+      outline: none;
+      flex-shrink: 0;
+    }
+    #close3D:hover {
+      background: #ffffff;
+      color: #111111;
+      border-color: #ffffff;
+      transform: rotate(90deg);
+    }
+    #viewerModal model-viewer {
+      flex: 1;
+      width: 100%;
+      display: block;
+      background: #ffffff;
+    }
+
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+    * { margin: 0; padding: 0; box-sizing: border-box }
+    html { scroll-behavior: smooth }
+    body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--ink); min-height: 100vh; overflow-x: hidden; position: relative }
+    body::before { content: ''; position: fixed; inset: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E"); opacity: .035; pointer-events: none; z-index: 100 }
+
+    .bg-circle { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0 }
+    .bg-circle-1 { width: 700px; height: 700px; background: radial-gradient(circle, rgba(30,92,53,.12) 0%, transparent 70%); top: -200px; right: -150px }
+    .bg-circle-2 { width: 500px; height: 500px; background: radial-gradient(circle, rgba(184,146,42,.08) 0%, transparent 70%); bottom: -100px; left: -100px }
+
+    /* Vine botanical decoration */
+    .botanical-svg { position: fixed; pointer-events: none; z-index: 1; opacity: .09 }
+    .botanical-tl { top: -10px; left: -10px; width: 280px }
+    .botanical-br { bottom: -10px; right: -10px; width: 240px; transform: rotate(180deg) }
+
+    .hero { position: relative; z-index: 10; padding: 54px 40px 0; text-align: center; opacity: 0; animation: fadeUp .9s ease .1s forwards }
+    .back-link { display: inline-flex; align-items: center; gap: 8px; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--sage); text-decoration: none; margin-bottom: 36px; transition: color .3s }
+    .back-link:hover { color: var(--gold) }
+    .logo-rule { display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 14px }
+    .logo-rule span { display: block; height: 1px; width: 70px; background: linear-gradient(to right, transparent, var(--gold)) }
+    .logo-rule span:last-child { background: linear-gradient(to left, transparent, var(--gold)) }
+    .logo-ornament { font-size: 13px; color: var(--gold) }
+    .hero-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(60px, 11vw, 105px); font-weight: 300; letter-spacing: 8px; line-height: 1; color: var(--deep) }
+    .hero-subtitle { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-style: italic; font-weight: 300; color: var(--earth); letter-spacing: 2px; margin-top: 8px }
+    .hero-sci { font-size: 11px; font-weight: 200; letter-spacing: 5px; color: var(--sage); margin-top: 6px }
+
+    .hero-photos { position: relative; z-index: 10; display: grid; grid-template-columns: 1fr 1fr; gap: 2px; max-width: 900px; margin: 40px auto 0; opacity: 0; animation: fadeUp .9s ease .35s forwards }
+    .hero-photos img { width: 100%; height: 380px; object-fit: cover; object-position: center; display: block; background: var(--parchment) }
+    .photo-caption { text-align: center; font-family: 'Cormorant Garamond', serif; font-size: 12px; font-style: italic; color: var(--sage); letter-spacing: 1px; padding: 10px 0 0; max-width: 900px; margin: 0 auto; position: relative; z-index: 10; opacity: 0; animation: fadeUp .9s ease .5s forwards }
+
+    .divider { display: flex; align-items: center; justify-content: center; gap: 16px; margin: 50px auto; max-width: 600px; opacity: 0; animation: fadeUp .9s ease .55s forwards; position: relative; z-index: 10 }
+    .divider-line { height: 1px; width: 120px; background: linear-gradient(to right, transparent, var(--sage)) }
+    .divider-line:last-child { background: linear-gradient(to left, transparent, var(--sage)) }
+    .divider-leaf { color: var(--forest); font-size: 18px }
+
+    .content { position: relative; z-index: 10; max-width: 860px; margin: 0 auto; padding: 0 30px 80px }
+    .intro-text { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 300; line-height: 1.75; color: var(--ink); text-align: center; max-width: 700px; margin: 0 auto 60px; opacity: 0; animation: fadeUp .9s ease .6s forwards }
+    .intro-text em { color: var(--forest); font-style: italic }
+
+    .section { margin-bottom: 60px; opacity: 0; animation: fadeUp .9s ease forwards }
+    .section:nth-child(1) { animation-delay: .65s }
+    .section:nth-child(2) { animation-delay: .75s }
+    .section:nth-child(3) { animation-delay: .85s }
+    .section:nth-child(4) { animation-delay: .95s }
+    .section:nth-child(5) { animation-delay: 1.05s }
+    .section:nth-child(6) { animation-delay: 1.15s }
+    .section:nth-child(7) { animation-delay: 1.25s }
+
+    .section-header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px }
+    .section-num { font-family: 'Cormorant Garamond', serif; font-size: 11px; letter-spacing: 4px; color: var(--gold) }
+    .section-title { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 400; color: var(--deep); letter-spacing: 1px }
+    .section-rule { height: 1px; flex: 1; background: linear-gradient(to right, var(--gold), transparent) }
+    .section-body { font-size: 13px; font-weight: 300; line-height: 1.9; color: var(--ink); margin-bottom: 24px }
+
+    .data-table { width: 100%; border-collapse: collapse; margin: 16px 0 8px; font-size: 12px }
+    .data-table thead tr { background: var(--deep); color: var(--gold); font-size: 10px; letter-spacing: 3px; text-transform: uppercase }
+    .data-table thead th { padding: 12px 14px; text-align: left; font-weight: 400 }
+    .data-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .data-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .data-table tbody tr { transition: background .2s }
+    .data-table tbody tr:hover { background: #ddd5bb }
+    .data-table tbody td { padding: 10px 14px; color: var(--ink); border-bottom: 1px solid rgba(90,62,27,.08) }
+    .data-table tbody td:first-child { font-weight: 400; color: var(--deep); width: 28% }
+
+    .dosha-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .dosha-table thead tr { background: var(--forest); color: var(--cream) }
+    .dosha-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .dosha-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .dosha-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .dosha-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(90,62,27,.08) }
+    .dosha-table tbody td:first-child { font-weight: 400; color: var(--forest); width: 18% }
+    .dosha-table tbody td:nth-child(2) { color: var(--earth); width: 20% }
+
+    .consume-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .consume-table thead tr { background: var(--earth); color: var(--cream) }
+    .consume-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .consume-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .consume-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .consume-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(90,62,27,.08) }
+    .consume-table tbody td:first-child { font-weight: 400; color: var(--earth); width: 22% }
+
+    .benefits-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: rgba(90,62,27,.12); border: 1px solid rgba(90,62,27,.12); margin: 8px 0 }
+    .benefit-card { background: var(--cream); padding: 24px 22px; transition: background .3s; position: relative; overflow: hidden }
+    .benefit-card:hover { background: #e2d9c2 }
+    .benefit-card::before { content: ''; position: absolute; bottom: 0; left: 0; width: 0; height: 2px; background: var(--gold); transition: width .4s }
+    .benefit-card:hover::before { width: 100% }
+    .benefit-title { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 600; color: var(--forest); margin-bottom: 8px }
+    .benefit-desc { font-size: 11.5px; font-weight: 300; line-height: 1.75; color: var(--ink); opacity: .85 }
+
+    .precaution-list { list-style: none; margin: 8px 0 }
+    .precaution-list li { display: flex; gap: 12px; align-items: flex-start; padding: 10px 14px; font-size: 12px; font-weight: 300; line-height: 1.7; color: var(--ink); border-bottom: 1px solid rgba(90,62,27,.08) }
+    .precaution-list li:last-child { border-bottom: none }
+    .precaution-list li::before { content: '▸'; color: var(--gold); flex-shrink: 0; margin-top: 1px }
+
+    .nutrition-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: rgba(90,62,27,.12); border: 1px solid rgba(90,62,27,.12); margin: 20px 0 }
+    .nutrition-cell { background: var(--cream); padding: 22px 16px; text-align: center; transition: background .3s }
+    .nutrition-cell:hover { background: var(--parchment) }
+    .nutrition-num { font-family: 'Cormorant Garamond', serif; font-size: 36px; font-weight: 300; color: var(--forest); line-height: 1; margin-bottom: 4px }
+    .nutrition-unit { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); font-weight: 300 }
+    .nutrition-label { font-size: 11px; font-weight: 300; color: var(--ink); margin-top: 5px }
+
+    .sources { border-top: 1px solid rgba(90,62,27,.15); padding-top: 24px; margin-top: 20px }
+    .sources-title { font-size: 10px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); margin-bottom: 12px; font-weight: 300 }
+    .sources ul { list-style: none }
+    .sources ul li { font-family: 'Cormorant Garamond', serif; font-size: 13px; font-style: italic; color: var(--earth); padding: 5px 0; border-bottom: 1px solid rgba(90,62,27,.06) }
+    .sources ul li::before { content: '· '; color: var(--sage) }
+
+    footer { position: relative; z-index: 10; text-align: center; padding: 24px 20px 44px; border-top: 1px solid rgba(90,62,27,.12); max-width: 860px; margin: 0 auto }
+    footer p { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); font-weight: 300 }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(28px) } to { opacity: 1; transform: translateY(0) } }
+    @media(max-width:700px) {
+      .hero-photos { grid-template-columns: 1fr }
+      .hero-photos img { height: 260px }
+      .benefits-grid { grid-template-columns: 1fr }
+      .nutrition-bar { grid-template-columns: 1fr 1fr }
+      .content { padding: 0 18px 60px }
+    }
+  </style>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+</head>
+<body>
+  <button type="button" id="open3D">View in 3D</button>
+
+
+  <div class="bg-circle bg-circle-1"></div>
+  <div class="bg-circle bg-circle-2"></div>
+
+  <!-- Vine SVG decorations -->
+  <svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M20 280 C 60 240 80 200 100 160 C 120 120 140 90 180 50 C 200 30 230 20 260 10" stroke="#1e5c35" stroke-width="2" fill="none"/>
+    <path d="M100 160 C 80 140 60 145 40 130" stroke="#1e5c35" stroke-width="1.5" fill="none"/>
+    <path d="M140 110 C 160 95 165 70 155 50" stroke="#1e5c35" stroke-width="1.5" fill="none"/>
+    <ellipse cx="95" cy="155" rx="18" ry="10" fill="#1e5c35" transform="rotate(-40 95 155)" opacity=".8"/>
+    <ellipse cx="135" cy="108" rx="16" ry="9" fill="#6b9e72" transform="rotate(-55 135 108)" opacity=".7"/>
+    <ellipse cx="170" cy="68" rx="14" ry="8" fill="#1e5c35" transform="rotate(-70 170 68)" opacity=".8"/>
+    <ellipse cx="45" cy="128" rx="12" ry="7" fill="#6b9e72" transform="rotate(-20 45 128)" opacity=".6"/>
+    <ellipse cx="152" cy="48" rx="11" ry="6" fill="#6b9e72" transform="rotate(-80 152 48)" opacity=".6"/>
+    <circle cx="100" cy="160" r="4" fill="#b8922a" opacity=".7"/>
+    <circle cx="140" cy="110" r="3.5" fill="#b8922a" opacity=".6"/>
+  </svg>
+  <svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M20 280 C 60 240 80 200 100 160 C 120 120 140 90 180 50 C 200 30 230 20 260 10" stroke="#1e5c35" stroke-width="2" fill="none"/>
+    <path d="M100 160 C 80 140 60 145 40 130" stroke="#1e5c35" stroke-width="1.5" fill="none"/>
+    <ellipse cx="95" cy="155" rx="18" ry="10" fill="#1e5c35" transform="rotate(-40 95 155)" opacity=".8"/>
+    <ellipse cx="135" cy="108" rx="16" ry="9" fill="#6b9e72" transform="rotate(-55 135 108)" opacity=".7"/>
+    <circle cx="100" cy="160" r="4" fill="#b8922a" opacity=".7"/>
+  </svg>
+
+  <div class="hero">
+    <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+    <div class="logo-rule"><span></span><div class="logo-ornament">✦</div><span></span></div>
+    <div class="hero-title">Guduchi</div>
+    <div class="hero-subtitle">Giloy — The Divine Nectar of Immortality</div>
+    <div class="hero-sci">Tinospora cordifolia (Willd.) Miers &nbsp;·&nbsp; Menispermaceae</div>
+  </div>
+
+  <div class="hero-photos">
+    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4a/Tinospora_cordifolia_fruits.jpg/1280px-Tinospora_cordifolia_fruits.jpg" alt="Guduchi vine climbing a tree with heart-shaped leaves" onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/d/da/Tinospora_cordifolia_fruits_07.JPG/1280px-Tinospora_cordifolia_fruits_07.JPG" alt="Guduchi stem cross-section and aerial roots" onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+  </div>
+  <p class="photo-caption">Fig. 1 — Guduchi climbing vine showing characteristic heart-shaped leaves and twining stems &nbsp;·&nbsp; Fig. 2 — Succulent stem with aerial roots — the primary medicinal part used in Ayurveda</p>
+
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-leaf">❧</div>
+    <div class="divider-line"></div>
+  </div>
+
+  <div class="content">
+    <p class="intro-text">Named <em>Amrita</em> in Sanskrit — literally "the root of immortality" — Guduchi holds a singular place in Ayurveda as one of the most revered <em>Rasayana</em> herbs. A climbing vine that thrives wherever the sacred neem grows, it is the only plant categorised as <em>Sarvadosha hara</em> — capable of pacifying all three doshas — and was described by Charaka as supreme among herbs that promote longevity and vitality.</p>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">01</span><h2 class="section-title">Botanical Profile</h2><div class="section-rule"></div></div>
+      <p class="section-body">Guduchi (<em>Tinospora cordifolia</em>) is a large, glabrous, deciduous climbing shrub of the Menispermaceae family. Its stems are succulent and fleshy, greyish-white to creamy in colour, and distinctively covered with circular wart-like lenticels. Long, thread-like aerial roots hang freely from the branches, and the stem — the primary medicinal part — exudes a clear, sticky latex when cut. The bark is thin and papery; beneath it lies a characteristic starchy pith that turns blue-black on exposure to iodine, confirming its high starch content.</p>
+      <p class="section-body">The leaves are membranous, cordate (heart-shaped), 5–12 cm across, bright green above and paler beneath, with 7 nerves arising from the base — resembling betel leaf in form. Flowers are small, yellow or greenish-yellow, unisexual, appearing with or before new leaves in summer. Fruits are drupes, pea-sized, fleshy red when ripe, clustered on long pendulous stalks. Guduchi is found throughout tropical India, Sri Lanka, Myanmar, and parts of China — ascending to 1,200 m elevation. Plants growing on neem (<em>Azadirachta indica</em>) are considered especially potent, absorbing phytochemicals from the host.</p>
+      <table class="data-table">
+        <thead><tr><th>Property</th><th>Detail</th></tr></thead>
+        <tbody>
+          <tr><td>Family</td><td>Menispermaceae</td></tr>
+          <tr><td>Botanical Name</td><td>Tinospora cordifolia (Willd.) Hook. f. &amp; Thomson</td></tr>
+          <tr><td>Sanskrit Names</td><td>Guduchi, Amrita, Chinnaruha, Chakrangi, Madhuparni, Tantrika, Kundalini</td></tr>
+          <tr><td>Common Names</td><td>Giloy, Heart-leaved Moonseed, Indian Tinospora</td></tr>
+          <tr><td>Regional Names</td><td>Giloe/Gurcha (Hin), Shindilkodi (Tam), Tippa-teega (Tel), Amruthavalli (Kan/Mal)</td></tr>
+          <tr><td>Origin</td><td>Indian subcontinent, Sri Lanka, Myanmar, China</td></tr>
+          <tr><td>Plant Type</td><td>Large deciduous climbing shrub (vine)</td></tr>
+          <tr><td>Flowering Season</td><td>June–July (with new leaves)</td></tr>
+          <tr><td>Medicinal Parts</td><td>Stem (primary), roots, leaves, aerial roots; whole plant</td></tr>
+          <tr><td>Taste Profile</td><td>Tikta (bitter), Kashaya (astringent), Madhura (sweet) — unique tridoshic combination</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">02</span><h2 class="section-title">Phytochemical Composition</h2><div class="section-rule"></div></div>
+      <p class="section-body">Guduchi is among the most phytochemically diverse plants in Ayurveda, with over 300 compounds isolated across its stem, root, leaves, and fruit. The stem — the classical drug — contains a uniquely complex matrix of alkaloids (the tinosporines), diterpenoid glycosides (the tinosporides and furanolactones), polysaccharides, phenolics, and sterols. The plant's adaptogenic and immunomodulatory properties are attributed primarily to its diterpenoids and polysaccharides, while its bitter alkaloids drive antipyretic and anti-inflammatory activity.</p>
+      <div class="nutrition-bar">
+        <div class="nutrition-cell"><div class="nutrition-num">300+</div><div class="nutrition-unit">compounds</div><div class="nutrition-label">Total identified</div></div>
+        <div class="nutrition-cell"><div class="nutrition-num">35+</div><div class="nutrition-unit">alkaloids</div><div class="nutrition-label">In stem &amp; root</div></div>
+        <div class="nutrition-cell"><div class="nutrition-num">60%</div><div class="nutrition-unit">starch</div><div class="nutrition-label">Stem dry weight</div></div>
+        <div class="nutrition-cell"><div class="nutrition-num">1</div><div class="nutrition-unit">unique species</div><div class="nutrition-label">Sarvadosha hara herb</div></div>
+      </div>
+      <table class="data-table">
+        <thead><tr><th>Compound</th><th>Category</th><th>Primary Action</th></tr></thead>
+        <tbody>
+          <tr><td>Berberine &amp; Palmatine</td><td>Isoquinoline alkaloids</td><td>Antimicrobial, hypoglycaemic, anti-inflammatory, antidiarrhoeal</td></tr>
+          <tr><td>Tinosporine &amp; Choline</td><td>Protoberberine alkaloids</td><td>Antipyretic, immunostimulant, hepatoprotective</td></tr>
+          <tr><td>Tinosporide &amp; Columbin</td><td>Diterpenoid furanolactones</td><td>Bitter tonic, liver-protective, anti-leishmanial</td></tr>
+          <tr><td>Cordifolioside A &amp; B</td><td>Phenolic glycosides</td><td>Immunomodulatory, antioxidant, adaptogenic</td></tr>
+          <tr><td>Tinosporaside</td><td>Diterpenoid glycoside</td><td>Immune enhancement, anti-stress</td></tr>
+          <tr><td>Syringin (Eleutheroside B)</td><td>Phenylpropanoid glycoside</td><td>Adaptogenic, anti-fatigue, neuroprotective</td></tr>
+          <tr><td>β-Sitosterol &amp; γ-Sitosterol</td><td>Phytosterols</td><td>Anti-inflammatory, hypolipidaemic, immunostimulant</td></tr>
+          <tr><td>Giloin &amp; Giloinin</td><td>Bitter glycosides</td><td>Antipyretic, appetite stimulant, anti-arthritic</td></tr>
+          <tr><td>Arabinogalactan polysaccharides</td><td>Immunoactive polysaccharides</td><td>Macrophage activation, NK-cell enhancement, anti-tumour</td></tr>
+          <tr><td>Ecdysterone &amp; Makisterone</td><td>Phytoecdysteroids</td><td>Anabolic, adaptogenic, reproductive support</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">03</span><h2 class="section-title">Ayurvedic Significance</h2><div class="section-rule"></div></div>
+      <p class="section-body">Guduchi is one of Charaka's three great <em>Jeevaniya</em> (life-promoting) herbs and is explicitly named in the <em>Ashtanga Hridayam</em> as the foremost <em>Rasayana</em> — a rejuvenating herb that promotes longevity, improves memory, enhances complexion, and strengthens the body against disease. It is one of the very few herbs in the Materia Medica classified as <em>Sarvadosha hara</em> — capable of correcting imbalances in all three doshas simultaneously — a distinction it owes to its unique combination of tikta-kashaya (Kapha-Pitta pacifying) and madhura-post-digestive (Vata-pacifying) properties.</p>
+      <p class="section-body">Classical texts document its use in <em>jwara</em> (fever — all types, including chronic and recurrent), <em>prameha</em> (diabetes and urinary disorders), <em>vatarakta</em> (gout), <em>kamala</em> (jaundice and liver conditions), <em>kasa-shwasa</em> (cough and asthma), <em>arsha</em> (piles), and as a post-illness Rasayana to restore vitality. Guduchi grown specifically on neem trees (<em>neem guduchi</em>) is considered superior — absorbing neem's additional phytochemicals for enhanced detoxification.</p>
+      <table class="dosha-table">
+        <thead><tr><th>Dosha</th><th>Effect</th><th>Mechanism &amp; Notes</th></tr></thead>
+        <tbody>
+          <tr><td>Vata ↓</td><td>Pacifying</td><td>Madhura vipaka (sweet post-digestive effect) and balya (tonic) action nourish Vata tissues — nervine tonic, relieves joint pain, dryness, and fatigue; used in neurological and degenerative conditions</td></tr>
+          <tr><td>Pitta ↓</td><td>Pacifying</td><td>Tikta (bitter) rasa and sheet virya (cooling potency) of leaves pacify Pitta — excellent in fever, inflammation, skin disorders, liver conditions, and bleeding tendencies</td></tr>
+          <tr><td>Kapha ↓</td><td>Pacifying</td><td>Kashaya (astringent) rasa and laghu-ruksha (light-dry) qualities reduce excess Kapha — used in respiratory congestion, obesity, diabetes, and mucus disorders</td></tr>
+        </tbody>
+      </table>
+      <p class="section-body"><strong>Rasa:</strong> Tikta, Kashaya, Madhura &nbsp;·&nbsp; <strong>Guna:</strong> Guru (heavy), Snigdha (unctuous) — stem; Laghu, Ruksha — leaf &nbsp;·&nbsp; <strong>Virya:</strong> Ushna (hot) — stem; Sheet (cold) — leaf &nbsp;·&nbsp; <strong>Vipaka:</strong> Madhura &nbsp;·&nbsp; <strong>Karma:</strong> Sarvadosha hara, Rasayana, Balya, Medhya</p>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">04</span><h2 class="section-title">Key Health Benefits</h2><div class="section-rule"></div></div>
+      <p class="section-body">Guduchi has been among the most actively researched Ayurvedic herbs in modern pharmacology, with hundreds of peer-reviewed studies validating its classical applications. Its immunomodulatory, hepatoprotective, adaptogenic, anti-diabetic, and anti-inflammatory properties are its best-documented bioactivities, and it gained renewed global attention during the COVID-19 pandemic for its immune-supporting role.</p>
+      <div class="benefits-grid">
+        <div class="benefit-card">
+          <div class="benefit-title">Immunomodulation &amp; Adaptogen</div>
+          <div class="benefit-desc">Guduchi's arabinogalactan polysaccharides and cordifolioides activate macrophages, NK cells, and cytokine production. Multiple clinical trials confirm significant enhancement of non-specific immunity, making it effective both in infections (as an immunostimulant) and in autoimmune conditions (as a modulator rather than stimulant alone).</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Antipyretic — All Types of Fever</div>
+          <div class="benefit-desc">Classical texts call Guduchi the supreme remedy for <em>jwara</em> (fever). Modern studies confirm that berberine, tinosporine, and giloin significantly reduce pyrexia by inhibiting prostaglandin synthesis and modulating hypothalamic thermoregulation — comparable to paracetamol in animal models, without organ toxicity.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Hepatoprotection</div>
+          <div class="benefit-desc">Arguably Guduchi's most clinically validated action. Diterpenoid furanolactones and alkaloids protect hepatocytes from paracetamol, alcohol, aflatoxin, and antitubercular drug damage. Clinical studies in jaundice, viral hepatitis B, and alcoholic liver disease show significant improvements in liver enzymes and bilirubin levels.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Anti-diabetic &amp; Hypoglycaemic</div>
+          <div class="benefit-desc">Berberine and phytosterols reduce blood glucose by enhancing peripheral insulin sensitivity, promoting glucose uptake, and inhibiting hepatic glucose output. Clinical trials in Type 2 diabetes show significant HbA1c reduction. The stem powder is a key ingredient of classical <em>prameha</em> (diabetes) formulations like Guduchi Satva.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Anti-inflammatory &amp; Anti-arthritic</div>
+          <div class="benefit-desc">A randomised controlled trial in rheumatoid arthritis patients showed Guduchi stem extract comparable to hydroxychloroquine in reducing joint swelling and morning stiffness. Mechanism involves inhibition of COX-2, TNF-α, and IL-6 — without the gastrointestinal side-effects of NSAIDs.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Rasayana — Anti-ageing &amp; Cognitive</div>
+          <div class="benefit-desc">Syringin and cordifoliodises exert neuroprotective effects, supporting memory, reducing anxiety, and preventing neurodegeneration. Guduchi is classified as <em>Medhya Rasayana</em> — a brain tonic — and animal studies confirm reversal of scopolamine-induced cognitive deficits and protective effects against Parkinson's-like neurodegeneration.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Antioxidant &amp; Cardioprotective</div>
+          <div class="benefit-desc">Phenolic acids, flavonoids, and phytosterols exert potent free-radical scavenging activity. Guduchi lowers total cholesterol, LDL, and triglycerides while raising HDL in clinical studies. It reduces cardiac oxidative stress in doxorubicin-induced cardiotoxicity models — suggesting protective use alongside chemotherapy.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Digestive &amp; Anti-diarrhoeal</div>
+          <div class="benefit-desc">Classical texts prescribe Guduchi in <em>arsha</em> (haemorrhoids), <em>atisara</em> (diarrhoea), and <em>grahani</em> (IBS). Berberine's anti-diarrhoeal activity is extensively documented; the plant also stimulates digestive enzymes, reduces gut inflammation, and supports gut microbiota balance — enhancing appetite and nutrient absorption.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">05</span><h2 class="section-title">Classical Formulations</h2><div class="section-rule"></div></div>
+      <p class="section-body">Guduchi is an ingredient in hundreds of classical Ayurvedic formulations, appearing across all major classical texts from Charaka Samhita to Ashtanga Hridayam. Its versatility — as powder, juice, decoction, satva (starch extract), ghee, tablet, and fermented preparation — reflects its status as a foundational Rasayana herb.</p>
+      <table class="data-table">
+        <thead><tr><th>Formulation</th><th>Type</th><th>Primary Indication</th></tr></thead>
+        <tbody>
+          <tr><td>Guduchi Satva</td><td>Purified stem starch</td><td>Fever, burning sensation, general debility, post-illness recovery</td></tr>
+          <tr><td>Guduchyadi Kwatha</td><td>Decoction</td><td>Rheumatoid arthritis, gout, skin diseases, fever</td></tr>
+          <tr><td>Amritarishta</td><td>Fermented liquid</td><td>Anorexia, chronic fever, liver disorders, anaemia</td></tr>
+          <tr><td>Guduchi Ghrita</td><td>Medicated ghee</td><td>Vatarakta, neurological conditions, eye diseases</td></tr>
+          <tr><td>Sanshamani Vati</td><td>Tablet (classical)</td><td>Fever (jwara), dengue-like illnesses, malaria adjunct</td></tr>
+          <tr><td>Amrita Guggulu</td><td>Guggul combination</td><td>Arthritis, skin diseases, urinary disorders</td></tr>
+          <tr><td>Guduchi Churna</td><td>Powder</td><td>Diabetes, liver conditions, general Rasayana use</td></tr>
+          <tr><td>Giloy Swarasa (Fresh)</td><td>Fresh stem juice</td><td>Immunity, fever, liver, dengue platelet support</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">06</span><h2 class="section-title">How to Consume Guduchi</h2><div class="section-rule"></div></div>
+      <p class="section-body">Guduchi is one of Ayurveda's most versatile herbs in terms of preparation and administration. The stem is the primary medicinal part; fresh stem juice (swarasa) is considered most potent, while the dried powder (churna) and starch extract (satva) are the most common modern forms. Dosage is always individualised in classical practice — the general ranges below are for reference.</p>
+      <table class="consume-table">
+        <thead><tr><th>Form</th><th>Preparation</th><th>Dosage</th><th>Best Use</th></tr></thead>
+        <tbody>
+          <tr><td>Fresh Stem Juice (Swarasa)</td><td>Crush 6–8 inches of fresh stem; extract juice</td><td>15–20 ml, once daily on empty stomach</td><td>Fever, dengue support, liver, immunity</td></tr>
+          <tr><td>Stem Powder (Churna)</td><td>Dried stem ground to fine powder</td><td>1–3 g with honey or warm water, twice daily</td><td>Diabetes, arthritis, general Rasayana</td></tr>
+          <tr><td>Guduchi Satva</td><td>Starch precipitate from stem paste</td><td>500 mg–1 g with ghee or honey</td><td>Burning micturition, fever, hyperacidity</td></tr>
+          <tr><td>Stem Decoction (Kwatha)</td><td>Boil 10–15g crushed stem in 4× water; reduce to ¼</td><td>30–40 ml, twice daily</td><td>Rheumatoid arthritis, gout, chronic fever</td></tr>
+          <tr><td>Leaf Juice</td><td>Fresh leaves pressed; juice extracted</td><td>10–15 ml once daily</td><td>Pitta conditions, skin, liver — cooling effect</td></tr>
+          <tr><td>Guduchi Tea</td><td>Stem slices simmered with ginger &amp; tulsi</td><td>1–2 cups daily</td><td>Seasonal immunity, mild fever, post-illness</td></tr>
+          <tr><td>Amritarishta (Classical)</td><td>Fermented preparation (commercial)</td><td>15–20 ml with equal water after meals</td><td>Chronic fever, liver disorders, anaemia</td></tr>
+          <tr><td>Sanshamani Vati</td><td>Classical tablet (500 mg)</td><td>1–2 tabs twice daily with warm water</td><td>Fever, dengue, viral infections</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">07</span><h2 class="section-title">Safety &amp; Precautions</h2><div class="section-rule"></div></div>
+      <p class="section-body">Guduchi has an excellent safety profile when used at therapeutic doses for appropriate durations. Classical texts classify it as <em>Ahara dravya</em> — fit even for regular dietary use as a Rasayana. However, due to its immune-stimulating action, certain populations require caution, and quality of the source plant matters significantly, as misidentification with toxic look-alikes has caused harm.</p>
+      <ul class="precaution-list">
+        <li><strong>Autoimmune conditions:</strong> Guduchi's immunostimulant polysaccharides may theoretically aggravate autoimmune disorders such as lupus, multiple sclerosis, or rheumatoid arthritis in some individuals. Use under supervision — paradoxically, clinical trials also show benefit in RA, so dosage and formulation matter greatly.</li>
+        <li><strong>Immunosuppressant medications:</strong> May counteract drugs like cyclosporine, tacrolimus, or corticosteroids used in organ transplant patients or autoimmune disease — consult a physician before concurrent use.</li>
+        <li><strong>Hypoglycaemia risk:</strong> Those on anti-diabetic medications (metformin, insulin, glibenclamide) should monitor blood glucose closely — Guduchi adds an additional hypoglycaemic effect and doses may need adjustment.</li>
+        <li><strong>Pregnancy:</strong> Safety data in human pregnancy is insufficient. Some alkaloids have mild uterine-stimulating properties in animal studies — avoid internal use during pregnancy without specialist supervision.</li>
+        <li><strong>Misidentification warning:</strong> Guduchi has been confused with <em>Tinospora crispa</em> (not the classical drug) and with <em>Cocculus hirsutus</em> — a toxic plant. Always source from reputable suppliers with species verification. Adulteration is common in commercial markets.</li>
+        <li><strong>Liver concerns — rare:</strong> Several case reports (primarily from India, 2021) linked Guduchi formulations to cholestatic liver injury. The causative factor appears to be <em>T. crispa</em> adulteration or misidentification, not authentic <em>T. cordifolia</em>. Discontinue if any signs of jaundice appear.</li>
+        <li><strong>Constipation:</strong> Guduchi Satva and powdered preparations can cause constipation in Vata-dominant individuals — combine with a mild laxative herb (Haritaki) if this occurs.</li>
+        <li><strong>Duration:</strong> While classical texts endorse long-term Rasayana use, modern practice recommends periodic breaks (3 months on, 1 month off) and liver enzyme monitoring with prolonged use.</li>
+      </ul>
+    </div>
+
+    <div class="sources">
+      <div class="sources-title">References &amp; Sources</div>
+      <ul>
+        <li>Sharma U et al. — "Immunomodulatory active compounds from Tinospora cordifolia" — Journal of Ethnopharmacology, 2012</li>
+        <li>Patel MB &amp; Mishra S — "Hypoglycaemic activity of alkaloidal fraction of Tinospora cordifolia" — Phytomedicine, 2011</li>
+        <li>Panchabhai TS et al. — "Protective effects of Tinospora cordifolia against liver toxicity" — Journal of Ayurveda and Integrative Medicine, 2008</li>
+        <li>Bhatt RP et al. — "Evaluation of anti-arthritic activity of Tinospora cordifolia" — Phytotherapy Research, 2010</li>
+        <li>Sinha K et al. — "Tinospora cordifolia: Ethnobotany, phytochemistry and pharmacology — A review" — Ancient Science of Life, 2004</li>
+        <li>AYUSH Ministry of India — "Guduchi (Tinospora cordifolia) Advisory" — Government of India COVID-19 Immunity Protocol, 2020</li>
+        <li>Charaka Samhita — Sutrasthana, Dīrghamjīvitīya Adhyaya — Guduchi as Jeevaniya Rasayana</li>
+        <li>Ashtanga Hridayam — Sutrasthana — Guduchi classified as Sarvadosha hara and Rasayana</li>
+        <li>Bhavaprakasha Nighantu — Guduchyadi Varga — Properties of Amrita (Guduchi)</li>
+        <li>Dhanvantari Nighantu — Guduchi and its superior form from neem host plant</li>
+        <li>Nadkarni KM — Indian Materia Medica — Tinospora cordifolia monograph</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer>
+    <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a qualified practitioner before therapeutic use</p>
+  </footer>
+
+
+  <div id="viewerModal">
+    <div id="modal-topbar">
+      <span>3D Model — Guduchi</span>
+      <button type="button" id="close3D">✕</button>
+    </div>
+    <model-viewer src="guduchi3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+  </div>
+  <script>
+    (function() {
+      var open3D = document.getElementById('open3D');
+      var close3D = document.getElementById('close3D');
+      var modal = document.getElementById('viewerModal');
+      if (!open3D || !close3D || !modal) return;
+      function openModal() {
+        
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+      function closeModal() {
+        
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+      open3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); openModal();
+      });
+      close3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); closeModal();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+      });
+    })();
+  </script>
+
+</body>
+</html>

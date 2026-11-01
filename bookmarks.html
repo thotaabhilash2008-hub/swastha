@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<base href="/Ayurvedha/">
+<title>My Bookmarks — Swastha Herbal Garden</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root {
+  --bg-primary: #07170F;
+  --bg-secondary: #103B28;
+  --botanical: #47734C;
+  --gold: #C8A45D;
+  --gold-warm: #E5C783;
+  --ivory: #F5F0E4;
+  --sage: #C7C9B9;
+
+  /* Aliases */
+  --cream: #07170F;
+  --parchment: #103B28;
+  --earth: #E5C783;
+  --forest: #47734C;
+  --deep: #F5F0E4;
+  --ink: #F5F0E4;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Jost', sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--ivory);
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 15%, rgba(16, 59, 40, 0.45) 0%, rgba(7, 23, 15, 0.9) 85%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  opacity: 0.04; pointer-events: none; z-index: 100;
+}
+
+.bg-circle { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0; }
+.bg-circle-1 { width: 750px; height: 750px; background: radial-gradient(circle, rgba(71,115,76,0.18) 0%, transparent 70%); top: -200px; right: -150px; }
+.bg-circle-2 { width: 550px; height: 550px; background: radial-gradient(circle, rgba(200,164,93,0.1) 0%, transparent 70%); bottom: -100px; left: -100px; }
+
+.botanical-svg { position: fixed; pointer-events: none; z-index: 1; opacity: 0.18; }
+.botanical-svg path { stroke: var(--botanical) !important; }
+.botanical-svg ellipse { fill: var(--botanical) !important; }
+.botanical-svg circle { fill: var(--gold) !important; }
+.botanical-tl { top: -20px; left: -20px; width: 260px; }
+.botanical-br { bottom: -20px; right: -20px; width: 220px; transform: rotate(180deg); }
+
+/* ── HEADER ── */
+header {
+  position: relative; z-index: 10;
+  padding: 54px 40px 0; text-align: center;
+  opacity: 0; animation: fadeUp 0.9s ease 0.1s forwards;
+}
+.header-top {
+  display: flex; align-items: center; justify-content: space-between;
+  max-width: 1100px; margin: 0 auto 36px;
+}
+.back-link {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+  color: var(--sage); text-decoration: none; transition: color 0.3s;
+}
+.back-link:hover { color: var(--gold-warm); }
+
+.user-info { display: flex; align-items: center; gap: 14px; }
+.user-name {
+  font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--ivory); font-weight: 300;
+}
+.btn-signout {
+  background: rgba(16, 59, 40, 0.35); border: 1px solid rgba(200, 164, 93, 0.35);
+  color: var(--gold-warm); font-family: 'Jost', sans-serif;
+  font-size: 9px; letter-spacing: 3px; text-transform: uppercase;
+  font-weight: 300; padding: 7px 16px; cursor: pointer; border-radius: 2px;
+  transition: all 0.3s;
+}
+.btn-signout:hover { background: var(--gold); color: #07170F; border-color: var(--gold); }
+
+.logo-rule { display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 14px; }
+.logo-rule span { display: block; height: 1px; width: 70px; background: linear-gradient(to right, transparent, var(--gold)); }
+.logo-rule span:last-child { background: linear-gradient(to left, transparent, var(--gold)); }
+.logo-ornament { font-size: 13px; color: var(--gold-warm); }
+h1 { font-family: 'Cormorant Garamond', serif; font-size: clamp(36px, 6vw, 64px); font-weight: 300; letter-spacing: 6px; color: var(--ivory); line-height: 1; text-shadow: 0 4px 24px rgba(0,0,0,0.5); }
+h1 span { color: var(--gold-warm); }
+.tagline { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-style: italic; font-weight: 300; color: var(--gold-warm); letter-spacing: 2px; margin-top: 10px; }
+
+/* ── DIVIDER ── */
+.divider { display: flex; align-items: center; justify-content: center; gap: 16px; margin: 48px auto 44px; }
+.divider-line { height: 1px; width: 100px; background: linear-gradient(to right, transparent, var(--gold)); }
+.divider-line:last-child { background: linear-gradient(to left, transparent, var(--gold)); }
+.divider-leaf { color: var(--gold-warm); font-size: 16px; }
+
+/* ── MAIN ── */
+main {
+  position: relative; z-index: 10;
+  max-width: 1100px; margin: 0 auto;
+  padding: 0 30px;
+  opacity: 0; animation: fadeUp 0.9s ease 0.4s forwards;
+}
+
+/* ── STATS BAR ── */
+.stats-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 32px; padding-bottom: 16px;
+  border-bottom: 1px solid rgba(200, 164, 93, 0.2);
+}
+.stats-count {
+  font-size: 10px; letter-spacing: 3px; text-transform: uppercase;
+  color: var(--sage); font-weight: 300;
+}
+.stats-count strong { color: var(--gold-warm); font-weight: 400; }
+.section-label { font-size: 10px; letter-spacing: 5px; text-transform: uppercase; color: var(--gold-warm); font-weight: 300; }
+
+/* ── LOADING ── */
+.loading-state {
+  text-align: center; padding: 80px 20px;
+}
+.loading-dots { display: flex; justify-content: center; gap: 8px; margin-bottom: 20px; }
+.loading-dots span {
+  width: 7px; height: 7px; background: var(--gold-warm); border-radius: 50%;
+  animation: blink 1.2s infinite;
+}
+.loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+.loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+.loading-text {
+  font-family: 'Cormorant Garamond', serif; font-size: 18px;
+  font-style: italic; color: var(--gold-warm); font-weight: 300;
+}
+
+/* ── EMPTY STATE ── */
+.empty-state {
+  text-align: center; padding: 80px 20px; display: none;
+}
+.empty-state.visible { display: block; }
+.empty-icon { font-size: 32px; color: var(--gold-warm); margin-bottom: 16px; opacity: 0.6; }
+.empty-title {
+  font-family: 'Cormorant Garamond', serif; font-size: 28px;
+  font-style: italic; font-weight: 300; color: var(--ivory); margin-bottom: 8px;
+}
+.empty-sub { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--sage); margin-bottom: 28px; }
+.btn-garden {
+  display: inline-flex; align-items: center; gap: 10px;
+  background: var(--gold); color: #07170F;
+  border: 1px solid var(--gold); border-radius: 2px;
+  text-decoration: none; font-family: 'Jost', sans-serif;
+  font-size: 10px; letter-spacing: 3px; text-transform: uppercase;
+  font-weight: 400; padding: 14px 28px; transition: all 0.3s;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
+}
+.btn-garden:hover { background: var(--gold-warm); border-color: var(--gold-warm); color: #07170F; box-shadow: 0 4px 22px rgba(200,164,93,0.35); }
+
+/* ── BOOKMARKS GRID ── */
+.bookmarks-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 16px; background: transparent; border: none;
+}
+
+/* ── BOOKMARK CARD ── */
+.bm-card {
+  background: rgba(16, 59, 40, 0.45);
+  border: 1px solid rgba(200, 164, 93, 0.22);
+  border-radius: 4px;
+  padding: 40px 34px 36px;
+  position: relative; overflow: hidden;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  opacity: 0; animation: fadeUp 0.7s ease forwards;
+}
+.bm-card::after {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 30% 70%, rgba(200, 164, 93, 0.08), transparent 65%);
+  opacity: 0; transition: opacity 0.5s;
+  pointer-events: none;
+}
+.bm-card:hover::after { opacity: 1; }
+.bm-card:hover {
+  background: rgba(16, 59, 40, 0.75);
+  border-color: rgba(229, 199, 131, 0.5);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45), 0 0 20px rgba(200, 164, 93, 0.12);
+}
+
+.bm-number {
+  font-family: 'Cormorant Garamond', serif; font-size: 11px;
+  letter-spacing: 4px; color: var(--gold-warm); margin-bottom: 16px; display: block;
+}
+.bm-name {
+  font-family: 'Cormorant Garamond', serif; font-size: 24px;
+  font-weight: 400; color: var(--ivory); letter-spacing: 0.5px; margin-bottom: 4px;
+  transition: color 0.3s;
+}
+.bm-card:hover .bm-name { color: var(--gold-warm); }
+.bm-sci {
+  font-family: 'Cormorant Garamond', serif; font-size: 13px;
+  font-style: italic; font-weight: 300; color: var(--sage); margin-bottom: 18px;
+}
+.bm-sep { width: 32px; height: 1px; background: var(--gold); margin-bottom: 16px; transition: width 0.4s, background 0.4s; }
+.bm-card:hover .bm-sep { width: 56px; background: var(--gold-warm); }
+.bm-uses {
+  font-size: 12px; font-weight: 300; letter-spacing: 0.5px;
+  color: var(--ivory); line-height: 1.8; margin-bottom: 10px; opacity: 0.9;
+}
+.bm-uses strong {
+  font-weight: 400; color: var(--gold-warm); font-size: 10px;
+  letter-spacing: 2.5px; text-transform: uppercase; display: block; margin-bottom: 4px;
+}
+.bm-system {
+  display: inline-block; font-size: 9px; letter-spacing: 3px;
+  text-transform: uppercase; color: var(--sage);
+  background: rgba(71, 115, 76, 0.2);
+  border: 1px solid rgba(71, 115, 76, 0.45); padding: 4px 12px; border-radius: 20px;
+  margin-bottom: 18px;
+}
+.bm-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 20px; }
+.bm-tag {
+  font-size: 8px; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--gold-warm); background: rgba(200, 164, 93, 0.1);
+  border: 1px solid rgba(200, 164, 93, 0.28); padding: 3px 9px; border-radius: 20px;
+}
+
+.bm-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.btn-view {
+  display: inline-flex; align-items: center; gap: 6px;
+  text-decoration: none; background: var(--gold);
+  border: 1px solid var(--gold); color: #07170F;
+  font-family: 'Jost', sans-serif; font-size: 9px;
+  letter-spacing: 3px; text-transform: uppercase; font-weight: 400;
+  padding: 9px 18px; cursor: pointer; border-radius: 2px; transition: all 0.3s;
+}
+.btn-view:hover { background: var(--gold-warm); color: #07170F; border-color: var(--gold-warm); }
+.btn-remove {
+  background: none; border: 1px solid rgba(224, 108, 108, 0.35);
+  color: rgba(224, 108, 108, 0.85); font-family: 'Jost', sans-serif;
+  font-size: 9px; letter-spacing: 2px; text-transform: uppercase;
+  font-weight: 300; padding: 9px 16px; cursor: pointer; border-radius: 2px; transition: all 0.3s;
+}
+.btn-remove:hover { background: rgba(224, 108, 108, 0.15); border-color: #e06c6c; color: #e06c6c; }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed; bottom: 40px; left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: #103B28; border: 1px solid var(--gold); color: var(--ivory);
+  font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+  padding: 14px 28px; opacity: 0; transition: opacity 0.4s, transform 0.4s;
+  z-index: 200; pointer-events: none; box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ── FOOTER ── */
+footer {
+  position: relative; z-index: 10; text-align: center;
+  padding: 30px 20px 50px; margin-top: 60px;
+  border-top: 1px solid rgba(200, 164, 93, 0.2);
+  max-width: 1100px; margin-left: auto; margin-right: auto;
+}
+footer p { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); font-weight: 300; }
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes blink { 0%, 80%, 100% { opacity: 0; } 40% { opacity: 1; } }
+
+@media (max-width: 900px) { .bookmarks-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 580px) { .bookmarks-grid { grid-template-columns: 1fr; } main { padding: 0 16px; } }
+</style>
+</head>
+<body>
+
+<div class="bg-circle bg-circle-1"></div>
+<div class="bg-circle bg-circle-2"></div>
+
+<svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M10 290 Q 80 200 150 150 Q 200 110 260 20" stroke="#2a5c3f" stroke-width="1.5" fill="none"/>
+  <ellipse cx="150" cy="150" rx="28" ry="16" fill="#2a5c3f" transform="rotate(-40 150 150)"/>
+  <ellipse cx="200" cy="105" rx="22" ry="13" fill="#7a9e7e" transform="rotate(-55 200 105)"/>
+  <ellipse cx="100" cy="200" rx="20" ry="11" fill="#2a5c3f" transform="rotate(-20 100 200)"/>
+  <ellipse cx="250" cy="55" rx="18" ry="10" fill="#c9a84c" transform="rotate(-65 250 55)"/>
+</svg>
+<svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M10 290 Q 80 200 150 150 Q 200 110 260 20" stroke="#2a5c3f" stroke-width="1.5" fill="none"/>
+  <ellipse cx="150" cy="150" rx="28" ry="16" fill="#2a5c3f" transform="rotate(-40 150 150)"/>
+  <ellipse cx="200" cy="105" rx="22" ry="13" fill="#7a9e7e" transform="rotate(-55 200 105)"/>
+  <ellipse cx="100" cy="200" rx="20" ry="11" fill="#2a5c3f" transform="rotate(-20 100 200)"/>
+</svg>
+
+<header>
+  <div class="header-top">
+    <a href="index.html" class="back-link">← Back to Garden</a>
+    <div class="user-info">
+      <span class="user-name" id="userName">Loading…</span>
+      <button class="btn-signout" onclick="signOut()">Sign Out</button>
+    </div>
+  </div>
+  <div class="logo-rule"><span></span><div class="logo-ornament">✦</div><span></span></div>
+  <h1>My <span>Bookmarks</span></h1>
+  <p class="tagline">Your personal herbal collection</p>
+</header>
+
+<div class="divider">
+  <div class="divider-line"></div>
+  <div class="divider-leaf">❧</div>
+  <div class="divider-line"></div>
+</div>
+
+<main>
+  <div class="stats-bar">
+    <span class="stats-count">Saved <strong id="bm-count">—</strong> plants</span>
+    <span class="section-label">Personal Collection</span>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-state" id="loadingState">
+    <div class="loading-dots"><span></span><span></span><span></span></div>
+    <p class="loading-text">Gathering your herbs…</p>
+  </div>
+
+  <!-- Empty -->
+  <div class="empty-state" id="emptyState">
+    <div class="empty-icon">❧</div>
+    <div class="empty-title">Your garden is empty</div>
+    <div class="empty-sub">You haven't bookmarked any plants yet</div>
+    <a href="index.html" class="btn-garden">Explore the Garden →</a>
+  </div>
+
+  <!-- Grid -->
+  <div class="bookmarks-grid" id="bmGrid" style="display:none"></div>
+</main>
+
+<footer>
+  <p>© 2026 Virtual Herbal Garden &nbsp;·&nbsp; AYUSH Educational Platform</p>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── SUPABASE CONFIG ──────────────────────────────────────────────
+const SUPABASE_URL = 'https://yypvhggcauxhyeljjumh.supabase.co';
+
+const SUPABASE_ANON_KEY = 'sb_publishable_tc95USCUy5sCeQfaZD1L_Q_DmzBFMZK';
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// ── ALL PLANT DATA (mirrors index.html) ────────────────────────
+const PLANTS = {
+  'tulsi':          { num:'01', name:'Tulsi',          sci:'Ocimum tenuiflorum',         system:'Ayurveda',                    uses:'Immunity booster, cough relief, stress reduction & respiratory support',  tags:['Immunity','Respiratory','Stress Relief','Anti-inflammatory'], href:'tulsi.html' },
+  'amla':           { num:'02', name:'Amla',           sci:'Phyllanthus emblica',         system:'Ayurveda',                    uses:'Hair growth, digestion, vitamin C enrichment & liver detoxification',     tags:['Hair & Skin','Digestion','Detox','Immunity'],                  href:'amla.html' },
+  'brahmi':         { num:'03', name:'Brahmi',         sci:'Bacopa monnieri',             system:'Ayurveda',                    uses:'Memory improvement, anxiety relief, cognitive enhancement & neural support', tags:['Cognitive','Anxiety Relief','Stress Relief','Neural Support'], href:'brahmi.html' },
+  'neem':           { num:'04', name:'Neem',           sci:'Azadirachta indica',          system:'Ayurveda',                    uses:'Antibacterial, blood purification, skin disorders & anti-inflammatory relief', tags:['Anti-inflammatory','Hair & Skin','Detox','Immunity'],        href:'neem.html' },
+  'bhringraj':      { num:'05', name:'Bhringraj',      sci:'Eclipta prostrata',           system:'Ayurveda',                    uses:'Hair loss prevention, liver support, scalp nourishment & skin rejuvenation', tags:['Hair & Skin','Detox','Anti-inflammatory'],                   href:'bhringraj.html' },
+  'ashwagandha':    { num:'06', name:'Ashwagandha',    sci:'Withania somnifera',          system:'Ayurveda',                    uses:'Stress adaptation, energy restoration, hormonal balance & immune fortification', tags:['Stress Relief','Energy','Hormonal Balance','Immunity'],    href:'ashwagandha.html' },
+  'arjuna':         { num:'07', name:'Arjuna',         sci:'Terminalia arjuna',           system:'Ayurveda',                    uses:'Cardiac tonic, antihypertensive, angina relief & cholesterol management',  tags:['Heart Health','Blood Pressure','Detox'],                       href:'arjuna.html' },
+  'bala':           { num:'08', name:'Bala',           sci:'Sida cordifolia',             system:'Ayurveda',                    uses:'Muscle & nerve strengthening, neurological support & anti-inflammatory Brimhana herb', tags:['Strength','Neural Support','Respiratory','Anti-inflammatory'], href:'bala.html' },
+  'bibhitaki':      { num:'09', name:'Bibhitaki',      sci:'Terminalia bellirica',        system:'Ayurveda',                    uses:'Triphala herb, respiratory health, eye clarity, hair growth & Kapha-pacifying', tags:['Respiratory','Eye Health','Hair & Skin'],                   href:'bibhitaki.html' },
+  'chirayata':      { num:'10', name:'Chirayata',      sci:'Swertia chirata',             system:'Ayurveda · Unani',            uses:'Bitter tonic, hepatoprotection, blood sugar control & antimalarial Tikta herb', tags:['Liver','Blood Sugar','Detox'],                              href:'chirayata.html' },
+  'gotu-kola':      { num:'11', name:'Gotu Kola',      sci:'Centella asiatica',           system:'Ayurveda · TCM · Unani',      uses:'Memory, wound & scar healing, anxiety relief, venous insufficiency & skin anti-aging', tags:['Cognitive','Wound Healing','Anxiety Relief'],             href:'gotu-kola.html' },
+  'guduchi':        { num:'12', name:'Guduchi',        sci:'Tinospora cordifolia',        system:'Ayurveda',                    uses:'Immune modulation, fever management, blood purification & chronic disease support', tags:['Immunity','Detox','Anti-inflammatory','Fever'],            href:'guduchi.html' },
+  'haridra':        { num:'13', name:'Haridra',        sci:'Curcuma longa',               system:'Ayurveda · Siddha',           uses:'Master anti-inflammatory, wound healing, neuroprotection & metabolic support', tags:['Anti-inflammatory','Antioxidant','Cognitive','Hair & Skin'], href:'haridra.html' },
+  'haritaki':       { num:'14', name:'Haritaki',       sci:'Terminalia chebula',          system:'Ayurveda',                    uses:'Triphala herb, digestive rejuvenation, detox & Vata-pacifying rasayana',    tags:['Digestive','Detox','Anti-aging','Cognitive'],                  href:'haritaki.html' },
+  'kalmegh':        { num:'15', name:'Kalmegh',        sci:'Andrographis paniculata',     system:'Ayurveda · Siddha · TCM',     uses:'Respiratory infections, hepatoprotection, antiviral, anti-inflammatory & anticancer', tags:['Antiviral','Immunity','Detox'],                           href:'kalmegh.html' },
+  'kapikacchu':     { num:'16', name:'Kapikacchu',     sci:'Mucuna pruriens',             system:'Ayurveda',                    uses:"Natural L-DOPA source, Parkinson's support, male fertility & dopaminergic tonic", tags:['Reproductive','Neural Support','Mood'],                    href:'kapikacchu.html' },
+  'kutki':          { num:'17', name:'Kutki',          sci:'Picrorhiza kurroa',           system:'Ayurveda',                    uses:'Hepatoprotection, immune modulation, autoimmune & respiratory Pitta herb',   tags:['Liver','Detox','Immunity','Anti-inflammatory'],               href:'kutki.html' },
+  'manjistha':      { num:'18', name:'Manjistha',      sci:'Rubia cordifolia',            system:'Ayurveda',                    uses:'Blood purification, skin disorders, lymphatic cleansing & anti-inflammatory', tags:['Blood Purifier','Hair & Skin','Detox','Lymphatic'],          href:'manjistha.html' },
+  'moringa':        { num:'19', name:'Moringa',        sci:'Moringa oleifera',            system:'Ayurveda · Siddha',           uses:'Superfood nutrition, anti-inflammatory, blood sugar support & energy',       tags:['Nutrition','Anti-inflammatory','Blood Sugar','Energy'],        href:'moringa.html' },
+  'pippali':        { num:'20', name:'Pippali',        sci:'Piper longum',                system:'Ayurveda',                    uses:'Bioavailability enhancer, respiratory medicine, digestive fire & Trikatu component', tags:['Digestive','Respiratory','Bioenhancer'],                  href:'pippali.html' },
+  'punarnava':      { num:'21', name:'Punarnava',      sci:'Boerhavia diffusa',           system:'Ayurveda',                    uses:'Kidney rejuvenation, oedema reduction, hepatoprotection & anaemia support',  tags:['Kidney','Anti-oedema','Detox','Anti-inflammatory'],           href:'punarnava.html' },
+  'shankhapushpi':  { num:'22', name:'Shankhapushpi', sci:'Convolvulus pluricaulis',      system:'Ayurveda',                    uses:'Memory, anxiety relief, thyroid modulation, antiepileptic & antihypertensive', tags:['Cognitive','Anxiety Relief','Thyroid','Memory'],            href:'shankhapushpi.html' },
+  'shatavari':      { num:'23', name:'Shatavari',      sci:'Asparagus racemosus',         system:'Ayurveda',                    uses:"Female reproductive tonic, galactagogue, hormonal balance & immunity",       tags:["Women's Health",'Hormonal Balance','Immunity','Digestive'],   href:'shatavari.html' },
+  'vacha':          { num:'24', name:'Vacha',          sci:'Acorus calamus',              system:'Ayurveda',                    uses:'Memory & speech enhancement, anticonvulsant, respiratory expectorant & Medhya Rasayana', tags:['Cognitive','Speech','Respiratory','Neural Support'],       href:'vacha.html' },
+  'vidari-kanda':   { num:'25', name:'Vidari Kanda',   sci:'Pueraria tuberosa',          system:'Ayurveda',                    uses:'Reproductive tonic, galactagogue, cardioprotective & phytoestrogenic Vajikarana herb', tags:['Reproductive','Hormonal Balance','Heart Health'],           href:'vidari-kanda.html' },
+  'yashtimadhu':    { num:'26', name:'Yashtimadhu',    sci:'Glycyrrhiza glabra',         system:'Ayurveda · Unani · TCM',      uses:'Gastric ulcer healing, respiratory soothing, Medhya Rasayana & adrenal support', tags:['Digestive','Respiratory','Cognitive','Anti-inflammatory'], href:'yashtimadhu.html' },
+};
+
+let currentUser = null;
+
+// ── INIT ─────────────────────────────────────────────────────────
+(async () => {
+  let user = null;
+  if (sb) {
+    try {
+      const { data: { session } } = await sb.auth.getSession();
+      if (session) user = session.user;
+    } catch(_) {}
+  }
+  if (!user) {
+    const stored = localStorage.getItem('swastha_user');
+    if (stored) user = JSON.parse(stored);
+  }
+  if (!user) {
+    window.location.href = 'login.html';
+    return;
+  }
+  currentUser = user;
+  const name = currentUser.user_metadata?.full_name || currentUser.full_name || currentUser.email.split('@')[0];
+  document.getElementById('userName').textContent = name;
+  await loadBookmarks();
+})();
+
+// ── LOAD BOOKMARKS ───────────────────────────────────────────────
+async function loadBookmarks() {
+  const { data, error } = await sb
+    .from('bookmarks')
+    .select('plant_key, created_at')
+    .eq('user_id', currentUser.id)
+    .order('created_at', { ascending: false });
+
+  document.getElementById('loadingState').style.display = 'none';
+
+  if (error || !data || data.length === 0) {
+    document.getElementById('emptyState').classList.add('visible');
+    document.getElementById('bm-count').textContent = '0';
+    return;
+  }
+
+  document.getElementById('bm-count').textContent = data.length;
+  const grid = document.getElementById('bmGrid');
+  grid.style.display = 'grid';
+
+  data.forEach((row, idx) => {
+    const p = PLANTS[row.plant_key];
+    if (!p) return;
+    const card = document.createElement('div');
+    card.className = 'bm-card';
+    card.style.animationDelay = `${0.1 + idx * 0.07}s`;
+    card.innerHTML = `
+      <span class="bm-number">${p.num}</span>
+      <div class="bm-name">${p.name}</div>
+      <div class="bm-sci">${p.sci}</div>
+      <div class="bm-sep"></div>
+      <div class="bm-uses"><strong>Uses</strong>${p.uses}</div>
+      <span class="bm-system">${p.system}</span>
+      <div class="bm-tags">${p.tags.map(t => `<span class="bm-tag">${t}</span>`).join('')}</div>
+      <div class="bm-actions">
+        <a href="${p.href}" class="btn-view">View Plant →</a>
+        <button class="btn-remove" onclick="removeBookmark('${row.plant_key}', this)">✕ &nbsp;Remove</button>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+// ── REMOVE BOOKMARK ──────────────────────────────────────────────
+async function removeBookmark(plantKey, btn) {
+  btn.disabled = true;
+  btn.textContent = '…';
+
+  const { error } = await sb
+    .from('bookmarks')
+    .delete()
+    .eq('user_id', currentUser.id)
+    .eq('plant_key', plantKey);
+
+  if (error) {
+    btn.disabled = false;
+    btn.textContent = '✕  Remove';
+    showToast('Failed to remove. Try again.');
+    return;
+  }
+
+  // Remove card from DOM
+  const card = btn.closest('.bm-card');
+  card.style.transition = 'opacity 0.4s, transform 0.4s';
+  card.style.opacity = '0';
+  card.style.transform = 'translateY(-10px)';
+  setTimeout(() => {
+    card.remove();
+    const remaining = document.querySelectorAll('.bm-card').length;
+    document.getElementById('bm-count').textContent = remaining;
+    if (remaining === 0) {
+      document.getElementById('bmGrid').style.display = 'none';
+      document.getElementById('emptyState').classList.add('visible');
+    }
+  }, 420);
+
+  showToast('✦  Bookmark removed');
+}
+
+// ── SIGN OUT ─────────────────────────────────────────────────────
+async function signOut() {
+  if (sb) { try { await sb.auth.signOut(); } catch(_) {} }
+  localStorage.removeItem('swastha_user');
+  window.location.href = 'index.html';
+}
+
+// ── TOAST ────────────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2400);
+}
+</script>
+</body>
+</html>

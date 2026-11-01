@@ -1,0 +1,47 @@
+{
+  "version": 2,
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "rewrites": [
+    {
+      "source": "/login",
+      "destination": "/Ayurvedha/login.html"
+    },
+    {
+      "source": "/login.html",
+      "destination": "/Ayurvedha/login.html"
+    },
+    {
+      "source": "/bookmarks",
+      "destination": "/Ayurvedha/bookmarks.html"
+    },
+    {
+      "source": "/bookmarks.html",
+      "destination": "/Ayurvedha/bookmarks.html"
+    },
+    {
+      "source": "/Ayurvedha",
+      "destination": "/Ayurvedha/index.html"
+    },
+    {
+      "source": "/Ayurvedha/",
+      "destination": "/Ayurvedha/index.html"
+    },
+    {
+      "source": "/Ayurvedha/:plant.html",
+      "destination": "/Ayurvedha/:plant.html"
+    },
+    {
+      "source": "/Ayurvedha/:plant",
+      "destination": "/Ayurvedha/:plant.html"
+    },
+    {
+      "source": "/:plant((?!Ayurvedha|Yoga|Unani|Sidhha|Homeopathy|assets|index|favicon|robots|manifest)[^/.]+)\\.html",
+      "destination": "/Ayurvedha/:plant.html"
+    },
+    {
+      "source": "/:plant((?!Ayurvedha|Yoga|Unani|Sidhha|Homeopathy|assets|index|favicon|robots|manifest)[^/.]+)",
+      "destination": "/Ayurvedha/:plant.html"
+    }
+  ]
+}

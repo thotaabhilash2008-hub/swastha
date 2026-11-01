@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aloe Vera | Ghritkumari | Swastha</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+  <style>
+    #open3D {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      padding: 10px 18px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: var(--forest);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      z-index: 1000;
+      transition: .3s;
+    }
+    #open3D:hover {
+      background: var(--gold);
+      color: var(--deep);
+    }
+    #viewerModal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+    }
+    #modal-topbar {
+      flex-shrink: 0;
+      height: 58px;
+      background: #111111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px 0 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      z-index: 99999;
+    }
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 4.5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.72);
+      user-select: none;
+    }
+    #close3D {
+      width: 38px;
+      height: 38px;
+      font-size: 15px;
+      font-weight: 300;
+      background: transparent;
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background .2s, color .2s, transform .22s;
+      outline: none;
+      flex-shrink: 0;
+    }
+    #close3D:hover {
+      background: #ffffff;
+      color: #111111;
+      border-color: #ffffff;
+      transform: rotate(90deg);
+    }
+    #viewerModal model-viewer {
+      flex: 1;
+      width: 100%;
+      display: block;
+      background: #ffffff;
+    }
+
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+    *{margin:0;padding:0;box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{font-family:'Jost',sans-serif;background:var(--cream);color:var(--ink);min-height:100vh;overflow-x:hidden;position:relative}
+    body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");opacity:.028;pointer-events:none;z-index:100}
+
+    .bg-circle{position:fixed;border-radius:50%;pointer-events:none;z-index:0}
+    .bg-circle-1{width:700px;height:700px;background:radial-gradient(circle,rgba(30,77,53,.11) 0%,transparent 70%);top:-200px;right:-150px}
+    .bg-circle-2{width:500px;height:500px;background:radial-gradient(circle,rgba(122,184,74,.09) 0%,transparent 70%);bottom:-100px;left:-100px}
+
+    .botanical-svg{position:fixed;pointer-events:none;z-index:1;opacity:.08}
+    .botanical-tl{top:-10px;left:-10px;width:300px}
+    .botanical-br{bottom:-10px;right:-10px;width:260px;transform:rotate(180deg)}
+
+    .hero{position:relative;z-index:10;padding:54px 40px 0;text-align:center;opacity:0;animation:fadeUp .9s ease .1s forwards}
+    .back-link{display:inline-flex;align-items:center;gap:8px;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--sage);text-decoration:none;margin-bottom:36px;transition:color .3s}
+    .back-link:hover{color:var(--accent)}
+    .logo-rule{display:flex;align-items:center;justify-content:center;gap:20px;margin-bottom:14px}
+    .logo-rule span{display:block;height:1px;width:70px;background:linear-gradient(to right,transparent,var(--accent))}
+    .logo-rule span:last-child{background:linear-gradient(to left,transparent,var(--accent))}
+    .logo-ornament{font-size:13px;color:var(--accent)}
+    .hero-number{font-family:'Cormorant Garamond',serif;font-size:12px;letter-spacing:6px;color:var(--sage);margin-bottom:6px;font-weight:300}
+    .hero-title{font-family:'Cormorant Garamond',serif;font-size:clamp(50px,10vw,100px);font-weight:300;letter-spacing:7px;line-height:1;color:var(--deep)}
+    .hero-alt{font-family:'Cormorant Garamond',serif;font-size:clamp(28px,5vw,52px);font-weight:300;letter-spacing:5px;color:var(--forest);margin-top:6px}
+    .hero-subtitle{font-family:'Cormorant Garamond',serif;font-size:18px;font-style:italic;font-weight:300;color:var(--earth);letter-spacing:2px;margin-top:8px}
+    .hero-sci{font-size:11px;font-weight:200;letter-spacing:5px;color:var(--sage);margin-top:6px}
+
+    .hero-photos{position:relative;z-index:10;display:grid;grid-template-columns:1fr 1fr;gap:2px;max-width:900px;margin:40px auto 0;opacity:0;animation:fadeUp .9s ease .35s forwards}
+    .hero-photos img{width:100%;height:380px;object-fit:cover;object-position:center;display:block;background:var(--parchment)}
+
+    .photo-caption{text-align:center;font-family:'Cormorant Garamond',serif;font-size:12px;font-style:italic;color:var(--sage);letter-spacing:1px;padding:10px 0 0;max-width:900px;margin:0 auto;position:relative;z-index:10;opacity:0;animation:fadeUp .9s ease .5s forwards}
+
+    .divider{display:flex;align-items:center;justify-content:center;gap:16px;margin:50px auto;max-width:600px;opacity:0;animation:fadeUp .9s ease .55s forwards;position:relative;z-index:10}
+    .divider-line{height:1px;width:120px;background:linear-gradient(to right,transparent,var(--sage))}
+    .divider-line:last-child{background:linear-gradient(to left,transparent,var(--sage))}
+    .divider-leaf{color:var(--forest);font-size:18px}
+
+    .content{position:relative;z-index:10;max-width:860px;margin:0 auto;padding:0 30px 80px}
+    .intro-text{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:300;line-height:1.75;color:var(--ink);text-align:center;max-width:700px;margin:0 auto 60px;opacity:0;animation:fadeUp .9s ease .6s forwards}
+    .intro-text em{color:var(--forest);font-style:italic}
+
+    .section{margin-bottom:60px;opacity:0;animation:fadeUp .9s ease forwards}
+    .section:nth-child(1){animation-delay:.65s}
+    .section:nth-child(2){animation-delay:.75s}
+    .section:nth-child(3){animation-delay:.85s}
+    .section:nth-child(4){animation-delay:.95s}
+    .section:nth-child(5){animation-delay:1.05s}
+    .section:nth-child(6){animation-delay:1.15s}
+    .section:nth-child(7){animation-delay:1.25s}
+
+    .section-header{display:flex;align-items:center;gap:14px;margin-bottom:20px}
+    .section-num{font-family:'Cormorant Garamond',serif;font-size:11px;letter-spacing:4px;color:var(--accent)}
+    .section-title{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:400;color:var(--deep);letter-spacing:1px}
+    .section-rule{height:1px;flex:1;background:linear-gradient(to right,var(--accent),transparent)}
+    .section-body{font-size:13px;font-weight:300;line-height:1.9;color:var(--ink);margin-bottom:24px}
+
+    .data-table{width:100%;border-collapse:collapse;margin:16px 0 8px;font-size:12px}
+    .data-table thead tr{background:var(--deep);color:var(--accent);font-size:10px;letter-spacing:3px;text-transform:uppercase}
+    .data-table thead th{padding:12px 14px;text-align:left;font-weight:400}
+    .data-table tbody tr:nth-child(even){background:var(--parchment)}
+    .data-table tbody tr:nth-child(odd){background:var(--cream)}
+    .data-table tbody tr{transition:background .2s}
+    .data-table tbody tr:hover{background:#cfe0c8}
+    .data-table tbody td{padding:10px 14px;color:var(--ink);border-bottom:1px solid rgba(30,77,53,.08)}
+    .data-table tbody td:first-child{font-weight:400;color:var(--deep);width:28%}
+
+    .dosha-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:12px}
+    .dosha-table thead tr{background:var(--forest);color:var(--cream)}
+    .dosha-table thead th{padding:12px 14px;text-align:left;font-weight:400;letter-spacing:2px;font-size:10px;text-transform:uppercase}
+    .dosha-table tbody tr:nth-child(even){background:var(--parchment)}
+    .dosha-table tbody tr:nth-child(odd){background:var(--cream)}
+    .dosha-table tbody td{padding:11px 14px;color:var(--ink);border-bottom:1px solid rgba(30,77,53,.08)}
+    .dosha-table tbody td:first-child{font-weight:400;color:var(--forest);width:18%}
+    .dosha-table tbody td:nth-child(2){color:var(--earth);width:20%}
+
+    .consume-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:12px}
+    .consume-table thead tr{background:var(--warm);color:var(--cream)}
+    .consume-table thead th{padding:12px 14px;text-align:left;font-weight:400;letter-spacing:2px;font-size:10px;text-transform:uppercase}
+    .consume-table tbody tr:nth-child(even){background:var(--parchment)}
+    .consume-table tbody tr:nth-child(odd){background:var(--cream)}
+    .consume-table tbody td{padding:11px 14px;color:var(--ink);border-bottom:1px solid rgba(30,77,53,.08)}
+    .consume-table tbody td:first-child{font-weight:400;color:var(--warm);width:22%}
+
+    .benefits-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:rgba(30,77,53,.12);border:1px solid rgba(30,77,53,.12);margin:8px 0}
+    .benefit-card{background:var(--cream);padding:24px 22px;transition:background .3s;position:relative;overflow:hidden}
+    .benefit-card:hover{background:#cfe0c5}
+    .benefit-card::before{content:'';position:absolute;bottom:0;left:0;width:0;height:2px;background:var(--accent);transition:width .4s}
+    .benefit-card:hover::before{width:100%}
+    .benefit-title{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:600;color:var(--forest);margin-bottom:8px}
+    .benefit-desc{font-size:11.5px;font-weight:300;line-height:1.75;color:var(--ink);opacity:.85}
+
+    .precaution-list{list-style:none;margin:8px 0}
+    .precaution-list li{display:flex;gap:12px;align-items:flex-start;padding:10px 14px;font-size:12px;font-weight:300;line-height:1.7;color:var(--ink);border-bottom:1px solid rgba(30,77,53,.08)}
+    .precaution-list li:last-child{border-bottom:none}
+    .precaution-list li::before{content:'▸';color:var(--accent);flex-shrink:0;margin-top:1px}
+
+    .nutrition-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(30,77,53,.12);border:1px solid rgba(30,77,53,.12);margin:20px 0}
+    .nutrition-cell{background:var(--cream);padding:22px 16px;text-align:center;transition:background .3s}
+    .nutrition-cell:hover{background:var(--parchment)}
+    .nutrition-num{font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:300;color:var(--forest);line-height:1;margin-bottom:4px}
+    .nutrition-unit{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--accent);font-weight:300}
+    .nutrition-label{font-size:11px;font-weight:300;color:var(--ink);margin-top:5px}
+
+    /* gel anatomy callout */
+    .anatomy-box{background:var(--parchment);border-left:3px solid var(--accent);padding:20px 22px;margin:20px 0;font-size:12.5px;font-weight:300;line-height:1.85;color:var(--ink)}
+    .anatomy-box strong{color:var(--forest)}
+
+    .sources{border-top:1px solid rgba(30,77,53,.15);padding-top:24px;margin-top:20px}
+    .sources-title{font-size:10px;letter-spacing:4px;text-transform:uppercase;color:var(--sage);margin-bottom:12px;font-weight:300}
+    .sources ul{list-style:none}
+    .sources ul li{font-family:'Cormorant Garamond',serif;font-size:13px;font-style:italic;color:var(--earth);padding:5px 0;border-bottom:1px solid rgba(30,77,53,.06)}
+    .sources ul li::before{content:'· ';color:var(--sage)}
+
+    footer{position:relative;z-index:10;text-align:center;padding:24px 20px 44px;border-top:1px solid rgba(30,77,53,.12);max-width:860px;margin:0 auto}
+    footer p{font-size:11px;letter-spacing:4px;text-transform:uppercase;color:var(--sage);font-weight:300}
+
+    @keyframes fadeUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
+
+    @media(max-width:700px){
+      .hero-photos{grid-template-columns:1fr}
+      .hero-photos img{height:260px}
+      .benefits-grid{grid-template-columns:1fr}
+      .nutrition-bar{grid-template-columns:1fr 1fr}
+      .content{padding:0 18px 60px}
+    }
+  </style>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+</head>
+<body>
+  <button type="button" id="open3D">View in 3D</button>
+
+
+  <div class="bg-circle bg-circle-1"></div>
+  <div class="bg-circle bg-circle-2"></div>
+
+  <!-- Aloe-silhouette botanical SVG -->
+  <svg class="botanical-svg botanical-tl" viewBox="0 0 300 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- central rosette of succulent leaves radiating outward -->
+    <ellipse cx="120" cy="220" rx="6" ry="40" fill="#1e4d35" opacity=".8" transform="rotate(-15 120 220)"/>
+    <ellipse cx="100" cy="215" rx="5" ry="36" fill="#1e4d35" opacity=".7" transform="rotate(-40 100 215)"/>
+    <ellipse cx="85" cy="225" rx="5" ry="32" fill="#3a6e50" opacity=".65" transform="rotate(-65 85 225)"/>
+    <ellipse cx="80" cy="245" rx="5" ry="28" fill="#1e4d35" opacity=".6" transform="rotate(-90 80 245)"/>
+    <ellipse cx="140" cy="215" rx="5" ry="36" fill="#1e4d35" opacity=".7" transform="rotate(10 140 215)"/>
+    <ellipse cx="155" cy="225" rx="5" ry="30" fill="#3a6e50" opacity=".6" transform="rotate(35 155 225)"/>
+    <!-- small white teeth along leaf edges -->
+    <circle cx="92" cy="193" r="2" fill="#7ab84a" opacity=".7"/>
+    <circle cx="108" cy="183" r="2" fill="#7ab84a" opacity=".7"/>
+    <circle cx="128" cy="181" r="2" fill="#7ab84a" opacity=".7"/>
+    <!-- flower spike -->
+    <line x1="120" y1="220" x2="170" y2="100" stroke="#1e4d35" stroke-width="2"/>
+    <ellipse cx="172" cy="92" rx="5" ry="10" fill="#7ab84a" opacity=".8" transform="rotate(10 172 92)"/>
+    <ellipse cx="166" cy="108" rx="4" ry="8" fill="#7ab84a" opacity=".6" transform="rotate(10 166 108)"/>
+  </svg>
+  <svg class="botanical-svg botanical-br" viewBox="0 0 300 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <ellipse cx="120" cy="220" rx="6" ry="40" fill="#1e4d35" opacity=".8" transform="rotate(-15 120 220)"/>
+    <ellipse cx="100" cy="215" rx="5" ry="36" fill="#1e4d35" opacity=".7" transform="rotate(-40 100 215)"/>
+    <ellipse cx="85" cy="225" rx="5" ry="32" fill="#3a6e50" opacity=".65" transform="rotate(-65 85 225)"/>
+    <ellipse cx="140" cy="215" rx="5" ry="36" fill="#1e4d35" opacity=".7" transform="rotate(10 140 215)"/>
+    <line x1="120" y1="220" x2="170" y2="100" stroke="#1e4d35" stroke-width="2"/>
+    <ellipse cx="172" cy="92" rx="5" ry="10" fill="#7ab84a" opacity=".8" transform="rotate(10 172 92)"/>
+  </svg>
+
+  <div class="hero">
+    <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+    <div class="logo-rule"><span></span><div class="logo-ornament">✦</div><span></span></div>
+    <div class="hero-number">Entry No. 13</div>
+    <div class="hero-title">Aloe Vera</div>
+    <div class="hero-alt">Ghritkumari</div>
+    <div class="hero-subtitle">The Silent Healer — The Plant of Immortality</div>
+    <div class="hero-sci">Aloe barbadensis Mill. &nbsp;·&nbsp; Liliaceae / Asphodelaceae &nbsp;·&nbsp; Kumari · Ghrita Kumari · Kanyasara</div>
+  </div>
+
+  <div class="hero-photos">
+    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/b/bd/Aloe_Vera_plant_in_main_mall%2C_Gaborone.jpg/1280px-Aloe_Vera_plant_in_main_mall%2C_Gaborone.jpg" alt="Aloe vera rosette with thick succulent leaves and serrated edges" onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3f/A_potted_aloe_vera_plant.jpg/1280px-A_potted_aloe_vera_plant.jpg" alt="Aloe vera leaf cut open showing clear inner gel" onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+  </div>
+  <p class="photo-caption">Fig. 1 — The characteristic succulent rosette of Aloe barbadensis, with serrated leaf margins and waxy cuticle &nbsp;·&nbsp; Fig. 2 — A freshly cut leaf revealing the translucent inner gel (parenchyma) and the yellow latex layer beneath the rind</p>
+
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-leaf">❧</div>
+    <div class="divider-line"></div>
+  </div>
+
+  <div class="content">
+    <p class="intro-text">The ancient Egyptians called it <em>"the plant of immortality"</em> and buried it with pharaohs. Alexander the Great secured the island of Socotra for its supply to treat his wounded soldiers. From the Ebers Papyrus of 1550 BCE through Dioscorides, Pliny, and the Ayurvedic classics — <em>Ghritkumari</em>, "the young girl who is like ghee," has been humanity's most universally beloved healing plant across every civilisation that encountered it.</p>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">01</span><h2 class="section-title">Botanical Profile</h2><div class="section-rule"></div></div>
+      <p class="section-body">Aloe vera (Aloe barbadensis Mill.) is a stemless or very short-stemmed succulent perennial belonging to the Asphodelaceae family (formerly Liliaceae), native to the Arabian Peninsula and naturalised across North Africa, the Mediterranean, the Canary Islands, and the Indian subcontinent. It forms a compact basal rosette of 12–16 thick, fleshy, lanceolate leaves, each reaching 30–50 cm in length, with pale green to grey-green surfaces marked by irregular whitish spots in younger plants. Leaf margins bear sharp, whitish, cartilaginous teeth — the characteristic serrations that give the plant its distinctive silhouette.</p>
+      <p class="section-body">The leaf architecture is medically significant: the outermost layer is a tough, waxy green rind (15–20 cell layers thick); immediately beneath it lies a thin layer of yellow latex (the <em>aloin-containing sap</em>); and at the core sits the abundant, water-rich, clear mucilaginous gel — the inner parenchyma — which constitutes the primary therapeutic substance. Aloe produces a single erect flower spike (60–90 cm) bearing pendant tubular yellow to orange flowers. It thrives in arid, well-drained soils and is drought-tolerant to a remarkable degree, making it a near-universal houseplant and a major commercial crop in India, the Americas, and the Caribbean.</p>
+
+      <div class="anatomy-box">
+        <strong>The Three Layers of the Aloe Leaf</strong><br><br>
+        <strong>① Outer Rind (Green skin):</strong> Tough, waxy, photosynthetically active; contains proteins, carbohydrates, and a small amount of anthraquinone glycosides. Not used therapeutically.<br><br>
+        <strong>② Yellow Latex (Aloin layer):</strong> The bitter yellow exudate just beneath the rind; rich in anthraquinones (aloin A &amp; B, barbaloin, emodin). Potent laxative and irritant — the basis of traditional purgative use and the source of most safety concerns.<br><br>
+        <strong>③ Inner Gel (Parenchyma):</strong> The clear, mucilaginous, nearly tasteless inner flesh — 98.5% water + acemannan polysaccharides, glycoproteins, vitamins, minerals, enzymes, and amino acids. This is what is meant by "aloe gel" in therapeutic and cosmetic use.
+      </div>
+
+      <table class="data-table">
+        <thead><tr><th>Property</th><th>Detail</th></tr></thead>
+        <tbody>
+          <tr><td>Family</td><td>Asphodelaceae (formerly Liliaceae)</td></tr>
+          <tr><td>Botanical Name</td><td>Aloe barbadensis Mill. (syn. Aloe vera L.)</td></tr>
+          <tr><td>Sanskrit Names</td><td>Kumari, Ghritkumari, Kanyasara, Kanya, Stri, Ghritaparna</td></tr>
+          <tr><td>Common Names</td><td>Aloe Vera, True Aloe, Barbados Aloe, Burn Plant</td></tr>
+          <tr><td>Regional Names</td><td>Gwarpatha / Ghikwar (Hindi), Kattarvazha (Tamil/Mal), Kalabanda (Telugu), Koraphad (Marathi)</td></tr>
+          <tr><td>Origin</td><td>Arabian Peninsula; naturalised globally in tropical/subtropical zones</td></tr>
+          <tr><td>Plant Type</td><td>Stemless succulent perennial (rosette; 30–50 cm leaf length)</td></tr>
+          <tr><td>Habitat</td><td>Arid, rocky, sandy soils; full sun; 0–2,000 m altitude</td></tr>
+          <tr><td>Medicinal Parts</td><td>Inner leaf gel (primary), latex (laxative only), whole leaf (topical)</td></tr>
+          <tr><td>Taste Profile</td><td>Tikta (bitter — latex), Madhura (sweet — gel), Kashaya (astringent)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">02</span><h2 class="section-title">Phytochemistry &amp; Composition</h2><div class="section-rule"></div></div>
+      <p class="section-body">Over 200 biologically active compounds have been identified in Aloe vera, spanning six broad categories: polysaccharides, anthraquinones, vitamins, minerals, enzymes, and miscellaneous organic acids and amino acids. The therapeutic profile of the gel versus the latex are almost entirely distinct — and the safety profiles are dramatically different — making the distinction between these two fractions critical to correct use.</p>
+      <p class="section-body">The most therapeutically significant compound is <em>acemannan</em> — a high-molecular-weight acetylated mannan polysaccharide that accounts for the gel's immunomodulatory, wound-healing, anti-inflammatory, and antiviral activity. The anthraquinone fraction (aloin, barbaloin, emodin, aloe-emodin) in the latex is the source of both the potent laxative action and the carcinogenicity concerns that led to FDA reclassification of aloin-containing laxatives in 2002.</p>
+      <div class="nutrition-bar">
+        <div class="nutrition-cell"><div class="nutrition-num">200+</div><div class="nutrition-unit">compounds</div><div class="nutrition-label">Biologically active</div></div>
+        <div class="nutrition-cell"><div class="nutrition-num">98.5%</div><div class="nutrition-unit">water</div><div class="nutrition-label">Inner gel content</div></div>
+        <div class="nutrition-cell"><div class="nutrition-num">20</div><div class="nutrition-unit">amino acids</div><div class="nutrition-label">Including 7 essential</div></div>
+        <div class="nutrition-cell"><div class="nutrition-num">75</div><div class="nutrition-unit">nutrients</div><div class="nutrition-label">Vitamins, minerals, enzymes</div></div>
+      </div>
+      <table class="data-table">
+        <thead><tr><th>Compound</th><th>Fraction</th><th>Primary Action</th></tr></thead>
+        <tbody>
+          <tr><td>Acemannan</td><td>Gel polysaccharide</td><td>Immunomodulatory, wound-healing, antiviral, anti-inflammatory; activates macrophages</td></tr>
+          <tr><td>Aloin A &amp; B (Barbaloin)</td><td>Latex anthraquinone</td><td>Potent stimulant laxative; antimicrobial; hepatotoxic/genotoxic at high or chronic dose</td></tr>
+          <tr><td>Aloe-Emodin</td><td>Latex anthraquinone</td><td>Antiviral, anticancer (in vitro); laxative; genotoxic in animal studies</td></tr>
+          <tr><td>Aloesin &amp; Aloin</td><td>Chromone / anthraquinone</td><td>Anti-inflammatory, skin-depigmenting (tyrosinase inhibition), UV-protective</td></tr>
+          <tr><td>Gibberellins &amp; Auxins</td><td>Phytohormones (gel)</td><td>Wound-healing, anti-inflammatory; stimulate new cell proliferation</td></tr>
+          <tr><td>Bradykininase</td><td>Enzyme (gel)</td><td>Hydrolyses bradykinin — reduces pain, itching, and inflammation in burns</td></tr>
+          <tr><td>Mucilaginous Polysaccharides</td><td>Gel</td><td>Moisturising, film-forming, protective; gut mucosal coating</td></tr>
+          <tr><td>Vitamins C, E, B12, Folic Acid</td><td>Gel</td><td>Antioxidant, collagen synthesis, haematopoietic support</td></tr>
+          <tr><td>Calcium, Magnesium, Zinc, Selenium</td><td>Gel minerals</td><td>Enzymatic cofactors, electrolyte balance, immune function</td></tr>
+          <tr><td>Salicylic Acid</td><td>Phenolic (gel)</td><td>Anti-inflammatory, antibacterial, mild keratolytic — contributes to acne-clearing action</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">03</span><h2 class="section-title">Ayurvedic Significance</h2><div class="section-rule"></div></div>
+      <p class="section-body">Ghritkumari is one of Ayurveda's most extensively described single herbs. Charaka includes it among the <em>Jivaniya</em> (life-giving) group and uses it in treatments for <em>Gulma</em> (abdominal tumours/masses), <em>Arsha</em> (haemorrhoids), and <em>Tvak Vikara</em> (skin diseases). Sushruta describes its use in <em>Visha Chikitsa</em> (toxicology) and wound management. The Ashtanga Hridayam lists it as both a <em>Rasayana</em> (rejuvenative) and a <em>Medhya</em> (intellect-promoting) dravya in the <em>Haritakyadi Varga</em>.</p>
+      <p class="section-body">Bhavaprakasha Nighantu places Kumari in the <em>Guduchyadi Varga</em> and describes it as: <em>"Kumari rasayani sheetala tikta vrushya rasayanam, grahi pittakaphaghni cha vishodhana balya param"</em> — classifying it as a Rasayana, cooling, bitter, aphrodisiac, constipating (gel), Pitta-Kapha-pacifying, purifying, and supremely strength-giving. Dhanvantari Nighantu lists <em>Ghritkumari swarasa</em> (fresh gel juice) for liver disorders, eye diseases, and uterine conditions — the last linking its name <em>Kanya</em> (young woman) to its gynaecological applications.</p>
+      <table class="dosha-table">
+        <thead><tr><th>Dosha</th><th>Effect</th><th>Mechanism &amp; Notes</th></tr></thead>
+        <tbody>
+          <tr><td>Vata ↓</td><td>Pacifying</td><td>Snigdha (unctuous) gel deeply moisturises and nourishes Vata-governed dry tissues; used in Vata-type constipation, dryness of skin and mucous membranes, and nervous system debility; the latex's purgative action, paradoxically, can worsen Vata if overused</td></tr>
+          <tr><td>Pitta ↓</td><td>Strongly pacifying</td><td>Sheeta virya (cooling potency) and tikta rasa make Ghritkumari one of the premier Pitta-pacifying herbs; classical for liver inflammation, acid reflux, skin rashes, burns, and all conditions of excess heat; aloe gel juice directly soothes the gastric and intestinal mucosa</td></tr>
+          <tr><td>Kapha ↓</td><td>Pacifying</td><td>Tikta (bitter) and Katu (pungent, secondary) rasa reduce Kapha accumulation; useful in chronic respiratory mucus, obesity, and sluggish liver; however, the Snigdha guna of the gel means very large internal doses could marginally increase Kapha — balance with ginger</td></tr>
+        </tbody>
+      </table>
+      <p class="section-body"><strong>Rasa:</strong> Tikta (bitter), Madhura (sweet) &nbsp;·&nbsp; <strong>Guna:</strong> Guru (heavy), Snigdha (unctuous), Picchila (slimy) &nbsp;·&nbsp; <strong>Virya:</strong> Sheeta (cooling) &nbsp;·&nbsp; <strong>Vipaka:</strong> Madhura (sweet) &nbsp;·&nbsp; <strong>Karma:</strong> Tridoshahara, Rasayana, Shothaghna, Vranashodhana, Chakshushya</p>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">04</span><h2 class="section-title">Key Health Benefits</h2><div class="section-rule"></div></div>
+      <p class="section-body">No plant in the Swastha Garden has a wider research base than Aloe vera — with hundreds of peer-reviewed human clinical trials validating its applications across dermatology, gastroenterology, immunology, dentistry, oncology, and endocrinology. It is simultaneously one of the world's most rigorously studied and most ancient healing plants.</p>
+      <div class="benefits-grid">
+        <div class="benefit-card">
+          <div class="benefit-title">Burn &amp; Wound Healing</div>
+          <div class="benefit-desc">The most extensively documented use of aloe vera — a 2007 systematic review of 4 RCTs found aloe gel healed first and second-degree burns 8.79 days faster than petroleum gauze dressings. Bradykininase reduces pain; acemannan and gibberellins stimulate fibroblast proliferation; mucopolysaccharides maintain a moist wound environment optimal for epithelialisation.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Digestive Health &amp; IBS</div>
+          <div class="benefit-desc">Decolourised (anthraquinone-free) aloe gel significantly reduces IBS symptoms in multiple human RCTs — reducing pain, bloating, and stool irregularity. The mucilaginous polysaccharides coat and soothe the gut lining; acemannan modulates gut immunity; and the anti-inflammatory action reduces mucosal inflammation in ulcerative colitis (early-stage human data).</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Skin &amp; Dermatological Applications</div>
+          <div class="benefit-desc">Aloe gel is one of the most validated dermatological agents: clinically proven for psoriasis (reducing scaling and erythema vs 0.1% triamcinolone in RCTs), seborrhoeic dermatitis, oral lichen planus, acne, and radiation-induced skin reactions. Aloesin inhibits tyrosinase, providing documented skin-brightening effects. It also accelerates surgical and post-laser skin healing.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Blood Sugar &amp; Diabetes</div>
+          <div class="benefit-desc">A 2016 meta-analysis of 9 controlled trials found aloe supplementation significantly reduced fasting blood glucose and HbA1c in pre-diabetic and diabetic subjects. Mechanisms include alpha-glucosidase inhibition, improved pancreatic beta-cell function, and acemannan-mediated enhancement of insulin receptor sensitivity. Effective without the gastrointestinal side effects of many hypoglycemic drugs.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Oral Health &amp; Dental Care</div>
+          <div class="benefit-desc">Aloe vera gel used as a mouthwash (0.5%) is as effective as 0.2% chlorhexidine (the gold standard) in reducing plaque and gingivitis — without side effects of staining or taste alteration. Effective against Streptococcus mutans, Candida albicans, and periodontal pathogens. Aloe gel toothpaste demonstrates anti-caries and antifungal activity in multiple RCTs.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Liver &amp; Detoxification</div>
+          <div class="benefit-desc">Ghritkumari is a primary classical remedy for Yakrit Roga (liver disorders). Animal studies confirm hepatoprotective activity against CCl₄-induced liver damage. Human data from non-alcoholic fatty liver disease (NAFLD) trials shows aloe supplementation significantly reduced liver enzymes (ALT, AST) and hepatic fat index. Its bitter compounds stimulate bile secretion and improve fat digestion.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Immunomodulation &amp; Antiviral</div>
+          <div class="benefit-desc">Acemannan is one of the few plant polysaccharides with demonstrated immunomodulatory activity in human trials — stimulating macrophage activation, natural killer cell activity, and cytokine production. It has shown activity against HIV-1 (blocking viral adsorption) and Herpes simplex virus in vitro. Acemannan is used clinically in veterinary medicine for feline leukaemia virus.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Gynaecological &amp; Reproductive Health</div>
+          <div class="benefit-desc">Classical Ayurveda uses Ghritkumari swarasa for dysmenorrhea, amenorrhea, leucorrhoea, and uterine debility — the name Kanya (young woman) reflects this affinity. Modern studies suggest aloe phytoestrogens modulate hormonal cycles. The latex fraction (aloin) stimulates uterine contractions — hence its traditional use in menstrual regulation and the strict contraindication in pregnancy.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">05</span><h2 class="section-title">How to Consume Ghritkumari</h2><div class="section-rule"></div></div>
+      <p class="section-body">The single most important preparation distinction with Aloe vera is ensuring that the <em>yellow latex (aloin) is completely removed</em> before any internal use. This is achieved by filleting only the clear inner gel and discarding the outer rind and the yellow layer immediately beneath it. For topical use the entire inner leaf including rind can be split and applied. Commercial products labelled "decolourised" or "purified" have had aloin removed and are preferred for internal therapeutic use.</p>
+      <table class="consume-table">
+        <thead><tr><th>Form</th><th>Preparation</th><th>Dosage</th><th>Best Use</th></tr></thead>
+        <tbody>
+          <tr><td>Fresh Gel (Topical)</td><td>Slice leaf lengthwise; scoop clear gel; apply directly</td><td>Apply liberally 2–3× daily</td><td>Burns, sunburn, wounds, acne, psoriasis, dry skin</td></tr>
+          <tr><td>Fresh Gel Juice (Internal)</td><td>Fillet clear inner gel only (discard yellow layer); blend; strain</td><td>20–30 ml on empty stomach, morning</td><td>IBS, acidity, liver, diabetes, constipation</td></tr>
+          <tr><td>Aloe Juice (Commercial)</td><td>Decolourised, purified aloe vera juice (no aloin)</td><td>30–60 ml daily; dilute in water</td><td>General health, digestive wellness, daily supplement</td></tr>
+          <tr><td>Kumari Asava (Classical)</td><td>Fermented Ayurvedic preparation with Aloe swarasa base</td><td>15–30 ml after meals with equal water</td><td>Liver disorders, anaemia, gulma (abdominal masses), gynaecological</td></tr>
+          <tr><td>Kumaryasava / Kumari Swarasa</td><td>Fresh gel juice with rock salt &amp; turmeric; classical recipe</td><td>10–20 ml twice daily, physician-directed</td><td>Dysmenorrhea, leucorrhoea, amenorrhea, liver</td></tr>
+          <tr><td>Gel as Mouthwash</td><td>Dilute fresh gel 1:1 in water; swish 30–60 seconds</td><td>Twice daily after brushing</td><td>Gingivitis, plaque, oral ulcers, oral Candida</td></tr>
+          <tr><td>Gel Hair Mask</td><td>Apply fresh gel to scalp and hair shaft; leave 30–60 min; rinse</td><td>1–2× weekly</td><td>Dandruff, hair loss, scalp psoriasis, seborrhoeic dermatitis</td></tr>
+          <tr><td>Aloe Gel Capsules</td><td>Standardised, decolourised extract (200 mg acemannan equivalent)</td><td>1–2 capsules twice daily with meals</td><td>IBS, diabetes, immunity — physician-directed for therapeutic dose</td></tr>
+          <tr><td>Latex (Purgative — caution)</td><td>The yellow latex only; classical Virechana use</td><td>Strictly physician-directed; ≤1 g; short-term only</td><td>Severe constipation, Virechana (Panchakarma) — not for self-use</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">06</span><h2 class="section-title">Safety &amp; Precautions</h2><div class="section-rule"></div></div>
+      <p class="section-body">Topical aloe gel is among the safest of all botanical applications — used by billions worldwide for millennia without serious adverse effects. Internal aloe gel (decolourised, aloin-free) is also well-tolerated. However, the latex fraction carries significant documented risks and requires extreme caution. The distinction between gel and latex is therefore the single most important safety consideration in aloe use.</p>
+      <ul class="precaution-list">
+        <li><strong>Pregnancy — Strict Contraindication (Latex):</strong> Aloin and anthraquinones in the latex are powerful uterine stimulants and have caused miscarriage in animal studies. Internal use of whole-leaf aloe or aloe latex is absolutely contraindicated in pregnancy. Topical use of gel on intact skin is generally considered safe.</li>
+        <li><strong>Latex carcinogenicity concern:</strong> The US National Toxicology Program (NTP) 2013 study found that non-decolourised (aloin-containing) whole-leaf aloe extract caused intestinal tumours in rats with long-term high-dose exposure. Always use decolourised, purified products for internal use. The FDA reclassified aloin-containing OTC laxatives as "not generally recognised as safe" (non-GRAS) in 2002.</li>
+        <li><strong>Electrolyte depletion with latex:</strong> Regular internal use of the latex as a laxative depletes potassium — potentially causing hypokalemia, muscle weakness, and cardiac arrhythmia. Can potentiate cardiac glycosides (digoxin) and antiarrhythmic drugs dangerously.</li>
+        <li><strong>Hypoglycemia risk:</strong> Aloe's documented blood-glucose-lowering effect can cause additive hypoglycemia when combined with insulin, metformin, glipizide, or other antidiabetic medications. Monitor blood glucose carefully; dose adjustment may be necessary.</li>
+        <li><strong>Contact dermatitis:</strong> A small percentage of people develop allergic contact dermatitis to topical aloe — typically to anthraquinone components. Test a small area first. Cross-reactivity with other Liliaceae plants (garlic, onion, tulip) is possible.</li>
+        <li><strong>Drug interactions:</strong> Aloe latex increases intestinal motility and can reduce the absorption of oral medications. Internal gel may interact with diuretics (additive potassium loss), sevoflurane anaesthesia (increased bleeding risk), and diabetes and anticoagulant medications.</li>
+        <li><strong>Children under 12:</strong> Internal use of aloe (even gel) is not recommended in young children. Topical gel is safe for children after patch testing.</li>
+        <li><strong>Kidney disease:</strong> The nephrotoxic potential of anthraquinones at high doses makes latex use dangerous in those with pre-existing kidney conditions. Even pure gel should be used with caution in advanced renal failure due to electrolyte sensitivity.</li>
+      </ul>
+    </div>
+
+    <div class="sources">
+      <div class="sources-title">References &amp; Sources</div>
+      <ul>
+        <li>Charaka Samhita — Jivaniya Varga; Gulma, Arsha, Tvak Vikara Chikitsa — references to Kumari</li>
+        <li>Bhavaprakasha Nighantu — Guduchyadi Varga — Kumari / Ghritkumari description</li>
+        <li>Dhanvantari Nighantu — Ghritkumari in liver, eye, and gynaecological disorders</li>
+        <li>Ashtanga Hridayam — Haritakyadi Varga; Rasayana &amp; Medhya classifications</li>
+        <li>Surjushe A et al. — "Aloe vera: A short review" — Indian Journal of Dermatology, 2008</li>
+        <li>Dat AD et al. — "Aloe vera for treating acute and chronic wounds" — Cochrane Database of Systematic Reviews, 2012</li>
+        <li>Suksomboon N et al. — "Systematic review and meta-analysis of the efficacy of aloe vera for glycaemic control" — Journal of Clinical Pharmacy and Therapeutics, 2016</li>
+        <li>Ajmera P et al. — "Aloe vera: It's effect on gingivitis" — Journal of Indian Society of Periodontology, 2013</li>
+        <li>National Toxicology Program (NTP) — "Toxicology studies of non-decolorized whole leaf aloe vera extract" — NTP Technical Report 577, 2013</li>
+        <li>Danhof IE — "The remarkable aloe" — Omnimedicus Press, 1986 — Acemannan characterisation</li>
+        <li>Hamman JH — "Composition and applications of Aloe vera leaf gel" — Molecules, 2008</li>
+        <li>Priyavrat Sharma — Dravyaguna Vigyana — Classical rasa-guna-virya properties of Ghritkumari</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer>
+    <p>Swastha Herbal Garden &nbsp;·&nbsp; Entry 13 of the Series &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a qualified practitioner before therapeutic use</p>
+  </footer>
+
+  <div id="viewerModal">
+    <div id="modal-topbar">
+      <span>3D Model — Aloe Vera</span>
+      <button type="button" id="close3D">✕</button>
+    </div>
+    <model-viewer src="aloevera3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+  </div>
+  <script>
+    (function() {
+      var open3D = document.getElementById('open3D');
+      var close3D = document.getElementById('close3D');
+      var modal = document.getElementById('viewerModal');
+      if (!open3D || !close3D || !modal) return;
+      function openModal() {
+        
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+      function closeModal() {
+        
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+      open3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); openModal();
+      });
+      close3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); closeModal();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+      });
+    })();
+  </script>
+
+</body>
+</html>

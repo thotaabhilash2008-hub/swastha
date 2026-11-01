@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ayapan — Vishalyakarni | Swastha</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap"
+    rel="stylesheet">
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+  <style>
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box
+    }
+
+    html {
+      scroll-behavior: smooth
+    }
+
+    body {
+      font-family: 'Jost', sans-serif;
+      background: var(--cream);
+      color: var(--ink);
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity: .035;
+      pointer-events: none;
+      z-index: 100
+    }
+
+    #open3D {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      padding: 10px 18px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: var(--forest);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      z-index: 1000;
+      transition: .3s
+    }
+
+    #open3D:hover {
+      background: var(--gold);
+      color: var(--deep)
+    }
+
+    #viewerModal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+    }
+
+    #modal-topbar {
+      flex-shrink: 0;
+      height: 58px;
+      background: #111111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px 0 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      z-index: 99999;
+    }
+
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 4.5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.72);
+      user-select: none;
+    }
+
+    #close3D {
+      width: 38px;
+      height: 38px;
+      font-size: 15px;
+      font-weight: 300;
+      background: transparent;
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background .2s, color .2s, transform .22s;
+      outline: none;
+      flex-shrink: 0;
+    }
+
+    #close3D:hover {
+      background: #ffffff;
+      color: #111111;
+      border-color: #ffffff;
+      transform: rotate(90deg)
+    }
+
+    #viewerModal model-viewer {
+      flex: 1;
+      width: 100%;
+      display: block;
+      background: #ffffff;
+    }
+
+    .bg-circle {
+      position: fixed;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0
+    }
+
+    .bg-circle-1 {
+      width: 700px;
+      height: 700px;
+      background: radial-gradient(circle, rgba(42, 92, 63, .1) 0%, transparent 70%);
+      top: -200px;
+      right: -150px
+    }
+
+    .bg-circle-2 {
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(201, 168, 76, .08) 0%, transparent 70%);
+      bottom: -100px;
+      left: -100px
+    }
+
+    .botanical-svg {
+      position: fixed;
+      pointer-events: none;
+      z-index: 1;
+      opacity: .1
+    }
+
+    .botanical-tl {
+      top: -20px;
+      left: -20px;
+      width: 260px
+    }
+
+    .botanical-br {
+      bottom: -20px;
+      right: -20px;
+      width: 220px;
+      transform: rotate(180deg)
+    }
+
+    .hero {
+      position: relative;
+      z-index: 10;
+      padding: 54px 40px 0;
+      text-align: center;
+      opacity: 0;
+      animation: fadeUp .9s ease .1s forwards
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--sage);
+      text-decoration: none;
+      margin-bottom: 36px;
+      transition: color .3s
+    }
+
+    .back-link:hover {
+      color: var(--gold)
+    }
+
+    .logo-rule {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 14px
+    }
+
+    .logo-rule span {
+      display: block;
+      height: 1px;
+      width: 70px;
+      background: linear-gradient(to right, transparent, var(--gold))
+    }
+
+    .logo-rule span:last-child {
+      background: linear-gradient(to left, transparent, var(--gold))
+    }
+
+    .logo-ornament {
+      font-size: 13px;
+      color: var(--gold)
+    }
+
+    .hero-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(64px, 12vw, 110px);
+      font-weight: 300;
+      letter-spacing: 8px;
+      line-height: 1;
+      color: var(--deep)
+    }
+
+    .hero-subtitle {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 18px;
+      font-style: italic;
+      font-weight: 300;
+      color: var(--earth);
+      letter-spacing: 2px;
+      margin-top: 8px
+    }
+
+    .hero-sci {
+      font-size: 11px;
+      font-weight: 200;
+      letter-spacing: 5px;
+      color: var(--sage);
+      margin-top: 6px
+    }
+
+    .hero-photos {
+      position: relative;
+      z-index: 10;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2px;
+      max-width: 900px;
+      margin: 40px auto 0;
+      opacity: 0;
+      animation: fadeUp .9s ease .35s forwards
+    }
+
+    .hero-photos img {
+      width: 100%;
+      height: 380px;
+      object-fit: cover;
+      object-position: center;
+      display: block;
+      background: var(--parchment);
+    }
+
+    .hero-photos img:first-child {
+      object-position: center 40%
+    }
+
+    .photo-caption {
+      text-align: center;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 12px;
+      font-style: italic;
+      color: var(--sage);
+      letter-spacing: 1px;
+      padding: 10px 0 0;
+      max-width: 900px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 10;
+      opacity: 0;
+      animation: fadeUp .9s ease .5s forwards
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin: 50px auto;
+      max-width: 600px;
+      opacity: 0;
+      animation: fadeUp .9s ease .55s forwards;
+      position: relative;
+      z-index: 10
+    }
+
+    .divider-line {
+      height: 1px;
+      width: 120px;
+      background: linear-gradient(to right, transparent, var(--sage))
+    }
+
+    .divider-line:last-child {
+      background: linear-gradient(to left, transparent, var(--sage))
+    }
+
+    .divider-leaf {
+      color: var(--forest);
+      font-size: 18px
+    }
+
+    .content {
+      position: relative;
+      z-index: 10;
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 30px 80px
+    }
+
+    .intro-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 20px;
+      font-weight: 300;
+      line-height: 1.75;
+      color: var(--ink);
+      text-align: center;
+      max-width: 700px;
+      margin: 0 auto 60px;
+      opacity: 0;
+      animation: fadeUp .9s ease .6s forwards
+    }
+
+    .intro-text em {
+      color: var(--forest);
+      font-style: italic
+    }
+
+    .section {
+      margin-bottom: 60px;
+      opacity: 0;
+      animation: fadeUp .9s ease forwards
+    }
+
+    .section:nth-child(1) {
+      animation-delay: .65s
+    }
+
+    .section:nth-child(2) {
+      animation-delay: .75s
+    }
+
+    .section:nth-child(3) {
+      animation-delay: .85s
+    }
+
+    .section:nth-child(4) {
+      animation-delay: .95s
+    }
+
+    .section:nth-child(5) {
+      animation-delay: 1.05s
+    }
+
+    .section:nth-child(6) {
+      animation-delay: 1.15s
+    }
+
+    .section:nth-child(7) {
+      animation-delay: 1.25s
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 20px
+    }
+
+    .section-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 11px;
+      letter-spacing: 4px;
+      color: var(--gold)
+    }
+
+    .section-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 28px;
+      font-weight: 400;
+      color: var(--deep);
+      letter-spacing: 1px
+    }
+
+    .section-rule {
+      height: 1px;
+      flex: 1;
+      background: linear-gradient(to right, var(--gold), transparent)
+    }
+
+    .section-body {
+      font-size: 13px;
+      font-weight: 300;
+      line-height: 1.9;
+      color: var(--ink);
+      margin-bottom: 24px
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0 8px;
+      font-size: 12px
+    }
+
+    .data-table thead tr {
+      background: var(--deep);
+      color: var(--gold);
+      font-size: 10px;
+      letter-spacing: 3px;
+      text-transform: uppercase
+    }
+
+    .data-table thead th {
+      padding: 12px 14px;
+      text-align: left;
+      font-weight: 400
+    }
+
+    .data-table tbody tr:nth-child(even) {
+      background: var(--parchment)
+    }
+
+    .data-table tbody tr:nth-child(odd) {
+      background: var(--cream)
+    }
+
+    .data-table tbody tr {
+      transition: background .2s
+    }
+
+    .data-table tbody tr:hover {
+      background: rgba(200, 164, 93, 0.15)
+    }
+
+    .data-table tbody td {
+      padding: 10px 14px;
+      color: var(--ink);
+      border-bottom: 1px solid rgba(107, 79, 45, .08)
+    }
+
+    .data-table tbody td:first-child {
+      font-weight: 400;
+      color: var(--deep);
+      width: 28%
+    }
+
+    .dosha-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 12px
+    }
+
+    .dosha-table thead tr {
+      background: var(--forest);
+      color: var(--cream)
+    }
+
+    .dosha-table thead th {
+      padding: 12px 14px;
+      text-align: left;
+      font-weight: 400;
+      letter-spacing: 2px;
+      font-size: 10px;
+      text-transform: uppercase
+    }
+
+    .dosha-table tbody tr:nth-child(even) {
+      background: var(--parchment)
+    }
+
+    .dosha-table tbody tr:nth-child(odd) {
+      background: var(--cream)
+    }
+
+    .dosha-table tbody td {
+      padding: 11px 14px;
+      color: var(--ink);
+      border-bottom: 1px solid rgba(107, 79, 45, .08)
+    }
+
+    .dosha-table tbody td:first-child {
+      font-weight: 400;
+      color: var(--forest);
+      width: 18%
+    }
+
+    .dosha-table tbody td:nth-child(2) {
+      color: var(--earth);
+      width: 20%
+    }
+
+    .consume-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 12px
+    }
+
+    .consume-table thead tr {
+      background: var(--earth);
+      color: var(--cream)
+    }
+
+    .consume-table thead th {
+      padding: 12px 14px;
+      text-align: left;
+      font-weight: 400;
+      letter-spacing: 2px;
+      font-size: 10px;
+      text-transform: uppercase
+    }
+
+    .consume-table tbody tr:nth-child(even) {
+      background: var(--parchment)
+    }
+
+    .consume-table tbody tr:nth-child(odd) {
+      background: var(--cream)
+    }
+
+    .consume-table tbody td {
+      padding: 11px 14px;
+      color: var(--ink);
+      border-bottom: 1px solid rgba(107, 79, 45, .08)
+    }
+
+    .consume-table tbody td:first-child {
+      font-weight: 400;
+      color: var(--earth);
+      width: 22%
+    }
+
+    .benefits-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: rgba(107, 79, 45, .12);
+      border: 1px solid rgba(107, 79, 45, .12);
+      margin: 8px 0
+    }
+
+    .benefit-card {
+      background: var(--cream);
+      padding: 24px 22px;
+      transition: background .3s;
+      position: relative;
+      overflow: hidden
+    }
+
+    .benefit-card:hover {
+      background: #ede4ce
+    }
+
+    .benefit-card::before {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: var(--gold);
+      transition: width .4s
+    }
+
+    .benefit-card:hover::before {
+      width: 100%
+    }
+
+    .benefit-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--forest);
+      margin-bottom: 8px
+    }
+
+    .benefit-desc {
+      font-size: 11.5px;
+      font-weight: 300;
+      line-height: 1.75;
+      color: var(--ink);
+      opacity: .85
+    }
+
+    .precaution-list {
+      list-style: none;
+      margin: 8px 0
+    }
+
+    .precaution-list li {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      padding: 10px 14px;
+      font-size: 12px;
+      font-weight: 300;
+      line-height: 1.7;
+      color: var(--ink);
+      border-bottom: 1px solid rgba(107, 79, 45, .08)
+    }
+
+    .precaution-list li:last-child {
+      border-bottom: none
+    }
+
+    .precaution-list li::before {
+      content: '▸';
+      color: var(--gold);
+      flex-shrink: 0;
+      margin-top: 1px
+    }
+
+    .sources {
+      border-top: 1px solid rgba(107, 79, 45, .15);
+      padding-top: 24px;
+      margin-top: 20px
+    }
+
+    .sources-title {
+      font-size: 10px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--sage);
+      margin-bottom: 12px;
+      font-weight: 300
+    }
+
+    .sources ul {
+      list-style: none
+    }
+
+    .sources ul li {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 13px;
+      font-style: italic;
+      color: var(--earth);
+      padding: 5px 0;
+      border-bottom: 1px solid rgba(107, 79, 45, .06)
+    }
+
+    .sources ul li::before {
+      content: '· ';
+      color: var(--sage)
+    }
+
+    .nutrition-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: rgba(107, 79, 45, .12);
+      border: 1px solid rgba(107, 79, 45, .12);
+      margin: 20px 0
+    }
+
+    .nutrition-cell {
+      background: var(--cream);
+      padding: 22px 16px;
+      text-align: center;
+      transition: background .3s
+    }
+
+    .nutrition-cell:hover {
+      background: var(--parchment)
+    }
+
+    .nutrition-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 36px;
+      font-weight: 300;
+      color: var(--forest);
+      line-height: 1;
+      margin-bottom: 4px
+    }
+
+    .nutrition-unit {
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--gold);
+      font-weight: 300
+    }
+
+    .nutrition-label {
+      font-size: 11px;
+      font-weight: 300;
+      color: var(--ink);
+      margin-top: 5px
+    }
+
+    footer {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      padding: 24px 20px 44px;
+      border-top: 1px solid rgba(107, 79, 45, .12);
+      max-width: 860px;
+      margin: 0 auto
+    }
+
+    footer p {
+      font-size: 11px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--sage);
+      font-weight: 300
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(28px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
+
+    @media(max-width:700px) {
+      .hero-photos {
+        grid-template-columns: 1fr
+      }
+
+      .hero-photos img {
+        height: 260px
+      }
+
+      .benefits-grid {
+        grid-template-columns: 1fr
+      }
+
+      .nutrition-bar {
+        grid-template-columns: 1fr 1fr
+      }
+
+      .content {
+        padding: 0 18px 60px
+      }
+
+      #modal-topbar {
+        padding: 0 16px 0 20px
+      }
+
+      #modal-topbar span {
+        font-size: 9px;
+        letter-spacing: 3px
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <button id="open3D">View in 3D</button>
+
+  <div id="viewerModal">
+    <div id="modal-topbar">
+      <span>3D Model — Ayapan</span>
+      <button id="close3D">✕</button>
+    </div>
+    <model-viewer src="ayapan3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+  </div>
+
+  <div class="bg-circle bg-circle-1"></div>
+  <div class="bg-circle bg-circle-2"></div>
+
+  <svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#2a5c3f" stroke-width="1.5" fill="none" />
+    <circle cx="90" cy="210" r="8" fill="#2a5c3f" opacity="0.7" />
+    <circle cx="130" cy="175" r="10" fill="#7a9e7e" opacity="0.6" />
+    <circle cx="170" cy="135" r="7" fill="#2a5c3f" opacity="0.8" />
+    <circle cx="210" cy="95" r="9" fill="#c9a84c" opacity="0.5" />
+    <ellipse cx="115" cy="195" rx="20" ry="10" fill="#7a9e7e" transform="rotate(-30 115 195)" />
+    <ellipse cx="155" cy="155" rx="18" ry="9" fill="#2a5c3f" transform="rotate(-45 155 155)" />
+    <ellipse cx="195" cy="115" rx="16" ry="8" fill="#7a9e7e" transform="rotate(-60 195 115)" />
+  </svg>
+  <svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#2a5c3f" stroke-width="1.5" fill="none" />
+    <circle cx="90" cy="210" r="8" fill="#2a5c3f" opacity="0.7" />
+    <circle cx="130" cy="175" r="10" fill="#7a9e7e" opacity="0.6" />
+    <circle cx="170" cy="135" r="7" fill="#2a5c3f" opacity="0.8" />
+    <ellipse cx="115" cy="195" rx="20" ry="10" fill="#7a9e7e" transform="rotate(-30 115 195)" />
+  </svg>
+
+  <div class="hero">
+    <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+    <div class="logo-rule"><span></span>
+      <div class="logo-ornament">✦</div><span></span>
+    </div>
+    <div class="hero-title">Ayapan</div>
+    <div class="hero-subtitle">Vishalyakarni — The Remover of Arrows</div>
+    <div class="hero-sci">Ayapana triplinervis &nbsp;·&nbsp; Eupatorium triplinerve</div>
+  </div>
+
+  <div class="hero-photos">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/2/21/Ayapanatriplinervis.jpg" alt="Pale pink Ayapan flowers"
+      onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/2/21/Ayapana_triplinervis_01.jpg/1280px-Ayapana_triplinervis_01.jpg" alt="Ayapan plant with reddish stems and lanceolate leaves"
+      onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+  </div>
+  <p class="photo-caption">Fig. 1 — Pale pink corymbose flower clusters of Ayapan, faintly fragrant with newly-mown-hay coumarin scent &nbsp;·&nbsp; Fig. 2 — The aromatic perennial herb showing reddish stems and three-nerved lanceolate leaves</p>
+
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-leaf">❧</div>
+    <div class="divider-line"></div>
+  </div>
+
+  <div class="content">
+    <p class="intro-text">A South American immigrant adopted into Indian healing — its Sanskrit name <em>Vishalyakarni</em> means "remover of arrows," for warriors of an older age would crush its leaves onto wounds to staunch bleeding and dissolve embedded shafts. Centuries before warfarin, ayapan's coumarin <em>ayapanin</em> taught chemistry the chemistry of blood — and yet, paradoxically, its fresh leaf paste remains one of nature's swiftest haemostats.</p>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">01</span>
+        <h2 class="section-title">Botanical Profile</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Ayapan (<em>Ayapana triplinervis</em> (Vahl) R.M.King &amp; H.Rob., syn. <em>Eupatorium triplinerve</em>) is an ascending, slender, aromatic perennial herb of the Asteraceae family — the sunflower-and-daisy family — growing 2–4 feet (60–120 cm) tall. The stems are thin, hairless, and reddish in colour. Leaves are opposite, subsessile, lanceolate, three-nerved (giving the plant its species name <em>triplinervis</em>), 5–8 cm long, smooth, and acuminate, with a strong sweet aroma like newly-mown hay when crushed.</p>
+      <p class="section-body">The flowers are small, slaty blue to pale pink, in lax few-headed corymbose inflorescences with about twenty florets per head, each 6–7 mm long. Native to the Amazon rainforests of Brazil and tropical America, Ayapan was introduced into Indian medicinal practice through colonial-era plant exchange and has since naturalised across temperate India, Vietnam, Indonesia, the Philippines, and the Mascarene Islands. Importantly, Ayapan is <em>not mentioned in the classical Ayurvedic samhitas</em>, but features prominently in folk and tribal medicine and has been incorporated into modern Ayurvedic practice for its haemostatic and wound-healing properties.</p>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>PROPERTY</th>
+            <th>Detail</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Family</td>
+            <td>Asteraceae (Bhringaraja Kula)</td>
+          </tr>
+          <tr>
+            <td>Botanical Name</td>
+            <td>Ayapana triplinervis (Vahl) R.M.King &amp; H.Rob. / Eupatorium triplinerve</td>
+          </tr>
+          <tr>
+            <td>Sanskrit Names</td>
+            <td>Vishalyakarni, Ajaparna (leaves resemble goat's ear)</td>
+          </tr>
+          <tr>
+            <td>Common Names</td>
+            <td>Ayapan, Ayapana, Erva-Santa, Water Hemp, White Snakeroot, Ayapani, Japana-branca, Pool Root</td>
+          </tr>
+          <tr>
+            <td>Origin</td>
+            <td>Amazon rainforests of Brazil &amp; tropical South America; naturalised in India</td>
+          </tr>
+          <tr>
+            <td>Plant Type</td>
+            <td>Aromatic perennial herb (60–120 cm)</td>
+          </tr>
+          <tr>
+            <td>Flowering Season</td>
+            <td>Year-round in tropical climate</td>
+          </tr>
+          <tr>
+            <td>Medicinal Parts</td>
+            <td>Leaves (primary), whole plant — stem, roots, flowers</td>
+          </tr>
+          <tr>
+            <td>Taste Profile</td>
+            <td>Bitter, pungent, aromatic with characteristic coumarin scent</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">02</span>
+        <h2 class="section-title">Phytochemistry Composition</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">A 2023 ScienceDirect comprehensive review identified 57 distinct natural compounds isolated from Ayapana triplinervis, dominated by a remarkable family of <em>coumarin derivatives</em>. The signature coumarins are <em>ayapanin</em> (also known as 7-methoxycoumarin or herniarin) and <em>ayapin</em> (6,7-methylenedioxycoumarin) — both first isolated from this plant by Indian biochemist P.K. Bose in 1937 and named for it. The leaves contain 1.14% volatile essential oil rich in cineol, α-phellandrene, α-terpineol, borneol, sabinene, and thymohydroquinone dimethyl ether.</p>
+      <p class="section-body">Beyond coumarins, the plant contains a broad spectrum of secondary metabolites — flavonoids, terpenoids, hydrangetin, daphnetin and its dimethyl ether, umbelliferone, β-caryophyllene, lupeol, methyl salicylate, thymol, thymoquinone, stigmasterol, carotene, and vitamin C. The pharmacologically critical fact: ayapanin shares its core chemistry with <em>warfarin</em> (the modern anticoagulant), making Ayapan a natural blood-thinner — though paradoxically also haemostatic when applied topically, by promoting local clot formation and vasoconstriction.</p>
+      <div class="nutrition-bar">
+        <div class="nutrition-cell">
+          <div class="nutrition-num">57</div>
+          <div class="nutrition-unit">isolated</div>
+          <div class="nutrition-label">Natural compounds</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">1.14%</div>
+          <div class="nutrition-unit">of leaf weight</div>
+          <div class="nutrition-label">Volatile essential oil</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">1937</div>
+          <div class="nutrition-unit">first isolated</div>
+          <div class="nutrition-label">Ayapanin &amp; ayapin</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">2</div>
+          <div class="nutrition-unit">morphotypes</div>
+          <div class="nutrition-label">Japana-branca &amp; Japana-roxa</div>
+        </div>
+      </div>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Compound</th>
+            <th>Category</th>
+            <th>Primary Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Ayapanin (7-Methoxycoumarin / Herniarin)</td>
+            <td>Coumarin derivative</td>
+            <td>Anticoagulant, antitumour, antimicrobial — plant-specific marker</td>
+          </tr>
+          <tr>
+            <td>Ayapin (6,7-Methylenedioxycoumarin)</td>
+            <td>Coumarin derivative</td>
+            <td>Haemostatic (paradoxical), anti-inflammatory, antimicrobial</td>
+          </tr>
+          <tr>
+            <td>Hydrangetin &amp; Daphnetin</td>
+            <td>Coumarin derivatives</td>
+            <td>Antioxidant, anti-inflammatory, antitumour</td>
+          </tr>
+          <tr>
+            <td>Umbelliferone</td>
+            <td>Hydroxycoumarin</td>
+            <td>Antioxidant, antimicrobial, sunscreen-like UV absorption</td>
+          </tr>
+          <tr>
+            <td>Cineol &amp; α-Phellandrene</td>
+            <td>Monoterpenes (essential oil)</td>
+            <td>Bronchodilator, expectorant, aromatic</td>
+          </tr>
+          <tr>
+            <td>α-Terpineol &amp; Borneol</td>
+            <td>Monoterpene alcohols</td>
+            <td>Antimicrobial, sedative, mild analgesic</td>
+          </tr>
+          <tr>
+            <td>β-Caryophyllene &amp; Lupeol</td>
+            <td>Sesquiterpene / triterpene</td>
+            <td>Anti-inflammatory, anticancer, hepatoprotective</td>
+          </tr>
+          <tr>
+            <td>Thymohydroquinone Dimethyl Ether</td>
+            <td>Phenolic ether</td>
+            <td>Antioxidant, antimicrobial</td>
+          </tr>
+          <tr>
+            <td>Stigmasterol &amp; Vitamin C</td>
+            <td>Phytosterol &amp; ascorbic acid</td>
+            <td>Anti-inflammatory, immune-modulating, antioxidant</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">03</span>
+        <h2 class="section-title">Ayurvedic Significance</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Unlike most herbs documented in the Swastha Garden, Ayapan is <em>not</em> mentioned in the classical Ayurvedic samhitas of Charaka, Sushruta, or Vagbhata — it is a relatively recent botanical immigrant from South America, integrated into Indian folk and tribal medicine over the past two to three centuries. Its Sanskrit name, <em>Vishalyakarni</em>, was assigned later in recognition of its remarkable wound-healing and bleeding-control properties. The literal meaning — "remover of arrows" — references the same Sanskrit term used in the Ramayana for the herb that Hanuman sought to heal Lakshmana's battlefield wounds.</p>
+      <p class="section-body">Modern Ayurvedic practice classifies Ayapan as a <em>Kapha-Pitta shamaka</em> (Kapha-Pitta pacifier) and a <em>Raktastambhana</em> (haemostatic) drug. Its rasa (taste) is bitter and pungent; guna is light and dry; vipaka is pungent; veerya is cooling. The cooling, pitta-pacifying potency makes it especially useful in bleeding disorders, inflammatory conditions, hormonal imbalance in females, and as a general detoxifier supporting liver function and tissue regeneration.</p>
+      <table class="dosha-table">
+        <thead>
+          <tr>
+            <th>Dosha</th>
+            <th>Effect</th>
+            <th>Mechanism &amp; Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Vata ~</td>
+            <td>Mixed effect</td>
+            <td>Light, dry, and bitter qualities may slightly aggravate Vata at high doses; pair with milk or ghee for Vata-prone individuals</td>
+          </tr>
+          <tr>
+            <td>Pitta ↓</td>
+            <td>Pacifying</td>
+            <td>The defining classical action — cooling potency soothes inflammation, raktapitta (bleeding disorders), heat, and burning sensations; supports Pitta-driven hormonal balance in females</td>
+          </tr>
+          <tr>
+            <td>Kapha ↓</td>
+            <td>Pacifying</td>
+            <td>Bitter, dry, light, and aromatic qualities reduce mucus, congestion, and stagnation; useful in cough, cold, and respiratory conditions</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">04</span>
+        <h2 class="section-title">Key Health Benefits</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Ayapan's signature dual identity — natural anticoagulant and natural haemostat — combined with documented anti-inflammatory, hepatoprotective, antimicrobial, and antitumour activities, places it among the most pharmacologically intriguing herbs in modern phytotherapy. Its proprietary preparation <em>Ayapon tablet</em> remains a popular Ayurvedic medicine for bleeding-related disorders.</p>
+      <div class="benefits-grid">
+        <div class="benefit-card">
+          <div class="benefit-title">Bleeding Control (Haemostatic)</div>
+          <div class="benefit-desc">The flagship use. Fresh leaf paste applied externally controls bleeding from cuts, wounds, bleeding piles, and ulcers within minutes — the action celebrated by P.K. Bose's 1937 publication in <em>Nature</em>. Used internally for bleeding diarrhoea, bleeding gums, nosebleeds, and dysfunctional uterine bleeding.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Wound Healing &amp; Antiseptic</div>
+          <div class="benefit-desc">Antiseptic and astringent properties accelerate wound contraction and prevent infection. Sterile leaf paste is used on cuts, abrasions, insect bites, and snake bites — a tribal application validated by modern antimicrobial research showing activity against 11 human pathogenic bacteria and 6 phytopathogenic fungi.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Hepatoprotective &amp; Liver Tonic</div>
+          <div class="benefit-desc">Documented hepatoprotective activity supports liver function, aids detoxification, and helps cleanse body organs. Useful in jaundice, hepatitis, and chronic liver insufficiency. The mechanism appears to involve coumarin-mediated antioxidant protection of hepatocyte membranes.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Anti-inflammatory &amp; Analgesic</div>
+          <div class="benefit-desc">Petroleum-ether extract significantly inhibits acetic-acid-induced writhing, formalin-induced paw-licking, and carrageenan-induced hind-paw oedema in research models. Useful in arthritis, joint pain, and inflammatory disorders. Pain-relief mechanisms involve both peripheral and central pathways.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Respiratory &amp; Fever</div>
+          <div class="benefit-desc">Cold infusion (30–40 ml) controls asthma and treats cough with phlegm. Whole-plant decoction is a classical folk remedy for malarial fever, common cold, rhinitis, and influenza. Cineol and α-phellandrene act as natural bronchodilators and expectorants.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Female Reproductive Health</div>
+          <div class="benefit-desc">Pitta-pacifying action regulates hormonal imbalance, eases dysmenorrhoea, and supports the female reproductive system. Decoction (30–40 ml) is given for painful menstruation; fresh juice manages dysfunctional uterine bleeding via the haemostatic ayapin.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Cardiotonic &amp; Circulatory</div>
+          <div class="benefit-desc">Aqueous leaf-extract acts as a cardiac stimulant — increasing the force of heartbeat while reducing its frequency. Cold infusion (30–40 ml) is used in weakness of cardiac muscles. The dual ayapanin/ayapin chemistry supports healthy circulation when used appropriately.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Antitumour Research</div>
+          <div class="benefit-desc">Ayapanin demonstrated cytotoxicity against multiple cancer cell lines, including multi-drug-resistant cancer cells and leukaemia cells, in 2005 research. The proprietary extract <em>Hemarin</em> shows antitumour effects. Promising preclinical signal — clinical research remains in early stages.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">06</span>
+        <h2 class="section-title">How to Consume Ayapan</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Ayapan is exclusively medicinal — not consumed as food. Best used fresh whenever possible, since its key bioactive compounds (volatile coumarins and essential oils) degrade with prolonged storage. Small doses act as tonic and stimulant; large doses become laxative and emetic, with potential vomiting and diarrhoea — so always begin at the lower end of the therapeutic range. Topical use is widespread for fresh wounds, bleeding, and insect bites.</p>
+      <table class="consume-table">
+        <thead>
+          <tr>
+            <th>Form</th>
+            <th>Preparation</th>
+            <th>Dosage</th>
+            <th>Best Time</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Fresh Leaf Juice (Swarasa)</td>
+            <td>Fresh leaves crushed and strained</td>
+            <td>5–10 ml, 2–3× daily</td>
+            <td>For indigestion, fever, internal bleeding</td>
+          </tr>
+          <tr>
+            <td>Cold Infusion</td>
+            <td>Soak leaves in cold water for 4–6 hours; strain</td>
+            <td>30–40 ml, 1–2× daily</td>
+            <td>For asthma, cough, cardiac weakness</td>
+          </tr>
+          <tr>
+            <td>Decoction (Kashayam)</td>
+            <td>Boil 20 g panchang in 400 ml water; reduce to ¼</td>
+            <td>15–30 ml twice daily</td>
+            <td>For fever, malaria, dysmenorrhea</td>
+          </tr>
+          <tr>
+            <td>Topical Leaf Paste</td>
+            <td>Fresh leaves ground into paste with little water</td>
+            <td>Applied as needed</td>
+            <td>On wounds, bleeding piles, insect &amp; snake bites</td>
+          </tr>
+          <tr>
+            <td>Ayapana Tea</td>
+            <td>Steep 1 tsp dried leaves in hot water for 5 min</td>
+            <td>1 cup once daily</td>
+            <td>Morning, as a mild tonic</td>
+          </tr>
+          <tr>
+            <td>Mouthwash / Gargle</td>
+            <td>Diluted fresh juice or weak decoction</td>
+            <td>Gargle 1–2× daily</td>
+            <td>For gingivitis, stomatitis, oral ulcers</td>
+          </tr>
+          <tr>
+            <td>Ayapon Tablet</td>
+            <td>Proprietary Ayurvedic tablet for bleeding</td>
+            <td>As prescribed</td>
+            <td>For bleeding gums, piles, purpura, DUB</td>
+          </tr>
+          <tr>
+            <td>Whole-Plant Poultice</td>
+            <td>Crushed whole plant applied externally</td>
+            <td>Applied as needed</td>
+            <td>On animal/insect bites and slow-healing wounds</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">07</span>
+        <h2 class="section-title">Safety &amp; Precautions</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Ayapan's coumarin-rich chemistry — paradoxically both haemostatic topically and anticoagulant systemically — calls for thoughtful clinical context. Small therapeutic doses are well tolerated; large doses become laxative, emetic, and may pose cardiovascular risk. Because it is not described in classical Ayurvedic samhitas, much of its safety profile rests on modern pharmacological research and folk-medicine experience.</p>
+      <ul class="precaution-list">
+        <li><strong>Pregnancy:</strong> Avoid medicinal doses entirely. Coumarin compounds may affect uterine activity and foetal development. Topical use on minor wounds may be acceptable, but internal use during pregnancy is strongly discouraged.</li>
+        <li><strong>Breastfeeding:</strong> Insufficient safety data. Coumarins may pass into breast milk; avoid medicinal doses during lactation.</li>
+        <li><strong>Blood thinners (anticoagulants):</strong> Strongly contraindicated. Ayapanin has the same coumarin core as warfarin — combining the two markedly increases bleeding risk and stroke risk. Avoid alongside warfarin, heparin, aspirin, clopidogrel, dabigatran, rivaroxaban, or any anticoagulant.</li>
+        <li><strong>Bleeding disorders &amp; surgery:</strong> Discontinue at least 2 weeks before scheduled surgery. Use with caution in haemophilia, thrombocytopenia, or any disorder of haemostasis.</li>
+        <li><strong>Excessive intake:</strong> Large doses are laxative and emetic — may cause diarrhoea, vomiting, and dehydration. Stay within therapeutic ranges (5–10 ml juice, 30–40 ml infusion).</li>
+        <li><strong>Cardiovascular medications:</strong> Cardiac stimulant action may interact with antiarrhythmic, antihypertensive, or cardiac glycoside medications. Consult a physician before combining.</li>
+        <li><strong>Liver disease:</strong> While hepatoprotective at standard doses, very high or prolonged doses may stress an already-compromised liver. Use under qualified supervision in chronic liver conditions.</li>
+        <li><strong>Children:</strong> Paediatric dosing requires practitioner supervision. Topical applications for minor wounds and insect bites are generally safe in older children when used appropriately.</li>
+      </ul>
+    </div>
+
+    <div class="sources">
+      <div class="sources-title">References &amp; Sources</div>
+      <ul>
+        <li>"Ayapana triplinervis: An updated review of traditional uses, phytochemistry, and pharmacological activities" — ScienceDirect / Pharmacological Research – Modern Chinese Medicine, 2023</li>
+        <li>Bose P, Chakrabarti P — "Haemostatic agents. Part II. Experiments with ayapanin and ayapin" — Nature, 1937</li>
+        <li>Melo A et al. — "Antinociceptive, neurobehavioral and antioxidant effects of Eupatorium triplinerve Vahl on rats" — Journal of Ethnopharmacology, 2013</li>
+        <li>Sharath R et al. — "Evaluation of antioxidant activity of coumarin isolated from Eupatorium triplinerve" — Journal of Pharmacognosy, 2014</li>
+        <li>Krishnan M et al. — "Antioxidant mediated anti-ulcer effect of Eupatorium triplinerve Vahl on acetic acid induced ulcerative colitis in mice" — Biomedicine &amp; Aging Pathology, 2014</li>
+        <li>Rajasekaran A et al. — "Haemostatic effect of fresh juice and methanolic extract of Eupatorium ayapana leaves in rat model" — International Journal of Biological &amp; Medical Research, 2010</li>
+        <li>"Pharmacological Insights and Botanical Overview of Ayapana triplinervis: A Comprehensive Review" — 2024</li>
+        <li>Wikipedia — Ayapana triplinervis — Botanical &amp; phytochemical overview</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer>
+    <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a
+      qualified practitioner before therapeutic use</p>
+  </footer>
+
+  <audio id="ayapanAudio" src="ayapan_benefits.mp3" loop preload="auto"></audio>
+
+  <script>
+    const open3D = document.getElementById('open3D');
+    const close3D = document.getElementById('close3D');
+    const modal = document.getElementById('viewerModal');
+    const ayapanAudio = document.getElementById('ayapanAudio');
+
+    function openModal() {
+      modal.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+      history.pushState({ modal: 'ayapan3d' }, '', '#3d');
+      ayapanAudio.play().catch(e => console.log('Audio autoplay blocked', e));
+    }
+
+    function closeModal() {
+      modal.style.display = 'none';
+      document.body.style.overflow = '';
+      if (window.location.hash === '#3d') {
+        history.replaceState(null, '', window.location.pathname);
+      }
+      ayapanAudio.pause();
+      ayapanAudio.currentTime = 0;
+    }
+
+    open3D.addEventListener('click', function (e) {
+      e.preventDefault(); e.stopPropagation();
+      openModal();
+    });
+
+    close3D.addEventListener('click', function (e) {
+      e.preventDefault(); e.stopPropagation();
+      closeModal();
+    });
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+    });
+
+    window.addEventListener('popstate', function (e) {
+      if (modal.style.display === 'flex') {
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+    });
+  </script>
+</body>
+
+</html>

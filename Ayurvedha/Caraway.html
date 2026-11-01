@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kala Jeera — Caraway | Swastha</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap"
+    rel="stylesheet">
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+  <style>
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box
+    }
+
+    html {
+      scroll-behavior: smooth
+    }
+
+    body {
+      font-family: 'Jost', sans-serif;
+      background: var(--cream);
+      color: var(--ink);
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity: .035;
+      pointer-events: none;
+      z-index: 100
+    }
+
+    #open3D {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      padding: 10px 18px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: var(--forest);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      z-index: 1000;
+      transition: .3s
+    }
+
+    #open3D:hover {
+      background: var(--gold);
+      color: var(--deep)
+    }
+
+    #viewerModal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+    }
+
+    #modal-topbar {
+      flex-shrink: 0;
+      height: 58px;
+      background: #111111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px 0 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      z-index: 99999;
+    }
+
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 4.5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.72);
+      user-select: none;
+    }
+
+    #close3D {
+      width: 38px;
+      height: 38px;
+      font-size: 15px;
+      font-weight: 300;
+      background: transparent;
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background .2s, color .2s, transform .22s;
+      outline: none;
+      flex-shrink: 0;
+    }
+
+    #close3D:hover {
+      background: #ffffff;
+      color: #111111;
+      border-color: #ffffff;
+      transform: rotate(90deg)
+    }
+
+    #viewerModal model-viewer {
+      flex: 1;
+      width: 100%;
+      display: block;
+      background: #ffffff;
+    }
+
+    .bg-circle {
+      position: fixed;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0
+    }
+
+    .bg-circle-1 {
+      width: 700px;
+      height: 700px;
+      background: radial-gradient(circle, rgba(42, 92, 63, .1) 0%, transparent 70%);
+      top: -200px;
+      right: -150px
+    }
+
+    .bg-circle-2 {
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(201, 168, 76, .08) 0%, transparent 70%);
+      bottom: -100px;
+      left: -100px
+    }
+
+    .botanical-svg {
+      position: fixed;
+      pointer-events: none;
+      z-index: 1;
+      opacity: .1
+    }
+
+    .botanical-tl {
+      top: -20px;
+      left: -20px;
+      width: 260px
+    }
+
+    .botanical-br {
+      bottom: -20px;
+      right: -20px;
+      width: 220px;
+      transform: rotate(180deg)
+    }
+
+    .hero {
+      position: relative;
+      z-index: 10;
+      padding: 54px 40px 0;
+      text-align: center;
+      opacity: 0;
+      animation: fadeUp .9s ease .1s forwards
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--sage);
+      text-decoration: none;
+      margin-bottom: 36px;
+      transition: color .3s
+    }
+
+    .back-link:hover {
+      color: var(--gold)
+    }
+
+    .logo-rule {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 14px
+    }
+
+    .logo-rule span {
+      display: block;
+      height: 1px;
+      width: 70px;
+      background: linear-gradient(to right, transparent, var(--gold))
+    }
+
+    .logo-rule span:last-child {
+      background: linear-gradient(to left, transparent, var(--gold))
+    }
+
+    .logo-ornament {
+      font-size: 13px;
+      color: var(--gold)
+    }
+
+    .hero-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(64px, 12vw, 110px);
+      font-weight: 300;
+      letter-spacing: 8px;
+      line-height: 1;
+      color: var(--deep)
+    }
+
+    .hero-subtitle {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 18px;
+      font-style: italic;
+      font-weight: 300;
+      color: var(--earth);
+      letter-spacing: 2px;
+      margin-top: 8px
+    }
+
+    .hero-sci {
+      font-size: 11px;
+      font-weight: 200;
+      letter-spacing: 5px;
+      color: var(--sage);
+      margin-top: 6px
+    }
+
+    .hero-photos {
+      position: relative;
+      z-index: 10;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2px;
+      max-width: 900px;
+      margin: 40px auto 0;
+      opacity: 0;
+      animation: fadeUp .9s ease .35s forwards
+    }
+
+    .hero-photos img {
+      width: 100%;
+      height: 380px;
+      object-fit: cover;
+      object-position: center;
+      display: block;
+      background: var(--parchment);
+    }
+
+    .hero-photos img:first-child {
+      object-position: center 40%
+    }
+
+    .photo-caption {
+      text-align: center;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 12px;
+      font-style: italic;
+      color: var(--sage);
+      letter-spacing: 1px;
+      padding: 10px 0 0;
+      max-width: 900px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 10;
+      opacity: 0;
+      animation: fadeUp .9s ease .5s forwards
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin: 50px auto;
+      max-width: 600px;
+      opacity: 0;
+      animation: fadeUp .9s ease .55s forwards;
+      position: relative;
+      z-index: 10
+    }
+
+    .divider-line {
+      height: 1px;
+      width: 120px;
+      background: linear-gradient(to right, transparent, var(--sage))
+    }
+
+    .divider-line:last-child {
+      background: linear-gradient(to left, transparent, var(--sage))
+    }
+
+    .divider-leaf {
+      color: var(--forest);
+      font-size: 18px
+    }
+
+    .content {
+      position: relative;
+      z-index: 10;
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 30px 80px
+    }
+
+    .intro-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 20px;
+      font-weight: 300;
+      line-height: 1.75;
+      color: var(--ink);
+      text-align: center;
+      max-width: 700px;
+      margin: 0 auto 60px;
+      opacity: 0;
+      animation: fadeUp .9s ease .6s forwards
+    }
+
+    .intro-text em {
+      color: var(--forest);
+      font-style: italic
+    }
+
+    .section {
+      margin-bottom: 60px;
+      opacity: 0;
+      animation: fadeUp .9s ease forwards
+    }
+
+    .section:nth-child(1) {
+      animation-delay: .65s
+    }
+
+    .section:nth-child(2) {
+      animation-delay: .75s
+    }
+
+    .section:nth-child(3) {
+      animation-delay: .85s
+    }
+
+    .section:nth-child(4) {
+      animation-delay: .95s
+    }
+
+    .section:nth-child(5) {
+      animation-delay: 1.05s
+    }
+
+    .section:nth-child(6) {
+      animation-delay: 1.15s
+    }
+
+    .section:nth-child(7) {
+      animation-delay: 1.25s
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 20px
+    }
+
+    .section-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 11px;
+      letter-spacing: 4px;
+      color: var(--gold)
+    }
+
+    .section-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 28px;
+      font-weight: 400;
+      color: var(--deep);
+      letter-spacing: 1px
+    }
+
+    .section-rule {
+      height: 1px;
+      flex: 1;
+      background: linear-gradient(to right, var(--gold), transparent)
+    }
+
+    .section-body {
+      font-size: 13px;
+      font-weight: 300;
+      line-height: 1.9;
+      color: var(--ink);
+      margin-bottom: 24px
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0 8px;
+      font-size: 12px
+    }
+
+    .data-table thead tr {
+      background: var(--deep);
+      color: var(--gold);
+      font-size: 10px;
+      letter-spacing: 3px;
+      text-transform: uppercase
+    }
+
+    .data-table thead th {
+      padding: 12px 14px;
+      text-align: left;
+      font-weight: 400
+    }
+
+    .data-table tbody tr:nth-child(even) {
+      background: var(--parchment)
+    }
+
+    .data-table tbody tr:nth-child(odd) {
+      background: var(--cream)
+    }
+
+    .data-table tbody tr {
+      transition: background .2s
+    }
+
+    .data-table tbody tr:hover {
+      background: rgba(200, 164, 93, 0.15)
+    }
+
+    .data-table tbody td {
+      padding: 10px 14px;
+      color: var(--ink);
+      border-bottom: 1px solid rgba(107, 79, 45, .08)
+    }
+
+    .data-table tbody td:first-child {
+      font-weight: 400;
+      color: var(--deep);
+      width: 28%
+    }
+
+    .dosha-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 12px
+    }
+
+    .dosha-table thead tr {
+      background: var(--forest);
+      color: var(--cream)
+    }
+
+    .dosha-table thead th {
+      padding: 12px 14px;
+      text-align: left;
+      font-weight: 400;
+      letter-spacing: 2px;
+      font-size: 10px;
+      text-transform: uppercase
+    }
+
+    .dosha-table tbody tr:nth-child(even) {
+      background: var(--parchment)
+    }
+
+    .dosha-table tbody tr:nth-child(odd) {
+      background: var(--cream)
+    }
+
+    .dosha-table tbody td {
+      padding: 11px 14px;
+      color: var(--ink);
+      border-bottom: 1px solid rgba(107, 79, 45, .08)
+    }
+
+    .dosha-table tbody td:first-child {
+      font-weight: 400;
+      color: var(--forest);
+      width: 18%
+    }
+
+    .dosha-table tbody td:nth-child(2) {
+      color: var(--earth);
+      width: 20%
+    }
+
+    .consume-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 12px
+    }
+
+    .consume-table thead tr {
+      background: var(--earth);
+      color: var(--cream)
+    }
+
+    .consume-table thead th {
+      padding: 12px 14px;
+      text-align: left;
+      font-weight: 400;
+      letter-spacing: 2px;
+      font-size: 10px;
+      text-transform: uppercase
+    }
+
+    .consume-table tbody tr:nth-child(even) {
+      background: var(--parchment)
+    }
+
+    .consume-table tbody tr:nth-child(odd) {
+      background: var(--cream)
+    }
+
+    .consume-table tbody td {
+      padding: 11px 14px;
+      color: var(--ink);
+      border-bottom: 1px solid rgba(107, 79, 45, .08)
+    }
+
+    .consume-table tbody td:first-child {
+      font-weight: 400;
+      color: var(--earth);
+      width: 22%
+    }
+
+    .benefits-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: rgba(107, 79, 45, .12);
+      border: 1px solid rgba(107, 79, 45, .12);
+      margin: 8px 0
+    }
+
+    .benefit-card {
+      background: var(--cream);
+      padding: 24px 22px;
+      transition: background .3s;
+      position: relative;
+      overflow: hidden
+    }
+
+    .benefit-card:hover {
+      background: #ede4ce
+    }
+
+    .benefit-card::before {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: var(--gold);
+      transition: width .4s
+    }
+
+    .benefit-card:hover::before {
+      width: 100%
+    }
+
+    .benefit-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--forest);
+      margin-bottom: 8px
+    }
+
+    .benefit-desc {
+      font-size: 11.5px;
+      font-weight: 300;
+      line-height: 1.75;
+      color: var(--ink);
+      opacity: .85
+    }
+
+    .precaution-list {
+      list-style: none;
+      margin: 8px 0
+    }
+
+    .precaution-list li {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      padding: 10px 14px;
+      font-size: 12px;
+      font-weight: 300;
+      line-height: 1.7;
+      color: var(--ink);
+      border-bottom: 1px solid rgba(107, 79, 45, .08)
+    }
+
+    .precaution-list li:last-child {
+      border-bottom: none
+    }
+
+    .precaution-list li::before {
+      content: '▸';
+      color: var(--gold);
+      flex-shrink: 0;
+      margin-top: 1px
+    }
+
+    .sources {
+      border-top: 1px solid rgba(107, 79, 45, .15);
+      padding-top: 24px;
+      margin-top: 20px
+    }
+
+    .sources-title {
+      font-size: 10px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--sage);
+      margin-bottom: 12px;
+      font-weight: 300
+    }
+
+    .sources ul {
+      list-style: none
+    }
+
+    .sources ul li {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 13px;
+      font-style: italic;
+      color: var(--earth);
+      padding: 5px 0;
+      border-bottom: 1px solid rgba(107, 79, 45, .06)
+    }
+
+    .sources ul li::before {
+      content: '· ';
+      color: var(--sage)
+    }
+
+    .nutrition-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: rgba(107, 79, 45, .12);
+      border: 1px solid rgba(107, 79, 45, .12);
+      margin: 20px 0
+    }
+
+    .nutrition-cell {
+      background: var(--cream);
+      padding: 22px 16px;
+      text-align: center;
+      transition: background .3s
+    }
+
+    .nutrition-cell:hover {
+      background: var(--parchment)
+    }
+
+    .nutrition-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 36px;
+      font-weight: 300;
+      color: var(--forest);
+      line-height: 1;
+      margin-bottom: 4px
+    }
+
+    .nutrition-unit {
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--gold);
+      font-weight: 300
+    }
+
+    .nutrition-label {
+      font-size: 11px;
+      font-weight: 300;
+      color: var(--ink);
+      margin-top: 5px
+    }
+
+    footer {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      padding: 24px 20px 44px;
+      border-top: 1px solid rgba(107, 79, 45, .12);
+      max-width: 860px;
+      margin: 0 auto
+    }
+
+    footer p {
+      font-size: 11px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--sage);
+      font-weight: 300
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(28px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
+
+    @media(max-width:700px) {
+      .hero-photos {
+        grid-template-columns: 1fr
+      }
+
+      .hero-photos img {
+        height: 260px
+      }
+
+      .benefits-grid {
+        grid-template-columns: 1fr
+      }
+
+      .nutrition-bar {
+        grid-template-columns: 1fr 1fr
+      }
+
+      .content {
+        padding: 0 18px 60px
+      }
+
+      #modal-topbar {
+        padding: 0 16px 0 20px
+      }
+
+      #modal-topbar span {
+        font-size: 9px;
+        letter-spacing: 3px
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <button id="open3D">View in 3D</button>
+
+  <div id="viewerModal">
+    <div id="modal-topbar">
+      <span>3D Model — Kala Jeera</span>
+      <button id="close3D">✕</button>
+    </div>
+    <model-viewer src="kalajeera3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+  </div>
+
+  <div class="bg-circle bg-circle-1"></div>
+  <div class="bg-circle bg-circle-2"></div>
+
+  <svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#2a5c3f" stroke-width="1.5" fill="none" />
+    <circle cx="90" cy="210" r="8" fill="#2a5c3f" opacity="0.7" />
+    <circle cx="130" cy="175" r="10" fill="#7a9e7e" opacity="0.6" />
+    <circle cx="170" cy="135" r="7" fill="#2a5c3f" opacity="0.8" />
+    <circle cx="210" cy="95" r="9" fill="#c9a84c" opacity="0.5" />
+    <ellipse cx="115" cy="195" rx="20" ry="10" fill="#7a9e7e" transform="rotate(-30 115 195)" />
+    <ellipse cx="155" cy="155" rx="18" ry="9" fill="#2a5c3f" transform="rotate(-45 155 155)" />
+    <ellipse cx="195" cy="115" rx="16" ry="8" fill="#7a9e7e" transform="rotate(-60 195 115)" />
+  </svg>
+  <svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#2a5c3f" stroke-width="1.5" fill="none" />
+    <circle cx="90" cy="210" r="8" fill="#2a5c3f" opacity="0.7" />
+    <circle cx="130" cy="175" r="10" fill="#7a9e7e" opacity="0.6" />
+    <circle cx="170" cy="135" r="7" fill="#2a5c3f" opacity="0.8" />
+    <ellipse cx="115" cy="195" rx="20" ry="10" fill="#7a9e7e" transform="rotate(-30 115 195)" />
+  </svg>
+
+  <div class="hero">
+    <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+    <div class="logo-rule"><span></span>
+      <div class="logo-ornament">✦</div><span></span>
+    </div>
+    <div class="hero-title">Kala Jeera</div>
+    <div class="hero-subtitle">Krishna Jeeraka — The Caraway of the Caravans</div>
+    <div class="hero-sci">Carum carvi &nbsp;·&nbsp; Apiaceae</div>
+  </div>
+
+  <div class="hero-photos">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/4/42/Carum_carvi_-_K%C3%B6hler%E2%80%93s_Medizinal-Pflanzen-172.jpg" alt="Crescent-shaped Kala Jeera caraway seeds"
+      onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/4/46/Kumina_Carum_carvi_H5207_VI08_C.jpg/1280px-Kumina_Carum_carvi_H5207_VI08_C.jpg" alt="Caraway plant with feathery leaves and white umbel flowers"
+      onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+  </div>
+  <p class="photo-caption">Fig. 1 — The crescent-shaped, ridged Kala Jeera seeds with their warm, slightly sweet, anise-like aroma &nbsp;·&nbsp; Fig. 2 — The biennial Carum carvi plant in flower, showing feathery leaves and the white-pink umbel flower clusters of the Apiaceae family</p>
+
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-leaf">❧</div>
+    <div class="divider-line"></div>
+  </div>
+
+  <div class="content">
+    <p class="intro-text">A fossil seed in a Swiss lake-dweller settlement dated from 5,000 years ago — among the oldest cultivated spices known to humanity. Egyptians scented their tombs with it; Romans baked it into <em>panis cum cumino</em>; Persian caravans tossed it into stews to ward off bloating before long desert crossings. In Ayurveda, <em>Krishna Jeeraka</em> joins white cumin and Kalonji as the third of the three classical jeerakas — sister-spices of digestion, fertility, and clarity.</p>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">01</span>
+        <h2 class="section-title">Botanical Profile</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Kala Jeera (<em>Carum carvi</em> L.) — known in English as Caraway, Meridian Fennel, or Persian Cumin — is a biennial herb of the Apiaceae family (the carrot, dill, and fennel family), reaching 40–60 cm at flowering. The plant resembles a small carrot with finely divided, feathery, thread-like leaves arising from a slender, fleshy taproot 8–9 inches long. The main flower stem bears compound umbels of small white or pink flowers — the signature inflorescence of the Apiaceae family — appearing in early summer of the second year.</p>
+      <p class="section-body">The medicinal "seeds" (botanically achenes — split fruits) are crescent-shaped, dark brown, ribbed with five pale ridges, about 2 mm long, with a warm, slightly sweet, anise-like aroma owed to its essential oil. Native to western Asia, Europe, and North Africa, Caraway is widely cultivated in the northern Himalayan region of India, particularly Kashmir and the surrounding mountain areas, as a winter crop. <em>Important taxonomic note</em>: The Indian name "Kala Jeera" is also commonly used for <em>Bunium bulbocastanum</em> (Black Caraway / Kala Zeera proper), a related but distinct Himalayan species. The Ayurvedic Pharmacopoeia of India recognises both as <em>Krishna Jeeraka</em>; this page focuses on the more widely cultivated and studied <em>Carum carvi</em>.</p>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>PROPERTY</th>
+            <th>Detail</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Family</td>
+            <td>Apiaceae / Umbelliferae (Carrot family)</td>
+          </tr>
+          <tr>
+            <td>Botanical Name</td>
+            <td>Carum carvi L.</td>
+          </tr>
+          <tr>
+            <td>Sanskrit Names</td>
+            <td>Krishna Jeeraka, Sugandha, Undarshodhan, Karavi, Prithvika, Krishna, Brihjjirak</td>
+          </tr>
+          <tr>
+            <td>Common Names</td>
+            <td>Kala Jeera, Kali Jeera, Shahi Jeera, Siya Jeera, Vilayati Jeera, Caraway, Meridian Fennel, Persian Cumin, Black Caraway, Wild Cumin, Krishna Jeerige, Shimayishiragam, Sheema Jilkar</td>
+          </tr>
+          <tr>
+            <td>Origin</td>
+            <td>Western Asia, Europe, North Africa; Indian Himalayas (Kashmir region)</td>
+          </tr>
+          <tr>
+            <td>Plant Type</td>
+            <td>Biennial herb (40–60 cm at flowering)</td>
+          </tr>
+          <tr>
+            <td>Flowering Season</td>
+            <td>Early summer of second year</td>
+          </tr>
+          <tr>
+            <td>Medicinal Parts</td>
+            <td>Seeds / fruits (primary), essential oil, root</td>
+          </tr>
+          <tr>
+            <td>Taste Profile</td>
+            <td>Pungent (katu), bitter — with warm, sweet, anise-like aroma</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">02</span>
+        <h2 class="section-title">Phytochemistry Composition</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Caraway's pharmacology is built on a remarkable essential oil — 3–7% of seed weight — dominated by two terpene compounds: <em>(+)-carvone</em> (50–60% of the oil) and <em>(+)-limonene</em> (around 30%). Carvone gives the seed its signature warm-spicy aroma and drives most of the spasmolytic, carminative, and antimicrobial activity. Limonene contributes citrusy notes and adds anti-inflammatory and chemopreventive action.</p>
+      <p class="section-body">Beyond the essential oil, Caraway seeds contain carveol, α- and β-pinene, cuminaldehyde, furfurol, thujone, dietary fibre, fixed oils (15–20%), proteins, and a host of flavonoid antioxidants — lutein, β-carotene, cryptoxanthin, and zeaxanthin. The mineral profile is notably rich: iron, copper, calcium, potassium, manganese, selenium, zinc, magnesium, and phosphorus. Vitamins include A, C, E, and the B-complex group (thiamine, pyridoxine, riboflavin, niacin). Together, these compounds explain Caraway's documented antispasmodic, carminative, antimicrobial, expectorant, and galactagogue pharmacology.</p>
+      <div class="nutrition-bar">
+        <div class="nutrition-cell">
+          <div class="nutrition-num">50–60%</div>
+          <div class="nutrition-unit">of essential oil</div>
+          <div class="nutrition-label">(+)-Carvone (signature compound)</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">3–7%</div>
+          <div class="nutrition-unit">of seed weight</div>
+          <div class="nutrition-label">Volatile essential oil</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">5000+</div>
+          <div class="nutrition-unit">years of</div>
+          <div class="nutrition-label">Documented use</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">3</div>
+          <div class="nutrition-unit">classical jeerakas</div>
+          <div class="nutrition-label">White, Black &amp; Kalonji</div>
+        </div>
+      </div>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Compound</th>
+            <th>Category</th>
+            <th>Primary Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>(+)-Carvone</td>
+            <td>Monoterpene ketone</td>
+            <td>Spasmolytic, carminative, antimicrobial — flagship compound</td>
+          </tr>
+          <tr>
+            <td>(+)-Limonene</td>
+            <td>Cyclic monoterpene</td>
+            <td>Anti-inflammatory, chemopreventive, aromatic</td>
+          </tr>
+          <tr>
+            <td>Carveol &amp; Cuminaldehyde</td>
+            <td>Terpene alcohol / aldehyde</td>
+            <td>Antimicrobial, digestive, aromatic</td>
+          </tr>
+          <tr>
+            <td>α- &amp; β-Pinene</td>
+            <td>Monoterpenes</td>
+            <td>Bronchodilator, antimicrobial, anti-inflammatory</td>
+          </tr>
+          <tr>
+            <td>Lutein, β-Carotene, Cryptoxanthin, Zeaxanthin</td>
+            <td>Flavonoid antioxidants</td>
+            <td>Eye health, antioxidant, immune-supportive</td>
+          </tr>
+          <tr>
+            <td>Dietary Fibre</td>
+            <td>Soluble &amp; insoluble fibre</td>
+            <td>Digestive support, prebiotic, cholesterol-lowering</td>
+          </tr>
+          <tr>
+            <td>Iron, Calcium, Potassium, Magnesium</td>
+            <td>Essential minerals</td>
+            <td>Bone, muscle, blood, &amp; nerve function</td>
+          </tr>
+          <tr>
+            <td>Vitamin A, C, E &amp; B-complex</td>
+            <td>Vitamins</td>
+            <td>Immune support, antioxidant, energy metabolism</td>
+          </tr>
+          <tr>
+            <td>Fixed Oils (15–20%)</td>
+            <td>Triglycerides</td>
+            <td>Skin emollient, calorie source</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">03</span>
+        <h2 class="section-title">Ayurvedic Significance</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Bhavaprakasha Nighantu (verses 81–85) describes three classical jeerakas — <em>Shweta Jeeraka</em> (white cumin, Cuminum cyminum), <em>Krishna Jeeraka</em> (caraway, Carum carvi), and <em>Kalonji</em> (Nigella sativa) — as a sister-trinity of digestive spices. Of these, Krishna Jeeraka holds a unique place: warmer than white cumin, lighter than Kalonji, with a distinctive anise-like aroma that gives it its Sanskrit name <em>Sugandha</em> ("the fragrant one"). All three share core properties: <em>ruksha</em> (rough), <em>katu rasa</em> (pungent), <em>ushna virya</em> (hot), <em>agnideepak</em> (digestive-fire kindler), <em>laghu paripak</em> (easily digested), <em>sangrahi</em> (absorbent), and <em>medhya</em> (memory-enhancing).</p>
+      <p class="section-body">Classical indications include <em>vayuroga</em> (Vata disorders), <em>adhmaan</em> (abdominal distention), <em>gulma</em> (abdominal lumps), <em>vaman</em> (vomiting), <em>atisara</em> (diarrhoea), <em>jwara</em> (fever), and <em>grabhshya dushti</em> (uterine impurities). Krishna Jeeraka is celebrated as <em>balkarak</em> (energy-giving), <em>ruchijanak</em> (appetite-improving), <em>kapha nashak</em> (Kapha-pacifying), <em>netra hitkarak</em> (good for eyes), and <em>vrishya</em> (rejuvenating). Of note: while it pacifies Vata and Kapha, its hot potency aggravates Pitta — particularly in those with hyperacidity or bleeding tendencies.</p>
+      <table class="dosha-table">
+        <thead>
+          <tr>
+            <th>Dosha</th>
+            <th>Effect</th>
+            <th>Mechanism &amp; Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Vata ↓</td>
+            <td>Pacifying</td>
+            <td>Hot potency (ushna virya) and digestive-fire-kindling action calm Vata-driven gas, bloating, abdominal pain, and Vataja digestive disorders</td>
+          </tr>
+          <tr>
+            <td>Pitta ↑</td>
+            <td>May aggravate</td>
+            <td>Ushna virya and pungent rasa may increase Pitta; avoid in acute hyperacidity, gastritis, peptic ulcer, and bleeding disorders</td>
+          </tr>
+          <tr>
+            <td>Kapha ↓</td>
+            <td>Pacifying</td>
+            <td>Pungent, light, dry, and rough qualities reduce mucus, oedema, and metabolic heaviness; classical for Kaphaja respiratory and digestive disorders</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">04</span>
+        <h2 class="section-title">Key Health Benefits</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Caraway's role as a <em>Tridoshajit jeerakatraya</em> (one of three jeerakas) places it among Ayurveda's most universally trusted digestive spices. Modern pharmacology has confirmed activity across digestive, antimicrobial, respiratory, lactational, and metabolic domains — with carvone-rich essential oil emerging as one of the most-studied terpene compounds in functional gastroenterology.</p>
+      <div class="benefits-grid">
+        <div class="benefit-card">
+          <div class="benefit-title">Digestive &amp; Carminative</div>
+          <div class="benefit-desc">The flagship classical and modern use. (+)-Carvone is one of the most powerful natural antispasmodics for gastrointestinal smooth muscle — reducing bloating, flatulence, abdominal distention, and IBS symptoms. Caraway with peppermint (STW-5 / Iberogast component) is a clinically validated functional dyspepsia remedy in modern phytotherapy.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Infant Colic Relief</div>
+          <div class="benefit-desc">A traditional Western and Ayurvedic remedy — caraway tea (or "gripe water" tradition) eases colic, gas, and digestive discomfort in babies. Carvone's antispasmodic action on intestinal smooth muscle calms colic pain. Always use under paediatric supervision; never give whole seeds to young children.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Lactation Support (Galactagogue)</div>
+          <div class="benefit-desc">A long-standing galactagogue across multiple traditional systems — caraway seeds boost milk production in nursing mothers. Often combined with fennel and fenugreek in lactation teas. Bhavaprakasha specifically lists Krishna Jeeraka in postpartum care recipes for its <em>vrishya</em> (rejuvenating) action.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Respiratory &amp; Expectorant</div>
+          <div class="benefit-desc">Used since antiquity for cough, bronchitis, chest congestion, and laryngitis. Caraway seed decoction makes a classical gargle for sore throat and laryngitis; α- and β-pinene act as bronchodilators while limonene reduces airway inflammation. Combined with honey for productive coughs.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Antimicrobial &amp; Antifungal</div>
+          <div class="benefit-desc">Carvone shows broad-spectrum activity against bacteria (E. coli, Staphylococcus, Helicobacter pylori) and fungi. Useful in chronic gastrointestinal infections, oral health, and small-intestinal bacterial overgrowth (SIBO) protocols under qualified supervision.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Menstrual Cramp Relief</div>
+          <div class="benefit-desc">Carvone's antispasmodic action extends to uterine smooth muscle — caraway tea is a classical remedy for dysmenorrhoea, easing painful menstrual cramps. Lactating women may also use the seeds for breast comfort and milk flow regulation.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Memory &amp; Cognitive (Medhya)</div>
+          <div class="benefit-desc">Classified as <em>medhya</em> (memory-enhancing) in Ayurveda alongside the other jeerakas. Limonene and carvone have documented neuroprotective and anti-inflammatory action on brain tissue — supporting traditional use as a mild cognitive tonic, often blended with other classical Medhya herbs.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Anthelmintic &amp; Worm Expulsion</div>
+          <div class="benefit-desc">The Sanskrit name <em>Undarshodhan</em> ("worm cleanser") highlights its traditional use as an anthelmintic — particularly for paediatric intestinal worm infestations. Carvone shows activity against several gastrointestinal parasites; a staple in classical paediatric Ayurvedic protocols.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">06</span>
+        <h2 class="section-title">How to Consume Kala Jeera</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Caraway crosses freely between food and medicine. Its everyday culinary use — sprinkled on rye bread, cheese, sauerkraut, biryanis, and Kashmiri pulao — already delivers measurable digestive benefits. Therapeutic preparations include teas, decoctions, seed powder, and essential oil. Chewing a few seeds after a heavy meal is a centuries-old digestive practice, and traditional gripe water for colicky infants typically includes caraway alongside dill.</p>
+      <table class="consume-table">
+        <thead>
+          <tr>
+            <th>Form</th>
+            <th>Preparation</th>
+            <th>Dosage</th>
+            <th>Best Time</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Whole Seeds (Chewed)</td>
+            <td>Chewed slowly after meals</td>
+            <td>¼–½ tsp (1–2 g)</td>
+            <td>After meals (digestion, fresh breath)</td>
+          </tr>
+          <tr>
+            <td>Caraway Tea (Infusion)</td>
+            <td>1 tsp crushed seeds in 1 cup hot water; steep 10 min</td>
+            <td>1 cup, 2–3× daily</td>
+            <td>After meals (digestion, lactation)</td>
+          </tr>
+          <tr>
+            <td>Seed Powder (Churna)</td>
+            <td>Dried seeds ground; mixed with warm water or honey</td>
+            <td>1–3 g twice daily</td>
+            <td>Before or after meals</td>
+          </tr>
+          <tr>
+            <td>Caraway Decoction (Kashayam)</td>
+            <td>Boil 1 tbsp seeds in 2 cups water; reduce to ½ cup</td>
+            <td>30–50 ml twice daily</td>
+            <td>Before meals (for indigestion, cough)</td>
+          </tr>
+          <tr>
+            <td>Caraway Wash</td>
+            <td>2 tbsp seeds boiled; used externally</td>
+            <td>As needed</td>
+            <td>For rheumatism, joint pain</td>
+          </tr>
+          <tr>
+            <td>Gargle for Laryngitis</td>
+            <td>Strong decoction strained, lukewarm</td>
+            <td>Gargle 2–3× daily</td>
+            <td>For sore throat, hoarseness</td>
+          </tr>
+          <tr>
+            <td>Caraway Oil (Topical)</td>
+            <td>Diluted essential oil (1–2% in carrier oil)</td>
+            <td>Apply locally as needed</td>
+            <td>For toothache, joint pain, abdominal massage</td>
+          </tr>
+          <tr>
+            <td>Culinary Use</td>
+            <td>In bread, cheese, biryani, sauerkraut, pulao</td>
+            <td>Daily small amounts</td>
+            <td>With meals (preventive digestive support)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">07</span>
+        <h2 class="section-title">Safety &amp; Precautions</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Kala Jeera in culinary doses is universally regarded as safe and is consumed daily across India, the Middle East, Europe, and the Mediterranean. Even therapeutic doses of seeds and tea show no major reported adverse effects. However, concentrated essential oil and high-dose extracts call for measured use, and certain clinical contexts warrant attention.</p>
+      <ul class="precaution-list">
+        <li><strong>Pregnancy:</strong> Culinary amounts in cooking are widely considered safe and are part of traditional diets. However, medicinal doses, concentrated extracts, and essential oil are best avoided in pregnancy due to potential uterine-stimulating effects and lack of robust safety data.</li>
+        <li><strong>Breastfeeding:</strong> Generally considered safe and is in fact actively used as a galactagogue in many traditional systems. Avoid concentrated essential oil during lactation; whole seeds and tea are well-tolerated.</li>
+        <li><strong>Hyperacidity &amp; Pitta:</strong> Hot potency (ushna virya) and pungent rasa may aggravate hyperacidity, gastritis, peptic ulcer, and bleeding tendencies. Avoid high doses during active Pitta flare-ups; pair with cooling anupanas if needed.</li>
+        <li><strong>Antidiabetic medications:</strong> Caraway may have mild blood-glucose-lowering effects; monitor blood glucose if combining with insulin or oral antidiabetics.</li>
+        <li><strong>Surgery:</strong> Discontinue concentrated extracts and essential oil at least 2 weeks before scheduled surgery as a precaution; whole seed culinary use is generally safe.</li>
+        <li><strong>Essential oil safety:</strong> Never consume undiluted caraway essential oil. Concentrated carvone may cause mucosal irritation or hepatic stress at high doses. Always dilute (1–2%) for topical use; internal use of essential oil requires professional supervision.</li>
+        <li><strong>Children:</strong> Whole caraway seeds may pose a choking hazard for young children — use ground or in tea form instead. Caraway tea has a long traditional record for infant colic, but always use under paediatric guidance.</li>
+        <li><strong>Species confusion:</strong> "Kala Jeera" is also used for <em>Bunium bulbocastanum</em> (Black Caraway proper) — pharmacologically related but distinct. For therapeutic use, source authenticated material from reputable suppliers, and clarify which species is intended for specific protocols.</li>
+      </ul>
+    </div>
+
+    <div class="sources">
+      <div class="sources-title">References &amp; Sources</div>
+      <ul>
+        <li>Agrahari P, Singh DK — "A review on the pharmacological aspects of Carum carvi" — Journal of Biology and Earth Sciences, 2014</li>
+        <li>Johri RK — "Cuminum cyminum and Carum carvi: An update" — Pharmacognosy Reviews, 2011</li>
+        <li>Madisch A et al. — "Treatment of functional dyspepsia with a fixed peppermint oil and caraway oil combination preparation as compared to cisapride" — Arzneimittelforschung, 1999 (foundation of STW-5 / Iberogast research)</li>
+        <li>Keifer D et al. — "A Systematic Review of Caraway (Carum carvi) — Pharmacological and Clinical Evidence" — HerbalGram / American Botanical Council, 2008</li>
+        <li>Sedaghat R et al. — "Cytoprotective effect of Carum carvi: A review" — Pharmacognosy Research, 2011</li>
+        <li>Bhavaprakasha Nighantu — Verses 81–85 — Classical description of three jeerakas (Shweta, Krishna, Kalonji)</li>
+        <li>Charaka Samhita &amp; Sushruta Samhita — References to Krishna Jeeraka in digestive, postpartum, &amp; respiratory contexts</li>
+        <li>The Ayurvedic Pharmacopoeia of India — Government of India, Ministry of AYUSH</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer>
+    <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a
+      qualified practitioner before therapeutic use</p>
+  </footer>
+
+  <audio id="kalajeeraAudio" src="kalajeera_benefits.mp3" loop preload="auto"></audio>
+
+  <script>
+    const open3D = document.getElementById('open3D');
+    const close3D = document.getElementById('close3D');
+    const modal = document.getElementById('viewerModal');
+    const kalajeeraAudio = document.getElementById('kalajeeraAudio');
+
+    function openModal() {
+      modal.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+      history.pushState({ modal: 'kalajeera3d' }, '', '#3d');
+      kalajeeraAudio.play().catch(e => console.log('Audio autoplay blocked', e));
+    }
+
+    function closeModal() {
+      modal.style.display = 'none';
+      document.body.style.overflow = '';
+      if (window.location.hash === '#3d') {
+        history.replaceState(null, '', window.location.pathname);
+      }
+      kalajeeraAudio.pause();
+      kalajeeraAudio.currentTime = 0;
+    }
+
+    open3D.addEventListener('click', function (e) {
+      e.preventDefault(); e.stopPropagation();
+      openModal();
+    });
+
+    close3D.addEventListener('click', function (e) {
+      e.preventDefault(); e.stopPropagation();
+      closeModal();
+    });
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+    });
+
+    window.addEventListener('popstate', function (e) {
+      if (modal.style.display === 'flex') {
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+    });
+  </script>
+</body>
+
+</html>

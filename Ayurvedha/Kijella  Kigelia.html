@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kigelia | Swastha</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+  <style>
+    #open3D {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      padding: 10px 18px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: var(--forest);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      z-index: 1000;
+      transition: .3s;
+    }
+    #open3D:hover {
+      background: var(--gold);
+      color: var(--deep);
+    }
+    #viewerModal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+    }
+    #modal-topbar {
+      flex-shrink: 0;
+      height: 58px;
+      background: #111111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px 0 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      z-index: 99999;
+    }
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 4.5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.72);
+      user-select: none;
+    }
+    #close3D {
+      width: 38px;
+      height: 38px;
+      font-size: 15px;
+      font-weight: 300;
+      background: transparent;
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background .2s, color .2s, transform .22s;
+      outline: none;
+      flex-shrink: 0;
+    }
+    #close3D:hover {
+      background: #ffffff;
+      color: #111111;
+      border-color: #ffffff;
+      transform: rotate(90deg);
+    }
+    #viewerModal model-viewer {
+      flex: 1;
+      width: 100%;
+      display: block;
+      background: #ffffff;
+    }
+
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+    * { margin:0; padding:0; box-sizing:border-box }
+    html { scroll-behavior:smooth }
+    body { font-family:'Jost',sans-serif; background:var(--cream); color:var(--ink); min-height:100vh; overflow-x:hidden; position:relative }
+    body::before { content:''; position:fixed; inset:0; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E"); opacity:.035; pointer-events:none; z-index:100 }
+
+    .bg-circle { position:fixed; border-radius:50%; pointer-events:none; z-index:0 }
+    .bg-circle-1 { width:700px; height:700px; background:radial-gradient(circle, rgba(58,92,47,.1) 0%, transparent 70%); top:-200px; right:-150px }
+    .bg-circle-2 { width:500px; height:500px; background:radial-gradient(circle, rgba(196,154,60,.08) 0%, transparent 70%); bottom:-100px; left:-100px }
+
+    .botanical-svg { position:fixed; pointer-events:none; z-index:1; opacity:.09 }
+    .botanical-tl { top:-20px; left:-20px; width:280px }
+    .botanical-br { bottom:-20px; right:-20px; width:240px; transform:rotate(180deg) }
+
+    .hero { position:relative; z-index:10; padding:54px 40px 0; text-align:center; opacity:0; animation:fadeUp .9s ease .1s forwards }
+    .back-link { display:inline-flex; align-items:center; gap:8px; font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--sage); text-decoration:none; margin-bottom:36px; transition:color .3s }
+    .back-link:hover { color:var(--gold) }
+    .logo-rule { display:flex; align-items:center; justify-content:center; gap:20px; margin-bottom:14px }
+    .logo-rule span { display:block; height:1px; width:70px; background:linear-gradient(to right,transparent,var(--gold)) }
+    .logo-rule span:last-child { background:linear-gradient(to left,transparent,var(--gold)) }
+    .logo-ornament { font-size:13px; color:var(--gold) }
+    .hero-title { font-family:'Cormorant Garamond',serif; font-size:clamp(54px,11vw,100px); font-weight:300; letter-spacing:8px; line-height:1; color:var(--deep) }
+    .hero-subtitle { font-family:'Cormorant Garamond',serif; font-size:18px; font-style:italic; font-weight:300; color:var(--earth); letter-spacing:2px; margin-top:8px }
+    .hero-sci { font-size:11px; font-weight:200; letter-spacing:5px; color:var(--sage); margin-top:6px }
+
+    .hero-photos { position:relative; z-index:10; display:grid; grid-template-columns:1fr 1fr; gap:2px; max-width:900px; margin:40px auto 0; opacity:0; animation:fadeUp .9s ease .35s forwards }
+    .hero-photos img { width:100%; height:380px; object-fit:cover; object-position:center; display:block; background:var(--parchment) }
+    .photo-caption { text-align:center; font-family:'Cormorant Garamond',serif; font-size:12px; font-style:italic; color:var(--sage); letter-spacing:1px; padding:10px 0 0; max-width:900px; margin:0 auto; position:relative; z-index:10; opacity:0; animation:fadeUp .9s ease .5s forwards }
+
+    .divider { display:flex; align-items:center; justify-content:center; gap:16px; margin:50px auto; max-width:600px; opacity:0; animation:fadeUp .9s ease .55s forwards; position:relative; z-index:10 }
+    .divider-line { height:1px; width:120px; background:linear-gradient(to right,transparent,var(--sage)) }
+    .divider-line:last-child { background:linear-gradient(to left,transparent,var(--sage)) }
+    .divider-leaf { color:var(--forest); font-size:18px }
+
+    .content { position:relative; z-index:10; max-width:860px; margin:0 auto; padding:0 30px 80px }
+    .intro-text { font-family:'Cormorant Garamond',serif; font-size:20px; font-weight:300; line-height:1.75; color:var(--ink); text-align:center; max-width:700px; margin:0 auto 60px; opacity:0; animation:fadeUp .9s ease .6s forwards }
+    .intro-text em { color:var(--forest); font-style:italic }
+
+    .section { margin-bottom:60px; opacity:0; animation:fadeUp .9s ease forwards }
+    .section:nth-child(1){animation-delay:.65s}.section:nth-child(2){animation-delay:.75s}.section:nth-child(3){animation-delay:.85s}.section:nth-child(4){animation-delay:.95s}.section:nth-child(5){animation-delay:1.05s}.section:nth-child(6){animation-delay:1.15s}.section:nth-child(7){animation-delay:1.25s}
+
+    .section-header { display:flex; align-items:center; gap:14px; margin-bottom:20px }
+    .section-num { font-family:'Cormorant Garamond',serif; font-size:11px; letter-spacing:4px; color:var(--gold) }
+    .section-title { font-family:'Cormorant Garamond',serif; font-size:28px; font-weight:400; color:var(--deep); letter-spacing:1px }
+    .section-rule { height:1px; flex:1; background:linear-gradient(to right,var(--gold),transparent) }
+    .section-body { font-size:13px; font-weight:300; line-height:1.9; color:var(--ink); margin-bottom:24px }
+
+    .data-table { width:100%; border-collapse:collapse; margin:16px 0 8px; font-size:12px }
+    .data-table thead tr { background:var(--deep); color:var(--gold); font-size:10px; letter-spacing:3px; text-transform:uppercase }
+    .data-table thead th { padding:12px 14px; text-align:left; font-weight:400 }
+    .data-table tbody tr:nth-child(even){ background:var(--parchment) }
+    .data-table tbody tr:nth-child(odd){ background:var(--cream) }
+    .data-table tbody tr { transition:background .2s }
+    .data-table tbody tr:hover { background:#e6d9c0 }
+    .data-table tbody td { padding:10px 14px; color:var(--ink); border-bottom:1px solid rgba(107,79,45,.08) }
+    .data-table tbody td:first-child { font-weight:400; color:var(--deep); width:28% }
+
+    .green-table thead tr { background:var(--forest); color:var(--cream) }
+    .green-table thead th { letter-spacing:2px; font-size:10px; text-transform:uppercase }
+    .green-table tbody td:first-child { color:var(--forest); width:22% }
+
+    .earth-table thead tr { background:var(--earth); color:var(--cream) }
+    .earth-table thead th { letter-spacing:2px; font-size:10px; text-transform:uppercase }
+    .earth-table tbody td:first-child { color:var(--earth); width:22% }
+
+    .benefits-grid { display:grid; grid-template-columns:1fr 1fr; gap:1px; background:rgba(107,79,45,.12); border:1px solid rgba(107,79,45,.12); margin:8px 0 }
+    .benefit-card { background:var(--cream); padding:24px 22px; transition:background .3s; position:relative; overflow:hidden }
+    .benefit-card:hover { background:#e8dcc8 }
+    .benefit-card::before { content:''; position:absolute; bottom:0; left:0; width:0; height:2px; background:var(--gold); transition:width .4s }
+    .benefit-card:hover::before { width:100% }
+    .benefit-title { font-family:'Cormorant Garamond',serif; font-size:16px; font-weight:600; color:var(--forest); margin-bottom:8px }
+    .benefit-desc { font-size:11.5px; font-weight:300; line-height:1.75; color:var(--ink); opacity:.85 }
+
+    .precaution-list { list-style:none; margin:8px 0 }
+    .precaution-list li { display:flex; gap:12px; align-items:flex-start; padding:10px 14px; font-size:12px; font-weight:300; line-height:1.7; color:var(--ink); border-bottom:1px solid rgba(107,79,45,.08) }
+    .precaution-list li:last-child { border-bottom:none }
+    .precaution-list li::before { content:'▸'; color:var(--gold); flex-shrink:0; margin-top:1px }
+
+    .nutrition-bar { display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:rgba(107,79,45,.12); border:1px solid rgba(107,79,45,.12); margin:20px 0 }
+    .nutrition-cell { background:var(--cream); padding:22px 16px; text-align:center; transition:background .3s }
+    .nutrition-cell:hover { background:var(--parchment) }
+    .nutrition-num { font-family:'Cormorant Garamond',serif; font-size:36px; font-weight:300; color:var(--forest); line-height:1; margin-bottom:4px }
+    .nutrition-unit { font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--gold); font-weight:300 }
+    .nutrition-label { font-size:11px; font-weight:300; color:var(--ink); margin-top:5px }
+
+    .sources { border-top:1px solid rgba(107,79,45,.15); padding-top:24px; margin-top:20px }
+    .sources-title { font-size:10px; letter-spacing:4px; text-transform:uppercase; color:var(--sage); margin-bottom:12px; font-weight:300 }
+    .sources ul { list-style:none }
+    .sources ul li { font-family:'Cormorant Garamond',serif; font-size:13px; font-style:italic; color:var(--earth); padding:5px 0; border-bottom:1px solid rgba(107,79,45,.06) }
+    .sources ul li::before { content:'· '; color:var(--sage) }
+
+    footer { position:relative; z-index:10; text-align:center; padding:24px 20px 44px; border-top:1px solid rgba(107,79,45,.12); max-width:860px; margin:0 auto }
+    footer p { font-size:11px; letter-spacing:4px; text-transform:uppercase; color:var(--sage); font-weight:300 }
+
+    @keyframes fadeUp { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:translateY(0)} }
+
+    @media(max-width:700px){
+      .hero-photos{grid-template-columns:1fr}.hero-photos img{height:260px}
+      .benefits-grid{grid-template-columns:1fr}
+      .nutrition-bar{grid-template-columns:1fr 1fr}
+      .content{padding:0 18px 60px}
+    }
+  </style>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+</head>
+<body>
+  <button type="button" id="open3D">View in 3D</button>
+
+
+  <div class="bg-circle bg-circle-1"></div>
+  <div class="bg-circle bg-circle-2"></div>
+
+  <!-- Sausage-tree silhouette decorations -->
+  <svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M30 290 Q60 240 80 200 Q120 140 160 80 Q190 40 240 20" stroke="#3a5c2f" stroke-width="1.5" fill="none"/>
+    <!-- hanging fruit shapes -->
+    <ellipse cx="95" cy="185" rx="7" ry="18" fill="#3a5c2f" opacity="0.7" transform="rotate(10 95 185)"/>
+    <ellipse cx="135" cy="140" rx="6" ry="16" fill="#7a4e2d" opacity="0.6" transform="rotate(-5 135 140)"/>
+    <ellipse cx="170" cy="100" rx="5" ry="14" fill="#3a5c2f" opacity="0.5" transform="rotate(8 170 100)"/>
+    <!-- leaves -->
+    <ellipse cx="78" cy="198" rx="18" ry="8" fill="#8a9e6e" transform="rotate(-40 78 198)" opacity="0.8"/>
+    <ellipse cx="120" cy="152" rx="16" ry="7" fill="#3a5c2f" transform="rotate(-55 120 152)" opacity="0.7"/>
+    <ellipse cx="155" cy="112" rx="15" ry="6" fill="#8a9e6e" transform="rotate(-65 155 112)" opacity="0.6"/>
+  </svg>
+  <svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M30 290 Q60 240 80 200 Q120 140 160 80 Q190 40 240 20" stroke="#3a5c2f" stroke-width="1.5" fill="none"/>
+    <ellipse cx="95" cy="185" rx="7" ry="18" fill="#3a5c2f" opacity="0.7" transform="rotate(10 95 185)"/>
+    <ellipse cx="135" cy="140" rx="6" ry="16" fill="#7a4e2d" opacity="0.6" transform="rotate(-5 135 140)"/>
+    <ellipse cx="78" cy="198" rx="18" ry="8" fill="#8a9e6e" transform="rotate(-40 78 198)" opacity="0.8"/>
+    <ellipse cx="120" cy="152" rx="16" ry="7" fill="#3a5c2f" transform="rotate(-55 120 152)" opacity="0.7"/>
+  </svg>
+
+  <div class="hero">
+    <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+    <div class="logo-rule"><span></span><div class="logo-ornament">✦</div><span></span></div>
+    <div class="hero-title">Kigelia</div>
+    <div class="hero-subtitle">The Sausage Tree — Mti wa Sosej</div>
+    <div class="hero-sci">Kigelia africana (Lam.) Benth. &nbsp;·&nbsp; Bignoniaceae</div>
+  </div>
+
+  <div class="hero-photos">
+    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/1/11/Kigelia-Africana-Serengeti.JPG/1280px-Kigelia-Africana-Serengeti.JPG" alt="Kigelia africana enormous sausage-like fruits hanging on long pendulous stalks"
+      onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/8/80/Kigelia_africana_4103.jpg" alt="Kigelia africana dark crimson flowers in pendulous racemes"
+      onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+  </div>
+  <p class="photo-caption">Fig. 1 — Enormous fibrous fruits (1–2 kg) dangling on cord-like stalks — the hallmark of Kigelia africana &nbsp;·&nbsp; Fig. 2 — Deep crimson, bat-pollinated flowers opening at night in long pendulous racemes</p>
+
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-leaf">❧</div>
+    <div class="divider-line"></div>
+  </div>
+
+  <div class="content">
+
+    <p class="intro-text">Known across sub-Saharan Africa as the <em>Sausage Tree</em> for its extraordinary elongated fruits — sometimes exceeding 60 cm and weighing up to 10 kg — <em>Kigelia africana</em> is one of Africa's most revered medicinal trees, used for centuries by over 30 ethnic groups to treat skin conditions, tumours, venereal diseases, rheumatism, and post-partum ailments, and now generating significant pharmaceutical interest for its potent phytochemical arsenal.</p>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">01</span>
+        <h2 class="section-title">Botanical Profile</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Kigelia africana is a large, spreading, semi-evergreen tree of the Bignoniaceae family — relatives of jacaranda and trumpet vine — native to tropical sub-Saharan Africa from Senegal and Sudan south through the Congo basin to South Africa, and westward to Madagascar. Trees typically grow 15–25 m tall with broad, spreading crowns and rough, grey-brown bark that flakes in irregular patches on mature specimens.</p>
+      <p class="section-body">The pinnately compound leaves bear 7–9 leaflets, leathery and dark green, with serrate margins. Flowers are large, tubular, and deep velvet-crimson to maroon — borne in pendulous racemes up to 2 m long and pollinated at night by bats and hawk-moths attracted to the musky scent. The fruit — the defining characteristic — is an enormous, woody, elongated berry, grey-brown, indehiscent, and fibrous inside, hanging individually on long cord-like stalks and persisting on the tree for months. It is inedible raw but prepared and consumed in various traditional contexts.</p>
+      <table class="data-table">
+        <thead><tr><th>PROPERTY</th><th>Detail</th></tr></thead>
+        <tbody>
+          <tr><td>Family</td><td>Bignoniaceae</td></tr>
+          <tr><td>Botanical Name</td><td>Kigelia africana (Lam.) Benth.</td></tr>
+          <tr><td>Synonyms</td><td>Kigelia pinnata (Jacq.) DC.; Crescentia pinnata Jacq.</td></tr>
+          <tr><td>Common Names</td><td>Sausage Tree, African Sausage Tree, Cucumber Tree</td></tr>
+          <tr><td>Swahili / Local Names</td><td>Mti wa Sosej (Sw), Umvongothi (Zulu), Modukguhlu (Sotho), Muratina (Kikuyu)</td></tr>
+          <tr><td>Origin</td><td>Tropical sub-Saharan Africa, Madagascar</td></tr>
+          <tr><td>Plant Type</td><td>Large semi-evergreen tree (15–25 m)</td></tr>
+          <tr><td>Flowering</td><td>Night-blooming; pollinated by bats &amp; hawk-moths</td></tr>
+          <tr><td>Fruit</td><td>Elongated woody berry, 30–100 cm, 1–10 kg</td></tr>
+          <tr><td>Medicinal Parts</td><td>Fruit (primary), bark, leaves, roots, flowers</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">02</span>
+        <h2 class="section-title">Phytochemistry &amp; Composition</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Kigelia africana is extraordinarily rich in biologically active secondary metabolites — its fruit, bark, and leaves yielding a complex mixture of iridoids, naphthoquinones, coumarins, flavonoids, sterols, and terpenoids. The iridoids (particularly <em>specioside</em>, <em>verminoside</em>, and <em>minecoside</em>) and the naphthoquinone <em>kigelinone</em> are considered the primary bioactive drivers of its anti-tumour, antimicrobial, and anti-inflammatory activity.</p>
+      <div class="nutrition-bar">
+        <div class="nutrition-cell"><div class="nutrition-num">150+</div><div class="nutrition-unit">compounds</div><div class="nutrition-label">Identified across plant parts</div></div>
+        <div class="nutrition-cell"><div class="nutrition-num">12</div><div class="nutrition-unit">iridoids</div><div class="nutrition-label">Key bioactive glycosides</div></div>
+        <div class="nutrition-cell"><div class="nutrition-num">10 kg</div><div class="nutrition-unit">max fruit</div><div class="nutrition-label">Single fruit weight</div></div>
+        <div class="nutrition-cell"><div class="nutrition-num">30+</div><div class="nutrition-unit">ethnic groups</div><div class="nutrition-label">Traditional users in Africa</div></div>
+      </div>
+      <table class="data-table">
+        <thead><tr><th>Compound</th><th>Category</th><th>Primary Action</th></tr></thead>
+        <tbody>
+          <tr><td>Specioside &amp; Verminoside</td><td>Iridoid glycosides</td><td>Anti-tumour, anti-inflammatory, antioxidant; major bioactives</td></tr>
+          <tr><td>Kigelinone</td><td>Naphthoquinone</td><td>Cytotoxic against melanoma, antimicrobial, antifungal</td></tr>
+          <tr><td>Isopinnatal &amp; Pinnatal</td><td>Naphthoquinones</td><td>Antimalarial, cytotoxic, antifungal</td></tr>
+          <tr><td>Lapachol &amp; Dehydrotectol</td><td>Naphthoquinones</td><td>Antimalarial, antiviral, cytotoxic</td></tr>
+          <tr><td>Luteolin &amp; Quercetin</td><td>Flavonoids</td><td>Antioxidant, anti-inflammatory, cardioprotective</td></tr>
+          <tr><td>β-Sitosterol &amp; Stigmasterol</td><td>Phytosterols</td><td>Anti-inflammatory, hypolipidemic</td></tr>
+          <tr><td>Oleanolic &amp; Ursolic Acids</td><td>Pentacyclic triterpenoids</td><td>Anti-inflammatory, hepatoprotective, antimicrobial</td></tr>
+          <tr><td>Ferulic Acid &amp; Caffeic Acid</td><td>Phenolic acids</td><td>Antioxidant, photoprotective, anti-inflammatory</td></tr>
+          <tr><td>Kigelin</td><td>Phenylpropanoid</td><td>Skin-lightening, melanin-inhibitory</td></tr>
+          <tr><td>Tannins &amp; Saponins</td><td>Secondary metabolites</td><td>Astringent, wound-healing, antimicrobial</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">03</span>
+        <h2 class="section-title">Ethnobotanical Traditions</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Few African trees match the breadth of Kigelia's ethnomedicinal use. Across more than 30 documented ethnic groups — from the Zulu and Sotho of Southern Africa to the Luo of East Africa and the Bété of West Africa — virtually every part of the tree finds medicinal application, with the fruit occupying a position of special significance in skin, gynaecological, and oncological treatments.</p>
+      <table class="data-table green-table">
+        <thead><tr><th>Tradition / Region</th><th>Plant Part</th><th>Traditional Use</th></tr></thead>
+        <tbody>
+          <tr><td>Zulu, South Africa</td><td>Fruit (roasted)</td><td>Applied topically to skin cancers, sores, psoriasis, eczema, and rheumatic joints</td></tr>
+          <tr><td>Kikuyu, Kenya</td><td>Fermented fruit</td><td>Muratina — traditional fermented beer brewed with the fruit as an additive; social and ceremonial use</td></tr>
+          <tr><td>Luo, East Africa</td><td>Bark decoction</td><td>Oral treatment for gonorrhoea, syphilis, and urogenital infections</td></tr>
+          <tr><td>Tanzania / Swahili coast</td><td>Fruit pulp</td><td>Post-partum tonic for uterine contraction and recovery; applied to infant fontanelles to promote growth</td></tr>
+          <tr><td>West Africa (Bété, Yoruba)</td><td>Bark &amp; roots</td><td>Antidysenteric, anti-diarrheal, anti-epileptic; bark smoke inhaled for headache</td></tr>
+          <tr><td>Zambia / Zimbabwe</td><td>Leaf &amp; fruit paste</td><td>Topical for snake bite first aid, boils, sores, and skin infections</td></tr>
+          <tr><td>Malawi</td><td>Whole fruit (sliced, dried)</td><td>Hung in homes to ward off whirlwinds; also breast enlargement traditional use</td></tr>
+          <tr><td>Southern Africa (general)</td><td>Root decoction</td><td>Treatment of backache, rheumatism, malaria, and tapeworm</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">04</span>
+        <h2 class="section-title">Key Health Benefits</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Modern pharmacological investigation — particularly over the past two decades — has validated a remarkable proportion of Kigelia's traditional claims, with especially strong evidence for its anti-tumour, skin-therapeutic, antimicrobial, and anti-inflammatory activity. Extracts of the fruit are now incorporated into commercial skincare products worldwide.</p>
+      <div class="benefits-grid">
+        <div class="benefit-card">
+          <div class="benefit-title">Anti-tumour &amp; Anti-cancer</div>
+          <div class="benefit-desc">Iridoid glycosides — particularly specioside and verminoside — and the naphthoquinone kigelinone have demonstrated cytotoxic activity against multiple cancer cell lines including melanoma, breast, liver, and lung carcinoma in vitro. The National Cancer Institute (USA) has identified Kigelia extracts as having significant anti-melanoma potential.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Skin Therapy &amp; Dermatology</div>
+          <div class="benefit-desc">Kigelia fruit extract is clinically used in topical formulations for eczema, psoriasis, acne, and photo-damaged skin. Its compound kigelin inhibits melanin synthesis, giving skin-brightening effects. Anti-inflammatory and antioxidant actions reduce erythema, oxidative damage, and skin ageing markers. Several cosmeceutical brands now feature standardised Kigelia extract.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Antimicrobial &amp; Antifungal</div>
+          <div class="benefit-desc">Bark and fruit extracts show strong inhibitory activity against Staphylococcus aureus, E. coli, Candida albicans, Trichophyton, Cryptococcus, and Mycobacterium species. Naphthoquinones (pinnatal, isopinnatal) are primary agents — particularly relevant for drug-resistant dermatophyte infections and tropical fungal conditions.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Antimalarial</div>
+          <div class="benefit-desc">Lapachol, isopinnatal, and pinnatal derived from Kigelia bark and fruit show significant activity against Plasmodium falciparum in vitro, corroborating widespread traditional use for malaria fever across East and Central Africa. Activity is comparable to quinine at tested concentrations in several studies.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Anti-inflammatory &amp; Analgesic</div>
+          <div class="benefit-desc">Ethanolic and aqueous extracts significantly inhibit COX-2 and pro-inflammatory cytokines in animal models, validating topical application to arthritic joints and inflamed tissue. Oleanolic and ursolic acids are the principal contributors to systemic anti-inflammatory activity alongside the iridoid fraction.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Gynaecological Support</div>
+          <div class="benefit-desc">Post-partum use across East Africa for uterine recovery and contraction is supported by documented uterotonic activity. Traditionally also used for dysmenorrhea (painful periods) and menopausal symptoms — though clinical human data on these applications remains preliminary.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Antioxidant &amp; Photoprotection</div>
+          <div class="benefit-desc">Ferulic acid, caffeic acid, quercetin, and luteolin in the fruit provide substantial free-radical scavenging capacity. DPPH and ABTS assay results indicate photoprotective potential — Kigelia extracts are incorporated into UV-protective sunscreens and after-sun formulas by multiple cosmeceutical manufacturers.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Antidiarrheal &amp; Digestive</div>
+          <div class="benefit-desc">Bark decoctions are widely used for dysentery, diarrhea, and intestinal infections across West and Central Africa. Tannin-mediated astringency combined with demonstrated antimicrobial activity against enteric pathogens (Salmonella, E. coli, Shigella) provides a pharmacological basis for this application.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">05</span>
+        <h2 class="section-title">How Kigelia Is Used</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Kigelia is predominantly used <em>topically</em> for skin conditions, tumours, and joint ailments. Internal use — particularly of raw fruit — carries known risks and should never be self-administered. Commercially standardised Kigelia extracts in skincare products represent the safest modern-day access route for most users. Traditional internal preparations are always under supervision and often involve roasting or fermenting to reduce toxic constituents.</p>
+      <table class="data-table earth-table">
+        <thead><tr><th>Form</th><th>Preparation</th><th>Use Context</th></tr></thead>
+        <tbody>
+          <tr><td>Fruit Extract (Topical)</td><td>Standardised cosmeceutical extract in creams, serums, balms</td><td>Eczema, psoriasis, acne, skin brightening, UV protection — widely available commercially</td></tr>
+          <tr><td>Roasted Fruit Paste</td><td>Slice fruit, roast, grind to paste; apply externally</td><td>Traditional skin cancer, sores, psoriasis, arthritic joint application</td></tr>
+          <tr><td>Bark Decoction (Internal)</td><td>Boil dried bark in water; reduce and strain</td><td>Practitioner-supervised: STIs, dysentery, malaria, rheumatism</td></tr>
+          <tr><td>Leaf Poultice (Topical)</td><td>Pound fresh leaves; apply to affected area</td><td>Boils, skin infections, snake bite first aid (supportive only)</td></tr>
+          <tr><td>Root Decoction (Internal)</td><td>Boil roots in water; strain</td><td>Practitioner-supervised: tapeworm, backache, malaria</td></tr>
+          <tr><td>Muratina Beer (Fermented)</td><td>Roasted fruit added to fermenting sugarcane/honey</td><td>Kikuyu ceremonial beverage — traditional only</td></tr>
+          <tr><td>Dried Fruit Slice (Topical)</td><td>Slice and dry fruit; soak slice in warm water to activate</td><td>Traditional topical application to ulcers, skin lesions</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">06</span>
+        <h2 class="section-title">Safety &amp; Precautions</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Raw, unprocessed Kigelia fruit is considered toxic when consumed internally in significant quantities — traditional use always involves roasting, drying, or fermenting the fruit before any internal application. Topical use of standardised commercial extracts is generally safe and well-tolerated. Internal preparations from bark, leaf, or root require qualified traditional or medical supervision.</p>
+      <ul class="precaution-list">
+        <li><strong>Raw fruit — never eat:</strong> Fresh, unprocessed Kigelia fruit is toxic if consumed. Internal use always requires roasting, fermentation, or controlled extraction to reduce harmful constituents.</li>
+        <li><strong>Pregnancy:</strong> Strictly contraindicated internally. Uterotonic activity documented — internal use during pregnancy carries risk of miscarriage or premature labour.</li>
+        <li><strong>Topical patch test:</strong> Although generally well tolerated, Kigelia's phenolic content can cause contact dermatitis in sensitive individuals. Always patch-test commercial extracts before full-face application.</li>
+        <li><strong>Drug interactions:</strong> Potential interaction with anticoagulants and immunosuppressants — the naphthoquinone fraction may affect platelet function. Discuss with a physician if on these medications.</li>
+        <li><strong>Photo-sensitisation:</strong> Some furanocoumarins in the plant may increase UV sensitivity — avoid strong sun exposure immediately after applying non-standardised topical preparations.</li>
+        <li><strong>Muratina beer:</strong> Fermented Kigelia beverages (traditional Kikuyu muratina) should be understood as culturally specific preparations — not reproduced without proper traditional knowledge guidance.</li>
+        <li><strong>Children (internal use):</strong> Internal preparations are not suitable for children without specialist traditional medicine supervision. Topical cosmeceutical extracts are generally considered safe.</li>
+        <li><strong>Breast enlargement claims:</strong> Traditional use for breast enhancement lacks clinical evidence. Commercial products claiming this benefit based on Kigelia should be treated with scepticism absent rigorous trials.</li>
+      </ul>
+    </div>
+
+    <div class="sources">
+      <div class="sources-title">References &amp; Sources</div>
+      <ul>
+        <li>Grace OM et al. — "The sausage tree (Kigelia africana): ethnobotany and recent scientific advances" — South African Journal of Botany, 2002</li>
+        <li>Picerno P et al. — "Kigelia africana fruit extract: skin-lightening and photoprotective activity" — Journal of Natural Products, 2011</li>
+        <li>Saini S &amp; Sharma S — "Antitumor activity of Kigelia africana in experimental tumors" — Indian Journal of Pharmacology, 2011</li>
+        <li>Iwalewa EO et al. — "Anti-inflammatory effect of Kigelia africana bark extracts" — Journal of Ethnopharmacology, 2009</li>
+        <li>Govinden-Soulange J et al. — "Comparative studies on the chemical compositions and antioxidant activities of Kigelia africana" — Journal of Materials Science and Engineering, 2009</li>
+        <li>Binutu OA &amp; Lajubutu BA — "Antimicrobial potentials of naphthoquinones from Kigelia africana" — Pharmaceutical Biology, 1994</li>
+        <li>Olatunji G et al. — "Antimalarial activity of Kigelia africana — a review" — African Journal of Pharmacy and Pharmacology, 2015</li>
+        <li>Nakase I et al. — "Kigelia africana: cytotoxic iridoid glycosides against melanoma cell lines" — Planta Medica, 2007</li>
+        <li>National Cancer Institute (USA) — Plant Screening Programme identification of Kigelia extracts for anti-melanoma potential</li>
+        <li>van Wyk BE &amp; Gericke N — People's Plants: A Guide to Useful Plants of Southern Africa — Kigelia africana entry</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <footer>
+    <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a qualified practitioner before therapeutic use</p>
+  </footer>
+
+
+  <div id="viewerModal">
+    <div id="modal-topbar">
+      <span>3D Model — Kigelia</span>
+      <button type="button" id="close3D">✕</button>
+    </div>
+    <model-viewer src="kigelia3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+  </div>
+  <script>
+    (function() {
+      var open3D = document.getElementById('open3D');
+      var close3D = document.getElementById('close3D');
+      var modal = document.getElementById('viewerModal');
+      if (!open3D || !close3D || !modal) return;
+      function openModal() {
+        
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+      function closeModal() {
+        
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+      open3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); openModal();
+      });
+      close3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); closeModal();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+      });
+    })();
+  </script>
+
+</body>
+</html>

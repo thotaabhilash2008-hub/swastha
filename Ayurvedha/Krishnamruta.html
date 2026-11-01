@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Krishnamruta | Swastha</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+  <style>
+    #open3D {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      padding: 10px 18px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: var(--forest);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      z-index: 1000;
+      transition: .3s;
+    }
+    #open3D:hover {
+      background: var(--gold);
+      color: var(--deep);
+    }
+    #viewerModal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+    }
+    #modal-topbar {
+      flex-shrink: 0;
+      height: 58px;
+      background: #111111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px 0 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      z-index: 99999;
+    }
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 4.5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.72);
+      user-select: none;
+    }
+    #close3D {
+      width: 38px;
+      height: 38px;
+      font-size: 15px;
+      font-weight: 300;
+      background: transparent;
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background .2s, color .2s, transform .22s;
+      outline: none;
+      flex-shrink: 0;
+    }
+    #close3D:hover {
+      background: #ffffff;
+      color: #111111;
+      border-color: #ffffff;
+      transform: rotate(90deg);
+    }
+    #viewerModal model-viewer {
+      flex: 1;
+      width: 100%;
+      display: block;
+      background: #ffffff;
+    }
+
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+    * { margin: 0; padding: 0; box-sizing: border-box }
+    html { scroll-behavior: smooth }
+    body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--ink); min-height: 100vh; overflow-x: hidden; position: relative }
+    body::before { content: ''; position: fixed; inset: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E"); opacity: .03; pointer-events: none; z-index: 100 }
+
+    .bg-circle { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0 }
+    .bg-circle-1 { width: 700px; height: 700px; background: radial-gradient(circle, rgba(26,74,92,.1) 0%, transparent 70%); top: -200px; right: -150px }
+    .bg-circle-2 { width: 500px; height: 500px; background: radial-gradient(circle, rgba(184,134,11,.08) 0%, transparent 70%); bottom: -100px; left: -100px }
+
+    .botanical-svg { position: fixed; pointer-events: none; z-index: 1; opacity: .08 }
+    .botanical-tl { top: -20px; left: -20px; width: 260px }
+    .botanical-br { bottom: -20px; right: -20px; width: 220px; transform: rotate(180deg) }
+
+    .hero { position: relative; z-index: 10; padding: 54px 40px 0; text-align: center; opacity: 0; animation: fadeUp .9s ease .1s forwards }
+    .back-link { display: inline-flex; align-items: center; gap: 8px; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--sage); text-decoration: none; margin-bottom: 36px; transition: color .3s }
+    .back-link:hover { color: var(--gold) }
+    .logo-rule { display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 14px }
+    .logo-rule span { display: block; height: 1px; width: 70px; background: linear-gradient(to right, transparent, var(--gold)) }
+    .logo-rule span:last-child { background: linear-gradient(to left, transparent, var(--gold)) }
+    .logo-ornament { font-size: 13px; color: var(--gold) }
+    .hero-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(56px, 10vw, 100px); font-weight: 300; letter-spacing: 8px; line-height: 1; color: var(--deep) }
+    .hero-subtitle { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-style: italic; font-weight: 300; color: var(--earth); letter-spacing: 2px; margin-top: 8px }
+    .hero-sci { font-size: 11px; font-weight: 200; letter-spacing: 5px; color: var(--sage); margin-top: 6px }
+
+    .hero-photos { position: relative; z-index: 10; display: grid; grid-template-columns: 1fr 1fr; gap: 2px; max-width: 900px; margin: 40px auto 0; opacity: 0; animation: fadeUp .9s ease .35s forwards }
+    .hero-photos img { width: 100%; height: 380px; object-fit: cover; object-position: center; display: block; background: var(--parchment) }
+    .photo-caption { text-align: center; font-family: 'Cormorant Garamond', serif; font-size: 12px; font-style: italic; color: var(--sage); letter-spacing: 1px; padding: 10px 0 0; max-width: 900px; margin: 0 auto; position: relative; z-index: 10; opacity: 0; animation: fadeUp .9s ease .5s forwards }
+
+    .divider { display: flex; align-items: center; justify-content: center; gap: 16px; margin: 50px auto; max-width: 600px; opacity: 0; animation: fadeUp .9s ease .55s forwards; position: relative; z-index: 10 }
+    .divider-line { height: 1px; width: 120px; background: linear-gradient(to right, transparent, var(--sage)) }
+    .divider-line:last-child { background: linear-gradient(to left, transparent, var(--sage)) }
+    .divider-leaf { color: var(--forest); font-size: 18px }
+
+    .content { position: relative; z-index: 10; max-width: 860px; margin: 0 auto; padding: 0 30px 80px }
+    .intro-text { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 300; line-height: 1.75; color: var(--ink); text-align: center; max-width: 700px; margin: 0 auto 60px; opacity: 0; animation: fadeUp .9s ease .6s forwards }
+    .intro-text em { color: var(--forest); font-style: italic }
+
+    .section { margin-bottom: 60px; opacity: 0; animation: fadeUp .9s ease forwards }
+    .section:nth-child(1) { animation-delay: .65s }
+    .section:nth-child(2) { animation-delay: .75s }
+    .section:nth-child(3) { animation-delay: .85s }
+    .section:nth-child(4) { animation-delay: .95s }
+    .section:nth-child(5) { animation-delay: 1.05s }
+    .section:nth-child(6) { animation-delay: 1.15s }
+    .section:nth-child(7) { animation-delay: 1.25s }
+
+    .section-header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px }
+    .section-num { font-family: 'Cormorant Garamond', serif; font-size: 11px; letter-spacing: 4px; color: var(--gold) }
+    .section-title { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 400; color: var(--deep); letter-spacing: 1px }
+    .section-rule { height: 1px; flex: 1; background: linear-gradient(to right, var(--gold), transparent) }
+    .section-body { font-size: 13px; font-weight: 300; line-height: 1.9; color: var(--ink); margin-bottom: 24px }
+
+    .data-table { width: 100%; border-collapse: collapse; margin: 16px 0 8px; font-size: 12px }
+    .data-table thead tr { background: var(--deep); color: var(--gold); font-size: 10px; letter-spacing: 3px; text-transform: uppercase }
+    .data-table thead th { padding: 12px 14px; text-align: left; font-weight: 400 }
+    .data-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .data-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .data-table tbody tr { transition: background .2s }
+    .data-table tbody tr:hover { background: #ddd5be }
+    .data-table tbody td { padding: 10px 14px; color: var(--ink); border-bottom: 1px solid rgba(90,62,40,.08) }
+    .data-table tbody td:first-child { font-weight: 400; color: var(--deep); width: 28% }
+
+    .dosha-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .dosha-table thead tr { background: var(--forest); color: var(--cream) }
+    .dosha-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .dosha-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .dosha-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .dosha-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(90,62,40,.08) }
+    .dosha-table tbody td:first-child { font-weight: 400; color: var(--forest); width: 18% }
+    .dosha-table tbody td:nth-child(2) { color: var(--earth); width: 20% }
+
+    .consume-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .consume-table thead tr { background: var(--earth); color: var(--cream) }
+    .consume-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .consume-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .consume-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .consume-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(90,62,40,.08) }
+    .consume-table tbody td:first-child { font-weight: 400; color: var(--earth); width: 22% }
+
+    .benefits-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: rgba(90,62,40,.12); border: 1px solid rgba(90,62,40,.12); margin: 8px 0 }
+    .benefit-card { background: var(--cream); padding: 24px 22px; transition: background .3s; position: relative; overflow: hidden }
+    .benefit-card:hover { background: #ddd5be }
+    .benefit-card::before { content: ''; position: absolute; bottom: 0; left: 0; width: 0; height: 2px; background: var(--gold); transition: width .4s }
+    .benefit-card:hover::before { width: 100% }
+    .benefit-title { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 600; color: var(--forest); margin-bottom: 8px }
+    .benefit-desc { font-size: 11.5px; font-weight: 300; line-height: 1.75; color: var(--ink); opacity: .85 }
+
+    .precaution-list { list-style: none; margin: 8px 0 }
+    .precaution-list li { display: flex; gap: 12px; align-items: flex-start; padding: 10px 14px; font-size: 12px; font-weight: 300; line-height: 1.7; color: var(--ink); border-bottom: 1px solid rgba(90,62,40,.08) }
+    .precaution-list li:last-child { border-bottom: none }
+    .precaution-list li::before { content: '▸'; color: var(--gold); flex-shrink: 0; margin-top: 1px }
+
+    .nutrition-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: rgba(90,62,40,.12); border: 1px solid rgba(90,62,40,.12); margin: 20px 0 }
+    .nutrition-cell { background: var(--cream); padding: 22px 16px; text-align: center; transition: background .3s }
+    .nutrition-cell:hover { background: var(--parchment) }
+    .nutrition-num { font-family: 'Cormorant Garamond', serif; font-size: 36px; font-weight: 300; color: var(--forest); line-height: 1; margin-bottom: 4px }
+    .nutrition-unit { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); font-weight: 300 }
+    .nutrition-label { font-size: 11px; font-weight: 300; color: var(--ink); margin-top: 5px }
+
+    .sources { border-top: 1px solid rgba(90,62,40,.15); padding-top: 24px; margin-top: 20px }
+    .sources-title { font-size: 10px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); margin-bottom: 12px; font-weight: 300 }
+    .sources ul { list-style: none }
+    .sources ul li { font-family: 'Cormorant Garamond', serif; font-size: 13px; font-style: italic; color: var(--earth); padding: 5px 0; border-bottom: 1px solid rgba(90,62,40,.06) }
+    .sources ul li::before { content: '· '; color: var(--sage) }
+
+    footer { position: relative; z-index: 10; text-align: center; padding: 24px 20px 44px; border-top: 1px solid rgba(90,62,40,.12); max-width: 860px; margin: 0 auto }
+    footer p { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); font-weight: 300 }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(28px) } to { opacity: 1; transform: translateY(0) } }
+
+    @media(max-width:700px) {
+      .hero-photos { grid-template-columns: 1fr }
+      .hero-photos img { height: 260px }
+      .benefits-grid { grid-template-columns: 1fr }
+      .nutrition-bar { grid-template-columns: 1fr 1fr }
+      .content { padding: 0 18px 60px }
+    }
+  </style>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+</head>
+<body>
+  <button type="button" id="open3D">View in 3D</button>
+
+
+  <div class="bg-circle bg-circle-1"></div>
+  <div class="bg-circle bg-circle-2"></div>
+
+  <!-- Botanical SVG decorations -->
+  <svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#1a4a5c" stroke-width="1.5" fill="none"/>
+    <circle cx="90" cy="210" r="8" fill="#1a4a5c" opacity="0.7"/>
+    <circle cx="130" cy="175" r="10" fill="#5a8a9f" opacity="0.6"/>
+    <circle cx="170" cy="135" r="7" fill="#1a4a5c" opacity="0.8"/>
+    <circle cx="210" cy="95" r="9" fill="#b8860b" opacity="0.5"/>
+    <ellipse cx="115" cy="195" rx="20" ry="10" fill="#5a8a9f" transform="rotate(-30 115 195)"/>
+    <ellipse cx="155" cy="155" rx="18" ry="9" fill="#1a4a5c" transform="rotate(-45 155 155)"/>
+    <ellipse cx="195" cy="115" rx="16" ry="8" fill="#5a8a9f" transform="rotate(-60 195 115)"/>
+  </svg>
+  <svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#1a4a5c" stroke-width="1.5" fill="none"/>
+    <circle cx="90" cy="210" r="8" fill="#1a4a5c" opacity="0.7"/>
+    <circle cx="130" cy="175" r="10" fill="#5a8a9f" opacity="0.6"/>
+    <ellipse cx="115" cy="195" rx="20" ry="10" fill="#5a8a9f" transform="rotate(-30 115 195)"/>
+  </svg>
+
+  <div class="hero">
+    <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+    <div class="logo-rule"><span></span><div class="logo-ornament">✦</div><span></span></div>
+    <div class="hero-title">Krishnamruta</div>
+    <div class="hero-subtitle">The Divine Nectar of Krishna — Sacred Tulsi of the Blue Lord</div>
+    <div class="hero-sci">Ocimum tenuiflorum · Ocimum sanctum &nbsp;·&nbsp; Krishna Tulasi</div>
+  </div>
+
+  <div class="hero-photos">
+    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/4/44/Ocimum_tenuiflorum_3_09_2012.JPG/1280px-Ocimum_tenuiflorum_3_09_2012.JPG" alt="Krishna Tulasi with deep purple-green leaves" onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1e/Ocimum_tenuiflorum_24_08_2012.JPG/1280px-Ocimum_tenuiflorum_24_08_2012.JPG" alt="Krishnamruta plant with purple flower spikes in bloom" onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+  </div>
+  <p class="photo-caption">Fig. 1 — Deep purple-tinged leaves of Krishna Tulasi, sacred to Lord Vishnu &nbsp;·&nbsp; Fig. 2 — Purple-violet flower spikes of Krishnamruta in full bloom</p>
+
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-leaf">❧</div>
+    <div class="divider-line"></div>
+  </div>
+
+  <div class="content">
+    <p class="intro-text">Revered as <em>Krishnamruta</em> — "the immortal nectar of Krishna" — this rare dark-leafed variety of Holy Basil stands foremost among the sacred plants of the Hindu tradition. Described in the <em>Skanda Purana</em> and <em>Padma Purana</em> as the embodiment of Goddess Tulasi herself, Krishnamruta is simultaneously a supreme spiritual herb and a powerful Ayurvedic rasayana — simultaneously purifying the home, the worshipper, and the body's channels of life-force.</p>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">01</span><h2 class="section-title">Botanical Profile</h2><div class="section-rule"></div></div>
+      <p class="section-body">Krishnamruta is the dark or "Krishna" variety of Holy Basil (<em>Ocimum tenuiflorum</em> L., syn. <em>Ocimum sanctum</em>), distinguished from its green-leafed sister Rama Tulasi by its strikingly deep purple-to-violet pigmentation in leaves, stems, and flowers. This pigmentation arises from a high concentration of anthocyanins — the same family of compounds responsible for the rich colouring of blueberries, red cabbage, and açaí — and confers upon Krishnamruta a markedly greater antioxidant capacity than the green variety.</p>
+      <p class="section-body">The plant is an erect perennial aromatic shrub, 30–60 cm tall, with branched square stems, ovate-oblong leaves with serrate margins, and terminal racemes of small purple-white flowers. It is native to the Indian subcontinent and Southeast Asia and cultivated throughout the tropics as both a sacred plant and a culinary and medicinal herb. The entire plant — leaves, roots, seeds (<em>tukhmariya</em>), and flowers — is therapeutically active, with seeds yielding a mucilaginous fixed oil and all parts yielding a complex essential oil dominated by eugenol.</p>
+      <table class="data-table">
+        <thead><tr><th>PROPERTY</th><th>Detail</th></tr></thead>
+        <tbody>
+          <tr><td>Family</td><td>Lamiaceae (Labiatae)</td></tr>
+          <tr><td>Botanical Name</td><td>Ocimum tenuiflorum L. (syn. Ocimum sanctum L.)</td></tr>
+          <tr><td>Sanskrit Names</td><td>Krishnamruta, Krishnatulasi, Shuklpatri, Surasa, Bahumanjari, Devadundubhi</td></tr>
+          <tr><td>Common Names</td><td>Krishna Tulsi, Purple Holy Basil, Sacred Basil, Dark Tulsi</td></tr>
+          <tr><td>Regional Names</td><td>Krishna Tulasi (Tel/Kan), Karuntulasi (Tam), Krishnatulasi (Mal), Shyama Tulsi (Ben/Hin)</td></tr>
+          <tr><td>Distinction from Rama Tulsi</td><td>Deep purple-violet leaves, stems, and flowers vs. green-leafed Rama Tulasi</td></tr>
+          <tr><td>Origin</td><td>Indian subcontinent; cultivated pantropically</td></tr>
+          <tr><td>Plant Type</td><td>Aromatic perennial shrub (30–60 cm)</td></tr>
+          <tr><td>Flowering Season</td><td>August–November (seed set: October–December)</td></tr>
+          <tr><td>Medicinal Parts</td><td>Leaves (primary), whole plant, roots, seeds (tukhmariya), flower spikes</td></tr>
+          <tr><td>Key Aroma</td><td>Clove-like, peppery, camphoraceous — eugenol dominant</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">02</span><h2 class="section-title">Phytochemistry &amp; Composition</h2><div class="section-rule"></div></div>
+      <p class="section-body">The Krishna variety of Tulasi contains all the pharmacologically active constituents found in Rama Tulasi — eugenol, ursolic acid, rosmarinic acid, linalool, caryophyllene — but with a distinctive enrichment in <strong>anthocyanins</strong>, particularly cyanidin and petunidin glycosides, which account for its pronounced colouration and superior antioxidant profile. The essential oil yield (0.4–0.9% from fresh leaves) is eugenol-dominant (up to 71%), conferring powerful antimicrobial, analgesic, and anti-inflammatory activity.</p>
+      <p class="section-body">Seeds (tukhmariya) are unusually rich in alpha-linolenic acid (an omega-3 fatty acid) and produce a mucilaginous gel on soaking — used as a cooling, prebiotic, and emollient agent. The fixed oil from seeds contains linolenic acid (67%), making it one of the richest plant sources of omega-3 among Indian herbs.</p>
+      <div class="nutrition-bar">
+        <div class="nutrition-cell">
+          <div class="nutrition-num">71%</div>
+          <div class="nutrition-unit">eugenol</div>
+          <div class="nutrition-label">In essential oil</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">67%</div>
+          <div class="nutrition-unit">ω-3 acid</div>
+          <div class="nutrition-label">Linolenic in seed oil</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">2×</div>
+          <div class="nutrition-unit">antioxidant</div>
+          <div class="nutrition-label">vs. green Rama Tulasi</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">400+</div>
+          <div class="nutrition-unit">compounds</div>
+          <div class="nutrition-label">Reported in Ocimum spp.</div>
+        </div>
+      </div>
+      <table class="data-table">
+        <thead><tr><th>Compound</th><th>Category</th><th>Primary Action</th></tr></thead>
+        <tbody>
+          <tr><td>Eugenol</td><td>Phenylpropanoid (essential oil)</td><td>Antimicrobial, analgesic, COX-2 inhibition, antifungal</td></tr>
+          <tr><td>Ursolic Acid</td><td>Pentacyclic triterpenoid</td><td>Anti-inflammatory, anti-tumour, hepatoprotective, antiviral</td></tr>
+          <tr><td>Rosmarinic Acid</td><td>Hydroxycinnamic acid ester</td><td>Potent antioxidant, anti-allergic, neuroprotective</td></tr>
+          <tr><td>Cyanidin &amp; Petunidin Glycosides</td><td>Anthocyanins (Krishna-specific)</td><td>Superior antioxidant, anti-inflammatory, cardioprotective</td></tr>
+          <tr><td>Linalool &amp; Caryophyllene</td><td>Terpenoids (essential oil)</td><td>Anxiolytic, analgesic, anti-inflammatory</td></tr>
+          <tr><td>Orientin &amp; Vicenin</td><td>Flavone C-glycosides</td><td>Radioprotective, antioxidant, anti-genotoxic</td></tr>
+          <tr><td>Cirsilineol &amp; Isothymusin</td><td>Methoxyflavones</td><td>Adaptogenic, immunomodulatory</td></tr>
+          <tr><td>Oleanolic Acid</td><td>Triterpenoid</td><td>Hepatoprotective, anti-diabetic, anti-hyperlipidemic</td></tr>
+          <tr><td>Alpha-Linolenic Acid</td><td>Omega-3 fatty acid (seeds)</td><td>Cardioprotective, anti-inflammatory, neuronutritive</td></tr>
+          <tr><td>Volatile Mucilage (Seeds)</td><td>Polysaccharide</td><td>Prebiotic, emollient, demulcent, cooling</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">03</span><h2 class="section-title">Ayurvedic &amp; Spiritual Significance</h2><div class="section-rule"></div></div>
+      <p class="section-body">No plant in the Indian Materia Medica occupies a position as sacred as Tulasi — and among all varieties, Krishnamruta (Krishna Tulasi) holds the supreme place. Described in the <em>Skanda Purana</em>, <em>Padma Purana</em>, and <em>Devi Bhagavatam</em>, Krishnamruta is the personal plant of Lord Vishnu-Krishna — the leaf without which no puja, no prasad, and no Vaishnava ritual is considered complete. The plant is said to purify the soul of one who merely breathes its fragrance, and its placement at the entrance of a home is believed to ward off disease, ill fortune, and negative energies.</p>
+      <p class="section-body">Ayurvedically, Charaka Samhita places Tulasi in the <em>Dashemani</em> group of shiro-virechana (cephalic purgation) drugs; Sushruta lists it in the <em>Surasadi</em> group. Classical texts describe it as a supreme <em>rasayana</em> — a rejuvenating herb that promotes longevity, delays ageing, and enhances <em>ojas</em> (vital essence). The classical shloka — <em>"Surasa sarvarogaghni pittakrutkaphavatanut, shrestha hridya deepani balya medhya cha"</em> — translates: it destroys all diseases, mildly increases Pitta, reduces Kapha and Vata, is excellent for the heart, kindles digestive fire, strengthens the body, and sharpens the intellect.</p>
+      <table class="dosha-table">
+        <thead><tr><th>Dosha</th><th>Effect</th><th>Mechanism &amp; Notes</th></tr></thead>
+        <tbody>
+          <tr><td>Vata ↓</td><td>Pacifying</td><td>Ushna virya (hot potency), katu-tikta rasa, and laghu-ruksha guna reduce Vata accumulation; valuable in neurological, joint, and respiratory Vata conditions</td></tr>
+          <tr><td>Pitta ↑</td><td>Mildly aggravating</td><td>Hot potency mildly increases Pitta — use cautiously in hyperacidity, bleeding tendencies, and high Pitta constitutions; balanced by honey as anupana</td></tr>
+          <tr><td>Kapha ↓</td><td>Strongly pacifying</td><td>Its sharpness (tikshna), dryness (ruksha), and heat powerfully dissolve Kapha — most classical use targets Kapha conditions: cough, bronchitis, mucus, lethargy</td></tr>
+        </tbody>
+      </table>
+      <p class="section-body"><strong>Rasa:</strong> Katu (pungent), Tikta (bitter) &nbsp;·&nbsp; <strong>Guna:</strong> Laghu (light), Ruksha (dry), Tikshna (sharp) &nbsp;·&nbsp; <strong>Virya:</strong> Ushna (hot) &nbsp;·&nbsp; <strong>Vipaka:</strong> Katu &nbsp;·&nbsp; <strong>Prabhava:</strong> Tridoshaghna (balances all three doshas in small doses) &nbsp;·&nbsp; <strong>Karma:</strong> Rasayana, Medhya, Hridya, Kaphavata shamaka</p>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">04</span><h2 class="section-title">Key Health Benefits</h2><div class="section-rule"></div></div>
+      <p class="section-body">Modern pharmacological research on Krishnamruta has validated its traditional roles as an adaptogen, immunomodulator, antimicrobial, cardioprotective, and anti-diabetic agent — with the Krishna variety demonstrating superior activity in antioxidant and anti-inflammatory parameters compared to green Tulasi.</p>
+      <div class="benefits-grid">
+        <div class="benefit-card">
+          <div class="benefit-title">Adaptogenic &amp; Anti-stress</div>
+          <div class="benefit-desc">Classified as a premier Ayurvedic adaptogen, Krishnamruta normalises cortisol, reduces stress-induced cognitive impairment, and improves resilience to physical and psychological stressors. Human clinical trials demonstrate significant improvements in memory, attention, and stress scores with standardised leaf extract.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Respiratory &amp; Anti-tussive</div>
+          <div class="benefit-desc">Most widely used Indian home remedy for cough, cold, bronchitis, and asthma. Eugenol-rich essential oil acts as a bronchodilator, while anti-inflammatory ursolic acid reduces airway inflammation. Leaf decoction with ginger, black pepper, and honey is a classical Ayurvedic cough formulation.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Immunomodulatory</div>
+          <div class="benefit-desc">Induces proliferation of T-helper cells, natural killer cells, and macrophage activity. Regular consumption has been shown to increase immunoglobulin levels and enhance the body's response to infections — a principal basis for Tulasi's role in fever management and infectious disease prevention.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Cardioprotective</div>
+          <div class="benefit-desc">Eugenol inhibits platelet aggregation; ursolic acid reduces serum cholesterol and triglycerides; rosmarinic acid provides antioxidant protection to cardiac tissue. Clinical studies show significant reduction in blood pressure and blood viscosity with regular Tulasi leaf intake. Seeds provide omega-3 support.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Anti-diabetic &amp; Metabolic</div>
+          <div class="benefit-desc">Significant hypoglycemic activity demonstrated in human trials — fasting blood glucose reduced by up to 17.6% and postprandial glucose by 7.3% in Type 2 diabetics consuming standardised Tulasi extract. Mechanism involves stimulation of beta-cell insulin secretion and peripheral glucose uptake.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Neuroprotective &amp; Medhya</div>
+          <div class="benefit-desc">Classical texts classify Tulasi as <em>medhya rasayana</em> — a brain tonic promoting intellect and memory. Modern studies confirm neuroprotective activity via reduction of oxidative stress, anti-cholinesterase activity, and promotion of BDNF expression — supporting its role in cognitive enhancement and neuro-degenerative disease prevention.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Antimicrobial &amp; Antiviral</div>
+          <div class="benefit-desc">Broad-spectrum antimicrobial activity against E. coli, Staphylococcus aureus, Salmonella, Klebsiella, Aspergillus, and Candida species. Antiviral activity demonstrated against H1N1 influenza, Dengue, Japanese Encephalitis, and SARS-CoV-2 spike protein (in silico and in vitro). Daily fresh leaf consumption is a traditional prophylactic.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Superior Antioxidant (Krishna Variety)</div>
+          <div class="benefit-desc">The signature anthocyanin pigments of Krishnamruta — cyanidin and petunidin glycosides — confer a significantly higher DPPH radical scavenging capacity and FRAP value than the green Rama Tulasi variety. This positions Krishnamruta as the premier antioxidant Tulasi for combating oxidative stress and inflammaging.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">05</span><h2 class="section-title">How to Consume Krishnamruta</h2><div class="section-rule"></div></div>
+      <p class="section-body">Krishnamruta is used in multiple forms in Ayurveda. Classical texts caution that direct chewing of Tulasi leaves may erode tooth enamel over time due to mercury content — traditionally leaves are swallowed whole or prepared as decoction. Seeds are soaked before use. All preparations are best consumed in the morning on an empty stomach, or as directed for the specific condition being treated.</p>
+      <table class="consume-table">
+        <thead><tr><th>Form</th><th>Preparation</th><th>Dosage</th><th>Best Use</th></tr></thead>
+        <tbody>
+          <tr><td>Fresh Leaves (Swallowed)</td><td>2–5 fresh leaves whole, with water or tulasi water</td><td>Daily, morning</td><td>Daily rasayana, immunity, spiritual purification</td></tr>
+          <tr><td>Tulasi Tea / Decoction</td><td>Boil 10–15 leaves with ginger, pepper; steep 5 min</td><td>1–2 cups daily</td><td>Cold, cough, fever, congestion, digestion</td></tr>
+          <tr><td>Fresh Juice (Swarasa)</td><td>Pound fresh leaves; strain; consume immediately</td><td>10–20 ml daily</td><td>Fever, infections, diabetes, stress</td></tr>
+          <tr><td>Dried Leaf Powder</td><td>Shade-dried and powdered leaves</td><td>1–3 g with honey/water</td><td>Respiratory, metabolic, and adaptogenic use</td></tr>
+          <tr><td>Soaked Seeds (Tukhmariya)</td><td>Soak 1 tsp seeds in water overnight; consume gel</td><td>1 tsp seeds in 200 ml water</td><td>Cooling, constipation, UTI, weight management</td></tr>
+          <tr><td>Tulasi Ghrita</td><td>Medicated ghee with Tulasi juice (classical)</td><td>Per physician direction</td><td>Rasayana, brain tonic, chronic respiratory disease</td></tr>
+          <tr><td>Essential Oil (External)</td><td>2–3 drops diluted in carrier oil</td><td>Topical, as needed</td><td>Skin infections, arthralgia, headache (temple application)</td></tr>
+          <tr><td>Ritual Water (Tulasi Jal)</td><td>Leaves soaked in copper vessel overnight</td><td>Morning: sip as prasad</td><td>Spiritual purification, mild antimicrobial tonic</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">06</span><h2 class="section-title">Safety &amp; Precautions</h2><div class="section-rule"></div></div>
+      <p class="section-body">Krishnamruta is generally considered safe for most individuals at dietary and therapeutic doses. It has an exceptionally long history of safe human use. However, as with all potent medicinal herbs, specific precautions apply for certain populations and conditions.</p>
+      <ul class="precaution-list">
+        <li><strong>Pregnancy:</strong> Avoid high medicinal doses internally during pregnancy — Tulasi has mild uterotonic activity and has historically been used to regulate menstruation. Occasional culinary use or puja prasad consumption is generally considered safe.</li>
+        <li><strong>Breastfeeding:</strong> Generally considered safe in culinary amounts. High-dose therapeutic use should be discussed with a practitioner.</li>
+        <li><strong>Blood thinners &amp; anticoagulants:</strong> Eugenol has anti-platelet activity — individuals on warfarin, aspirin, or other anticoagulants should use with caution and inform their physician.</li>
+        <li><strong>Dental caution:</strong> Classical texts note Tulasi leaves contain trace mercury compounds — direct chewing of large quantities over prolonged periods may affect tooth enamel. Swallow whole or use as decoction.</li>
+        <li><strong>Diabetes medications:</strong> Krishnamruta has clinically demonstrated hypoglycemic activity — those on anti-diabetic medication should monitor blood glucose closely as dose adjustment may be required.</li>
+        <li><strong>Thyroid conditions:</strong> High-dose, prolonged use may interfere with thyroid function in susceptible individuals. Use moderate therapeutic doses and consult a physician for long-term use.</li>
+        <li><strong>Fertility:</strong> Some animal studies suggest high-dose Tulasi oil may have anti-fertility effects in males (reversible, dose-dependent). Couples actively trying to conceive should consult a practitioner regarding high-dose therapeutic use.</li>
+        <li><strong>Surgical procedures:</strong> Discontinue high-dose medicinal use 2 weeks before scheduled surgery due to anti-platelet and blood pressure-lowering effects.</li>
+        <li><strong>Pitta conditions:</strong> While beneficial in Vata-Kapha conditions, its ushna virya may aggravate Pitta in individuals with hyperacidity, peptic ulcers, or inflammatory Pitta conditions — use honey as anupana to mitigate.</li>
+      </ul>
+    </div>
+
+    <div class="sources">
+      <div class="sources-title">References &amp; Sources</div>
+      <ul>
+        <li>Cohen MM — "Tulsi - Ocimum sanctum: A herb for all reasons" — Journal of Ayurveda and Integrative Medicine, 2014</li>
+        <li>Pattanayak P et al. — "Ocimum sanctum Linn. A reservoir plant for medicine and mouthwash" — Pharmacognosy Reviews, 2010</li>
+        <li>Jamshidi N &amp; Cohen MM — "The Clinical Efficacy and Safety of Tulsi in Humans: A Systematic Review of the Literature" — Evidence-Based Complementary and Alternative Medicine, 2017</li>
+        <li>Patel SK et al. — "Comparative antioxidant activity of Krishna and Rama varieties of Tulasi" — Asian Journal of Pharmaceutical Sciences, 2015</li>
+        <li>Sestri A et al. — "Antidiabetic and adaptogenic properties of Ocimum sanctum extract: A double-blind, placebo-controlled trial" — Phytotherapy Research, 1996</li>
+        <li>Gupta P et al. — "Volatile constituents and antimicrobial activity of Ocimum sanctum (Krishna Tulasi)" — Natural Product Communications, 2011</li>
+        <li>Charaka Samhita — Sutra Sthana (Dashemani), Kalpa Sthana — Surasa group; classical indications</li>
+        <li>Sushruta Samhita — Surasadi Varga — classification and properties of Ocimum sanctum</li>
+        <li>Padma Purana &amp; Skanda Purana — Tulasi Mahatmya; sacred significance of Krishnamruta</li>
+        <li>Bhavaprakasha Nighantu — Pushpa Varga; Dhanvantari Nighantu — Guduchyadi Varga</li>
+        <li>Priyavrat Sharma — Dravyaguna Vigyana — Classical Ayurvedic properties of Tulasi varieties</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer>
+    <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a qualified practitioner before therapeutic use</p>
+  </footer>
+
+
+  <div id="viewerModal">
+    <div id="modal-topbar">
+      <span>3D Model — Krishnamruta</span>
+      <button type="button" id="close3D">✕</button>
+    </div>
+    <model-viewer src="krishnamruta3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+  </div>
+  <script>
+    (function() {
+      var open3D = document.getElementById('open3D');
+      var close3D = document.getElementById('close3D');
+      var modal = document.getElementById('viewerModal');
+      if (!open3D || !close3D || !modal) return;
+      function openModal() {
+        
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+      function closeModal() {
+        
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+      open3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); openModal();
+      });
+      close3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); closeModal();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+      });
+    })();
+  </script>
+
+</body>
+</html>

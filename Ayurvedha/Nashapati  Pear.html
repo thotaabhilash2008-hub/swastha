@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nashapati | Swastha</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+  <style>
+    #open3D {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      padding: 10px 18px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: var(--forest);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      z-index: 1000;
+      transition: .3s;
+    }
+    #open3D:hover {
+      background: var(--gold);
+      color: var(--deep);
+    }
+    #viewerModal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+    }
+    #modal-topbar {
+      flex-shrink: 0;
+      height: 58px;
+      background: #111111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px 0 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      z-index: 99999;
+    }
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 4.5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.72);
+      user-select: none;
+    }
+    #close3D {
+      width: 38px;
+      height: 38px;
+      font-size: 15px;
+      font-weight: 300;
+      background: transparent;
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background .2s, color .2s, transform .22s;
+      outline: none;
+      flex-shrink: 0;
+    }
+    #close3D:hover {
+      background: #ffffff;
+      color: #111111;
+      border-color: #ffffff;
+      transform: rotate(90deg);
+    }
+    #viewerModal model-viewer {
+      flex: 1;
+      width: 100%;
+      display: block;
+      background: #ffffff;
+    }
+
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+    * { margin: 0; padding: 0; box-sizing: border-box }
+    html { scroll-behavior: smooth }
+    body {
+      font-family: 'Jost', sans-serif;
+      background: var(--cream);
+      color: var(--ink);
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity: .035;
+      pointer-events: none;
+      z-index: 100
+    }
+    .bg-circle { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0 }
+    .bg-circle-1 { width: 700px; height: 700px; background: radial-gradient(circle, rgba(58,92,42,.1) 0%, transparent 70%); top: -200px; right: -150px }
+    .bg-circle-2 { width: 500px; height: 500px; background: radial-gradient(circle, rgba(184,201,76,.08) 0%, transparent 70%); bottom: -100px; left: -100px }
+    .botanical-svg { position: fixed; pointer-events: none; z-index: 1; opacity: .1 }
+    .botanical-tl { top: -20px; left: -20px; width: 260px }
+    .botanical-br { bottom: -20px; right: -20px; width: 220px; transform: rotate(180deg) }
+    .hero {
+      position: relative; z-index: 10;
+      padding: 54px 40px 0;
+      text-align: center;
+      opacity: 0;
+      animation: fadeUp .9s ease .1s forwards
+    }
+    .back-link {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+      color: var(--sage); text-decoration: none; margin-bottom: 36px; transition: color .3s
+    }
+    .back-link:hover { color: var(--gold) }
+    .logo-rule { display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 14px }
+    .logo-rule span { display: block; height: 1px; width: 70px; background: linear-gradient(to right, transparent, var(--gold)) }
+    .logo-rule span:last-child { background: linear-gradient(to left, transparent, var(--gold)) }
+    .logo-ornament { font-size: 13px; color: var(--gold) }
+    .hero-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(64px, 12vw, 110px);
+      font-weight: 300; letter-spacing: 8px; line-height: 1; color: var(--deep)
+    }
+    .hero-subtitle {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 18px; font-style: italic; font-weight: 300;
+      color: var(--earth); letter-spacing: 2px; margin-top: 8px
+    }
+    .hero-sci {
+      font-size: 11px; font-weight: 200; letter-spacing: 5px;
+      color: var(--sage); margin-top: 6px
+    }
+    .hero-photos {
+      position: relative; z-index: 10;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 2px;
+      max-width: 900px; margin: 40px auto 0;
+      opacity: 0; animation: fadeUp .9s ease .35s forwards
+    }
+    .hero-photos img {
+      width: 100%; height: 380px; object-fit: cover;
+      object-position: center; display: block; background: var(--parchment)
+    }
+    .photo-caption {
+      text-align: center; font-family: 'Cormorant Garamond', serif;
+      font-size: 12px; font-style: italic; color: var(--sage); letter-spacing: 1px;
+      padding: 10px 0 0; max-width: 900px; margin: 0 auto;
+      position: relative; z-index: 10;
+      opacity: 0; animation: fadeUp .9s ease .5s forwards
+    }
+    .divider {
+      display: flex; align-items: center; justify-content: center; gap: 16px;
+      margin: 50px auto; max-width: 600px;
+      opacity: 0; animation: fadeUp .9s ease .55s forwards;
+      position: relative; z-index: 10
+    }
+    .divider-line { height: 1px; width: 120px; background: linear-gradient(to right, transparent, var(--sage)) }
+    .divider-line:last-child { background: linear-gradient(to left, transparent, var(--sage)) }
+    .divider-leaf { color: var(--forest); font-size: 18px }
+    .content { position: relative; z-index: 10; max-width: 860px; margin: 0 auto; padding: 0 30px 80px }
+    .intro-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 20px; font-weight: 300; line-height: 1.75; color: var(--ink);
+      text-align: center; max-width: 700px; margin: 0 auto 60px;
+      opacity: 0; animation: fadeUp .9s ease .6s forwards
+    }
+    .intro-text em { color: var(--forest); font-style: italic }
+    .section { margin-bottom: 60px; opacity: 0; animation: fadeUp .9s ease forwards }
+    .section:nth-child(1) { animation-delay: .65s }
+    .section:nth-child(2) { animation-delay: .75s }
+    .section:nth-child(3) { animation-delay: .85s }
+    .section:nth-child(4) { animation-delay: .95s }
+    .section:nth-child(5) { animation-delay: 1.05s }
+    .section:nth-child(6) { animation-delay: 1.15s }
+    .section:nth-child(7) { animation-delay: 1.25s }
+    .section-header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px }
+    .section-num { font-family: 'Cormorant Garamond', serif; font-size: 11px; letter-spacing: 4px; color: var(--gold) }
+    .section-title { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 400; color: var(--deep); letter-spacing: 1px }
+    .section-rule { height: 1px; flex: 1; background: linear-gradient(to right, var(--gold), transparent) }
+    .section-body { font-size: 13px; font-weight: 300; line-height: 1.9; color: var(--ink); margin-bottom: 24px }
+    .data-table { width: 100%; border-collapse: collapse; margin: 16px 0 8px; font-size: 12px }
+    .data-table thead tr { background: var(--deep); color: var(--gold); font-size: 10px; letter-spacing: 3px; text-transform: uppercase }
+    .data-table thead th { padding: 12px 14px; text-align: left; font-weight: 400 }
+    .data-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .data-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .data-table tbody tr { transition: background .2s }
+    .data-table tbody tr:hover { background: #e2dcc6 }
+    .data-table tbody td { padding: 10px 14px; color: var(--ink); border-bottom: 1px solid rgba(90,107,45,.08) }
+    .data-table tbody td:first-child { font-weight: 400; color: var(--deep); width: 28% }
+    .dosha-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .dosha-table thead tr { background: var(--forest); color: var(--cream) }
+    .dosha-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .dosha-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .dosha-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .dosha-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(90,107,45,.08) }
+    .dosha-table tbody td:first-child { font-weight: 400; color: var(--forest); width: 18% }
+    .dosha-table tbody td:nth-child(2) { color: var(--earth); width: 20% }
+    .consume-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px }
+    .consume-table thead tr { background: var(--earth); color: var(--cream) }
+    .consume-table thead th { padding: 12px 14px; text-align: left; font-weight: 400; letter-spacing: 2px; font-size: 10px; text-transform: uppercase }
+    .consume-table tbody tr:nth-child(even) { background: var(--parchment) }
+    .consume-table tbody tr:nth-child(odd) { background: var(--cream) }
+    .consume-table tbody td { padding: 11px 14px; color: var(--ink); border-bottom: 1px solid rgba(90,107,45,.08) }
+    .consume-table tbody td:first-child { font-weight: 400; color: var(--earth); width: 22% }
+    .benefits-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: rgba(90,107,45,.12); border: 1px solid rgba(90,107,45,.12); margin: 8px 0 }
+    .benefit-card { background: var(--cream); padding: 24px 22px; transition: background .3s; position: relative; overflow: hidden }
+    .benefit-card:hover { background: #e8e2cc }
+    .benefit-card::before { content: ''; position: absolute; bottom: 0; left: 0; width: 0; height: 2px; background: var(--gold); transition: width .4s }
+    .benefit-card:hover::before { width: 100% }
+    .benefit-title { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 600; color: var(--forest); margin-bottom: 8px }
+    .benefit-desc { font-size: 11.5px; font-weight: 300; line-height: 1.75; color: var(--ink); opacity: .85 }
+    .precaution-list { list-style: none; margin: 8px 0 }
+    .precaution-list li { display: flex; gap: 12px; align-items: flex-start; padding: 10px 14px; font-size: 12px; font-weight: 300; line-height: 1.7; color: var(--ink); border-bottom: 1px solid rgba(90,107,45,.08) }
+    .precaution-list li:last-child { border-bottom: none }
+    .precaution-list li::before { content: '▸'; color: var(--gold); flex-shrink: 0; margin-top: 1px }
+    .sources { border-top: 1px solid rgba(90,107,45,.15); padding-top: 24px; margin-top: 20px }
+    .sources-title { font-size: 10px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); margin-bottom: 12px; font-weight: 300 }
+    .sources ul { list-style: none }
+    .sources ul li { font-family: 'Cormorant Garamond', serif; font-size: 13px; font-style: italic; color: var(--earth); padding: 5px 0; border-bottom: 1px solid rgba(90,107,45,.06) }
+    .sources ul li::before { content: '· '; color: var(--sage) }
+    .nutrition-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: rgba(90,107,45,.12); border: 1px solid rgba(90,107,45,.12); margin: 20px 0 }
+    .nutrition-cell { background: var(--cream); padding: 22px 16px; text-align: center; transition: background .3s }
+    .nutrition-cell:hover { background: var(--parchment) }
+    .nutrition-num { font-family: 'Cormorant Garamond', serif; font-size: 36px; font-weight: 300; color: var(--forest); line-height: 1; margin-bottom: 4px }
+    .nutrition-unit { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); font-weight: 300 }
+    .nutrition-label { font-size: 11px; font-weight: 300; color: var(--ink); margin-top: 5px }
+    footer { position: relative; z-index: 10; text-align: center; padding: 24px 20px 44px; border-top: 1px solid rgba(90,107,45,.12); max-width: 860px; margin: 0 auto }
+    footer p { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); font-weight: 300 }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(28px) } to { opacity: 1; transform: translateY(0) } }
+    @media(max-width:700px) {
+      .hero-photos { grid-template-columns: 1fr }
+      .hero-photos img { height: 260px }
+      .benefits-grid { grid-template-columns: 1fr }
+      .nutrition-bar { grid-template-columns: 1fr 1fr }
+      .content { padding: 0 18px 60px }
+    }
+  </style>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+</head>
+<body>
+  <button type="button" id="open3D">View in 3D</button>
+
+
+  <div class="bg-circle bg-circle-1"></div>
+  <div class="bg-circle bg-circle-2"></div>
+
+  <!-- Pear branch botanical SVG -->
+  <svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M20 280 Q 70 220 110 170 Q 160 110 240 40" stroke="#3a5c2a" stroke-width="1.5" fill="none"/>
+    <ellipse cx="95" cy="205" rx="22" ry="12" fill="#8aae6e" transform="rotate(-35 95 205)" opacity=".8"/>
+    <ellipse cx="135" cy="165" rx="20" ry="11" fill="#3a5c2a" transform="rotate(-50 135 165)" opacity=".8"/>
+    <ellipse cx="175" cy="125" rx="18" ry="10" fill="#8aae6e" transform="rotate(-65 175 125)" opacity=".7"/>
+    <!-- tiny pear shapes -->
+    <path d="M80 215 Q 86 210 88 218 Q 90 228 80 227 Q 72 226 74 218 Q 76 210 80 215Z" fill="#b8c94c" opacity=".6"/>
+    <path d="M155 148 Q 161 143 163 151 Q 165 161 155 160 Q 147 159 149 151 Q 151 143 155 148Z" fill="#b8c94c" opacity=".5"/>
+  </svg>
+  <svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M20 280 Q 70 220 110 170 Q 160 110 240 40" stroke="#3a5c2a" stroke-width="1.5" fill="none"/>
+    <ellipse cx="95" cy="205" rx="22" ry="12" fill="#8aae6e" transform="rotate(-35 95 205)" opacity=".8"/>
+    <ellipse cx="135" cy="165" rx="20" ry="11" fill="#3a5c2a" transform="rotate(-50 135 165)" opacity=".8"/>
+    <path d="M80 215 Q 86 210 88 218 Q 90 228 80 227 Q 72 226 74 218 Q 76 210 80 215Z" fill="#b8c94c" opacity=".5"/>
+  </svg>
+
+  <div class="hero">
+    <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+    <div class="logo-rule"><span></span><div class="logo-ornament">✦</div><span></span></div>
+    <div class="hero-title">Nashapati</div>
+    <div class="hero-subtitle">Pear — The Fruit of Cool Sweetness</div>
+    <div class="hero-sci">Pyrus communis &nbsp;·&nbsp; Pyrus pashia (Wild Indian Pear)</div>
+  </div>
+
+  <div class="hero-photos">
+    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/0/0e/Pyrus_communis_mit_geborstenem_Stamm_01.jpg/1280px-Pyrus_communis_mit_geborstenem_Stamm_01.jpg" alt="Ripe golden-green pears on a branch"
+      onerror="this.src='';this.style.minHeight='380px';this.style.background='#d8e8c8';">
+    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c5/Vitoria_-_Huertas_de_Ol%C3%A1rizu_-_Pyrus_communis_-BT-_02.jpg/1280px-Vitoria_-_Huertas_de_Ol%C3%A1rizu_-_Pyrus_communis_-BT-_02.jpg" alt="Pear blossoms in spring"
+      onerror="this.src='';this.style.minHeight='380px';this.style.background='#e8f0d8';">
+  </div>
+  <p class="photo-caption">Fig. 1 — Ripe Nashapati fruit hanging on the bough, golden-green with characteristic teardrop form &nbsp;·&nbsp; Fig. 2 — Delicate white pear blossoms heralding the spring harvest</p>
+
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-leaf">❧</div>
+    <div class="divider-line"></div>
+  </div>
+
+  <div class="content">
+    <p class="intro-text">Known in Sanskrit as <em>Amritaphala</em> — "the nectar fruit" — and in common parlance as <em>Nashapati</em>, the pear has been cultivated across the Himalayan foothills, Kashmir, and the Hindu Kush for over 3,000 years. Cooling, nourishing, and gently cleansing, it is celebrated in Ayurveda as a <em>Pitta-shamaka</em> fruit supreme — a sweet balm for the summer body, a tonic for heart and lung alike.</p>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">01</span>
+        <h2 class="section-title">Botanical Profile</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Nashapati belongs to the genus <em>Pyrus</em> of the Rosaceae family — close kin to the apple, quince, and loquat. The principal cultivated species in India is <em>Pyrus communis</em> (European pear), while the indigenous wild pear <em>Pyrus pashia</em> — known as the Himalayan pear or <em>Mehal</em> — grows naturally across the sub-Himalayan tract from Kashmir to Bhutan at altitudes of 1,200–2,400 m. The tree reaches 10–17 m, with white to pale pink blossoms emerging before the leaves in early spring.</p>
+      <p class="section-body">The fruit is characteristically pyriform (pear-shaped) — narrow at the top, swelling toward the base — with a thin, smooth skin ranging from pale green to golden yellow and occasional russet patches at maturity. The flesh is white to cream, gritty-crisp when fresh (due to stone cells or <em>sclereids</em>), tender and buttery in fully ripened cultivars. India's premier pear-growing regions include Kashmir, Himachal Pradesh, Uttarakhand, and the Nilgiris.</p>
+      <table class="data-table">
+        <thead><tr><th>PROPERTY</th><th>Detail</th></tr></thead>
+        <tbody>
+          <tr><td>Family</td><td>Rosaceae</td></tr>
+          <tr><td>Botanical Name</td><td>Pyrus communis L. / Pyrus pashia Buch.-Ham. ex D.Don</td></tr>
+          <tr><td>Sanskrit Names</td><td>Amritaphala, Madhuraphala, Svetaphala, Parushaka (disputed)</td></tr>
+          <tr><td>Common Names</td><td>Nashapati (Hindi/Urdu), Pear (English), Sapota phal</td></tr>
+          <tr><td>Regional Names</td><td>Baagi (Kashmiri), Naashiphal (Marathi), Perichampazham (Tamil)</td></tr>
+          <tr><td>Origin</td><td>Western China / Central Asia; cultivated in India for 3,000+ years</td></tr>
+          <tr><td>Plant Type</td><td>Deciduous tree (10–17 m); fruit-bearing from 3rd year</td></tr>
+          <tr><td>Fruiting Season</td><td>July–October (varies by altitude and cultivar)</td></tr>
+          <tr><td>Medicinal Parts</td><td>Fruit (primary), fruit peel, leaves, bark, seeds</td></tr>
+          <tr><td>Taste Profile</td><td>Madhura (sweet), slightly Kashaya (astringent)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">02</span>
+        <h2 class="section-title">Nutritional Composition</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Pear is a nutritionally dense yet low-calorie fruit — an ideal Ayurvedic <em>pathya</em> (wholesome food) for convalescence. Its exceptional dietary fibre content, dominated by pectin, makes it one of the finest fruits for digestive health and cholesterol management. It is also a meaningful source of copper, vitamin C, vitamin K, and potassium.</p>
+      <div class="nutrition-bar">
+        <div class="nutrition-cell">
+          <div class="nutrition-num">57</div>
+          <div class="nutrition-unit">kcal / 100g</div>
+          <div class="nutrition-label">Low energy density</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">3.1</div>
+          <div class="nutrition-unit">g fibre</div>
+          <div class="nutrition-label">Per 100 g (12% DV)</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">84</div>
+          <div class="nutrition-unit">% water</div>
+          <div class="nutrition-label">Hydrating &amp; cooling</div>
+        </div>
+        <div class="nutrition-cell">
+          <div class="nutrition-num">116</div>
+          <div class="nutrition-unit">mg potassium</div>
+          <div class="nutrition-label">Per 100 g</div>
+        </div>
+      </div>
+      <table class="data-table">
+        <thead><tr><th>Nutrient</th><th>Per 100 g</th><th>Key Role</th></tr></thead>
+        <tbody>
+          <tr><td>Dietary Fibre (Pectin)</td><td>3.1 g</td><td>Gut microbiome, cholesterol, blood sugar regulation</td></tr>
+          <tr><td>Vitamin C</td><td>4.3 mg (5% DV)</td><td>Antioxidant, collagen synthesis, immune support</td></tr>
+          <tr><td>Vitamin K</td><td>4.4 µg (4% DV)</td><td>Bone mineralisation, blood coagulation</td></tr>
+          <tr><td>Copper</td><td>0.082 mg (9% DV)</td><td>Enzyme cofactor, red blood cell formation</td></tr>
+          <tr><td>Potassium</td><td>116 mg</td><td>Cardiac rhythm, blood pressure, fluid balance</td></tr>
+          <tr><td>Folate (B9)</td><td>7 µg</td><td>DNA synthesis, fetal neural development</td></tr>
+          <tr><td>Total Sugars</td><td>9.8 g (mostly fructose)</td><td>Low glycaemic index — fructose absorbed slowly</td></tr>
+          <tr><td>Sorbitol</td><td>~2.1 g</td><td>Natural laxative effect; prebiotic potential</td></tr>
+          <tr><td>Chlorogenic Acid</td><td>~40–100 mg</td><td>Major antioxidant phenolic — anti-inflammatory</td></tr>
+          <tr><td>Quercetin &amp; Kaempferol</td><td>Trace–5 mg</td><td>Flavonoid antioxidants — skin-resident in peel</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">03</span>
+        <h2 class="section-title">Ayurvedic Significance</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Classical Ayurvedic texts classify pear among the <em>Phala Varga</em> (fruit group). Charaka places sweet, cool, heavy fruits in the category of <em>Brinhana dravyas</em> — nourishing substances that build <em>ojas</em> (vital essence). Sushruta's <em>Dravyaguna</em> notes that sweet, astringent fruits with high water content are ideal for pacifying Pitta and supporting Rakta dhatu (blood tissue).</p>
+      <p class="section-body">Classical shloka: <em>"Madhuram sheeta gurvam cha pitta-raktaharam phalam, hridyam graahi laghu kinchid vata-shleshmala samshraya"</em> — the sweet, cool, heavy fruit extinguishes Pitta and purifies blood, is good for the heart and mildly astringent, while excessive intake may accumulate Vata and Kapha.</p>
+      <table class="dosha-table">
+        <thead><tr><th>Dosha</th><th>Effect</th><th>Mechanism &amp; Notes</th></tr></thead>
+        <tbody>
+          <tr><td>Vata ↑</td><td>Mildly aggravating</td><td>Kashaya anupaka and ruksha (rough) quality of peel can aggravate Vata when consumed in excess; ripe fruit with ghee is recommended for Vata types</td></tr>
+          <tr><td>Pitta ↓</td><td>Strongly pacifying</td><td>Madhura rasa, sheeta virya (cold potency), and high water content directly cool Pitta; ideal in summer, hyperacidity, skin inflammation, and bleeding disorders</td></tr>
+          <tr><td>Kapha ↑</td><td>Mildly aggravating</td><td>Guru (heavy), snigdha (unctuous), and madhura nature may increase Kapha with excess intake; advised in moderation for Kapha constitutions, preferably without sugar</td></tr>
+        </tbody>
+      </table>
+      <p class="section-body"><strong>Rasa:</strong> Madhura (sweet), Kashaya (astringent) &nbsp;·&nbsp; <strong>Guna:</strong> Guru (heavy), Snigdha (unctuous) &nbsp;·&nbsp; <strong>Virya:</strong> Sheeta (cold) &nbsp;·&nbsp; <strong>Vipaka:</strong> Madhura (sweet) &nbsp;·&nbsp; <strong>Karma:</strong> Pitta-Rakta shamaka, Brinhana, Hridya</p>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">04</span>
+        <h2 class="section-title">Key Health Benefits</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Modern nutritional science and emerging clinical research have validated many of pear's traditional health applications — particularly its role in gut health, cardiovascular protection, and metabolic regulation. The fruit's fibre-phenolic synergy makes it one of the most therapeutically versatile common fruits.</p>
+      <div class="benefits-grid">
+        <div class="benefit-card">
+          <div class="benefit-title">Digestive Health &amp; Gut Microbiome</div>
+          <div class="benefit-desc">Pear's pectin fibre acts as a prebiotic — selectively feeding beneficial Bifidobacterium and Lactobacillus species. Its sorbitol content provides gentle laxative action for constipation without gut irritation. Regular consumption is associated with reduced risk of colorectal cancer and improved intestinal transit.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Cardiovascular Protection</div>
+          <div class="benefit-desc">Pectin binds bile acids in the intestine, reducing LDL cholesterol re-absorption. Chlorogenic acid inhibits platelet aggregation and supports arterial elasticity. Epidemiological data associates regular pear and apple consumption with up to 18% reduced risk of coronary heart disease.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Blood Sugar Regulation</div>
+          <div class="benefit-desc">Despite its sweetness, pear has a low glycaemic index (GI ~38) due to its fructose-to-glucose ratio and fibre content. Anthocyanins in red-skinned cultivars are linked to improved insulin sensitivity. A large prospective study associated 5 weekly servings with 23% lower type 2 diabetes risk.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Anti-inflammatory &amp; Antioxidant</div>
+          <div class="benefit-desc">Chlorogenic acid, quercetin, and kaempferol — concentrated especially in the skin — demonstrate potent NF-κB inhibition and free radical scavenging activity. Pear skin contains up to 3–4× more antioxidant phenolics than the flesh — a strong case for consuming the fruit whole and unpeeled.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Weight Management</div>
+          <div class="benefit-desc">At only 57 kcal per 100 g with 3.1 g fibre and 84% water, pear ranks among the most satiating low-calorie fruits. Its fibre slows gastric emptying, prolongs satiety signals, and reduces total caloric intake at subsequent meals — well supported by randomised controlled trials in overweight women.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Respiratory &amp; Lung Support</div>
+          <div class="benefit-desc">In Ayurveda, Nashapati is a classical remedy for dry cough, hoarseness (<em>swarabheda</em>), and throat irritation — its sheeta and snigdha qualities soothing inflamed mucous membranes. Modern research notes quercetin and vitamin C levels correlate with reduced asthma incidence in cross-sectional studies.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Bone Health</div>
+          <div class="benefit-desc">Pear is one of few fruits with appreciable vitamin K, copper, and boron (trace) — all involved in bone matrix formation and calcium retention. Traditional Unani medicine uses pear decoction to strengthen bones and joints; its anti-inflammatory action may also benefit osteoarthritic conditions.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Skin &amp; Cooling Remedy</div>
+          <div class="benefit-desc">Applied topically as a pulp or consumed as juice, Nashapati is a classical <em>Pitta-shamaka</em> for heat-related skin conditions — rashes, prickly heat, and sunburn. Its high water content and antioxidants support collagen integrity; pear seed oil is used in traditional cosmetics for its emollient and anti-ageing properties.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">05</span>
+        <h2 class="section-title">How to Consume Nashapati</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Pear is consumed fresh, cooked, dried, and as juice across the Indian subcontinent. Ayurveda recommends consuming ripe pear — neither raw-unripe nor over-fermented — on an empty stomach or between meals, rather than immediately after food, to prevent heaviness. The peel should ideally be retained for maximum antioxidant benefit.</p>
+      <table class="consume-table">
+        <thead><tr><th>Form</th><th>Preparation</th><th>Dosage</th><th>Best Use</th></tr></thead>
+        <tbody>
+          <tr><td>Fresh Fruit (whole)</td><td>Ripe fruit, eaten with skin</td><td>1–2 medium pears daily</td><td>General nutrition, digestion, heart health</td></tr>
+          <tr><td>Fresh Juice (Swarasa)</td><td>Cold-pressed, unstrained</td><td>100–150 ml, morning</td><td>Pitta disorders, burning sensation, dry cough</td></tr>
+          <tr><td>Pear + Honey</td><td>Sliced, drizzled with raw honey</td><td>1 pear + 1 tsp honey</td><td>Sore throat, hoarseness, respiratory dryness</td></tr>
+          <tr><td>Stewed Pear (Pakvaphala)</td><td>Gently simmered with cardamom &amp; saffron</td><td>1 pear per serving</td><td>Digestive weakness, convalescence, elderly</td></tr>
+          <tr><td>Pear + Ghee</td><td>Thin slices with warm ghee</td><td>1 pear + ½ tsp ghee</td><td>Vata constitution, dry skin, constipation</td></tr>
+          <tr><td>Dried Pear (Sushka)</td><td>Sun-dried slices</td><td>30–40 g as snack</td><td>Travel, energy, iron absorption support</td></tr>
+          <tr><td>Pear Pulp (Topical)</td><td>Mashed ripe fruit applied to skin</td><td>15–20 min, wash off</td><td>Prickly heat, sunburn, skin rashes</td></tr>
+          <tr><td>Pear Bark Decoction</td><td>Bark boiled in water; classical preparation</td><td>20–30 ml, physician-directed</td><td>Fever, inflammatory conditions (folk use)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">06</span>
+        <h2 class="section-title">Precautions &amp; Considerations</h2>
+        <div class="section-rule"></div>
+      </div>
+      <p class="section-body">Pear is among the safest and most universally well-tolerated fruits. However, Ayurveda and modern medicine note certain contexts where moderation or care is warranted.</p>
+      <ul class="precaution-list">
+        <li><strong>IBS &amp; FODMAP sensitivity:</strong> Pear is high in fructose and sorbitol — both fermentable carbohydrates that can trigger bloating, cramping, and diarrhea in individuals with irritable bowel syndrome or fructose malabsorption. Those following a low-FODMAP diet should limit or avoid pear.</li>
+        <li><strong>Kapha constitution:</strong> Guru (heavy) and snigdha qualities may aggravate Kapha with regular excess intake — contributing to weight gain, congestion, and sluggish digestion. Consume in moderation without added sugar; prefer the fruit to juice.</li>
+        <li><strong>Vata constitution:</strong> The peel's rough and astringent quality may aggravate Vata. Vata types may do better with peeled, stewed pear eaten with warming spices (ginger, cardamom) and ghee.</li>
+        <li><strong>Diabetics (type 1):</strong> While pear has a low GI, it still contains ~10 g sugar per 100 g and should be accounted for in carbohydrate tracking. Prefer whole fruit over juice, which loses fibre and raises glycaemic impact.</li>
+        <li><strong>Dental health:</strong> Natural sugars and mild acidity in pear juice can contribute to enamel erosion with prolonged sipping. Rinse the mouth with water after consuming pear juice.</li>
+        <li><strong>Pear allergy (oral allergy syndrome):</strong> Individuals allergic to birch pollen may experience oral allergy syndrome — itching or tingling of the mouth and throat — when eating raw pear. Cooking the fruit typically denatures the cross-reactive proteins and is well-tolerated.</li>
+        <li><strong>Seeds:</strong> Like apple seeds, pear seeds contain amygdalin — a compound that releases trace cyanide on digestion. Occasional accidental ingestion of 1–2 seeds is harmless; deliberate consumption of large quantities should be avoided.</li>
+        <li><strong>Avoid with cold meals:</strong> Ayurveda cautions against combining pear with cold milk, cold water, or ice — the combination of sheeta virya with ama-forming cold dairy can impair digestive fire (agni) and produce indigestion.</li>
+      </ul>
+    </div>
+
+    <div class="sources">
+      <div class="sources-title">References &amp; Sources</div>
+      <ul>
+        <li>USDA FoodData Central — Nutritional profile of raw pear (Pyrus communis), 2023</li>
+        <li>Francesca Giampieri et al. — "Pears and Human Health: An Evidence-Based Review" — Nutrients, 2021</li>
+        <li>Atkinson FS, Foster-Powell K, Brand-Miller JC — "International Tables of Glycemic Index and Glycemic Load Values" — Diabetes Care, 2008</li>
+        <li>Muraki I et al. — "Fruit consumption and risk of type 2 diabetes" — BMJ, 2013 (pear association)</li>
+        <li>Baldermann S et al. — "Polyphenolic profile and antioxidant capacity of Pyrus communis peel and flesh" — Food Chemistry, 2012</li>
+        <li>Priyavrat Sharma — Dravyaguna Vigyana — Phala Varga properties including Nashapati</li>
+        <li>Charaka Samhita, Sutrasthana — Brinhana and Pitta-shamaka dravya classification</li>
+        <li>Bhavaprakasha Nighantu — Amradi Phala Varga — Pear in the classical fruit catalogue</li>
+        <li>Gul ST et al. — "Ethnomedicinal uses of Pyrus pashia in the sub-Himalayan belt of Pakistan" — Journal of Ethnopharmacology, 2017</li>
+        <li>Singh R &amp; Kumari N — "Phytochemical and pharmacological review of Pyrus pashia" — Asian Pacific Journal of Tropical Biomedicine, 2015</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer>
+    <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a qualified practitioner before therapeutic use</p>
+  </footer>
+
+  <div id="viewerModal">
+    <div id="modal-topbar">
+      <span>3D Model — Nashapati</span>
+      <button type="button" id="close3D">✕</button>
+    </div>
+    <model-viewer src="nashapati3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+  </div>
+  <script>
+    (function() {
+      var open3D = document.getElementById('open3D');
+      var close3D = document.getElementById('close3D');
+      var modal = document.getElementById('viewerModal');
+      if (!open3D || !close3D || !modal) return;
+      function openModal() {
+        
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+      function closeModal() {
+        
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+      open3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); openModal();
+      });
+      close3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); closeModal();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+      });
+    })();
+  </script>
+
+</body>
+</html>

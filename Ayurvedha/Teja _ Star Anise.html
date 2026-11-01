@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teja | Swastha</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+  <style>
+    #open3D {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      padding: 10px 18px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: var(--forest);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      z-index: 1000;
+      transition: .3s;
+    }
+    #open3D:hover {
+      background: var(--gold);
+      color: var(--deep);
+    }
+    #viewerModal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+    }
+    #modal-topbar {
+      flex-shrink: 0;
+      height: 58px;
+      background: #111111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px 0 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      z-index: 99999;
+    }
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 4.5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.72);
+      user-select: none;
+    }
+    #close3D {
+      width: 38px;
+      height: 38px;
+      font-size: 15px;
+      font-weight: 300;
+      background: transparent;
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background .2s, color .2s, transform .22s;
+      outline: none;
+      flex-shrink: 0;
+    }
+    #close3D:hover {
+      background: #ffffff;
+      color: #111111;
+      border-color: #ffffff;
+      transform: rotate(90deg);
+    }
+    #viewerModal model-viewer {
+      flex: 1;
+      width: 100%;
+      display: block;
+      background: #ffffff;
+    }
+
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+    *{margin:0;padding:0;box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{font-family:'Jost',sans-serif;background:var(--cream);color:var(--ink);min-height:100vh;overflow-x:hidden;position:relative}
+    body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");opacity:.035;pointer-events:none;z-index:100}
+    .bg-circle{position:fixed;border-radius:50%;pointer-events:none;z-index:0}
+    .bg-circle-1{width:700px;height:700px;background:radial-gradient(circle,rgba(139,58,26,.09) 0%,transparent 70%);top:-200px;right:-150px}
+    .bg-circle-2{width:500px;height:500px;background:radial-gradient(circle,rgba(193,127,58,.08) 0%,transparent 70%);bottom:-100px;left:-100px}
+
+    /* Star anise decorative SVG corners */
+    .deco-svg{position:fixed;pointer-events:none;z-index:1;opacity:.1}
+    .deco-tl{top:-10px;left:-10px;width:220px}
+    .deco-br{bottom:-10px;right:-10px;width:200px;transform:rotate(180deg)}
+
+    .hero{position:relative;z-index:10;padding:54px 40px 0;text-align:center;opacity:0;animation:fadeUp .9s ease .1s forwards}
+    .back-link{display:inline-flex;align-items:center;gap:8px;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--sage);text-decoration:none;margin-bottom:36px;transition:color .3s}
+    .back-link:hover{color:var(--gold)}
+    .logo-rule{display:flex;align-items:center;justify-content:center;gap:20px;margin-bottom:14px}
+    .logo-rule span{display:block;height:1px;width:70px;background:linear-gradient(to right,transparent,var(--gold))}
+    .logo-rule span:last-child{background:linear-gradient(to left,transparent,var(--gold))}
+    .logo-ornament{font-size:13px;color:var(--gold)}
+    .hero-title{font-family:'Cormorant Garamond',serif;font-size:clamp(64px,12vw,110px);font-weight:300;letter-spacing:8px;line-height:1;color:var(--deep)}
+    .hero-subtitle{font-family:'Cormorant Garamond',serif;font-size:18px;font-style:italic;font-weight:300;color:var(--spice);letter-spacing:2px;margin-top:8px}
+    .hero-sci{font-size:11px;font-weight:200;letter-spacing:5px;color:var(--sage);margin-top:6px}
+
+    .hero-visual{position:relative;z-index:10;max-width:900px;margin:44px auto 0;display:flex;gap:2px;opacity:0;animation:fadeUp .9s ease .35s forwards}
+    .spice-panel{flex:1;height:360px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;background:var(--parchment)}
+    .spice-panel svg{width:100%;height:100%}
+
+    .photo-caption{text-align:center;font-family:'Cormorant Garamond',serif;font-size:12px;font-style:italic;color:var(--sage);letter-spacing:1px;padding:10px 0 0;max-width:900px;margin:0 auto;position:relative;z-index:10;opacity:0;animation:fadeUp .9s ease .5s forwards}
+    .divider{display:flex;align-items:center;justify-content:center;gap:16px;margin:50px auto;max-width:600px;opacity:0;animation:fadeUp .9s ease .55s forwards;position:relative;z-index:10}
+    .divider-line{height:1px;width:120px;background:linear-gradient(to right,transparent,var(--sage))}
+    .divider-line:last-child{background:linear-gradient(to left,transparent,var(--sage))}
+    .divider-leaf{color:var(--amber);font-size:18px}
+
+    .content{position:relative;z-index:10;max-width:860px;margin:0 auto;padding:0 30px 80px}
+    .intro-text{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:300;line-height:1.75;color:var(--ink);text-align:center;max-width:700px;margin:0 auto 60px;opacity:0;animation:fadeUp .9s ease .6s forwards}
+    .intro-text em{color:var(--spice);font-style:italic}
+
+    .section{margin-bottom:60px;opacity:0;animation:fadeUp .9s ease forwards}
+    .section:nth-child(1){animation-delay:.65s}
+    .section:nth-child(2){animation-delay:.75s}
+    .section:nth-child(3){animation-delay:.85s}
+    .section:nth-child(4){animation-delay:.95s}
+    .section:nth-child(5){animation-delay:1.05s}
+    .section:nth-child(6){animation-delay:1.15s}
+    .section:nth-child(7){animation-delay:1.25s}
+
+    .section-header{display:flex;align-items:center;gap:14px;margin-bottom:20px}
+    .section-num{font-family:'Cormorant Garamond',serif;font-size:11px;letter-spacing:4px;color:var(--amber)}
+    .section-title{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:400;color:var(--deep);letter-spacing:1px}
+    .section-rule{height:1px;flex:1;background:linear-gradient(to right,var(--amber),transparent)}
+    .section-body{font-size:13px;font-weight:300;line-height:1.9;color:var(--ink);margin-bottom:24px}
+
+    .data-table{width:100%;border-collapse:collapse;margin:16px 0 8px;font-size:12px}
+    .data-table thead tr{background:var(--deep);color:var(--gold);font-size:10px;letter-spacing:3px;text-transform:uppercase}
+    .data-table thead th{padding:12px 14px;text-align:left;font-weight:400}
+    .data-table tbody tr:nth-child(even){background:var(--parchment)}
+    .data-table tbody tr:nth-child(odd){background:var(--cream)}
+    .data-table tbody tr{transition:background .2s}
+    .data-table tbody tr:hover{background:rgba(200, 164, 93, 0.15)}
+    .data-table tbody td{padding:10px 14px;color:var(--ink);border-bottom:1px solid rgba(107,79,45,.08)}
+    .data-table tbody td:first-child{font-weight:400;color:var(--deep);width:28%}
+
+    .dosha-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:12px}
+    .dosha-table thead tr{background:var(--spice);color:var(--cream)}
+    .dosha-table thead th{padding:12px 14px;text-align:left;font-weight:400;letter-spacing:2px;font-size:10px;text-transform:uppercase}
+    .dosha-table tbody tr:nth-child(even){background:var(--parchment)}
+    .dosha-table tbody tr:nth-child(odd){background:var(--cream)}
+    .dosha-table tbody td{padding:11px 14px;color:var(--ink);border-bottom:1px solid rgba(107,79,45,.08)}
+    .dosha-table tbody td:first-child{font-weight:400;color:var(--spice);width:18%}
+    .dosha-table tbody td:nth-child(2){color:var(--earth);width:20%}
+
+    .consume-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:12px}
+    .consume-table thead tr{background:var(--amber);color:var(--cream)}
+    .consume-table thead th{padding:12px 14px;text-align:left;font-weight:400;letter-spacing:2px;font-size:10px;text-transform:uppercase}
+    .consume-table tbody tr:nth-child(even){background:var(--parchment)}
+    .consume-table tbody tr:nth-child(odd){background:var(--cream)}
+    .consume-table tbody td{padding:11px 14px;color:var(--ink);border-bottom:1px solid rgba(107,79,45,.08)}
+    .consume-table tbody td:first-child{font-weight:400;color:var(--amber);width:22%}
+
+    .benefits-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:rgba(139,58,26,.12);border:1px solid rgba(139,58,26,.12);margin:8px 0}
+    .benefit-card{background:var(--cream);padding:24px 22px;transition:background .3s;position:relative;overflow:hidden}
+    .benefit-card:hover{background:#ede4ce}
+    .benefit-card::before{content:'';position:absolute;bottom:0;left:0;width:0;height:2px;background:var(--amber);transition:width .4s}
+    .benefit-card:hover::before{width:100%}
+    .benefit-title{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:600;color:var(--spice);margin-bottom:8px}
+    .benefit-desc{font-size:11.5px;font-weight:300;line-height:1.75;color:var(--ink);opacity:.85}
+
+    .precaution-list{list-style:none;margin:8px 0}
+    .precaution-list li{display:flex;gap:12px;align-items:flex-start;padding:10px 14px;font-size:12px;font-weight:300;line-height:1.7;color:var(--ink);border-bottom:1px solid rgba(107,79,45,.08)}
+    .precaution-list li:last-child{border-bottom:none}
+    .precaution-list li::before{content:'▸';color:var(--amber);flex-shrink:0;margin-top:1px}
+
+    .nutrition-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(139,58,26,.12);border:1px solid rgba(139,58,26,.12);margin:20px 0}
+    .nutrition-cell{background:var(--cream);padding:22px 16px;text-align:center;transition:background .3s}
+    .nutrition-cell:hover{background:var(--parchment)}
+    .nutrition-num{font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:300;color:var(--spice);line-height:1;margin-bottom:4px}
+    .nutrition-unit{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--amber);font-weight:300}
+    .nutrition-label{font-size:11px;font-weight:300;color:var(--ink);margin-top:5px}
+
+    .sources{border-top:1px solid rgba(107,79,45,.15);padding-top:24px;margin-top:20px}
+    .sources-title{font-size:10px;letter-spacing:4px;text-transform:uppercase;color:var(--sage);margin-bottom:12px;font-weight:300}
+    .sources ul{list-style:none}
+    .sources ul li{font-family:'Cormorant Garamond',serif;font-size:13px;font-style:italic;color:var(--earth);padding:5px 0;border-bottom:1px solid rgba(107,79,45,.06)}
+    .sources ul li::before{content:'· ';color:var(--sage)}
+
+    footer{position:relative;z-index:10;text-align:center;padding:24px 20px 44px;border-top:1px solid rgba(107,79,45,.12);max-width:860px;margin:0 auto}
+    footer p{font-size:11px;letter-spacing:4px;text-transform:uppercase;color:var(--sage);font-weight:300}
+
+    @keyframes fadeUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
+    @media(max-width:700px){
+      .hero-visual{flex-direction:column}
+      .spice-panel{height:240px}
+      .benefits-grid{grid-template-columns:1fr}
+      .nutrition-bar{grid-template-columns:1fr 1fr}
+      .content{padding:0 18px 60px}
+    }
+  </style>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+</head>
+<body>
+  <button type="button" id="open3D">View in 3D</button>
+
+
+<div class="bg-circle bg-circle-1"></div>
+<div class="bg-circle bg-circle-2"></div>
+
+<!-- Decorative corner SVGs — star anise motif -->
+<svg class="deco-svg deco-tl" viewBox="0 0 280 280" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <g transform="translate(60,60)">
+    <!-- 8-pointed star anise shape -->
+    <g stroke="#8b3a1a" stroke-width="1">
+      <line x1="0" y1="-55" x2="0" y2="55"/>
+      <line x1="-55" y1="0" x2="55" y2="0"/>
+      <line x1="-39" y1="-39" x2="39" y2="39"/>
+      <line x1="39" y1="-39" x2="-39" y2="39"/>
+    </g>
+    <!-- Petals -->
+    <g fill="none" stroke="#8b3a1a" stroke-width="1.1">
+      <ellipse cx="0" cy="-34" rx="7" ry="16" transform="rotate(0)"/>
+      <ellipse cx="0" cy="-34" rx="7" ry="16" transform="rotate(45)"/>
+      <ellipse cx="0" cy="-34" rx="7" ry="16" transform="rotate(90)"/>
+      <ellipse cx="0" cy="-34" rx="7" ry="16" transform="rotate(135)"/>
+      <ellipse cx="0" cy="-34" rx="7" ry="16" transform="rotate(180)"/>
+      <ellipse cx="0" cy="-34" rx="7" ry="16" transform="rotate(225)"/>
+      <ellipse cx="0" cy="-34" rx="7" ry="16" transform="rotate(270)"/>
+      <ellipse cx="0" cy="-34" rx="7" ry="16" transform="rotate(315)"/>
+    </g>
+    <circle cx="0" cy="0" r="6" fill="none" stroke="#c17f3a" stroke-width="1.2"/>
+    <circle cx="0" cy="0" r="2.5" fill="#c17f3a" opacity="0.6"/>
+  </g>
+  <!-- Scattered seeds -->
+  <ellipse cx="140" cy="30" rx="5" ry="8" fill="none" stroke="#8b3a1a" stroke-width="0.8" transform="rotate(20,140,30)" opacity="0.6"/>
+  <ellipse cx="30" cy="150" rx="5" ry="8" fill="none" stroke="#8b3a1a" stroke-width="0.8" transform="rotate(-30,30,150)" opacity="0.5"/>
+  <circle cx="155" cy="55" r="2" fill="#c17f3a" opacity="0.5"/>
+  <circle cx="45" cy="165" r="2" fill="#c17f3a" opacity="0.4"/>
+</svg>
+<svg class="deco-svg deco-br" viewBox="0 0 280 280" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <g transform="translate(60,60)">
+    <g stroke="#8b3a1a" stroke-width="1">
+      <line x1="0" y1="-55" x2="0" y2="55"/>
+      <line x1="-55" y1="0" x2="55" y2="0"/>
+      <line x1="-39" y1="-39" x2="39" y2="39"/>
+      <line x1="39" y1="-39" x2="-39" y2="39"/>
+    </g>
+    <g fill="none" stroke="#8b3a1a" stroke-width="1.1">
+      <ellipse cx="0" cy="-34" rx="7" ry="16" transform="rotate(0)"/>
+      <ellipse cx="0" cy="-34" rx="7" ry="16" transform="rotate(45)"/>
+      <ellipse cx="0" cy="-34" rx="7" ry="16" transform="rotate(90)"/>
+      <ellipse cx="0" cy="-34" rx="7" ry="16" transform="rotate(135)"/>
+      <ellipse cx="0" cy="-34" rx="7" ry="16" transform="rotate(180)"/>
+      <ellipse cx="0" cy="-34" rx="7" ry="16" transform="rotate(225)"/>
+      <ellipse cx="0" cy="-34" rx="7" ry="16" transform="rotate(270)"/>
+      <ellipse cx="0" cy="-34" rx="7" ry="16" transform="rotate(315)"/>
+    </g>
+    <circle cx="0" cy="0" r="6" fill="none" stroke="#c17f3a" stroke-width="1.2"/>
+    <circle cx="0" cy="0" r="2.5" fill="#c17f3a" opacity="0.6"/>
+  </g>
+</svg>
+
+<div class="hero">
+  <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+  <div class="logo-rule"><span></span><div class="logo-ornament">✦</div><span></span></div>
+  <div class="hero-title">Teja</div>
+  <div class="hero-subtitle">Star Anise — The Eight-Pointed Spice of the East</div>
+  <div class="hero-sci">Illicium verum Hook. f. &nbsp;·&nbsp; Schisandraceae (formerly Illiciaceae)</div>
+</div>
+
+<!-- Illustrated panels -->
+<div class="hero-visual">
+  <!-- Panel 1: Whole star anise illustration -->
+  <div class="spice-panel">
+    <svg viewBox="0 0 450 360" xmlns="http://www.w3.org/2000/svg">
+      <rect width="450" height="360" fill="#ede4d0"/>
+      <radialGradient id="bg1" cx="50%" cy="50%" r="55%">
+        <stop offset="0%" stop-color="#f5ece0" stop-opacity="0.9"/>
+        <stop offset="100%" stop-color="#ddd0b5" stop-opacity="0"/>
+      </radialGradient>
+      <ellipse cx="225" cy="180" rx="190" ry="150" fill="url(#bg1)"/>
+      <!-- Main star anise — 8 follicles -->
+      <g transform="translate(225,175)">
+        <!-- Spokes -->
+        <g stroke="#6b3010" stroke-width="1.2" opacity="0.7">
+          <line x1="0" y1="-18" x2="0" y2="-82"/>
+          <line x1="0" y1="-18" x2="58" y2="-58" transform="rotate(45)"/>
+          <line x1="0" y1="-18" x2="82" y2="0" transform="rotate(90)"/>
+          <line x1="0" y1="-18" x2="58" y2="58" transform="rotate(135)"/>
+          <line x1="0" y1="-18" x2="0" y2="82" transform="rotate(180)"/>
+          <line x1="0" y1="-18" x2="-58" y2="58" transform="rotate(225)"/>
+          <line x1="0" y1="-18" x2="-82" y2="0" transform="rotate(270)"/>
+          <line x1="0" y1="-18" x2="-58" y2="-58" transform="rotate(315)"/>
+        </g>
+        <!-- 8 follicle petals -->
+        <g fill="#b5521e" stroke="#7a2e08" stroke-width="0.8">
+          <ellipse cx="0" cy="-52" rx="13" ry="22" transform="rotate(0)"/>
+          <ellipse cx="0" cy="-52" rx="13" ry="22" transform="rotate(45)"/>
+          <ellipse cx="0" cy="-52" rx="13" ry="22" transform="rotate(90)"/>
+          <ellipse cx="0" cy="-52" rx="13" ry="22" transform="rotate(135)"/>
+          <ellipse cx="0" cy="-52" rx="13" ry="22" transform="rotate(180)"/>
+          <ellipse cx="0" cy="-52" rx="13" ry="22" transform="rotate(225)"/>
+          <ellipse cx="0" cy="-52" rx="13" ry="22" transform="rotate(270)"/>
+          <ellipse cx="0" cy="-52" rx="13" ry="22" transform="rotate(315)"/>
+        </g>
+        <!-- Follicle highlights -->
+        <g fill="#d4764a" opacity="0.45">
+          <ellipse cx="0" cy="-56" rx="5" ry="9" transform="rotate(0)"/>
+          <ellipse cx="0" cy="-56" rx="5" ry="9" transform="rotate(45)"/>
+          <ellipse cx="0" cy="-56" rx="5" ry="9" transform="rotate(90)"/>
+          <ellipse cx="0" cy="-56" rx="5" ry="9" transform="rotate(135)"/>
+          <ellipse cx="0" cy="-56" rx="5" ry="9" transform="rotate(180)"/>
+          <ellipse cx="0" cy="-56" rx="5" ry="9" transform="rotate(225)"/>
+          <ellipse cx="0" cy="-56" rx="5" ry="9" transform="rotate(270)"/>
+          <ellipse cx="0" cy="-56" rx="5" ry="9" transform="rotate(315)"/>
+        </g>
+        <!-- Seeds in each follicle -->
+        <g fill="#c9a84c" opacity="0.85">
+          <ellipse cx="0" cy="-52" rx="5" ry="7" transform="rotate(0)"/>
+          <ellipse cx="0" cy="-52" rx="5" ry="7" transform="rotate(45)"/>
+          <ellipse cx="0" cy="-52" rx="5" ry="7" transform="rotate(90)"/>
+          <ellipse cx="0" cy="-52" rx="5" ry="7" transform="rotate(135)"/>
+          <ellipse cx="0" cy="-52" rx="5" ry="7" transform="rotate(180)"/>
+          <ellipse cx="0" cy="-52" rx="5" ry="7" transform="rotate(225)"/>
+          <ellipse cx="0" cy="-52" rx="5" ry="7" transform="rotate(270)"/>
+          <ellipse cx="0" cy="-52" rx="5" ry="7" transform="rotate(315)"/>
+        </g>
+        <!-- Central hub -->
+        <circle cx="0" cy="0" r="14" fill="#8b3a1a" stroke="#5c1f06" stroke-width="1"/>
+        <circle cx="0" cy="0" r="8" fill="#c17f3a"/>
+        <circle cx="0" cy="0" r="4" fill="#e8c06a"/>
+      </g>
+      <!-- Loose seeds -->
+      <g fill="#c9a84c" stroke="#8b5a1a" stroke-width="0.6" opacity="0.8">
+        <ellipse cx="100" cy="280" rx="6" ry="9" transform="rotate(-20,100,280)"/>
+        <ellipse cx="340" cy="270" rx="6" ry="9" transform="rotate(15,340,270)"/>
+        <ellipse cx="80" cy="110" rx="5" ry="8" transform="rotate(35,80,110)"/>
+        <ellipse cx="360" cy="120" rx="5" ry="8" transform="rotate(-25,360,120)"/>
+      </g>
+      <text x="225" y="340" text-anchor="middle" font-family="Cormorant Garamond, serif" font-size="12" fill="#6b4f2d" font-style="italic" letter-spacing="2">Whole Star Anise Fruit</text>
+    </svg>
+  </div>
+  <!-- Panel 2: Cross-section / essential oil drops illustration -->
+  <div class="spice-panel">
+    <svg viewBox="0 0 450 360" xmlns="http://www.w3.org/2000/svg">
+      <rect width="450" height="360" fill="#ede4d0"/>
+      <radialGradient id="bg2" cx="50%" cy="50%" r="55%">
+        <stop offset="0%" stop-color="#fff4e8" stop-opacity="0.8"/>
+        <stop offset="100%" stop-color="#ddd0b5" stop-opacity="0"/>
+      </radialGradient>
+      <ellipse cx="225" cy="180" rx="180" ry="140" fill="url(#bg2)"/>
+      <!-- Mortar / small bowl suggestion -->
+      <ellipse cx="225" cy="295" rx="105" ry="16" fill="#b8a88a" opacity="0.45"/>
+      <path d="M122,280 Q122,310 225,316 Q328,310 328,280 Q328,265 225,258 Q122,265 122,280Z" fill="#c9b898" opacity="0.5"/>
+      <!-- Ground star anise in mortar -->
+      <ellipse cx="225" cy="268" rx="90" ry="20" fill="#c17f3a" opacity="0.25"/>
+      <ellipse cx="225" cy="262" rx="82" ry="14" fill="#d4904a" opacity="0.3"/>
+      <!-- Several broken follicle fragments -->
+      <g fill="#b5521e" stroke="#7a2e08" stroke-width="0.7" opacity="0.75">
+        <ellipse cx="180" cy="200" rx="12" ry="20" transform="rotate(-30,180,200)"/>
+        <ellipse cx="225" cy="185" rx="12" ry="20" transform="rotate(10,225,185)"/>
+        <ellipse cx="270" cy="205" rx="11" ry="18" transform="rotate(25,270,205)"/>
+        <ellipse cx="155" cy="230" rx="9" ry="15" transform="rotate(40,155,230)"/>
+        <ellipse cx="295" cy="235" rx="9" ry="15" transform="rotate(-20,295,235)"/>
+      </g>
+      <!-- Fragment highlights -->
+      <g fill="#d4764a" opacity="0.35">
+        <ellipse cx="180" cy="197" rx="5" ry="8" transform="rotate(-30,180,197)"/>
+        <ellipse cx="225" cy="182" rx="5" ry="8" transform="rotate(10,225,182)"/>
+        <ellipse cx="270" cy="202" rx="5" ry="7" transform="rotate(25,270,202)"/>
+      </g>
+      <!-- Seed pods (golden) -->
+      <g fill="#c9a84c" stroke="#8b5a1a" stroke-width="0.7" opacity="0.9">
+        <ellipse cx="195" cy="205" rx="5" ry="7" transform="rotate(-30,195,205)"/>
+        <ellipse cx="240" cy="190" rx="5" ry="7" transform="rotate(10,240,190)"/>
+        <ellipse cx="262" cy="212" rx="4.5" ry="6.5" transform="rotate(25,262,212)"/>
+      </g>
+      <!-- Essential oil droplets -->
+      <g opacity="0.7">
+        <path d="M130,140 Q130,118 140,120 Q150,122 150,140 Q150,155 140,157 Q130,155 130,140Z" fill="#c17f3a" opacity="0.5"/>
+        <path d="M300,130 Q300,112 309,114 Q318,116 318,130 Q318,143 309,145 Q300,143 300,130Z" fill="#c17f3a" opacity="0.45"/>
+        <path d="M98,195 Q98,182 105,183 Q112,184 112,195 Q112,206 105,207 Q98,206 98,195Z" fill="#c17f3a" opacity="0.38"/>
+        <!-- Shine on drops -->
+        <ellipse cx="137" cy="133" rx="2.5" ry="3.5" fill="white" opacity="0.55" transform="rotate(-20,137,133)"/>
+        <ellipse cx="306" cy="124" rx="2" ry="3" fill="white" opacity="0.5" transform="rotate(-20,306,124)"/>
+      </g>
+      <!-- Anethole formula hint -->
+      <text x="225" y="130" text-anchor="middle" font-family="Jost, sans-serif" font-size="10" fill="#8b3a1a" letter-spacing="3" opacity="0.45">ANETHOLE  ~90%</text>
+      <line x1="170" y1="135" x2="280" y2="135" stroke="#c17f3a" stroke-width="0.5" opacity="0.3"/>
+      <text x="225" y="340" text-anchor="middle" font-family="Cormorant Garamond, serif" font-size="12" fill="#6b4f2d" font-style="italic" letter-spacing="2">Ground Spice &amp; Essential Oil</text>
+    </svg>
+  </div>
+</div>
+<p class="photo-caption">Fig. 1 — Whole dried star anise fruit (Illicium verum) with characteristic eight-pointed follicle arrangement &nbsp;·&nbsp; Fig. 2 — Ground spice and expressed essential oil rich in trans-anethole (~90%)</p>
+
+<div class="divider">
+  <div class="divider-line"></div>
+  <div class="divider-leaf">❧</div>
+  <div class="divider-line"></div>
+</div>
+
+<div class="content">
+  <p class="intro-text">Called <em>Teja</em> in Sanskrit — "that which is brilliant, sharp, and luminous" — Star Anise is one of the most chemically potent of all culinary spices, yielding an essential oil of extraordinary purity. Honoured in Chinese medicine for over 1,300 years, introduced to Europe via the Silk Road in the 16th century, and embraced by Ayurvedic and Unani physicians alike, <em>Illicium verum</em> sits at a rare convergence of gastronomy, pharmacy, and perfumery — its principal compound trans-anethole serving as the molecular basis of anise-flavoured liqueurs worldwide and, more recently, as the precursor to the antiviral drug <em>oseltamivir (Tamiflu)</em>.</p>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">01</span>
+      <h2 class="section-title">Botanical Profile</h2>
+      <div class="section-rule"></div>
+    </div>
+    <p class="section-body">Star Anise is a medium-sized evergreen tree native to the limestone hills of southwest China (Guangxi, Yunnan) and the adjoining highlands of northeast Vietnam — a narrow, specific native range that makes it one of the more geographically restricted major spice trees. The tree grows to 8–15 metres, bearing lustrous, lanceolate-elliptic leaves, pale yellow flowers, and the unmistakable fruit: a woody, eight-follicled star-shaped structure (a schizocarp) that turns from green to rust-brown as it dries. Each follicle contains one hard, shiny, amber-coloured seed.</p>
+    <p class="section-body">The plant belongs to Schisandraceae (formerly its own family Illiciaceae) and is completely unrelated to common anise (<em>Pimpinella anisum</em>) — the similar taste arises purely from convergent production of the same aromatic compound, trans-anethole. The tree begins fruiting at 6 years and can remain productive for over 100 years. China accounts for approximately 90% of global production; the spice is harvested twice yearly — July to August and February to March — with the fruit collected just before full ripening.</p>
+    <table class="data-table">
+      <thead><tr><th>PROPERTY</th><th>Detail</th></tr></thead>
+      <tbody>
+        <tr><td>Family</td><td>Schisandraceae (formerly Illiciaceae)</td></tr>
+        <tr><td>Botanical Name</td><td>Illicium verum Hook. f.</td></tr>
+        <tr><td>Sanskrit Names</td><td>Teja, Chakramardika, Saptashringika, Phanijatak</td></tr>
+        <tr><td>Hindi / Common</td><td>Chakra Phool, Badyan, Star Anise, Anasphal</td></tr>
+        <tr><td>Regional Names</td><td>Takkola (Tam/Mal), Anasphal (Mar), Badian (Urd), Chakra Phool (Beng)</td></tr>
+        <tr><td>Chinese Name</td><td>Bā jiǎo huí xiāng (八角茴香)</td></tr>
+        <tr><td>Native Range</td><td>Southwest China (Guangxi, Yunnan), NE Vietnam</td></tr>
+        <tr><td>Plant Type</td><td>Evergreen tree (8–15 m); productive 100+ years</td></tr>
+        <tr><td>Medicinal Parts</td><td>Dried fruit (primary), seeds, leaves, bark, roots</td></tr>
+        <tr><td>Harvest</td><td>Twice yearly — Jul–Aug and Feb–Mar, pre-ripe</td></tr>
+        <tr><td>Caution: Toxic lookalike</td><td>Japanese Star Anise (Illicium anisatum) — highly toxic; never substitute</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">02</span>
+      <h2 class="section-title">Phytochemistry &amp; Composition</h2>
+      <div class="section-rule"></div>
+    </div>
+    <p class="section-body">Star Anise is one of the most phytochemically elegant of all spices: its essential oil (yield 5–8% from dried fruit) is dominated by a single compound — <em>trans-anethole</em> — to a degree unusual in the plant kingdom. This chemical simplicity belies an extraordinary range of biological activity rooted in anethole's structural properties as a phenylpropanoid. The remaining fraction includes a suite of terpenoids, flavonoids, phenylpropanoids, and fixed oils contributing to antimicrobial, antioxidant, and anti-inflammatory effects.</p>
+    <p class="section-body">Crucially, <em>shikimic acid</em> — extracted from the dried fruit at yields of 3–7% — became globally significant in 2005 as the primary precursor for the synthesis of oseltamivir phosphate (Tamiflu®), causing a worldwide shortage of star anise during avian influenza outbreaks. The fruit also contains quercetin, kaempferol, and rutin (flavonoids) alongside fixed oils rich in linoleic and oleic acids in the seeds.</p>
+    <div class="nutrition-bar">
+      <div class="nutrition-cell">
+        <div class="nutrition-num">~87%</div>
+        <div class="nutrition-unit">trans-anethole</div>
+        <div class="nutrition-label">In essential oil</div>
+      </div>
+      <div class="nutrition-cell">
+        <div class="nutrition-num">5–8%</div>
+        <div class="nutrition-unit">EO yield</div>
+        <div class="nutrition-label">From dried fruit</div>
+      </div>
+      <div class="nutrition-cell">
+        <div class="nutrition-num">3–7%</div>
+        <div class="nutrition-unit">shikimic acid</div>
+        <div class="nutrition-label">Tamiflu precursor</div>
+      </div>
+      <div class="nutrition-cell">
+        <div class="nutrition-num">8</div>
+        <div class="nutrition-unit">follicles</div>
+        <div class="nutrition-label">Per star fruit</div>
+      </div>
+    </div>
+    <table class="data-table">
+      <thead><tr><th>Compound</th><th>Category</th><th>Primary Action</th></tr></thead>
+      <tbody>
+        <tr><td>Trans-anethole</td><td>Phenylpropanoid</td><td>Carminative, antimicrobial, oestrogenic, antifungal, antispasmodic</td></tr>
+        <tr><td>Shikimic Acid</td><td>Cyclitol acid</td><td>Antiviral (Tamiflu precursor); anti-platelet aggregation</td></tr>
+        <tr><td>Foeniculin / Estragole</td><td>Phenylpropanoid</td><td>Minor flavour; mildly antispasmodic</td></tr>
+        <tr><td>α-Pinene &amp; Limonene</td><td>Monoterpenes</td><td>Antimicrobial, anti-inflammatory, expectorant</td></tr>
+        <tr><td>Linalool</td><td>Monoterpene alcohol</td><td>Anxiolytic, antimicrobial, sedative</td></tr>
+        <tr><td>Quercetin &amp; Kaempferol</td><td>Flavonoids</td><td>Antioxidant, anti-inflammatory, hepatoprotective</td></tr>
+        <tr><td>Rutin</td><td>Flavonoid glycoside</td><td>Capillary strengthening, antioxidant</td></tr>
+        <tr><td>Anethole dimer (Dianethole)</td><td>Phenylpropanoid</td><td>Oestrogenic activity — uterine tonic</td></tr>
+        <tr><td>Stigmasterol &amp; Sitosterol</td><td>Phytosterols</td><td>Anti-inflammatory, hypolipidemic</td></tr>
+        <tr><td>Fixed oils (seed)</td><td>Linoleic, oleic, palmitic</td><td>Emollient, nutritive, skin-healing</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">03</span>
+      <h2 class="section-title">Ayurvedic &amp; Classical Significance</h2>
+      <div class="section-rule"></div>
+    </div>
+    <p class="section-body">Star Anise entered Ayurvedic practice relatively late compared to its long history in Chinese medicine — it is referenced in later mediaeval texts and Nighantu compilations rather than the foundational Charaka and Sushruta Samhitas. Bhavaprakasha Nighantu lists it as <em>Takkola</em> or <em>Phanijatak</em> in the Haritakyadi Varga; Raj Nighantu and Dhanvantari Nighantu also record it. It is often grouped with other aromatic Katu-Tikta spices used as carminatives, digestive stimulants, and respiratory herbs.</p>
+    <p class="section-body">In Unani medicine it is a premier drug under the name <em>Badyan</em> — prescribed for digestive complaints, colic, respiratory congestion, and as a galactagogue (promoting breast milk production). In Traditional Chinese Medicine, <em>bā jiǎo</em> is one of the five spices in Wu Xiang Fen, warming the kidney and spleen Qi, dispersing cold, and relieving pain.</p>
+    <table class="dosha-table">
+      <thead><tr><th>Dosha</th><th>Effect</th><th>Mechanism &amp; Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Vata ↓↓</td><td>Strongly pacifying</td><td>Ushna (hot), snigdha (unctuous), and carminative properties directly address Vata accumulation in the GI tract — relieves bloating, colic, and intestinal spasm; also warms the channels (srotas) and eases neuralgic pain</td></tr>
+        <tr><td>Pitta ↑</td><td>Mildly aggravating</td><td>Ushna virya and pungent-sweet rasa may mildly increase Pitta; use cautiously in Pitta-dominant constitutions with hyperacidity or inflammatory conditions — combine with cooling agents if needed</td></tr>
+        <tr><td>Kapha ↓</td><td>Pacifying</td><td>Tikshna (sharp) and ushna (hot) qualities dry and disperse Kapha; useful in respiratory congestion, chronic mucus, nausea, and loss of appetite — a secondary but important Kapha-clearing action</td></tr>
+      </tbody>
+    </table>
+    <p class="section-body"><strong>Rasa:</strong> Madhura (sweet), Katu (pungent), Tikta (bitter) &nbsp;·&nbsp; <strong>Guna:</strong> Laghu (light), Snigdha (slightly unctuous), Tikshna (sharp) &nbsp;·&nbsp; <strong>Virya:</strong> Ushna (hot) &nbsp;·&nbsp; <strong>Vipaka:</strong> Madhura (sweet) &nbsp;·&nbsp; <strong>Karma:</strong> Vata-Kapha shamaka, Deepana, Pachana, Shoolahara, Krimighna</p>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">04</span>
+      <h2 class="section-title">Key Health Benefits</h2>
+      <div class="section-rule"></div>
+    </div>
+    <p class="section-body">Star Anise bridges the ancient and modern — many of its classical applications in digestive and respiratory medicine have been confirmed by contemporary pharmacology, while its antiviral and oestrogenic properties represent newer research frontiers.</p>
+    <div class="benefits-grid">
+      <div class="benefit-card">
+        <div class="benefit-title">Carminative &amp; Digestive</div>
+        <div class="benefit-desc">The premier classical indication: trans-anethole relaxes smooth muscle in the GI tract, expelling trapped gas and relieving bloating, colic, and intestinal spasm. Used in flatulence, indigestion (<em>ajirna</em>), abdominal distension, and hiccough. Works synergistically with black pepper and long pepper in classical digestive formulations.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Antispasmodic &amp; Anti-colic</div>
+        <div class="benefit-desc">Anethole's calcium-channel-modulating and smooth-muscle-relaxant properties make it effective in spasmodic colic, irritable bowel syndrome, and dysmenorrhoea. Infant colic preparations in traditional Mediterranean and Asian medicine have used dilute star anise tea — though caution is essential regarding correct species identification.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Respiratory &amp; Expectorant</div>
+        <div class="benefit-desc">Used in bronchitis, cough, asthma, and upper respiratory infections. Acts as a mucolytic (thins mucus) and bronchospasmolytic (opens airways). The volatile oils stimulate ciliary movement in the bronchial mucosa, facilitating expulsion of secretions. Combined with honey and long pepper in classical cough preparations.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Antiviral — Oseltamivir Precursor</div>
+        <div class="benefit-desc">Star anise's shikimic acid is the primary industrial precursor for the synthesis of oseltamivir phosphate (Tamiflu®), the leading antiviral drug against influenza A and B. While consuming star anise does not provide therapeutic antiviral levels of oseltamivir, the whole-plant shikimic acid and anethole show direct antiviral activity in vitro against influenza, herpes simplex, and hepatitis C viruses.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Antimicrobial &amp; Antifungal</div>
+        <div class="benefit-desc">Essential oil and anethole show broad-spectrum activity against E. coli, Staphylococcus aureus, Salmonella, Listeria, Candida albicans, and Aspergillus. Particularly useful in food-borne pathogen contexts; anethole disrupts bacterial cell membranes and inhibits biofilm formation. Used topically in traditional medicine for oral infections and skin fungal conditions.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Oestrogenic &amp; Galactagogue</div>
+        <div class="benefit-desc">Dianethole and photoanethole (anethole polymers) bind weakly to oestrogen receptors — explaining classical use for amenorrhoea, dysmenorrhoea, and promotion of breast milk (galactagogue). Used in Unani and folk medicine for female hormonal complaints. This oestrogenic activity also underpins caution in oestrogen-sensitive conditions.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Antioxidant &amp; Anti-inflammatory</div>
+        <div class="benefit-desc">Quercetin, kaempferol, rutin, and anethole collectively deliver significant antioxidant capacity — DPPH radical scavenging in extracts rivals established antioxidants. Anti-inflammatory activity is mediated through NF-κB pathway inhibition and reduced prostaglandin synthesis. Used in traditional formulations for arthritis and inflammatory pain.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-title">Oral Health &amp; Breath Freshener</div>
+        <div class="benefit-desc">Chewing whole star anise is a traditional post-meal breath freshener and oral antiseptic across South and Southeast Asia. The antimicrobial volatile oils suppress oral bacteria including S. mutans and Porphyromonas gingivalis (implicated in periodontitis). Used in classical <em>Gandusha</em> (oil-pulling) preparations and tooth powders.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">05</span>
+      <h2 class="section-title">Classical Formulations &amp; Culinary Use</h2>
+      <div class="section-rule"></div>
+    </div>
+    <p class="section-body">Star Anise occupies an important place in both culinary and medicinal traditions across Asia. It is one of the five spices in Chinese Wu Xiang Fen, a cornerstone of Vietnamese phở broth, and a key flavouring in European anise-based liqueurs (pastis, sambuca, ouzo, arak). In Ayurvedic and Unani pharmacy it appears in digestive, respiratory, and reproductive preparations.</p>
+    <table class="data-table">
+      <thead><tr><th>Formulation / Use</th><th>Tradition</th><th>Indication</th></tr></thead>
+      <tbody>
+        <tr><td>Star Anise + Honey Tea</td><td>Ayurveda / Unani</td><td>Cough, bronchitis, respiratory congestion</td></tr>
+        <tr><td>Trijataka Churna</td><td>Classical Ayurveda</td><td>Cinnamon, cardamom, star anise — digestive tonic, fever</td></tr>
+        <tr><td>Jatiphaladi Churna</td><td>Sharangdhara Samhita</td><td>Digestive disorders, IBS, malabsorption</td></tr>
+        <tr><td>Pancha Kola (variant)</td><td>Classical Ayurveda</td><td>Five spice digestive warming formula</td></tr>
+        <tr><td>Wu Xiang Fen (Five Spice)</td><td>Traditional Chinese Medicine</td><td>Warming Qi, digestive support, cold-dispersing</td></tr>
+        <tr><td>Badyan Ark (distillate)</td><td>Unani Tibb</td><td>Colic, flatulence, menstrual disorders</td></tr>
+        <tr><td>Star Anise + Fennel + Coriander</td><td>Folk digestive</td><td>Post-meal digestive blend — bloating, gas</td></tr>
+        <tr><td>Anise liqueurs (Pastis, Sambuca)</td><td>European / Mediterranean</td><td>Aperitif / digestif; carminative tradition</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">06</span>
+      <h2 class="section-title">How to Use Teja</h2>
+      <div class="section-rule"></div>
+    </div>
+    <p class="section-body">Star Anise is versatile — used whole, ground, as an infusion, as essential oil, or as a decoction. Culinary use at typical food amounts is safe for most people. Medicinal doses involve larger quantities or concentrated forms and should be used mindfully, particularly in pregnancy, oestrogen-sensitive conditions, and infants.</p>
+    <table class="consume-table">
+      <thead><tr><th>Form</th><th>Preparation</th><th>Dosage</th><th>Best Use</th></tr></thead>
+      <tbody>
+        <tr><td>Whole Fruit (Chewing)</td><td>Chew 1–2 whole star anise after meals</td><td>1–2 pods post-meal</td><td>Digestive, breath freshener, oral health</td></tr>
+        <tr><td>Tea / Infusion</td><td>1–2 star anise pods simmered in 200 ml water, 10 min; strain; add honey</td><td>1 cup, 2–3× daily</td><td>Cough, cold, flatulence, digestive colic</td></tr>
+        <tr><td>Decoction (Kwatha)</td><td>2–3 pods + fennel + coriander seeds; boil and reduce to ½</td><td>30–50 ml twice daily</td><td>IBS, bloating, menstrual cramps</td></tr>
+        <tr><td>Churna (Powder)</td><td>Ground whole fruit; mix with honey or warm water</td><td>1–2 g, 1–2× daily</td><td>Digestive disorders, respiratory conditions</td></tr>
+        <tr><td>Essential Oil (topical)</td><td>Dilute 2–3 drops in 10 ml carrier oil</td><td>Apply to chest / abdomen</td><td>Respiratory congestion (chest rub), muscle pain</td></tr>
+        <tr><td>Steam Inhalation</td><td>2–3 drops EO in hot water bowl; inhale under towel</td><td>5–10 min, 1–2× daily</td><td>Sinusitis, bronchitis, nasal congestion</td></tr>
+        <tr><td>Spice in cooking</td><td>Whole pods in curries, broths, biryanis, stews</td><td>1–3 pods per dish</td><td>Flavouring + digestive benefit; remove before eating</td></tr>
+        <tr><td>Mouth Rinse</td><td>2 pods infused in warm water; cool and rinse</td><td>Rinse 1–2× daily</td><td>Oral hygiene, bad breath, mouth infections</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-num">07</span>
+      <h2 class="section-title">Safety &amp; Precautions</h2>
+      <div class="section-rule"></div>
+    </div>
+    <p class="section-body">Star Anise at culinary doses is among the safest of all spices, with an extensive history of food use. Medicinal doses require more care. The single most critical safety concern is <strong>adulteration with Japanese Star Anise (<em>Illicium anisatum</em>)</strong>, which is highly toxic (neurotoxic anisatin) and visually similar to untrained eyes — always source from reputable suppliers.</p>
+    <ul class="precaution-list">
+      <li><strong>Toxic lookalike — Japanese Star Anise:</strong> Illicium anisatum contains anisatin — a potent GABA-antagonist causing seizures, respiratory failure, and death. It visually resembles Illicium verum. Several poisoning cases in Europe have resulted from mislabelled herbal teas. Always verify species; Japanese star anise has more than 8 follicles (typically 10–13) and a more pointed appearance.</li>
+      <li><strong>Pregnancy (medicinal doses):</strong> Oestrogenic anethole polymers (dianethole, photoanethole) can stimulate uterine contractions at high medicinal doses. Culinary amounts in food are safe; medicinal-dose teas, decoctions, or essential oil use should be avoided in pregnancy.</li>
+      <li><strong>Infants — special caution:</strong> Several cases of neurotoxicity (seizures, jitteriness, vomiting) in infants given star anise tea have been reported in Europe — largely traced to Japanese star anise contamination. Do not give star anise tea to infants under 12 months due to both toxicity risk and the difficulty of reliably distinguishing species.</li>
+      <li><strong>Oestrogen-sensitive conditions:</strong> Due to oestrogenic activity, caution is warranted in oestrogen-receptor-positive breast cancer, uterine fibroids, endometriosis, and in patients on hormonal therapies or tamoxifen — at medicinal doses only; culinary use is unaffected.</li>
+      <li><strong>Essential oil — internal use:</strong> Star anise essential oil is not for internal consumption except under specialist direction. Oral EO can cause nausea, vomiting, seizures, and pulmonary oedema in doses exceeding a few ml. Topical use must always be diluted.</li>
+      <li><strong>Pitta constitution:</strong> The ushna (hot) virya may aggravate Pitta in susceptible individuals — add fennel or coriander as Pitta-cooling co-spices if GI burning, acid reflux, or skin flushing occurs.</li>
+      <li><strong>Drug interactions:</strong> Possible potentiation of anticoagulants (aspirin, warfarin) due to anethole's anti-platelet activity; potential interaction with oestrogen-containing medications; may enhance sedative effect of CNS depressants at high essential oil doses.</li>
+      <li><strong>Allergic reactions:</strong> Contact dermatitis to anethole is documented, particularly in atopic individuals. Oral allergy syndrome has been reported in people with sensitivity to other Apiaceae spices (anise, fennel, caraway). Patch test before regular topical EO application.</li>
+    </ul>
+  </div>
+
+  <div class="sources">
+    <div class="sources-title">References &amp; Sources</div>
+    <ul>
+      <li>Bhavaprakasha Nighantu — Haritakyadi Varga — Takkola / Phanijatak entries</li>
+      <li>Raj Nighantu &amp; Dhanvantari Nighantu — Teja / Star Anise classical properties</li>
+      <li>Unani Materia Medica — Badyan (Star Anise) pharmacology and applications</li>
+      <li>Chainy GBN et al. — "Anethole blocks both early and late cellular responses transduced by tumor necrosis factor" — Oncogene, 2000</li>
+      <li>Shoji N et al. — "Antispasmodic action of anethole on the smooth muscle of guinea-pig" — Planta Medica, 1974</li>
+      <li>Patra JK &amp; Baek K-H — "Antibacterial activity of star anise extracts" — Evidence-Based Complementary and Alternative Medicine, 2016</li>
+      <li>Zaruwa MZ et al. — "Phytochemical screening and antioxidant activity of Illicium verum" — Journal of Natural Sciences Research, 2016</li>
+      <li>Rabe S &amp; Coulon J — "Shikimic acid: availability, biosynthesis and extraction from Chinese star anise for Tamiflu synthesis" — Natural Product Reports, 2005</li>
+      <li>Madsen HL &amp; Bertelsen G — "Spices as antioxidants" — Trends in Food Science and Technology, 1995</li>
+      <li>European Food Safety Authority (EFSA) — "Star anise (Illicium verum) — Risk assessment in food and food supplements" — EFSA Journal, 2009</li>
+      <li>Priyavrat Sharma — Dravyaguna Vigyana — Properties of Takkola and aromatic spice drugs</li>
+      <li>Wichtl M (ed.) — Herbal Drugs and Phytopharmaceuticals — Star Anise monograph, 4th edition</li>
+    </ul>
+  </div>
+</div>
+
+<footer>
+  <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a qualified practitioner before therapeutic use</p>
+</footer>
+
+
+  <div id="viewerModal">
+    <div id="modal-topbar">
+      <span>3D Model — Teja</span>
+      <button type="button" id="close3D">✕</button>
+    </div>
+    <model-viewer src="teja3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+  </div>
+  <script>
+    (function() {
+      var open3D = document.getElementById('open3D');
+      var close3D = document.getElementById('close3D');
+      var modal = document.getElementById('viewerModal');
+      if (!open3D || !close3D || !modal) return;
+      function openModal() {
+        
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+      function closeModal() {
+        
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+      open3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); openModal();
+      });
+      close3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); closeModal();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+      });
+    })();
+  </script>
+
+</body>
+</html>

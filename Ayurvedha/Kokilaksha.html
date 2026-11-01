@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kokilaksha | Swastha</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+  <style>
+    #open3D {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      padding: 10px 18px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: var(--forest);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      z-index: 1000;
+      transition: .3s;
+    }
+    #open3D:hover {
+      background: var(--gold);
+      color: var(--deep);
+    }
+    #viewerModal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+    }
+    #modal-topbar {
+      flex-shrink: 0;
+      height: 58px;
+      background: #111111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px 0 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      z-index: 99999;
+    }
+    #modal-topbar span {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 4.5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.72);
+      user-select: none;
+    }
+    #close3D {
+      width: 38px;
+      height: 38px;
+      font-size: 15px;
+      font-weight: 300;
+      background: transparent;
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background .2s, color .2s, transform .22s;
+      outline: none;
+      flex-shrink: 0;
+    }
+    #close3D:hover {
+      background: #ffffff;
+      color: #111111;
+      border-color: #ffffff;
+      transform: rotate(90deg);
+    }
+    #viewerModal model-viewer {
+      flex: 1;
+      width: 100%;
+      display: block;
+      background: #ffffff;
+    }
+
+    :root {
+    --bg-primary: #07170F;
+    --bg-secondary: #103B28;
+    --botanical: #47734C;
+    --gold: #C8A45D;
+    --gold-warm: #E5C783;
+    --ivory: #F5F0E4;
+    --sage: #C7C9B9;
+
+    --cream: #07170F;
+    --parchment: #103B28;
+    --earth: #E5C783;
+    --forest: #47734C;
+    --deep: #F5F0E4;
+    --ink: #F5F0E4;
+}
+    * { margin:0; padding:0; box-sizing:border-box }
+    html { scroll-behavior:smooth }
+    body { font-family:'Jost',sans-serif; background:var(--cream); color:var(--ink); min-height:100vh; overflow-x:hidden; position:relative }
+    body::before { content:''; position:fixed; inset:0; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E"); opacity:.035; pointer-events:none; z-index:100 }
+
+    .bg-circle { position:fixed; border-radius:50%; pointer-events:none; z-index:0 }
+    .bg-circle-1 { width:700px; height:700px; background:radial-gradient(circle,rgba(42,92,63,.1) 0%,transparent 70%); top:-200px; right:-150px }
+    .bg-circle-2 { width:500px; height:500px; background:radial-gradient(circle,rgba(201,168,76,.08) 0%,transparent 70%); bottom:-100px; left:-100px }
+
+    .botanical-svg { position:fixed; pointer-events:none; z-index:1; opacity:.1 }
+    .botanical-tl { top:-20px; left:-20px; width:260px }
+    .botanical-br { bottom:-20px; right:-20px; width:220px; transform:rotate(180deg) }
+
+    .hero { position:relative; z-index:10; padding:54px 40px 0; text-align:center; opacity:0; animation:fadeUp .9s ease .1s forwards }
+    .back-link { display:inline-flex; align-items:center; gap:8px; font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--sage); text-decoration:none; margin-bottom:36px; transition:color .3s }
+    .back-link:hover { color:var(--gold) }
+    .logo-rule { display:flex; align-items:center; justify-content:center; gap:20px; margin-bottom:14px }
+    .logo-rule span { display:block; height:1px; width:70px; background:linear-gradient(to right,transparent,var(--gold)) }
+    .logo-rule span:last-child { background:linear-gradient(to left,transparent,var(--gold)) }
+    .logo-ornament { font-size:13px; color:var(--gold) }
+    .hero-title { font-family:'Cormorant Garamond',serif; font-size:clamp(64px,12vw,110px); font-weight:300; letter-spacing:8px; line-height:1; color:var(--deep) }
+    .hero-subtitle { font-family:'Cormorant Garamond',serif; font-size:18px; font-style:italic; font-weight:300; color:var(--earth); letter-spacing:2px; margin-top:8px }
+    .hero-sci { font-size:11px; font-weight:200; letter-spacing:5px; color:var(--sage); margin-top:6px }
+
+    .hero-photos { position:relative; z-index:10; display:grid; grid-template-columns:1fr 1fr; gap:2px; max-width:900px; margin:40px auto 0; opacity:0; animation:fadeUp .9s ease .35s forwards }
+    .hero-photos img { width:100%; height:380px; object-fit:cover; object-position:center; display:block; background:var(--parchment) }
+    .photo-caption { text-align:center; font-family:'Cormorant Garamond',serif; font-size:12px; font-style:italic; color:var(--sage); letter-spacing:1px; padding:10px 0 0; max-width:900px; margin:0 auto; position:relative; z-index:10; opacity:0; animation:fadeUp .9s ease .5s forwards }
+
+    .divider { display:flex; align-items:center; justify-content:center; gap:16px; margin:50px auto; max-width:600px; opacity:0; animation:fadeUp .9s ease .55s forwards; position:relative; z-index:10 }
+    .divider-line { height:1px; width:120px; background:linear-gradient(to right,transparent,var(--sage)) }
+    .divider-line:last-child { background:linear-gradient(to left,transparent,var(--sage)) }
+    .divider-leaf { color:var(--forest); font-size:18px }
+
+    .content { position:relative; z-index:10; max-width:860px; margin:0 auto; padding:0 30px 80px }
+    .intro-text { font-family:'Cormorant Garamond',serif; font-size:20px; font-weight:300; line-height:1.75; color:var(--ink); text-align:center; max-width:700px; margin:0 auto 60px; opacity:0; animation:fadeUp .9s ease .6s forwards }
+    .intro-text em { color:var(--forest); font-style:italic }
+
+    .section { margin-bottom:60px; opacity:0; animation:fadeUp .9s ease forwards }
+    .section:nth-child(1){animation-delay:.65s}.section:nth-child(2){animation-delay:.75s}.section:nth-child(3){animation-delay:.85s}.section:nth-child(4){animation-delay:.95s}.section:nth-child(5){animation-delay:1.05s}.section:nth-child(6){animation-delay:1.15s}.section:nth-child(7){animation-delay:1.25s}
+
+    .section-header { display:flex; align-items:center; gap:14px; margin-bottom:20px }
+    .section-num { font-family:'Cormorant Garamond',serif; font-size:11px; letter-spacing:4px; color:var(--gold) }
+    .section-title { font-family:'Cormorant Garamond',serif; font-size:28px; font-weight:400; color:var(--deep); letter-spacing:1px }
+    .section-rule { height:1px; flex:1; background:linear-gradient(to right,var(--gold),transparent) }
+    .section-body { font-size:13px; font-weight:300; line-height:1.9; color:var(--ink); margin-bottom:24px }
+
+    .data-table { width:100%; border-collapse:collapse; margin:16px 0 8px; font-size:12px }
+    .data-table thead tr { background:var(--deep); color:var(--gold); font-size:10px; letter-spacing:3px; text-transform:uppercase }
+    .data-table thead th { padding:12px 14px; text-align:left; font-weight:400 }
+    .data-table tbody tr:nth-child(even){ background:var(--parchment) }
+    .data-table tbody tr:nth-child(odd){ background:var(--cream) }
+    .data-table tbody tr { transition:background .2s }
+    .data-table tbody tr:hover { background:rgba(200, 164, 93, 0.15) }
+    .data-table tbody td { padding:10px 14px; color:var(--ink); border-bottom:1px solid rgba(107,79,45,.08) }
+    .data-table tbody td:first-child { font-weight:400; color:var(--deep); width:28% }
+
+    .dosha-table { width:100%; border-collapse:collapse; margin:16px 0; font-size:12px }
+    .dosha-table thead tr { background:var(--forest); color:var(--cream) }
+    .dosha-table thead th { padding:12px 14px; text-align:left; font-weight:400; letter-spacing:2px; font-size:10px; text-transform:uppercase }
+    .dosha-table tbody tr:nth-child(even){ background:var(--parchment) }
+    .dosha-table tbody tr:nth-child(odd){ background:var(--cream) }
+    .dosha-table tbody td { padding:11px 14px; color:var(--ink); border-bottom:1px solid rgba(107,79,45,.08) }
+    .dosha-table tbody td:first-child { font-weight:400; color:var(--forest); width:18% }
+    .dosha-table tbody td:nth-child(2){ color:var(--earth); width:20% }
+
+    .consume-table { width:100%; border-collapse:collapse; margin:16px 0; font-size:12px }
+    .consume-table thead tr { background:var(--earth); color:var(--cream) }
+    .consume-table thead th { padding:12px 14px; text-align:left; font-weight:400; letter-spacing:2px; font-size:10px; text-transform:uppercase }
+    .consume-table tbody tr:nth-child(even){ background:var(--parchment) }
+    .consume-table tbody tr:nth-child(odd){ background:var(--cream) }
+    .consume-table tbody td { padding:11px 14px; color:var(--ink); border-bottom:1px solid rgba(107,79,45,.08) }
+    .consume-table tbody td:first-child { font-weight:400; color:var(--earth); width:22% }
+
+    .benefits-grid { display:grid; grid-template-columns:1fr 1fr; gap:1px; background:rgba(107,79,45,.12); border:1px solid rgba(107,79,45,.12); margin:8px 0 }
+    .benefit-card { background:var(--cream); padding:24px 22px; transition:background .3s; position:relative; overflow:hidden }
+    .benefit-card:hover { background:#ede4ce }
+    .benefit-card::before { content:''; position:absolute; bottom:0; left:0; width:0; height:2px; background:var(--gold); transition:width .4s }
+    .benefit-card:hover::before { width:100% }
+    .benefit-title { font-family:'Cormorant Garamond',serif; font-size:16px; font-weight:600; color:var(--forest); margin-bottom:8px }
+    .benefit-desc { font-size:11.5px; font-weight:300; line-height:1.75; color:var(--ink); opacity:.85 }
+
+    .precaution-list { list-style:none; margin:8px 0 }
+    .precaution-list li { display:flex; gap:12px; align-items:flex-start; padding:10px 14px; font-size:12px; font-weight:300; line-height:1.7; color:var(--ink); border-bottom:1px solid rgba(107,79,45,.08) }
+    .precaution-list li:last-child { border-bottom:none }
+    .precaution-list li::before { content:'▸'; color:var(--gold); flex-shrink:0; margin-top:1px }
+
+    .nutrition-bar { display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:rgba(107,79,45,.12); border:1px solid rgba(107,79,45,.12); margin:20px 0 }
+    .nutrition-cell { background:var(--cream); padding:22px 16px; text-align:center; transition:background .3s }
+    .nutrition-cell:hover { background:var(--parchment) }
+    .nutrition-num { font-family:'Cormorant Garamond',serif; font-size:36px; font-weight:300; color:var(--forest); line-height:1; margin-bottom:4px }
+    .nutrition-unit { font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--gold); font-weight:300 }
+    .nutrition-label { font-size:11px; font-weight:300; color:var(--ink); margin-top:5px }
+
+    .sources { border-top:1px solid rgba(107,79,45,.15); padding-top:24px; margin-top:20px }
+    .sources-title { font-size:10px; letter-spacing:4px; text-transform:uppercase; color:var(--sage); margin-bottom:12px; font-weight:300 }
+    .sources ul { list-style:none }
+    .sources ul li { font-family:'Cormorant Garamond',serif; font-size:13px; font-style:italic; color:var(--earth); padding:5px 0; border-bottom:1px solid rgba(107,79,45,.06) }
+    .sources ul li::before { content:'· '; color:var(--sage) }
+
+    footer { position:relative; z-index:10; text-align:center; padding:24px 20px 44px; border-top:1px solid rgba(107,79,45,.12); max-width:860px; margin:0 auto }
+    footer p { font-size:11px; letter-spacing:4px; text-transform:uppercase; color:var(--sage); font-weight:300 }
+
+    @keyframes fadeUp { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:translateY(0)} }
+
+    @media(max-width:700px){
+      .hero-photos{grid-template-columns:1fr}.hero-photos img{height:260px}
+      .benefits-grid{grid-template-columns:1fr}.nutrition-bar{grid-template-columns:1fr 1fr}
+      .content{padding:0 18px 60px}
+    }
+  </style>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+</head>
+<body>
+  <button type="button" id="open3D">View in 3D</button>
+
+
+  <div class="bg-circle bg-circle-1"></div>
+  <div class="bg-circle bg-circle-2"></div>
+
+  <svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#2a5c3f" stroke-width="1.5" fill="none"/>
+    <circle cx="90" cy="210" r="8" fill="#2a5c3f" opacity="0.7"/>
+    <circle cx="130" cy="175" r="10" fill="#7a9e7e" opacity="0.6"/>
+    <circle cx="170" cy="135" r="7" fill="#2a5c3f" opacity="0.8"/>
+    <circle cx="210" cy="95" r="9" fill="#c9a84c" opacity="0.5"/>
+    <ellipse cx="115" cy="195" rx="20" ry="10" fill="#7a9e7e" transform="rotate(-30 115 195)"/>
+    <ellipse cx="155" cy="155" rx="18" ry="9" fill="#2a5c3f" transform="rotate(-45 155 155)"/>
+    <ellipse cx="195" cy="115" rx="16" ry="8" fill="#7a9e7e" transform="rotate(-60 195 115)"/>
+  </svg>
+  <svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 290 Q 80 210 130 160 Q 180 110 250 30" stroke="#2a5c3f" stroke-width="1.5" fill="none"/>
+    <circle cx="90" cy="210" r="8" fill="#2a5c3f" opacity="0.7"/>
+    <circle cx="130" cy="175" r="10" fill="#7a9e7e" opacity="0.6"/>
+    <circle cx="170" cy="135" r="7" fill="#2a5c3f" opacity="0.8"/>
+    <ellipse cx="115" cy="195" rx="20" ry="10" fill="#7a9e7e" transform="rotate(-30 115 195)"/>
+  </svg>
+
+  <div class="hero">
+    <a href="index.html" class="back-link">← Back to Herbal Garden</a>
+    <div class="logo-rule"><span></span><div class="logo-ornament">✦</div><span></span></div>
+    <div class="hero-title">Kokilaksha</div>
+    <div class="hero-subtitle">Marsh Barbel — The Cuckoo's Eye</div>
+    <div class="hero-sci">Asteracantha longifolia (L.) Nees &nbsp;·&nbsp; Hygrophila auriculata</div>
+  </div>
+
+  <div class="hero-photos">
+    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/3/30/Our_Native_Talimkhana_-_Asteracantha_Longifolia.jpg/1280px-Our_Native_Talimkhana_-_Asteracantha_Longifolia.jpg" alt="Kokilaksha purple flowers with spiny whorls along the stem"
+      onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/2/23/Hygrophila_auriculata_in_Narshapur%2C_AP_W3_IMG_0926.jpg" alt="Kokilaksha growing in marshy wetland habitat with lance-shaped leaves"
+      onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">
+  </div>
+  <p class="photo-caption">Fig. 1 — Vibrant violet flowers of Kokilaksha emerging from spiny leaf axils &nbsp;·&nbsp; Fig. 2 — Kokilaksha thriving in its natural wetland and marshy habitat</p>
+
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-leaf">❧</div>
+    <div class="divider-line"></div>
+  </div>
+
+  <div class="content">
+    <p class="intro-text">Named <em>Kokilaksha</em> — "the eye of the cuckoo" — for its seeds that resemble the dark, lustrous eye of the <em>kokila</em> (Indian cuckoo), this aquatic herb of the Acanthaceae family holds a revered place in classical Ayurveda as a premier <em>Vajikarana</em> (aphrodisiac) and <em>Rasayana</em> (rejuvenative) herb, celebrated by Charaka and Sushruta for its unmatched capacity to restore vitality, strengthen the urogenital system, and promote <em>shukra dhatu</em> — the essence of reproductive tissue.</p>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">01</span><h2 class="section-title">Botanical Profile</h2><div class="section-rule"></div></div>
+      <p class="section-body">Kokilaksha (<em>Asteracantha longifolia</em>, syn. <em>Hygrophila auriculata</em>) is an erect, aquatic or semi-aquatic annual herb of the Acanthaceae family, indigenous to tropical Asia — widely distributed across the Indian subcontinent, Sri Lanka, Myanmar, and tropical Africa. It grows to 60–120 cm tall in marshy ground, pond margins, rice fields, and stream banks, thriving in waterlogged soils at altitudes up to 900 m.</p>
+      <p class="section-body">The stems are quadrangular and stout, bearing pairs of long, sharp, straw-coloured spines (2–3 cm) at each node — an immediately recognisable feature. Leaves are opposite, lanceolate to oblanceolate, 6–12 cm long, with entire margins and a prominent midrib. The striking flowers are deep violet to purple, tubular and bilabiate (two-lipped), borne in dense axillary whorls at each spine cluster, appearing September through February. Fruits are oblong capsules containing 4 compressed, mucilaginous seeds that swell dramatically when wetted — the lustrous "cuckoo-eye" seeds that give the plant its Sanskrit name.</p>
+      <table class="data-table">
+        <thead><tr><th>PROPERTY</th><th>Detail</th></tr></thead>
+        <tbody>
+          <tr><td>Family</td><td>Acanthaceae</td></tr>
+          <tr><td>Botanical Name</td><td>Asteracantha longifolia (L.) Nees / Hygrophila auriculata</td></tr>
+          <tr><td>Sanskrit Names</td><td>Kokilaksha, Ikshura, Ikshugandha, Talmakhana, Vrishabeeja</td></tr>
+          <tr><td>Common Names</td><td>Marsh Barbel, Long-leaved Barleria, Talmakhana</td></tr>
+          <tr><td>Regional Names</td><td>Nirmuli (Hin), Talimakhana (Ben), Kolambi (Mar), Neerumugli (Tel), Nirumulli (Tam), Vayalchulli (Mal)</td></tr>
+          <tr><td>Origin</td><td>Tropical Asia — Indian subcontinent, Sri Lanka, Myanmar, tropical Africa</td></tr>
+          <tr><td>Plant Type</td><td>Erect aquatic/semi-aquatic annual herb (60–120 cm)</td></tr>
+          <tr><td>Flowering Season</td><td>September – February</td></tr>
+          <tr><td>Medicinal Parts</td><td>Seeds (primary), whole plant, roots, leaves</td></tr>
+          <tr><td>Taste Profile</td><td>Madhura (sweet), Tikta (bitter)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">02</span><h2 class="section-title">Phytochemistry &amp; Composition</h2><div class="section-rule"></div></div>
+      <p class="section-body">Phytochemical investigations of <em>Asteracantha longifolia</em> have identified a rich array of bioactive constituents spread across its different plant parts. The seeds — the most therapeutically prized part — are particularly rich in mucilage, fatty acids (behenic, stearic, palmitic, oleic), alkaloids (lupeol, β-sitosterol), and a unique phytosterol profile. The roots and aerial parts yield flavonoids, alkaloids (asteracanthine, asteracanthinine), glycosides, phytol, and triterpenoids responsible for its hepatoprotective and androgenic activities.</p>
+      <div class="nutrition-bar">
+        <div class="nutrition-cell"><div class="nutrition-num">30+</div><div class="nutrition-unit">compounds</div><div class="nutrition-label">Isolated phytoconstituents</div></div>
+        <div class="nutrition-cell"><div class="nutrition-num">~25%</div><div class="nutrition-unit">mucilage</div><div class="nutrition-label">In seeds (wet weight)</div></div>
+        <div class="nutrition-cell"><div class="nutrition-num">2</div><div class="nutrition-unit">alkaloids</div><div class="nutrition-label">Asteracanthine &amp; Asteracanthinine</div></div>
+        <div class="nutrition-cell"><div class="nutrition-num">4</div><div class="nutrition-unit">seeds</div><div class="nutrition-label">Per capsule, highly mucilaginous</div></div>
+      </div>
+      <table class="data-table">
+        <thead><tr><th>Compound</th><th>Category</th><th>Primary Action</th></tr></thead>
+        <tbody>
+          <tr><td>Asteracanthine &amp; Asteracanthinine</td><td>Quinazoline alkaloids</td><td>Androgenic, spermatogenic, hepatoprotective</td></tr>
+          <tr><td>Lupeol</td><td>Pentacyclic triterpenoid</td><td>Anti-inflammatory, hepatoprotective, antitumour</td></tr>
+          <tr><td>β-Sitosterol</td><td>Phytosterol</td><td>Anti-inflammatory, hypolipidemic, androgenic</td></tr>
+          <tr><td>Stigmasterol</td><td>Phytosterol</td><td>Hormonal precursor, anti-inflammatory</td></tr>
+          <tr><td>Apigenin &amp; Luteolin</td><td>Flavonoids</td><td>Antioxidant, anti-inflammatory, hepatoprotective</td></tr>
+          <tr><td>Behenic &amp; Oleic Acids</td><td>Seed fatty acids</td><td>Emollient, nutritive, hormonal support</td></tr>
+          <tr><td>Phytol</td><td>Diterpene alcohol</td><td>Antioxidant, immunostimulant</td></tr>
+          <tr><td>Mucilage (polysaccharides)</td><td>Carbohydrate complex</td><td>Demulcent, diuretic, urogenital soothing</td></tr>
+          <tr><td>Tannins &amp; Saponins</td><td>Secondary metabolites</td><td>Antimicrobial, astringent, diuretic</td></tr>
+          <tr><td>Hydrocarbons (C₂₃–C₃₁)</td><td>Aliphatic hydrocarbons</td><td>Membrane-stabilising, antimicrobial</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">03</span><h2 class="section-title">Ayurvedic Significance</h2><div class="section-rule"></div></div>
+      <p class="section-body">Kokilaksha holds an illustrious classical position. Charaka lists it in the <em>Balya</em> (strength-promoting) and <em>Brihmaniya</em> (nourishing) groups; Sushruta includes it in the <em>Vatasamshhamana</em> (Vata-pacifying) gana. It is a principal ingredient in classical Vajikarana (aphrodisiac/androgenic) formulations — most notably <em>Ashtavarga</em>, the celebrated eight-herb rejuvenation compound — and appears in several hepatoprotective and urogenital preparations. Bhavaprakasha Nighantu places it in <em>Guduchyadi Varga</em>, describing it as an incomparable shukra (semen/reproductive essence) promoter.</p>
+      <p class="section-body">Classical shloka — <em>"Kokilaksha tu madhuro vrishyo balyashcha pittanut, dipano grahi laghushcha shophajid vatakapha jit"</em> — describes it as sweet, aphrodisiac, strength-giving, Pitta-alleviating, digestive, absorptive, light, oedema-reducing, and a pacifier of Vata and Kapha doshas.</p>
+      <table class="dosha-table">
+        <thead><tr><th>Dosha</th><th>Effect</th><th>Mechanism &amp; Notes</th></tr></thead>
+        <tbody>
+          <tr><td>Vata ↓</td><td>Pacifying</td><td>Madhura rasa and snigdha (unctuous) quality nourish and ground Vata; especially effective in Vata-related sexual debility, low libido, and neurological weakness</td></tr>
+          <tr><td>Pitta ↓</td><td>Mildly pacifying</td><td>Its madhura (sweet) vipaka and sheeta (cold) virya cool excess Pitta; supports burning urination, inflammatory urogenital conditions, and hepatic Pitta disorders</td></tr>
+          <tr><td>Kapha ↓</td><td>Pacifying</td><td>Tikta (bitter) rasa and laghu (light) quality reduce Kapha accumulation; used in oedema, urinary congestion, and Kapha-type sexual debility</td></tr>
+        </tbody>
+      </table>
+      <p class="section-body"><strong>Rasa:</strong> Madhura (sweet), Tikta (bitter) &nbsp;·&nbsp; <strong>Guna:</strong> Laghu (light), Snigdha (unctuous) &nbsp;·&nbsp; <strong>Virya:</strong> Sheeta (cold) &nbsp;·&nbsp; <strong>Vipaka:</strong> Madhura (sweet) &nbsp;·&nbsp; <strong>Karma:</strong> Tridosha shamaka, Vajikarana, Rasayana</p>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">04</span><h2 class="section-title">Key Health Benefits</h2><div class="section-rule"></div></div>
+      <p class="section-body">Modern pharmacological research has validated Kokilaksha's classical reputation across multiple organ systems — with significant findings in androgenic, hepatoprotective, anti-inflammatory, diuretic, and anti-diabetic activities, corroborating millennia of traditional use.</p>
+      <div class="benefits-grid">
+        <div class="benefit-card">
+          <div class="benefit-title">Vajikarana — Androgenic &amp; Spermatogenic</div>
+          <div class="benefit-desc">The most celebrated classical action. Animal studies confirm seed extract significantly increases sperm count, motility, and testosterone levels. Lupeol and β-sitosterol mimic androgenic activity; the quinazoline alkaloids (asteracanthine) appear to stimulate Leydig cell function. Used in oligospermia, erectile dysfunction, and male infertility.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Hepatoprotective &amp; Liver Support</div>
+          <div class="benefit-desc">Among the best-documented actions. Ethanolic root extract demonstrated hepatoprotection comparable to silymarin in CCl₄-induced liver damage models — significantly normalising ALT, AST, alkaline phosphatase, and bilirubin. The whole plant has a long classical use in jaundice, hepatitis, and liver cirrhosis.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Diuretic &amp; Urogenital Tonic</div>
+          <div class="benefit-desc">Classical texts use Kokilaksha prominently for dysuria, urinary calculi, burning micturition, and urinary tract infections. The mucilaginous seeds coat and soothe the urinary tract epithelium while flavonoids exert mild diuretic action — increasing urine volume without electrolyte imbalance. Seeds are traditionally soaked overnight and consumed for urinary complaints.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Anti-inflammatory &amp; Analgesic</div>
+          <div class="benefit-desc">Whole-plant and seed extracts significantly inhibit carrageenan-induced paw oedema and inflammatory mediators in rodent models. Lupeol's well-established anti-inflammatory mechanism via inhibition of NF-κB and COX pathways underpins its traditional use in arthritis, gout, and musculoskeletal pain.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Anti-diabetic Potential</div>
+          <div class="benefit-desc">Leaf and seed extracts demonstrate significant hypoglycaemic activity in alloxan- and streptozotocin-induced diabetic animal models, improving fasting blood glucose and HbA1c markers. Mechanisms involve both enhanced insulin secretion and improved peripheral glucose utilisation. Traditionally used in prameha (diabetes-related disorders).</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Rasayana — Rejuvenative &amp; Adaptogenic</div>
+          <div class="benefit-desc">As a classical Rasayana, Kokilaksha nourishes all seven dhatus — particularly <em>shukra dhatu</em> and <em>ojas</em> (vital essence). It supports stamina, mental clarity, and resilience to physical stress. Modern studies show improvements in swimming endurance and reduction of stress biomarkers (cortisol, corticosterone) in animal models.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Antimicrobial &amp; Wound Healing</div>
+          <div class="benefit-desc">Methanolic and ethanolic extracts show significant inhibitory activity against E. coli, Staphylococcus aureus, Klebsiella, and Candida species. The leaves are traditionally applied as poultice for wounds, ulcers, and skin infections; tannin-rich astringency promotes clotting and epithelialisation.</div>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-title">Cardioprotective Effects</div>
+          <div class="benefit-desc">Preliminary studies indicate that Kokilaksha leaf extract reduces lipid peroxidation and improves antioxidant enzyme activity in cardiac tissue. β-Sitosterol and stigmasterol exert hypolipidemic effects, reducing total cholesterol and LDL. Traditional Ayurvedic use in <em>hridroga</em> (heart disorders) is corroborated by these findings.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">05</span><h2 class="section-title">How to Consume Kokilaksha</h2><div class="section-rule"></div></div>
+      <p class="section-body">Kokilaksha seeds (Talmakhana) are the most commonly used therapeutic part and are widely available in Ayurvedic pharmacies. They are considered safe for regular use when taken at classical doses. The whole plant is used in decoctions and classical formulations. Internal preparations for reproductive and liver health should ideally be supervised by a qualified Ayurvedic practitioner.</p>
+      <table class="consume-table">
+        <thead><tr><th>Form</th><th>Preparation</th><th>Dosage</th><th>Best Use</th></tr></thead>
+        <tbody>
+          <tr><td>Seed Soaked (Shita Phanta)</td><td>Soak 1–2 tsp seeds overnight in water; consume seeds + water</td><td>5–10 g seeds daily</td><td>Dysuria, urinary irritation, urolithiasis</td></tr>
+          <tr><td>Seed Powder (Churna)</td><td>Ground dried seeds; with milk, honey, or warm water</td><td>3–6 g, 1–2× daily</td><td>Vajikarana, oligospermia, sexual debility</td></tr>
+          <tr><td>Seed Powder + Milk</td><td>Boil seed powder in milk; sweeten with mishri</td><td>3–5 g powder in 200 ml milk</td><td>Rejuvenation, Rasayana, ojas building</td></tr>
+          <tr><td>Whole Plant Decoction</td><td>Boil whole plant in water; reduce to ¼</td><td>40–60 ml twice daily</td><td>Jaundice, hepatitis, oedema</td></tr>
+          <tr><td>Root Decoction</td><td>Boil dried roots; strain and cool</td><td>30–40 ml twice daily</td><td>Liver disorders, rheumatic conditions</td></tr>
+          <tr><td>Leaf Paste (Topical)</td><td>Ground fresh leaves</td><td>Apply to affected area</td><td>Wounds, ulcers, skin infections</td></tr>
+          <tr><td>Ashtavarga Ghrita</td><td>Classical medicated ghee formulation</td><td>Per practitioner direction</td><td>Comprehensive Rasayana, Vajikarana</td></tr>
+          <tr><td>Vrushya Pak / Modak</td><td>Classical sweet confection with seed powder</td><td>Per practitioner direction</td><td>Spermatogenic, androgenic therapy</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><span class="section-num">06</span><h2 class="section-title">Safety &amp; Precautions</h2><div class="section-rule"></div></div>
+      <p class="section-body">Kokilaksha is considered broadly safe and well-tolerated at classical doses — unlike some other Vajikarana herbs, it has no known hepatotoxic alkaloids and has centuries of wide consumption as a food ingredient (seeds are eaten in many parts of India). However, some cautions apply, particularly for specific conditions and concurrent medications.</p>
+      <ul class="precaution-list">
+        <li><strong>Pregnancy:</strong> Seeds are classical uterine tonics. Avoid internal therapeutic doses during pregnancy without specialist guidance — the uterotonic potential warrants caution in the first trimester.</li>
+        <li><strong>Hypoglycaemia:</strong> Individuals on anti-diabetic medications should monitor blood glucose closely, as combined use may produce additive hypoglycaemic effects requiring dose adjustment.</li>
+        <li><strong>Diuretics:</strong> Concurrent use with loop or thiazide diuretics may increase diuretic effect excessively — monitor fluid balance and electrolytes if combining.</li>
+        <li><strong>Cold constitution (Sheeta virya):</strong> Its cooling potency makes it less suitable as a primary herb for individuals with strong Vata-type coldness, poor digestion, or chronic cold and damp conditions — balance with warming adjuvants such as black pepper or ginger.</li>
+        <li><strong>Excessive intake:</strong> Very large doses of seed mucilage may cause loose stools or mild gastrointestinal discomfort. Stay within classical dosage ranges (3–10 g seeds daily).</li>
+        <li><strong>Hormonal sensitivity:</strong> Given its androgenic effects, individuals with hormone-sensitive conditions (e.g., polycystic ovary syndrome, hormone-receptor-positive cancers) should seek specialist advice before use.</li>
+        <li><strong>Adulteration:</strong> "Talmakhana" in commercial markets is frequently substituted with <em>Hygrophila spinosa</em> (closely related) or even seeds of <em>Euryale ferox</em>. Ensure authentic botanical source from reputable suppliers.</li>
+      </ul>
+    </div>
+
+    <div class="sources">
+      <div class="sources-title">References &amp; Sources</div>
+      <ul>
+        <li>Yadav YC et al. — "A review on ethnobotanical, pharmacological and phytochemical properties of Asteracantha longifolia" — Journal of Pharmacy Research, 2011</li>
+        <li>Patel DK et al. — "Asteracantha longifolia (L.) Nees.: chemistry, traditional uses and biological activities" — Asian Pacific Journal of Tropical Biomedicine, 2012</li>
+        <li>Bhutani SP et al. — "Hepatoprotective activity of Asteracantha longifolia root" — Phytomedicine, 2009</li>
+        <li>Suresh R et al. — "Androgenic and spermatogenic properties of Hygrophila auriculata seed extract" — Journal of Ethnopharmacology, 2009</li>
+        <li>Chauhan NS et al. — "A review on plants used for improvement of sexual performance and virility" — BioMed Research International, 2014</li>
+        <li>Charaka Samhita, Chikitsasthana — Vajikarana Adhyaya; Sushruta Samhita — Vatasamshhamana gana</li>
+        <li>Bhavaprakasha Nighantu — Guduchyadi Varga; Ashtanga Hridayam — Vajikarana formulations</li>
+        <li>Kirtikar KR &amp; Basu BD — Indian Medicinal Plants, Vol. III — Kokilaksha entry</li>
+        <li>Priyavrat Sharma — Dravyaguna Vigyana — Classical properties of Kokilaksha / Ikshura</li>
+        <li>ScienceDirect — "Anti-inflammatory and antinociceptive effects of Hygrophila auriculata" — 2013</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer>
+    <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a qualified practitioner before therapeutic use</p>
+  </footer>
+
+  <div id="viewerModal">
+    <div id="modal-topbar">
+      <span>3D Model — Kokilaksha</span>
+      <button type="button" id="close3D">✕</button>
+    </div>
+    <model-viewer src="kokilaksha3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
+  </div>
+  <script>
+    (function() {
+      var open3D = document.getElementById('open3D');
+      var close3D = document.getElementById('close3D');
+      var modal = document.getElementById('viewerModal');
+      if (!open3D || !close3D || !modal) return;
+      function openModal() {
+        
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+      function closeModal() {
+        
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+      open3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); openModal();
+      });
+      close3D.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); closeModal();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+      });
+    })();
+  </script>
+
+</body>
+</html>
