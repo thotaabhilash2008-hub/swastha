@@ -51,14 +51,18 @@ CSS_BLOCK = """
       box-shadow: 0 10px 25px rgba(200, 164, 93, 0.35);
     }
     #viewerModal {
-      position: fixed;
-      inset: 0;
-      z-index: 9000;
+      position: fixed !important;
+      inset: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      z-index: 999999 !important;
       display: none;
       flex-direction: column;
-      background: rgba(7, 23, 15, 0.96);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+      background: #07170F !important;
+      background-color: #07170F !important;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      overflow: hidden !important;
     }
     #viewerModal.is-open {
       display: flex !important;
@@ -70,15 +74,15 @@ CSS_BLOCK = """
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 32px;
-      border-bottom: 1px solid rgba(200, 164, 93, 0.2);
-      z-index: 99999;
+      padding: 0 24px;
+      border-bottom: 1px solid rgba(200, 164, 93, 0.25);
+      z-index: 1000000;
     }
     #modal-topbar span {
       font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 500;
-      letter-spacing: 3px;
+      letter-spacing: 2px;
       text-transform: uppercase;
       color: #E5C783;
       user-select: none;
@@ -86,12 +90,12 @@ CSS_BLOCK = """
     #close3D {
       width: 38px;
       height: 38px;
-      background: rgba(255, 255, 255, 0.06);
+      background: rgba(255, 255, 255, 0.08);
       color: #F5F0E4;
-      border: 1px solid rgba(200, 164, 93, 0.35);
+      border: 1px solid rgba(200, 164, 93, 0.4);
       border-radius: 50%;
       cursor: pointer;
-      z-index: 99999;
+      z-index: 1000000;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -113,25 +117,28 @@ CSS_BLOCK = """
       width: 100%;
       height: calc(100% - 60px);
       position: relative;
-      background: #07170F;
+      background: #07170F !important;
       display: flex;
       align-items: center;
       justify-content: center;
       overflow: hidden;
     }
-    #viewerModal model-viewer {
-      width: 100%;
-      height: 100%;
-      display: block;
-      background: #07170F;
-      --poster-color: transparent;
+    #viewerModal model-viewer,
+    .modal-viewer-wrap model-viewer,
+    model-viewer#plantModelViewer {
+      width: 100% !important;
+      height: 100% !important;
+      display: block !important;
+      background: #07170F !important;
+      background-color: #07170F !important;
+      --poster-color: transparent !important;
     }
     .model-loading-overlay {
       position: absolute;
       inset: 0;
-      background: rgba(7, 23, 15, 0.88);
-      backdrop-filter: blur(6px);
-      -webkit-backdrop-filter: blur(6px);
+      background: rgba(7, 23, 15, 0.92);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
       z-index: 40;
       display: flex;
       align-items: center;
@@ -145,12 +152,12 @@ CSS_BLOCK = """
     }
     .model-loading-card {
       text-align: center;
-      padding: 30px 36px;
-      background: rgba(16, 59, 40, 0.7);
-      border: 1px solid rgba(200, 164, 93, 0.3);
+      padding: 24px 28px;
+      background: rgba(16, 59, 40, 0.85);
+      border: 1px solid rgba(200, 164, 93, 0.35);
       border-radius: 16px;
-      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.6);
-      max-width: 360px;
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.7);
+      max-width: 340px;
       width: 88%;
     }
     .model-loading-spinner {
@@ -158,7 +165,7 @@ CSS_BLOCK = """
       color: #E5C783;
       display: inline-block;
       animation: pulseRotate 2s infinite linear;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
     }
     @keyframes pulseRotate {
       0% { transform: rotate(0deg) scale(0.9); opacity: 0.7; }
@@ -167,18 +174,18 @@ CSS_BLOCK = """
     }
     .model-loading-title {
       font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 21px;
+      font-size: 20px;
       font-weight: 500;
       color: #E5C783;
       letter-spacing: 1px;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
     }
     .model-loading-sub {
       font-size: 11px;
       color: #C7C9B9;
-      letter-spacing: 2px;
+      letter-spacing: 1.5px;
       text-transform: uppercase;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
     }
     .model-progress-bar-wrap {
       width: 100%;
@@ -194,6 +201,23 @@ CSS_BLOCK = """
       background: linear-gradient(90deg, #C8A45D, #E5C783);
       border-radius: 999px;
       transition: width 0.25s ease;
+    }
+    @media (max-width: 768px) {
+      #modal-topbar {
+        padding: 0 14px;
+        height: 52px;
+      }
+      #modal-topbar span {
+        font-size: 11.5px;
+        letter-spacing: 1px;
+      }
+      .modal-viewer-wrap {
+        height: calc(100% - 52px);
+      }
+      .modal-audio-btn {
+        padding: 4px 8px;
+        font-size: 10px;
+      }
     }
 """
 
