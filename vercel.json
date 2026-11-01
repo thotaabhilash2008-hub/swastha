@@ -28,6 +28,22 @@
       "destination": "/Ayurvedha/index.html"
     },
     {
+      "source": "/Yoga",
+      "destination": "/Yoga/index.html"
+    },
+    {
+      "source": "/Yoga/",
+      "destination": "/Yoga/index.html"
+    },
+    {
+      "source": "/videos/:file*",
+      "destination": "/Yoga/videos/:file*"
+    },
+    {
+      "source": "/Yoga/videos/:file*",
+      "destination": "/Yoga/videos/:file*"
+    },
+    {
       "source": "/Ayurvedha/:plant.html",
       "destination": "/Ayurvedha/:plant.html"
     },

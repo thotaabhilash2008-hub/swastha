@@ -936,10 +936,57 @@
       const close = rank('C', c - 1, 'shavasana').concat(sav ? [sav] : []);
       return { plan: [...rank('W', w).map(x => [x, 'Warm-up']), ...rank('M', m).map(x => [x, 'Main practice']), ...close.map(x => [x, 'Closing'])], goals, maxLvl };
     }
+    function resolveVideoUrl(path) {
+      if (!path || /^(https?:|\/\/)/.test(path)) return path;
+      const clean = path.replace(/^\.?\/?/, '');
+      // If hosted on clean URLs without trailing slash like /Yoga, relative paths resolve to root domain
+      if (location.pathname === '/Yoga' || location.pathname.startsWith('/Yoga/')) {
+        return '/Yoga/' + clean.replace(/^Yoga\//, '');
+      }
+      return clean;
+    }
+
+    let videoObserver = null;
+    if ('IntersectionObserver' in window) {
+      videoObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          const v = entry.target;
+          if (entry.isIntersecting) {
+            v.muted = true;
+            const p = v.play();
+            if (p) p.catch(() => {});
+          } else {
+            v.pause();
+          }
+        });
+      }, { threshold: 0.15 });
+    }
+
+    function initVideos(container) {
+      const scope = container || document;
+      const vids = scope.querySelectorAll('.vid video');
+      vids.forEach(v => {
+        v.muted = true;
+        v.defaultMuted = true;
+        if (videoObserver) {
+          videoObserver.observe(v);
+        } else {
+          v.play().catch(() => {});
+        }
+      });
+    }
+
     function media(id) {
-      const u = VIDEOS[id];
-      if (!u) return 'Video coming soon';
-      return /youtube\.com|youtu\.be/.test(u) ? `<iframe src="${u}" title="${id}" allowfullscreen></iframe>` : `<video src="${u}" loop muted playsinline controls autoplay preload="metadata"></video>`;
+      const raw = VIDEOS[id];
+      if (!raw) return '<span class="vid-placeholder">Video coming soon</span>';
+      if (/youtube\.com|youtu\.be/.test(raw)) {
+        return `<iframe src="${raw}" title="${id}" allowfullscreen></iframe>`;
+      }
+      const u = resolveVideoUrl(raw);
+      return `<video loop muted playsinline controls preload="auto">
+        <source src="${u}" type="video/mp4">
+        Your browser does not support HTML5 video.
+      </video>`;
     }
     function show({ plan, goals, maxLvl }) {
       const lv = ['', 'Beginner', 'Intermediate', 'Advanced'][maxLvl];
@@ -958,6 +1005,7 @@
       <div class="vid">${media(a[0])}</div></article>`
         }).join('') +
         `<button class="again" id="again">Start over</button>`;
+      initVideos($('#result'));
       $('#form').style.display = 'none'; $('#result').style.display = 'block';
       scrollTo({ top: 0, behavior: matchMedia('(prefers-reduced-motion:reduce)').matches ? 'auto' : 'smooth' });
       $('#again').onclick = () => { $('#result').style.display = 'none'; $('#form').style.display = 'block'; scrollTo(0, 0) };
@@ -983,11 +1031,13 @@
       $('#count').textContent = list.length + ' of ' + A.length + ' asanas';
       $('#all').innerHTML = list.map(a => cardHTML(a, ROLE[a[5]] + ' · ' + LV[a[4]])).join('') || '<p class="hint">No asana found. Try another word.</p>';
     }
+    initVideos($('#all'));
     $('#q').addEventListener('input', renderLib);
     function tab(lib) {
       if ('speechSynthesis' in window) speechSynthesis.cancel();
       $('#library').hidden = !lib; $('#personal').hidden = lib;
       $('#tab-q').classList.toggle('on', !lib); $('#tab-all').classList.toggle('on', lib);
+      if (lib) setTimeout(() => initVideos($('#all')), 50);
       scrollTo(0, 0);
     }
     $('#tab-q').onclick = () => tab(false);
