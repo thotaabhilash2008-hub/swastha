@@ -1385,7 +1385,586 @@ footer {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ==================== 3D SHOWCASE HERO CTA & MODAL STYLES ==================== */
+.btn-3d-showcase {
+  background: linear-gradient(135deg, rgba(200, 164, 93, 0.95) 0%, rgba(229, 199, 131, 0.95) 50%, rgba(181, 142, 69, 1) 100%);
+  color: #07170F !important;
+  font-family: 'Jost', sans-serif;
+  font-size: 13.5px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 14px 26px;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 8px 24px rgba(200, 164, 93, 0.35), 0 0 16px rgba(74, 222, 128, 0.2);
+  transition: all 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+  text-decoration: none;
+}
+.btn-3d-showcase:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 12px 32px rgba(200, 164, 93, 0.5), 0 0 24px rgba(74, 222, 128, 0.4);
+  color: #000000 !important;
+  background: linear-gradient(135deg, #E5C783 0%, #F5F0E4 50%, #C8A45D 100%);
+}
+.btn-3d-sparkle {
+  color: #103B28;
+  font-size: 15px;
+  animation: pulseRotate 2.5s infinite linear;
+}
+.btn-3d-count-tag {
+  background: #07170F;
+  color: var(--gold-warm);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(200, 164, 93, 0.3);
+}
+
+/* 3D Lab Showcase Grid with all 6 Models */
+.lab-models-showcase-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+.lab-model-card {
+  background: rgba(7, 23, 15, 0.75);
+  border: 1px solid rgba(200, 164, 93, 0.3);
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  transition: all 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+}
+.lab-model-card:hover {
+  transform: translateY(-5px);
+  border-color: var(--gold-warm);
+  background: rgba(16, 59, 40, 0.85);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.65), 0 0 24px rgba(74, 222, 128, 0.25);
+}
+.lab-model-thumb-wrap {
+  width: 100%;
+  height: 140px;
+  position: relative;
+  overflow: hidden;
+  background: #05140D;
+}
+.lab-model-thumb-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+.lab-model-card:hover .lab-model-thumb-wrap img {
+  transform: scale(1.08);
+}
+.lab-thumb-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: rgba(7, 23, 15, 0.88);
+  border: 1px solid rgba(200, 164, 93, 0.45);
+  color: var(--gold-warm);
+  font-size: 10px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  backdrop-filter: blur(8px);
+}
+.badge-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--botanical-glow);
+  box-shadow: 0 0 6px var(--botanical-glow);
+  animation: pulseDot 1.8s infinite alternate;
+}
+@keyframes pulseDot {
+  from { opacity: 0.6; transform: scale(0.85); }
+  to { opacity: 1; transform: scale(1.2); }
+}
+.lab-model-card-body {
+  padding: 14px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+.lab-model-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 19px;
+  font-weight: 500;
+  color: var(--ivory);
+  letter-spacing: 0.5px;
+  margin-bottom: 3px;
+  transition: color 0.25s;
+}
+.lab-model-card:hover .lab-model-name {
+  color: var(--gold-warm);
+}
+.lab-model-sci {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 13px;
+  font-style: italic;
+  color: var(--sage);
+  margin-bottom: 10px;
+}
+.lab-model-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+.lab-tag {
+  background: rgba(16, 59, 40, 0.65);
+  border: 1px solid rgba(200, 164, 93, 0.25);
+  border-radius: 999px;
+  font-size: 9.5px;
+  color: var(--sage);
+  padding: 3px 8px;
+  letter-spacing: 0.5px;
+}
+.lab-model-cta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+  padding-top: 10px;
+  border-top: 1px solid rgba(200, 164, 93, 0.15);
+}
+.btn-card-inspect {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--gold-warm);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s;
+}
+.lab-model-card:hover .btn-card-inspect {
+  color: var(--ivory);
+}
+.btn-card-monograph {
+  font-size: 11px;
+  color: var(--sage);
+  text-decoration: none;
+  letter-spacing: 0.5px;
+  transition: color 0.2s;
+}
+.btn-card-monograph:hover {
+  color: var(--gold-warm);
+  text-decoration: underline;
+}
+
+/* 3D Herbarium Modal Styles */
+.hero-3d-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 10005;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.hero-3d-modal.open {
+  display: flex;
+  opacity: 1;
+  pointer-events: auto;
+}
+.hero-3d-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(7, 23, 15, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+.hero-3d-container {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 1180px;
+  max-height: 92vh;
+  background: linear-gradient(165deg, rgba(16, 59, 40, 0.95) 0%, rgba(7, 23, 15, 0.98) 100%);
+  border: 1px solid rgba(200, 164, 93, 0.4);
+  border-radius: 24px;
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.8), 0 0 40px rgba(74, 222, 128, 0.2), inset 0 1px 0 rgba(229, 199, 131, 0.3);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: scaleUpModal 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes scaleUpModal {
+  from { transform: scale(0.94) translateY(15px); opacity: 0; }
+  to { transform: scale(1) translateY(0); opacity: 1; }
+}
+.hero-3d-header {
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(200, 164, 93, 0.22);
+  background: rgba(7, 23, 15, 0.85);
+}
+.hero-3d-title-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.hero-3d-live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--botanical-glow);
+  box-shadow: 0 0 10px var(--botanical-glow);
+  animation: pulseDot 1.8s infinite alternate;
+}
+.hero-3d-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 21px;
+  font-weight: 500;
+  letter-spacing: 2px;
+  color: var(--ivory);
+  text-transform: uppercase;
+}
+.hero-3d-badge-count {
+  font-size: 10.5px;
+  letter-spacing: 1px;
+  color: var(--gold-warm);
+  background: rgba(16, 59, 40, 0.8);
+  border: 1px solid rgba(200, 164, 93, 0.35);
+  padding: 3px 10px;
+  border-radius: 999px;
+  text-transform: uppercase;
+}
+.hero-3d-close {
+  background: rgba(200, 164, 93, 0.15);
+  border: 1px solid rgba(200, 164, 93, 0.35);
+  color: var(--gold-warm);
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+.hero-3d-close:hover {
+  background: var(--gold-warm);
+  color: #07170F;
+  transform: rotate(90deg);
+}
+
+/* Switcher Tabs */
+.hero-3d-tabs-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: rgba(9, 32, 22, 0.7);
+  border-bottom: 1px solid rgba(200, 164, 93, 0.18);
+  overflow-x: auto;
+  white-space: nowrap;
+  scrollbar-width: thin;
+}
+.hero-3d-tab {
+  background: rgba(16, 59, 40, 0.6);
+  border: 1px solid rgba(200, 164, 93, 0.25);
+  color: var(--sage);
+  font-family: 'Jost', sans-serif;
+  font-size: 12.5px;
+  font-weight: 500;
+  letter-spacing: 0.8px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.25s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.hero-3d-tab:hover {
+  color: var(--gold-warm);
+  border-color: var(--gold-warm);
+  background: rgba(20, 72, 49, 0.9);
+}
+.hero-3d-tab.active {
+  background: linear-gradient(135deg, rgba(200, 164, 93, 0.95), rgba(229, 199, 131, 0.95));
+  color: #07170F;
+  border-color: #E5C783;
+  font-weight: 600;
+  box-shadow: 0 4px 14px rgba(200, 164, 93, 0.35);
+}
+
+/* Modal Body */
+.hero-3d-body {
+  display: grid;
+  grid-template-columns: 1.45fr 1fr;
+  flex: 1;
+  overflow: hidden;
+  min-height: 480px;
+}
+.hero-3d-viewer-wrap {
+  position: relative;
+  background: radial-gradient(circle at 50% 50%, #0F3323 0%, #07170F 75%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  min-height: 450px;
+}
+.hero-3d-viewer-wrap model-viewer {
+  width: 100%;
+  height: 100%;
+  min-height: 450px;
+  display: block;
+  --poster-color: transparent;
+}
+.hero-3d-controls-overlay {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: flex;
+  gap: 8px;
+  z-index: 10;
+}
+.viewer-ctrl-btn {
+  background: rgba(7, 23, 15, 0.82);
+  border: 1px solid rgba(200, 164, 93, 0.35);
+  color: var(--gold-warm);
+  font-size: 11px;
+  letter-spacing: 0.8px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.2s;
+  backdrop-filter: blur(8px);
+}
+.viewer-ctrl-btn:hover {
+  background: var(--gold-warm);
+  color: #07170F;
+}
+.hero-3d-hint {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(7, 23, 15, 0.75);
+  border: 1px solid rgba(200, 164, 93, 0.2);
+  padding: 5px 14px;
+  border-radius: 999px;
+  font-size: 11px;
+  color: var(--sage);
+  letter-spacing: 0.6px;
+  pointer-events: none;
+  white-space: nowrap;
+  backdrop-filter: blur(6px);
+}
+
+/* Sidebar Details */
+.hero-3d-specimen-info {
+  padding: 28px 24px;
+  background: rgba(7, 23, 15, 0.82);
+  border-left: 1px solid rgba(200, 164, 93, 0.2);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+.hero-specimen-eyebrow {
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--gold-warm);
+  margin-bottom: 6px;
+}
+.hero-specimen-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 30px;
+  font-weight: 500;
+  color: var(--ivory);
+  letter-spacing: 1px;
+  line-height: 1.15;
+  margin-bottom: 4px;
+}
+.hero-specimen-sci {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 16px;
+  font-style: italic;
+  color: var(--sage);
+  margin-bottom: 14px;
+}
+.hero-specimen-desc {
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: rgba(245, 240, 228, 0.88);
+  margin-bottom: 18px;
+}
+.hero-specimen-meta-box {
+  background: rgba(16, 59, 40, 0.45);
+  border: 1px solid rgba(200, 164, 93, 0.22);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 18px;
+}
+.meta-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  padding: 4px 0;
+  border-bottom: 1px solid rgba(200, 164, 93, 0.1);
+}
+.meta-row:last-child {
+  border-bottom: none;
+}
+.meta-lbl {
+  color: var(--gold-warm);
+  font-weight: 500;
+}
+.meta-val {
+  color: var(--ivory);
+}
+.hero-specimen-benefits-title {
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--gold-warm);
+  margin-bottom: 8px;
+}
+.hero-specimen-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 22px;
+}
+.hero-tag {
+  background: rgba(16, 59, 40, 0.7);
+  border: 1px solid rgba(74, 222, 128, 0.3);
+  color: var(--ivory);
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  letter-spacing: 0.4px;
+}
+.hero-specimen-actions {
+  margin-top: auto;
+  padding-top: 10px;
+}
+.btn-specimen-deepdive {
+  display: block;
+  text-align: center;
+  background: linear-gradient(135deg, var(--gold-warm), #C8A45D);
+  color: #07170F;
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 1px;
+  padding: 12px 20px;
+  border-radius: 999px;
+  text-decoration: none;
+  transition: all 0.25s;
+  box-shadow: 0 4px 18px rgba(200, 164, 93, 0.35);
+}
+.btn-specimen-deepdive:hover {
+  background: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(200, 164, 93, 0.5);
+}
+
+/* Responsive for 3D showcase & modal */
+@media (max-width: 900px) {
+  .hero-3d-body {
+    grid-template-columns: 1fr;
+    overflow-y: auto;
+  }
+  .hero-3d-viewer-wrap {
+    min-height: 320px;
+    height: 320px;
+  }
+  .hero-3d-viewer-wrap model-viewer {
+    min-height: 320px;
+    height: 320px;
+  }
+  .hero-3d-specimen-info {
+    border-left: none;
+    border-top: 1px solid rgba(200, 164, 93, 0.2);
+    padding: 18px 16px;
+  }
+  .lab-models-showcase-grid {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 768px) {
+  .hero-ctas .btn-3d-showcase {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+  }
+}
+@media (max-width: 600px) {
+  .hero-3d-modal {
+    padding: 10px;
+  }
+  .hero-3d-container {
+    max-height: 95vh;
+    border-radius: 16px;
+  }
+  .hero-3d-header {
+    padding: 12px 14px;
+  }
+  .hero-3d-title {
+    font-size: 16px;
+    letter-spacing: 1px;
+  }
+  .hero-3d-badge-count {
+    display: none;
+  }
+  .hero-3d-tabs-nav {
+    padding: 8px 12px;
+  }
+  .hero-3d-tab {
+    font-size: 11px;
+    padding: 6px 12px;
+  }
+  .hero-3d-viewer-wrap {
+    min-height: 260px;
+    height: 260px;
+  }
+  .hero-3d-viewer-wrap model-viewer {
+    min-height: 260px;
+    height: 260px;
+  }
+  .hero-3d-hint {
+    font-size: 9.5px;
+    padding: 4px 10px;
+  }
+  .hero-specimen-name {
+    font-size: 24px;
+  }
+}
+
 </style>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
 </head>
 <body>
 
@@ -1499,11 +2078,14 @@ footer {
         A modern digital platform to learn, explore and visualize the rich knowledge of AYUSH through immersive 3D experiences.
       </p>
       <div class="hero-ctas">
+        <button id="hero-view-3d-btn" class="btn-3d-showcase" type="button" onclick="open3DModelsModal('tulsi')">
+          <span class="btn-3d-sparkle">✦</span> View 3D Models <span class="btn-3d-count-tag">6 Ready</span>
+        </button>
         <button id="hero-watch-intro-btn" class="btn-primary" type="button">
           ▶ Watch Intro
         </button>
-        <a href="#modules" class="btn-secondary">
-          Explore Modules &rarr;
+        <a href="#3d-lab" class="btn-secondary">
+          Explore 3D Lab &rarr;
         </a>
       </div>
     </div>
@@ -1628,54 +2210,155 @@ footer {
       <div class="lab-info-eyebrow">Interactive Herbarium & 3D Lab</div>
       <h2 class="lab-info-title">Botanical Visualization in Real 3D</h2>
       <p class="lab-info-desc">
-        Explore living Ayurvedic flora with real-time 3D rotation, morphological dissection, Sanskrit Rasapanchaka properties, and authentic classical formulations.
+        Explore living Ayurvedic medicinal specimens with full 360° rotation, morphological examination, Sanskrit Rasapanchaka properties, and authentic classical formulations.
       </p>
 
       <div class="lab-specimen-pills">
-        <a href="Ayurvedha/Tulsi.html" class="specimen-pill">✦ Tulsi (Holy Basil) 3D</a>
-        <a href="Ayurvedha/amla.html" class="specimen-pill">✦ Amla (Gooseberry) 3D</a>
-        <a href="Ayurvedha/Ashwagandha.html" class="specimen-pill">✦ Ashwagandha</a>
-        <a href="Ayurvedha/Brahmi.html" class="specimen-pill">✦ Brahmi</a>
-        <a href="Ayurvedha/Shatavari.html" class="specimen-pill">✦ Shatavari</a>
+        <button type="button" class="specimen-pill" onclick="open3DModelsModal('tulsi')">✦ Tulsi (Holy Basil) 3D</button>
+        <button type="button" class="specimen-pill" onclick="open3DModelsModal('amla')">✦ Amla (Gooseberry) 3D</button>
+        <button type="button" class="specimen-pill" onclick="open3DModelsModal('ashwagandha')">✦ Ashwagandha 3D</button>
+        <button type="button" class="specimen-pill" onclick="open3DModelsModal('neem')">✦ Neem (Divine Tree) 3D</button>
+        <button type="button" class="specimen-pill" onclick="open3DModelsModal('brahmi')">✦ Brahmi (Memory) 3D</button>
+        <button type="button" class="specimen-pill" onclick="open3DModelsModal('bhringraj')">✦ Bhringraj (Hair) 3D</button>
       </div>
 
-      <a href="Ayurvedha/index.html" class="btn-primary">
-        Enter 3D Botanical Lab &rarr;
-      </a>
+      <div style="display: flex; gap: 14px; flex-wrap: wrap; margin-top: 14px;">
+        <button type="button" class="btn-3d-showcase" onclick="open3DModelsModal('tulsi')">
+          <span class="btn-3d-sparkle">✦</span> Launch 3D Specimen Viewer
+        </button>
+        <a href="Ayurvedha/index.html" class="btn-secondary" style="margin: 0;">
+          All 182 Plants in Garden &rarr;
+        </a>
+      </div>
     </div>
 
-    <div class="lab-visual-grid">
-      <a href="Ayurvedha/Tulsi.html" class="lab-thumb-card">
-        <img src="assets/tulsi_3d_specimen_ai.jpg" alt="Tulsi 3D Model">
-        <div class="lab-thumb-overlay">
-          <div class="lab-thumb-badge">Interactive 3D GLB</div>
-          <div class="lab-thumb-name">Tulasi (Ocimum Sanctum)</div>
+    <!-- Grid of All 6 Available 3D Models -->
+    <div class="lab-models-showcase-grid">
+      <!-- 1. Tulsi -->
+      <div class="lab-model-card" onclick="open3DModelsModal('tulsi')">
+        <div class="lab-model-thumb-wrap">
+          <img src="assets/tulsi_3d_specimen_ai.jpg" alt="Tulsi 3D Model" loading="lazy" onerror="this.src='https://thumb.wikimedia.org/wikipedia/commons/thumb/4/44/Ocimum_tenuiflorum_3_09_2012.JPG/1280px-Ocimum_tenuiflorum_3_09_2012.JPG';">
+          <div class="lab-thumb-badge"><span class="badge-dot"></span> Interactive 3D GLB</div>
         </div>
-      </a>
+        <div class="lab-model-card-body">
+          <div class="lab-model-name">Tulasi (Holy Basil)</div>
+          <div class="lab-model-sci">Ocimum tenuiflorum</div>
+          <div class="lab-model-tags">
+            <span class="lab-tag">Respiratory</span>
+            <span class="lab-tag">Immunity</span>
+            <span class="lab-tag">Queen of Herbs</span>
+          </div>
+          <div class="lab-model-cta-row">
+            <span class="btn-card-inspect">Inspect 3D ✦</span>
+            <a href="Ayurvedha/tulsi.html" class="btn-card-monograph" onclick="event.stopPropagation()">Monograph &rarr;</a>
+          </div>
+        </div>
+      </div>
 
-      <a href="Ayurvedha/index.html" class="lab-thumb-card">
-        <img src="assets/sharira_rachana_anatomy_ai.jpg" alt="Ayurvedic Anatomy">
-        <div class="lab-thumb-overlay">
-          <div class="lab-thumb-badge">Sharira Rachana</div>
-          <div class="lab-thumb-name">Marma & Energy Points</div>
+      <!-- 2. Amla -->
+      <div class="lab-model-card" onclick="open3DModelsModal('amla')">
+        <div class="lab-model-thumb-wrap">
+          <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8b/Phyllanthus_emblica_362202953.jpg/1280px-Phyllanthus_emblica_362202953.jpg" alt="Amla 3D Model" loading="lazy">
+          <div class="lab-thumb-badge"><span class="badge-dot"></span> Interactive 3D GLB</div>
         </div>
-      </a>
+        <div class="lab-model-card-body">
+          <div class="lab-model-name">Amla (Indian Gooseberry)</div>
+          <div class="lab-model-sci">Phyllanthus emblica</div>
+          <div class="lab-model-tags">
+            <span class="lab-tag">Rasayana</span>
+            <span class="lab-tag">High Vitamin C</span>
+            <span class="lab-tag">Digestion</span>
+          </div>
+          <div class="lab-model-cta-row">
+            <span class="btn-card-inspect">Inspect 3D ✦</span>
+            <a href="Ayurvedha/amla.html" class="btn-card-monograph" onclick="event.stopPropagation()">Monograph &rarr;</a>
+          </div>
+        </div>
+      </div>
 
-      <a href="Ayurvedha/Ashwagandha.html" class="lab-thumb-card">
-        <img src="assets/ashwagandha_dravya_guna_ai.jpg" alt="Materia Medica">
-        <div class="lab-thumb-overlay">
-          <div class="lab-thumb-badge">Dravya Guna</div>
-          <div class="lab-thumb-name">Ashwagandha Specimen</div>
+      <!-- 3. Ashwagandha -->
+      <div class="lab-model-card" onclick="open3DModelsModal('ashwagandha')">
+        <div class="lab-model-thumb-wrap">
+          <img src="assets/ashwagandha_dravya_guna_ai.jpg" alt="Ashwagandha 3D Model" loading="lazy" onerror="this.src='https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9e/Withania_somnifera_SA_fruit.jpg/1280px-Withania_somnifera_SA_fruit.jpg';">
+          <div class="lab-thumb-badge"><span class="badge-dot"></span> Interactive 3D GLB</div>
         </div>
-      </a>
+        <div class="lab-model-card-body">
+          <div class="lab-model-name">Ashwagandha</div>
+          <div class="lab-model-sci">Withania somnifera</div>
+          <div class="lab-model-tags">
+            <span class="lab-tag">Adaptogen</span>
+            <span class="lab-tag">Vitality</span>
+            <span class="lab-tag">Stress Relief</span>
+          </div>
+          <div class="lab-model-cta-row">
+            <span class="btn-card-inspect">Inspect 3D ✦</span>
+            <a href="Ayurvedha/ashwagandha.html" class="btn-card-monograph" onclick="event.stopPropagation()">Monograph &rarr;</a>
+          </div>
+        </div>
+      </div>
 
-      <a href="Ayurvedha/bookmarks.html" class="lab-thumb-card">
-        <img src="assets/rasa_shastra_alchemy_ai.jpg" alt="Formulations">
-        <div class="lab-thumb-overlay">
-          <div class="lab-thumb-badge">Rasa Shastra</div>
-          <div class="lab-thumb-name">Alchemy & Preparations</div>
+      <!-- 4. Neem -->
+      <div class="lab-model-card" onclick="open3DModelsModal('neem')">
+        <div class="lab-model-thumb-wrap">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/2/20/Neem_%28Azadirachta_indica%29_in_Hyderabad_W_IMG_6976.jpg" alt="Neem 3D Model" loading="lazy">
+          <div class="lab-thumb-badge"><span class="badge-dot"></span> Interactive 3D GLB</div>
         </div>
-      </a>
+        <div class="lab-model-card-body">
+          <div class="lab-model-name">Neem (Divine Tree)</div>
+          <div class="lab-model-sci">Azadirachta indica</div>
+          <div class="lab-model-tags">
+            <span class="lab-tag">Blood Purifier</span>
+            <span class="lab-tag">Antimicrobial</span>
+            <span class="lab-tag">Skin Health</span>
+          </div>
+          <div class="lab-model-cta-row">
+            <span class="btn-card-inspect">Inspect 3D ✦</span>
+            <a href="Ayurvedha/neem.html" class="btn-card-monograph" onclick="event.stopPropagation()">Monograph &rarr;</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. Brahmi -->
+      <div class="lab-model-card" onclick="open3DModelsModal('brahmi')">
+        <div class="lab-model-thumb-wrap">
+          <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f0/Bacopa_monnieri_Brahmi_flower.jpg/1280px-Bacopa_monnieri_Brahmi_flower.jpg" alt="Brahmi 3D Model" loading="lazy">
+          <div class="lab-thumb-badge"><span class="badge-dot"></span> Interactive 3D GLB</div>
+        </div>
+        <div class="lab-model-card-body">
+          <div class="lab-model-name">Brahmi (Water Hyssop)</div>
+          <div class="lab-model-sci">Bacopa monnieri</div>
+          <div class="lab-model-tags">
+            <span class="lab-tag">Medhya</span>
+            <span class="lab-tag">Cognitive</span>
+            <span class="lab-tag">Memory Boost</span>
+          </div>
+          <div class="lab-model-cta-row">
+            <span class="btn-card-inspect">Inspect 3D ✦</span>
+            <a href="Ayurvedha/brahmi.html" class="btn-card-monograph" onclick="event.stopPropagation()">Monograph &rarr;</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- 6. Bhringraj -->
+      <div class="lab-model-card" onclick="open3DModelsModal('bhringraj')">
+        <div class="lab-model-thumb-wrap">
+          <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1c/Leaves_-_Bhringraj_Plant_-_Eclipta_prostrata.jpg/1280px-Leaves_-_Bhringraj_Plant_-_Eclipta_prostrata.jpg" alt="Bhringraj 3D Model" loading="lazy">
+          <div class="lab-thumb-badge"><span class="badge-dot"></span> Interactive 3D GLB</div>
+        </div>
+        <div class="lab-model-card-body">
+          <div class="lab-model-name">Bhringraj (False Daisy)</div>
+          <div class="lab-model-sci">Eclipta prostrata</div>
+          <div class="lab-model-tags">
+            <span class="lab-tag">Keshya</span>
+            <span class="lab-tag">Hair Growth</span>
+            <span class="lab-tag">Liver Support</span>
+          </div>
+          <div class="lab-model-cta-row">
+            <span class="btn-card-inspect">Inspect 3D ✦</span>
+            <a href="Ayurvedha/bhringraj.html" class="btn-card-monograph" onclick="event.stopPropagation()">Monograph &rarr;</a>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -2201,6 +2884,335 @@ footer {
   lockScroll();
   startIntro();
 })();
+</script>
+
+
+<!-- ==================== INTERACTIVE 3D BOTANICAL SPECIMEN MODAL ==================== -->
+<div id="hero3DModal" class="hero-3d-modal" role="dialog" aria-modal="true" aria-label="3D Botanical Specimen Viewer">
+  <div class="hero-3d-backdrop" onclick="close3DModelsModal()"></div>
+  <div class="hero-3d-container">
+    <!-- Modal Header -->
+    <div class="hero-3d-header">
+      <div class="hero-3d-title-group">
+        <span class="hero-3d-live-dot"></span>
+        <h3 class="hero-3d-title">SWASTHA 3D Botanical Specimen Lab</h3>
+        <span class="hero-3d-badge-count">6 Interactive Models</span>
+      </div>
+      <button type="button" class="hero-3d-close" onclick="close3DModelsModal()" aria-label="Close 3D Viewer">✕</button>
+    </div>
+
+    <!-- Model Switcher Tabs -->
+    <div class="hero-3d-tabs-nav" id="hero3DTabs">
+      <button type="button" class="hero-3d-tab active" data-model="tulsi" onclick="switch3DModel('tulsi')">🌿 Tulsi</button>
+      <button type="button" class="hero-3d-tab" data-model="amla" onclick="switch3DModel('amla')">🍃 Amla</button>
+      <button type="button" class="hero-3d-tab" data-model="ashwagandha" onclick="switch3DModel('ashwagandha')">🌾 Ashwagandha</button>
+      <button type="button" class="hero-3d-tab" data-model="neem" onclick="switch3DModel('neem')">🌱 Neem</button>
+      <button type="button" class="hero-3d-tab" data-model="brahmi" onclick="switch3DModel('brahmi')">🍀 Brahmi</button>
+      <button type="button" class="hero-3d-tab" data-model="bhringraj" onclick="switch3DModel('bhringraj')">🌿 Bhringraj</button>
+      <button type="button" class="hero-3d-tab" data-model="badge" onclick="switch3DModel('badge')">🪙 Sacred Emblem</button>
+    </div>
+
+    <!-- Modal Content: 3D Canvas + Specimen Info Card -->
+    <div class="hero-3d-body">
+      <!-- 3D Stage -->
+      <div class="hero-3d-viewer-wrap">
+        <model-viewer
+          id="heroModelViewer"
+          src="Ayurvedha/tulsi3d.glb"
+          poster="assets/tulsi_3d_specimen_ai.jpg"
+          loading="eager"
+          reveal="auto"
+          auto-rotate
+          rotation-per-second="22deg"
+          camera-controls
+          shadow-intensity="1.2"
+          shadow-softness="0.8"
+          exposure="1.05"
+          ar
+          ar-modes="webxr scene-viewer quick-look"
+          camera-orbit="0deg 75deg 105%"
+          min-camera-orbit="auto auto 50%"
+          max-camera-orbit="auto auto 200%"
+          touch-action="pan-y"
+          alt="Ayurvedic Botanical 3D Specimen"
+        ></model-viewer>
+
+        <!-- Viewer Controls Floating Overlay -->
+        <div class="hero-3d-controls-overlay">
+          <button type="button" class="viewer-ctrl-btn" onclick="toggleModelAutoRotate()" id="btnAutoRotate" title="Toggle Auto Rotation">
+            🔄 Auto-Rotate
+          </button>
+          <button type="button" class="viewer-ctrl-btn" onclick="resetModelCamera()" title="Reset Camera Position">
+            🎯 Reset View
+          </button>
+        </div>
+
+        <div class="hero-3d-hint">
+          <span style="color: var(--gold-warm);">✦</span> Drag to rotate 360° • Pinch / Scroll to zoom • Two fingers to pan
+        </div>
+      </div>
+
+      <!-- Specimen Details Sidebar -->
+      <div class="hero-3d-specimen-info" id="heroSpecimenInfo">
+        <div class="hero-specimen-eyebrow" id="specimenEyebrow">Classical AYUSH Herbarium Specimen</div>
+        <h2 class="hero-specimen-name" id="specimenName">Tulasi (Holy Basil)</h2>
+        <div class="hero-specimen-sci" id="specimenSci">Ocimum tenuiflorum / Ocimum sanctum</div>
+        <p class="hero-specimen-desc" id="specimenDesc">
+          Celebrated across classical Charaka and Sushruta Samhita as 'Surasa' and the 'Queen of Herbs'. Revered as a prime Rasayana that balances Vata and Kapha doshas, purifies the Pranavaha Srotas, and fortifies respiratory vitality.
+        </p>
+
+        <div class="hero-specimen-meta-box">
+          <div class="meta-row">
+            <span class="meta-lbl">Rasa (Taste):</span>
+            <span class="meta-val" id="specimenRasa">Katu (Pungent), Tikta (Bitter)</span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-lbl">Guna (Quality):</span>
+            <span class="meta-val" id="specimenGuna">Laghu (Light), Ruksha (Dry)</span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-lbl">Virya (Potency):</span>
+            <span class="meta-val" id="specimenVirya">Ushna (Heating)</span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-lbl">Vipaka (Post-Digest):</span>
+            <span class="meta-val" id="specimenVipaka">Katu (Pungent)</span>
+          </div>
+        </div>
+
+        <div class="hero-specimen-benefits-title">Key Therapeutic Actions</div>
+        <div class="hero-specimen-tags" id="specimenTags">
+          <span class="hero-tag">Respiratory Vitality</span>
+          <span class="hero-tag">Immunity Booster</span>
+          <span class="hero-tag">Adaptogen & Stress</span>
+          <span class="hero-tag">Antimicrobial</span>
+        </div>
+
+        <div class="hero-specimen-actions">
+          <a href="Ayurvedha/tulsi.html" class="btn-specimen-deepdive" id="btnSpecimenDeepDive">
+            View Full Botanical Monograph &rarr;
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ==================== 3D BOTANICAL SPECIMENS CONTROLLER ==================== -->
+<script>
+const SPECIMENS_3D_DATA = {
+  tulsi: {
+    id: 'tulsi',
+    name: 'Tulasi (Holy Basil)',
+    sci: 'Ocimum tenuiflorum / Ocimum sanctum',
+    eyebrow: 'Classical AYUSH Herbarium Specimen',
+    desc: 'Celebrated across classical Charaka and Sushruta Samhita as Surasa and the Queen of Herbs. Revered as a prime Rasayana that balances Vata and Kapha doshas, purifies the Pranavaha Srotas, and fortifies respiratory vitality.',
+    rasa: 'Katu (Pungent), Tikta (Bitter)',
+    guna: 'Laghu (Light), Ruksha (Dry)',
+    virya: 'Ushna (Heating)',
+    vipaka: 'Katu (Pungent)',
+    tags: ['Respiratory Vitality', 'Immunity Booster', 'Adaptogen & Stress', 'Antimicrobial'],
+    modelSrc: 'Ayurvedha/tulsi3d.glb',
+    poster: 'assets/tulsi_3d_specimen_ai.jpg',
+    url: 'Ayurvedha/tulsi.html'
+  },
+  amla: {
+    id: 'amla',
+    name: 'Amla (Indian Gooseberry)',
+    sci: 'Phyllanthus emblica / Emblica officinalis',
+    eyebrow: 'Dhatri • Universal Nurturer & Rejuvenator',
+    desc: 'The paramount Rasayana of classical Ayurveda and chief constituent of Chyawanprash. Containing 5 of the 6 tastes (Pancharasa), it pacifies Tridosha, enhances Ojas, stimulates Agni without provoking Pitta, and revitalizes liver and vision.',
+    rasa: 'Amla (Sour), Kashaya (Astringent), Madhura, Tikta, Katu',
+    guna: 'Guru (Heavy), Ruksha (Dry), Sheeta',
+    virya: 'Sheeta (Cooling)',
+    vipaka: 'Madhura (Sweet post-digestive)',
+    tags: ['Rasayana Rejuvenation', 'Potent Vitamin C', 'Digestive Agni', 'Eye & Liver Health'],
+    modelSrc: 'Ayurvedha/amla3d.glb',
+    poster: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8b/Phyllanthus_emblica_362202953.jpg/1280px-Phyllanthus_emblica_362202953.jpg',
+    url: 'Ayurvedha/amla.html'
+  },
+  ashwagandha: {
+    id: 'ashwagandha',
+    name: 'Ashwagandha (Indian Ginseng)',
+    sci: 'Withania somnifera',
+    eyebrow: 'Balya & Medhya • Vital Strength & Ojas',
+    desc: 'Named for bestowing the strength and vitality of a horse (Ashwa). Premier adaptogen in Ayurvedic pharmacology that nourishes Mamsa and Shukra Dhatus, alleviates debilitating nervous exhaustion, and harmonizes cortisol.',
+    rasa: 'Tikta (Bitter), Kashaya (Astringent), Madhura',
+    guna: 'Laghu (Light), Snigdha (Unctuous)',
+    virya: 'Ushna (Heating)',
+    vipaka: 'Madhura (Sweet post-digestive)',
+    tags: ['Adaptogen Stress Relief', 'Vitality & Stamina', 'Neuroprotection', 'Deep Sleep Cycle'],
+    modelSrc: 'Ayurvedha/ashwagandha3d.glb',
+    poster: 'assets/ashwagandha_dravya_guna_ai.jpg',
+    url: 'Ayurvedha/ashwagandha.html'
+  },
+  neem: {
+    id: 'neem',
+    name: 'Neem (Indian Lilac)',
+    sci: 'Azadirachta indica',
+    eyebrow: 'Sarva Roga Nivarini • The Divine Panacea',
+    desc: 'Crowned in classical texts as the village pharmacy and cooling blood purifier (Rakta Shodhaka). Unequalled for Pitta-Kapha disorders, cooling intense inflammatory conditions, skin afflictions (Kushtha), and oral micro-biome balance.',
+    rasa: 'Tikta (Bitter), Kashaya (Astringent)',
+    guna: 'Laghu (Light), Ruksha (Dry)',
+    virya: 'Sheeta (Cooling)',
+    vipaka: 'Katu (Pungent)',
+    tags: ['Blood Detoxification', 'Natural Antimicrobial', 'Dermal Restoration', 'Immune Defense'],
+    modelSrc: 'Ayurvedha/neem3d.glb',
+    poster: 'https://upload.wikimedia.org/wikipedia/commons/2/20/Neem_%28Azadirachta_indica%29_in_Hyderabad_W_IMG_6976.jpg',
+    url: 'Ayurvedha/neem.html'
+  },
+  brahmi: {
+    id: 'brahmi',
+    name: 'Brahmi (Water Hyssop)',
+    sci: 'Bacopa monnieri',
+    eyebrow: 'Medhya Rasayana • Supreme Brain Tonic',
+    desc: 'Associated with Brahma, the cosmic creator, representing intellect and wisdom. The foremost Ayurvedic Medhya herb that rejuvenates neurotransmitters, enhances Dhi (acquisition), Dhriti (retention), and Smriti (recall).',
+    rasa: 'Tikta (Bitter), Kashaya (Astringent), Madhura',
+    guna: 'Laghu (Light), Sara (Flowing)',
+    virya: 'Sheeta (Cooling)',
+    vipaka: 'Madhura (Sweet)',
+    tags: ['Cognitive Function', 'Memory Retention', 'Anxiety & Calm', 'Neural Synchrony'],
+    modelSrc: 'Ayurvedha/brahmi3d.glb',
+    poster: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f0/Bacopa_monnieri_Brahmi_flower.jpg/1280px-Bacopa_monnieri_Brahmi_flower.jpg',
+    url: 'Ayurvedha/brahmi.html'
+  },
+  bhringraj: {
+    id: 'bhringraj',
+    name: 'Bhringraj (False Daisy)',
+    sci: 'Eclipta prostrata / Eclipta alba',
+    eyebrow: 'Keshya Raja • King of Hair & Hepatoprotector',
+    desc: 'Known as the Ruler of the Hair for arresting premature greying and hair loss by cooling Pitta in the scalp. Simultaneously one of Ayurveda most celebrated hepatic tonics (Yakrit Shodhaka) for sluggish liver function.',
+    rasa: 'Katu (Pungent), Tikta (Bitter)',
+    guna: 'Ruksha (Dry), Laghu (Light)',
+    virya: 'Ushna (Heating)',
+    vipaka: 'Katu (Pungent)',
+    tags: ['Hair Follicle Vitality', 'Hepatoprotective', 'Anti-Inflammatory', 'Natural Melanin'],
+    modelSrc: 'Ayurvedha/bhringraj3d.glb',
+    poster: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1c/Leaves_-_Bhringraj_Plant_-_Eclipta_prostrata.jpg/1280px-Leaves_-_Bhringraj_Plant_-_Eclipta_prostrata.jpg',
+    url: 'Ayurvedha/bhringraj.html'
+  },
+  badge: {
+    id: 'badge',
+    name: 'Swastha Sacred Medallion',
+    sci: 'AYUSH 3D Core Insignia',
+    eyebrow: 'Official 3D Insignia of Digital AYUSH',
+    desc: 'A meticulously sculpted 3D digital medallion combining the meditating Buddha upon the lotus, sacred mortar and pestle, distilled medicinal decoctions, and golden bio-energetic node constellations.',
+    rasa: 'Pancha Mahabhuta Synthesis',
+    guna: 'Sattva, Tejas & Ojas',
+    virya: 'Harmonizing (Saman)',
+    vipaka: 'Tridosha Equilibrium',
+    tags: ['Ayurveda', 'Yoga & Naturopathy', 'Unani', 'Siddha & Homeopathy'],
+    modelSrc: 'assets/swastha_badge.glb',
+    poster: 'assets/swastha_badge_front_clean.png',
+    url: 'Ayurvedha/index.html'
+  }
+};
+
+let current3DKey = 'tulsi';
+
+window.open3DModelsModal = function(initialKey = 'tulsi') {
+  const modal = document.getElementById('hero3DModal');
+  if (!modal) return;
+  modal.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  switch3DModel(initialKey);
+};
+
+window.close3DModelsModal = function() {
+  const modal = document.getElementById('hero3DModal');
+  if (!modal) return;
+  modal.classList.remove('open');
+  document.body.style.overflow = '';
+};
+
+window.switch3DModel = function(key) {
+  const data = SPECIMENS_3D_DATA[key];
+  if (!data) return;
+  current3DKey = key;
+
+  // Update tabs active state
+  document.querySelectorAll('.hero-3d-tab').forEach(tab => {
+    tab.classList.toggle('active', tab.dataset.model === key);
+  });
+
+  // Update model-viewer
+  const mv = document.getElementById('heroModelViewer');
+  if (mv) {
+    mv.src = data.modelSrc;
+    if (data.poster) mv.poster = data.poster;
+    mv.cameraOrbit = '0deg 75deg 105%';
+    if (typeof mv.resetTurntableRotation === 'function') {
+      mv.resetTurntableRotation();
+    }
+  }
+
+  // Update info panel
+  const elEyebrow = document.getElementById('specimenEyebrow');
+  const elName = document.getElementById('specimenName');
+  const elSci = document.getElementById('specimenSci');
+  const elDesc = document.getElementById('specimenDesc');
+  const elRasa = document.getElementById('specimenRasa');
+  const elGuna = document.getElementById('specimenGuna');
+  const elVirya = document.getElementById('specimenVirya');
+  const elVipaka = document.getElementById('specimenVipaka');
+  const elTags = document.getElementById('specimenTags');
+  const elDeepDive = document.getElementById('btnSpecimenDeepDive');
+
+  if (elEyebrow) elEyebrow.textContent = data.eyebrow;
+  if (elName) elName.textContent = data.name;
+  if (elSci) elSci.textContent = data.sci;
+  if (elDesc) elDesc.textContent = data.desc;
+  if (elRasa) elRasa.textContent = data.rasa;
+  if (elGuna) elGuna.textContent = data.guna;
+  if (elVirya) elVirya.textContent = data.virya;
+  if (elVipaka) elVipaka.textContent = data.vipaka;
+
+  if (elTags) {
+    elTags.innerHTML = data.tags.map(t => `<span class="hero-tag">${t}</span>`).join('');
+  }
+
+  if (elDeepDive) {
+    elDeepDive.href = data.url;
+    elDeepDive.textContent = key === 'badge' ? 'Enter Virtual Herbal Garden \u2192' : 'View Full Botanical Monograph \u2192';
+  }
+};
+
+window.toggleModelAutoRotate = function() {
+  const mv = document.getElementById('heroModelViewer');
+  const btn = document.getElementById('btnAutoRotate');
+  if (!mv) return;
+  mv.autoRotate = !mv.autoRotate;
+  if (btn) {
+    btn.textContent = mv.autoRotate ? '⏸ Pause Rotate' : '🔄 Auto-Rotate';
+  }
+};
+
+window.resetModelCamera = function() {
+  const mv = document.getElementById('heroModelViewer');
+  if (!mv) return;
+  mv.cameraOrbit = '0deg 75deg 105%';
+  if (typeof mv.resetTurntableRotation === 'function') {
+    mv.resetTurntableRotation();
+  }
+};
+
+// Keyboard listener for modal
+window.addEventListener('keydown', (e) => {
+  const modal = document.getElementById('hero3DModal');
+  if (modal && modal.classList.contains('open')) {
+    if (e.key === 'Escape') {
+      close3DModelsModal();
+    } else if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+      const keys = Object.keys(SPECIMENS_3D_DATA);
+      const currIdx = keys.indexOf(current3DKey);
+      let nextIdx = e.key === 'ArrowRight' ? currIdx + 1 : currIdx - 1;
+      if (nextIdx >= keys.length) nextIdx = 0;
+      if (nextIdx < 0) nextIdx = keys.length - 1;
+      switch3DModel(keys[nextIdx]);
+    }
+  }
+});
 </script>
 
 </body>
