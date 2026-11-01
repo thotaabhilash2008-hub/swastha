@@ -1599,39 +1599,19 @@ footer {
       </div>
     </div>
 
-    <!-- Right Column: Interactive 3D Swastha Medallion -->
+    <!-- Right Column: Ayurvedic Centerpiece Medallion (Original Image & Animation) -->
     <div class="hero-visual">
       <div class="hero-sunburst-halo"></div>
-      <div class="hero-frame hero-3d-stage">
-        <model-viewer
-          id="heroBadgeViewer"
-          src="assets/swastha_badge.glb"
-          poster="assets/swastha_badge_front_clean.png"
-          alt="SWASTHA Official 3D Antique Bronze Medallion"
-          auto-rotate
-          rotation-per-second="24deg"
-          camera-controls
-          touch-action="pan-y"
-          interaction-prompt="none"
-          shadow-intensity="1.5"
-          shadow-softness="0.8"
-          exposure="1.15"
-          camera-orbit="0deg 85deg 3.2m"
-          min-camera-orbit="auto auto 2.0m"
-          max-camera-orbit="auto auto 5.0m"
-          field-of-view="32deg"
-          loading="eager"
+      <div class="hero-frame">
+        <img
+          src="assets/hero_medallion.jpg"
+          alt="Ayurvedic Sage in Deep Forest Meditation with Medicinal Herbs"
+          onerror="this.src='assets/hero_medallion_hq.jpg'"
         >
-          <div class="badge-3d-badge-tag">
-            <span class="live-dot"></span> Interactive 3D Medallion · Drag to Orbit
-          </div>
-          <button class="btn-reset-3d-orbit" onclick="document.getElementById('heroBadgeViewer').cameraOrbit='0deg 85deg 3.2m'" title="Reset Front View">↺</button>
-        </model-viewer>
-
         <div class="hero-frame-caption">
           <div>
-            <div class="hero-caption-title">Swastha Sacred Medallion</div>
-            <div class="hero-caption-sub">Ayurveda • Yoga • Unani • Siddha • Homeopathy</div>
+            <div class="hero-caption-title">The Sacred Grove</div>
+            <div class="hero-caption-sub">Ayurvedic Sanctuary & Healing Science</div>
           </div>
           <span style="color: var(--gold-warm); font-size: 20px;">✦</span>
         </div>
