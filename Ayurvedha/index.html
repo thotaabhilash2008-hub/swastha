@@ -307,19 +307,19 @@ body {
   100% { transform: scale(1.12); opacity: 0.6; }
 }
 
-.glowing-leaf-svg {
+.glowing-ayurveda-symbol {
   position: relative;
   z-index: 5;
-  width: 130px;
-  height: 130px;
-  filter: drop-shadow(0 0 24px rgba(74, 222, 128, 0.75)) drop-shadow(0 0 45px rgba(34, 197, 94, 0.5));
-  transform: rotate(-15deg);
-  animation: floatLeaf 6s ease-in-out infinite alternate;
+  width: 145px;
+  height: 145px;
+  filter: drop-shadow(0 0 22px rgba(229, 199, 131, 0.7)) drop-shadow(0 0 38px rgba(74, 222, 128, 0.5));
+  animation: floatAyurvedaSymbol 5s ease-in-out infinite alternate;
 }
 
-@keyframes floatLeaf {
-  0%   { transform: rotate(-15deg) translateY(0); }
-  100% { transform: rotate(-10deg) translateY(-8px); }
+@keyframes floatAyurvedaSymbol {
+  0%   { transform: translateY(0) scale(0.98); }
+  50%  { transform: translateY(-7px) scale(1.02); }
+  100% { transform: translateY(2px) scale(1); }
 }
 
 /* ==================== MAIN CONTENT LAYOUT ==================== */
@@ -1068,10 +1068,37 @@ body {
 }
 
 @media (max-width: 768px) {
-  .garden-hero-grid { grid-template-columns: 1fr; text-align: center; }
-  .garden-nav-pills { justify-content: center; }
-  .hero-leaf-container { display: none; }
+  .garden-hero-grid { 
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    text-align: left;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .garden-nav-pills { justify-content: flex-start; }
+  .hero-leaf-container { 
+    display: flex;
+    transform: scale(0.78);
+    transform-origin: center right;
+    min-height: 180px;
+    margin: 0 auto;
+  }
   .nav-links { display: none; }
+}
+
+@media (max-width: 480px) {
+  .garden-hero-grid {
+    flex-direction: column-reverse;
+    text-align: center;
+    gap: 8px;
+  }
+  .garden-nav-pills { justify-content: center; }
+  .hero-leaf-container {
+    transform: scale(0.7);
+    min-height: 160px;
+  }
 }
 
 @media (max-width: 650px) {
@@ -1148,30 +1175,112 @@ body {
         <div class="ripple-ring ripple-2"></div>
         <div class="ripple-ring ripple-3"></div>
 
-        <!-- Glowing Translucent Botanical Leaf SVG -->
-        <svg class="glowing-leaf-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Sacred Authentic Ayurveda Symbol: Amrita Kalasha (Vessel of Longevity) on Blooming Lotus with Tridosha Foliage -->
+        <svg class="glowing-ayurveda-symbol" viewBox="0 0 140 140" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Authentic Ayurveda Sacred Symbol">
           <defs>
-            <linearGradient id="leafGrad" x1="10%" y1="0%" x2="90%" y2="100%">
-              <stop offset="0%" stop-color="#4ADE80"/>
-              <stop offset="50%" stop-color="#22C55E"/>
+            <!-- 24K Royal Ayurvedic Gold Gradient -->
+            <linearGradient id="ayurGold" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#FFF3C7"/>
+              <stop offset="25%" stop-color="#E5C783"/>
+              <stop offset="65%" stop-color="#C8A45D"/>
+              <stop offset="100%" stop-color="#8A6520"/>
+            </linearGradient>
+            <linearGradient id="ayurGoldLight" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#C8A45D"/>
+              <stop offset="50%" stop-color="#FFF8E0"/>
+              <stop offset="100%" stop-color="#C8A45D"/>
+            </linearGradient>
+            
+            <!-- Sacred Tridosha Medicinal Foliage Gradients -->
+            <linearGradient id="pittaLeaf" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#86EFAC"/>
+              <stop offset="45%" stop-color="#4ADE80"/>
               <stop offset="100%" stop-color="#15803D"/>
             </linearGradient>
-            <filter id="glowGlow" x="-20%" y="-20%" width="140%" height="140%">
-              <feGaussianBlur stdDeviation="3" result="glow"/>
-              <feComposite in="SourceGraphic" in2="glow" operator="over"/>
+            <linearGradient id="vataLeaf" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#A7F3D0"/>
+              <stop offset="50%" stop-color="#34D399"/>
+              <stop offset="100%" stop-color="#065F46"/>
+            </linearGradient>
+            <linearGradient id="kaphaLeaf" x1="100%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#A7F3D0"/>
+              <stop offset="50%" stop-color="#34D399"/>
+              <stop offset="100%" stop-color="#065F46"/>
+            </linearGradient>
+
+            <!-- Celestial Amrita Nectar Drop Gradient -->
+            <radialGradient id="amritaDrop" cx="35%" cy="30%" r="65%">
+              <stop offset="0%" stop-color="#FFFFFF"/>
+              <stop offset="40%" stop-color="#FEF08A"/>
+              <stop offset="75%" stop-color="#EAB308"/>
+              <stop offset="100%" stop-color="#A16207"/>
+            </radialGradient>
+
+            <!-- Divine Halo Blur Filter -->
+            <filter id="ayurGlow" x="-30%" y="-30%" width="160%" height="160%">
+              <feGaussianBlur stdDeviation="3.5" result="blur"/>
+              <feComposite in="SourceGraphic" in2="blur" operator="over"/>
             </filter>
           </defs>
-          <!-- Leaf Body -->
-          <path d="M50 8 C68 25 88 50 82 78 C76 92 60 96 50 96 C40 96 24 92 18 78 C12 50 32 25 50 8 Z" fill="url(#leafGrad)" opacity="0.9" filter="url(#glowGlow)"/>
-          <!-- Central Spine -->
-          <path d="M50 14 Q50 55 50 94" stroke="#F5F0E4" stroke-width="1.5" stroke-linecap="round" opacity="0.8"/>
-          <!-- Lateral Veins -->
-          <path d="M50 35 Q65 42 74 48" stroke="#F5F0E4" stroke-width="0.8" opacity="0.6"/>
-          <path d="M50 35 Q35 42 26 48" stroke="#F5F0E4" stroke-width="0.8" opacity="0.6"/>
-          <path d="M50 52 Q66 60 72 68" stroke="#F5F0E4" stroke-width="0.8" opacity="0.6"/>
-          <path d="M50 52 Q34 60 28 68" stroke="#F5F0E4" stroke-width="0.8" opacity="0.6"/>
-          <path d="M50 70 Q62 76 68 82" stroke="#F5F0E4" stroke-width="0.8" opacity="0.6"/>
-          <path d="M50 70 Q38 76 32 82" stroke="#F5F0E4" stroke-width="0.8" opacity="0.6"/>
+
+          <!-- Outer Sacred Mandala Radiance Ring -->
+          <circle cx="70" cy="70" r="63" stroke="url(#ayurGoldLight)" stroke-width="1.2" stroke-dasharray="4 6" opacity="0.6"/>
+          <circle cx="70" cy="70" r="57" stroke="#4ADE80" stroke-width="0.8" opacity="0.45"/>
+
+          <!-- 1. SACRED LOTUS PEDESTAL (Padma Throne) -->
+          <!-- Outer Lateral Lotus Petals -->
+          <path d="M36 108 C22 102 18 88 33 86 C43 90 52 100 54 108 Z" fill="url(#ayurGold)" opacity="0.85"/>
+          <path d="M104 108 C118 102 122 88 107 86 C97 90 88 100 86 108 Z" fill="url(#ayurGold)" opacity="0.85"/>
+          
+          <!-- Inner Ascending Lotus Petals -->
+          <path d="M46 114 C32 108 34 96 48 96 C58 100 64 110 64 116 Z" fill="url(#ayurGold)" opacity="0.95"/>
+          <path d="M94 114 C108 108 106 96 92 96 C82 100 76 110 76 116 Z" fill="url(#ayurGold)" opacity="0.95"/>
+          
+          <!-- Central Lotus Foundation Petal -->
+          <path d="M70 98 C60 104 54 118 70 122 C86 118 80 104 70 98 Z" fill="url(#ayurGold)"/>
+          <path d="M42 120 Q70 130 98 120 Q70 124 42 120 Z" fill="#FFF3C7" opacity="0.75"/>
+
+          <!-- 2. SACRED AMRITA KALASHA (Lord Dhanvantari's Kumbha of Immortality) -->
+          <!-- Main Kalasha Urn Body -->
+          <path d="M48 68 C44 76 44 94 56 103 C62 107 78 107 84 103 C96 94 96 76 92 68 C88 64 82 62 70 62 C58 62 52 64 48 68 Z" 
+                fill="url(#ayurGold)" filter="url(#ayurGlow)"/>
+          
+          <!-- Sacred Filigree & Auspicious Engravings -->
+          <path d="M51 77 Q70 83 89 77" stroke="#FFF8E0" stroke-width="1.6" stroke-linecap="round" fill="none" opacity="0.85"/>
+          <path d="M53 86 Q70 93 87 86" stroke="#8A6520" stroke-width="1.2" stroke-linecap="round" fill="none" opacity="0.9"/>
+          <circle cx="70" cy="89" r="3" fill="#FFF8E0"/>
+
+          <!-- Kalasha Neck & Mouth Collar -->
+          <path d="M58 56 Q55 62 58 65 Q70 67 82 65 Q85 62 82 56 Z" fill="url(#ayurGoldLight)"/>
+          <!-- Kalasha Flared Rim Lip -->
+          <ellipse cx="70" cy="54" rx="16" ry="3.5" fill="url(#ayurGoldLight)" stroke="#FFF8E0" stroke-width="0.8"/>
+
+          <!-- 3. TRIDOSHA SACRED MEDICINAL FOLIAGE (Vata, Pitta, Kapha) -->
+          <!-- Vata Leaf (Left - Kinetic Prana Energy) -->
+          <path d="M64 53 C52 46 31 39 27 24 C37 25 54 35 62 48 Z" fill="url(#vataLeaf)" opacity="0.95"/>
+          <path d="M64 53 Q48 42 29 26" stroke="#F5F0E4" stroke-width="0.9" stroke-linecap="round" opacity="0.8"/>
+
+          <!-- Kapha Leaf (Right - Ojas & Vital Immunity) -->
+          <path d="M76 53 C88 46 109 39 113 24 C103 25 86 35 78 48 Z" fill="url(#kaphaLeaf)" opacity="0.95"/>
+          <path d="M76 53 Q92 42 111 26" stroke="#F5F0E4" stroke-width="0.9" stroke-linecap="round" opacity="0.8"/>
+
+          <!-- Pitta Leaf (Center - Radiant Tejas / Transformation) -->
+          <path d="M70 52 C61 38 60 21 70 10 C80 21 79 38 70 52 Z" fill="url(#pittaLeaf)" filter="url(#ayurGlow)"/>
+          <path d="M70 50 L70 14" stroke="#FFFFFF" stroke-width="1.3" stroke-linecap="round" opacity="0.85"/>
+          <path d="M70 34 Q64 30 62 26" stroke="#FFFFFF" stroke-width="0.75" opacity="0.7"/>
+          <path d="M70 34 Q76 30 78 26" stroke="#FFFFFF" stroke-width="0.75" opacity="0.7"/>
+          <path d="M70 25 Q66 21 65 18" stroke="#FFFFFF" stroke-width="0.75" opacity="0.7"/>
+          <path d="M70 25 Q74 21 75 18" stroke="#FFFFFF" stroke-width="0.75" opacity="0.7"/>
+
+          <!-- 4. CELESTIAL AMRITA NECTAR DROP (Elixir of Longevity) -->
+          <path d="M70 3 C67 7 64 11 64 14 C64 17.3 66.7 20 70 20 C73.3 20 76 17.3 76 14 C76 11 73 7 70 3 Z" 
+                fill="url(#amritaDrop)" filter="url(#ayurGlow)"/>
+          <circle cx="68" cy="13" r="1.4" fill="#FFFFFF" opacity="0.95"/>
+
+          <!-- Radiant Ayurvedic Sparkles (Ojas Radiance) -->
+          <circle cx="30" cy="20" r="1.8" fill="#FFF3C7" opacity="0.9"/>
+          <circle cx="110" cy="20" r="1.8" fill="#FFF3C7" opacity="0.9"/>
+          <circle cx="70" cy="1" r="2" fill="#FFF3C7" opacity="0.95"/>
         </svg>
       </div>
     </div>

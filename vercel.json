@@ -20,8 +20,28 @@
       "destination": "/Ayurvedha/bookmarks.html"
     },
     {
-      "source": "/:plant((?!Ayurvedha|Yoga|Unani|Sidhha|Homeopathy|assets|index).*)",
-      "destination": "/Ayurvedha/:plant"
+      "source": "/Ayurvedha",
+      "destination": "/Ayurvedha/index.html"
+    },
+    {
+      "source": "/Ayurvedha/",
+      "destination": "/Ayurvedha/index.html"
+    },
+    {
+      "source": "/Ayurvedha/:plant.html",
+      "destination": "/Ayurvedha/:plant.html"
+    },
+    {
+      "source": "/Ayurvedha/:plant",
+      "destination": "/Ayurvedha/:plant.html"
+    },
+    {
+      "source": "/:plant((?!Ayurvedha|Yoga|Unani|Sidhha|Homeopathy|assets|index|favicon|robots|manifest)[^/.]+)\\.html",
+      "destination": "/Ayurvedha/:plant.html"
+    },
+    {
+      "source": "/:plant((?!Ayurvedha|Yoga|Unani|Sidhha|Homeopathy|assets|index|favicon|robots|manifest)[^/.]+)",
+      "destination": "/Ayurvedha/:plant.html"
     }
   ]
 }
