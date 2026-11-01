@@ -1,79 +1,1014 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Yoga — Swastha</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Jost:wght@300;400&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,600&family=Jost:wght@200;300;400;500;600&display=swap"
+    rel="stylesheet">
   <style>
     :root {
-      color-scheme: dark;
-      --bg-primary: #07170F;
-      --bg-secondary: #103B28;
+      --bg: #07170F;
+      --bg2: #103B28;
       --botanical: #47734C;
       --gold: #C8A45D;
-      --gold-warm: #E5C783;
+      --gw: #E5C783;
+      --gb: #F4DE9C;
       --ivory: #F5F0E4;
       --sage: #C7C9B9;
+      --bd: rgba(200, 164, 93, .32);
+      --bdh: rgba(229, 199, 131, .65);
+      --glass: linear-gradient(180deg, rgba(16, 59, 40, .48), rgba(7, 23, 15, .72))
     }
 
-    * { box-sizing: border-box; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box
+    }
+
+    html {
+      scroll-behavior: smooth
+    }
+
     body {
-      min-height: 100vh;
-      margin: 0;
-      display: grid;
-      place-items: center;
-      padding: 24px;
+      background: var(--bg);
       color: var(--ivory);
-      background: radial-gradient(ellipse at top right, rgba(16, 59, 40, 0.6) 0%, transparent 60%), #07170F;
-      font-family: 'Jost', sans-serif;
-      text-align: center;
+      font: 300 1rem/1.6 'Jost', sans-serif;
+      overflow-x: hidden;
+      position: relative;
+      min-height: 100vh
     }
-    main {
-      max-width: 620px;
-      background: rgba(16, 59, 40, 0.45);
-      border: 1px solid rgba(200, 164, 93, 0.25);
-      border-radius: 6px;
-      padding: 60px 40px;
-      backdrop-filter: blur(12px);
-      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+
+    :focus-visible {
+      outline: 2px solid var(--gw);
+      outline-offset: 3px
     }
-    .ornament { color: var(--gold-warm); font-size: 24px; margin-bottom: 8px; }
-    h1 {
-      margin: 12px 0;
-      color: var(--ivory);
-      font: 300 clamp(42px, 8vw, 72px)/1.1 'Cormorant Garamond', serif;
-      letter-spacing: 4px;
-      text-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+
+    [hidden] {
+      display: none !important
     }
-    p {
-      margin: 0;
-      color: var(--gold-warm);
-      font: 300 clamp(20px, 3.5vw, 26px) 'Cormorant Garamond', serif;
-      font-style: italic;
-      letter-spacing: 1px;
+
+    .cinematic-bg {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden
     }
-    a {
-      display: inline-block;
-      margin-top: 36px;
-      color: var(--sage);
+
+    .cinematic-bg::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 50% -12%, rgba(229, 199, 131, .28) 0%, rgba(16, 59, 40, .48) 35%, transparent 75%), radial-gradient(ellipse at 85% 15%, rgba(71, 115, 76, .3) 0%, transparent 60%), radial-gradient(ellipse at 15% 45%, rgba(16, 59, 40, .5) 0%, transparent 65%), radial-gradient(ellipse at 50% 90%, rgba(16, 59, 40, .6) 0%, rgba(7, 23, 15, .98) 80%), linear-gradient(180deg, #07170F 0%, #0B2418 35%, #081B12 70%, #07170F 100%)
+    }
+
+    .cinematic-bg::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+      opacity: .8
+    }
+
+    .dust-mote {
+      position: fixed;
+      border-radius: 50%;
+      background: radial-gradient(circle, var(--gw) 0%, rgba(200, 164, 93, 0) 70%);
+      pointer-events: none;
+      z-index: 1;
+      opacity: .35;
+      animation: floatDust infinite ease-in-out alternate
+    }
+
+    .dust-1 {
+      width: 5px;
+      height: 5px;
+      top: 18%;
+      left: 14%;
+      animation-duration: 11s
+    }
+
+    .dust-2 {
+      width: 3px;
+      height: 3px;
+      top: 32%;
+      right: 28%;
+      animation-duration: 14s;
+      animation-delay: 2s
+    }
+
+    .dust-3 {
+      width: 4px;
+      height: 4px;
+      top: 58%;
+      left: 32%;
+      animation-duration: 16s;
+      animation-delay: 4s
+    }
+
+    @keyframes floatDust {
+      0% {
+        transform: translate(0, 0);
+        opacity: .2
+      }
+
+      50% {
+        opacity: .55
+      }
+
+      100% {
+        transform: translate(20px, -35px);
+        opacity: .15
+      }
+    }
+
+    .botanical-svg {
+      position: fixed;
+      pointer-events: none;
+      z-index: 1;
+      opacity: .18
+    }
+
+    .botanical-svg path {
+      stroke: var(--botanical)
+    }
+
+    .botanical-svg ellipse {
+      fill: var(--botanical)
+    }
+
+    .botanical-tl {
+      top: -20px;
+      left: -20px;
+      width: 320px
+    }
+
+    .botanical-br {
+      bottom: -20px;
+      right: -20px;
+      width: 280px;
+      transform: rotate(180deg)
+    }
+
+    .site-nav,
+    .hero,
+    .section-divider,
+    .wrap,
+    footer {
+      position: relative;
+      z-index: 10
+    }
+
+    .site-nav {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: rgba(7, 23, 15, .78);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border-bottom: 1px solid rgba(200, 164, 93, .22)
+    }
+
+    .nav-container {
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: 14px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
       text-decoration: none;
-      border-bottom: 1px solid var(--gold);
-      padding-bottom: 5px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      font-size: 11px;
-      transition: all 0.3s;
+      color: var(--ivory)
     }
-    a:hover, a:focus-visible { color: var(--gold-warm); border-color: var(--gold-warm); }
+
+    .brand-logo-icon {
+      width: 28px;
+      height: 28px;
+      color: var(--gw);
+      filter: drop-shadow(0 0 8px rgba(229, 199, 131, .45))
+    }
+
+    .brand-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 24px;
+      font-weight: 500;
+      letter-spacing: 5px
+    }
+
+    .nav-btn {
+      background: rgba(16, 59, 40, .6);
+      border: 1px solid rgba(200, 164, 93, .65);
+      border-radius: 9999px;
+      color: var(--ivory);
+      text-decoration: none;
+      padding: 8px 22px;
+      font-size: 13px;
+      letter-spacing: 1.2px;
+      font-weight: 500;
+      transition: .3s
+    }
+
+    .nav-btn:hover {
+      border-color: var(--gw);
+      color: #fff;
+      transform: translateY(-1px)
+    }
+
+    .hero {
+      text-align: center;
+      padding: 56px 24px 0
+    }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--gw);
+      margin-bottom: 14px;
+      animation: fadeUp 1s ease .1s backwards
+    }
+
+    .hero-eyebrow::before,
+    .hero-eyebrow::after {
+      content: '';
+      width: 24px;
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--gold))
+    }
+
+    .hero-eyebrow::after {
+      background: linear-gradient(to left, transparent, var(--gold))
+    }
+
+    h1,
+    h2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 300;
+      color: var(--ivory)
+    }
+
+    h1 {
+      font-size: clamp(56px, 9vw, 96px);
+      letter-spacing: 8px;
+      line-height: 1;
+      text-shadow: 0 4px 28px rgba(0, 0, 0, .7);
+      animation: fadeUp 1s ease .25s backwards
+    }
+
+    .hero-subtitle {
+      font: italic 300 clamp(20px, 2.2vw, 26px) 'Cormorant Garamond', serif;
+      color: var(--gw);
+      letter-spacing: 2px;
+      margin-top: 12px;
+      animation: fadeUp 1s ease .4s backwards
+    }
+
+    .hero-shloka {
+      font-size: 13.5px;
+      letter-spacing: 4px;
+      color: var(--sage);
+      margin-top: 10px;
+      animation: fadeUp 1s ease .55s backwards
+    }
+
+    .intro {
+      max-width: 540px;
+      margin: 18px auto 0;
+      color: rgba(245, 240, 228, .82);
+      font-size: .95rem;
+      animation: fadeUp 1s ease .65s backwards
+    }
+
+    .section-divider {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin: 34px auto 10px
+    }
+
+    .section-divider i {
+      height: 1px;
+      width: 100px;
+      background: linear-gradient(to right, transparent, var(--gold))
+    }
+
+    .section-divider i:last-child {
+      background: linear-gradient(to left, transparent, var(--gold))
+    }
+
+    .section-divider b {
+      font-weight: 400;
+      color: var(--gw);
+      font-size: 18px
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(24px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
+
+    .wrap {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 2rem 1.25rem 4rem
+    }
+
+    fieldset {
+      border: 0;
+      margin-bottom: 2rem
+    }
+
+    legend {
+      font: 400 1.5rem 'Cormorant Garamond', serif;
+      color: var(--ivory);
+      letter-spacing: 1px;
+      margin-bottom: .2rem
+    }
+
+    .hint {
+      font-size: .82rem;
+      color: var(--sage);
+      margin-bottom: .8rem
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .55rem
+    }
+
+    .chip {
+      padding: .55rem 1.15rem;
+      background: rgba(16, 59, 40, .45);
+      border: 1px solid var(--bd);
+      border-radius: 9999px;
+      color: var(--sage);
+      font: 300 .85rem 'Jost', sans-serif;
+      cursor: pointer;
+      transition: .25s;
+      backdrop-filter: blur(8px)
+    }
+
+    .chip:hover {
+      border-color: var(--bdh);
+      color: var(--ivory)
+    }
+
+    .chip[aria-pressed=true] {
+      background: linear-gradient(135deg, var(--gw), var(--gold));
+      color: #07170F;
+      border-color: transparent;
+      font-weight: 500
+    }
+
+    textarea,
+    .search {
+      width: 100%;
+      padding: .9rem 1.1rem;
+      border: 1px solid var(--bd);
+      border-radius: 12px;
+      background: rgba(16, 59, 40, .45);
+      color: var(--ivory);
+      font: 300 1rem 'Jost', sans-serif;
+      backdrop-filter: blur(8px)
+    }
+
+    textarea {
+      min-height: 90px;
+      resize: vertical
+    }
+
+    textarea::placeholder,
+    .search::placeholder {
+      color: var(--sage);
+      opacity: .7
+    }
+
+    textarea:focus,
+    .search:focus {
+      border-color: var(--bdh);
+      outline: none
+    }
+
+    .read,
+    .listen,
+    .tab {
+      background: rgba(16, 59, 40, .45);
+      border: 1px solid rgba(200, 164, 93, .45);
+      border-radius: 9999px;
+      color: var(--ivory);
+      font: 400 .78rem 'Jost', sans-serif;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: .25s
+    }
+
+    .read {
+      margin-top: .6rem;
+      padding: .55rem 1.3rem
+    }
+
+    .read+.read {
+      margin-left: .5rem
+    }
+
+    .listen {
+      margin: 0 0 .9rem .5rem;
+      padding: .25rem .9rem;
+      font-size: .75rem
+    }
+
+    .read:hover,
+    .listen:hover,
+    .tab:hover {
+      background: rgba(16, 59, 40, .8);
+      border-color: var(--gw);
+      color: var(--gw)
+    }
+
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .6rem;
+      margin-bottom: 2rem
+    }
+
+    .tab {
+      padding: .7rem 1.5rem;
+      font-size: .85rem
+    }
+
+    .tab.on {
+      background: linear-gradient(135deg, var(--gw), var(--gold));
+      color: #07170F;
+      border-color: transparent;
+      font-weight: 500
+    }
+
+    .parsed {
+      font-size: .82rem;
+      color: var(--gw);
+      margin-top: .6rem;
+      min-height: 1.2em
+    }
+
+    .go,
+    .again {
+      display: inline-flex;
+      padding: .95rem 2.2rem;
+      background: linear-gradient(135deg, var(--gw), var(--gold));
+      color: #07170F;
+      border: 0;
+      border-radius: 9999px;
+      font: 600 .8rem 'Jost', sans-serif;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: .3s;
+      box-shadow: 0 6px 24px rgba(200, 164, 93, .35)
+    }
+
+    .go:hover,
+    .again:hover {
+      background: linear-gradient(135deg, var(--gb), var(--gw));
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(200, 164, 93, .5)
+    }
+
+    .err {
+      color: #f0a58c;
+      font-size: .82rem;
+      margin-left: 1rem
+    }
+
+    #result {
+      display: none
+    }
+
+    .sum {
+      background: var(--glass);
+      border: 1px solid var(--bd);
+      border-radius: 12px;
+      padding: 1.2rem 1.5rem;
+      margin-bottom: 1.5rem;
+      font-size: .9rem;
+      color: var(--sage);
+      backdrop-filter: blur(14px)
+    }
+
+    .sum b {
+      color: var(--gw);
+      font-weight: 500
+    }
+
+    .note {
+      border-left: 3px solid var(--gw);
+      background: rgba(7, 23, 15, .65);
+      border-radius: 0 8px 8px 0;
+      padding: .8rem 1rem;
+      font-size: .84rem;
+      color: var(--ivory);
+      margin-bottom: 1.2rem
+    }
+
+    .card {
+      border: 1px solid var(--bd);
+      border-radius: 14px;
+      background: var(--glass);
+      margin-bottom: 1.4rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      overflow: hidden;
+      backdrop-filter: blur(14px);
+      box-shadow: 0 10px 28px rgba(0, 0, 0, .4), inset 0 1px 0 rgba(229, 199, 131, .18);
+      transition: .35s
+    }
+
+    .card:hover {
+      border-color: var(--bdh);
+      box-shadow: 0 18px 38px rgba(0, 0, 0, .6), 0 0 22px rgba(200, 164, 93, .2)
+    }
+
+    @media(max-width:680px) {
+      .card {
+        grid-template-columns: 1fr
+      }
+    }
+
+    .info {
+      padding: 1.6rem 1.5rem
+    }
+
+    .phase {
+      font-size: .68rem;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--gw)
+    }
+
+    .card h2 {
+      font-size: 1.9rem;
+      line-height: 1.1;
+      margin: .2rem 0;
+      letter-spacing: 1px
+    }
+
+    .sk {
+      font: italic 1rem 'Cormorant Garamond', serif;
+      color: var(--gw);
+      margin-bottom: .8rem
+    }
+
+    .why {
+      font-size: .8rem;
+      color: var(--gb);
+      margin-bottom: .7rem
+    }
+
+    .ben {
+      font-size: .9rem;
+      color: rgba(245, 240, 228, .88);
+      margin-bottom: .8rem
+    }
+
+    .hold {
+      display: inline-block;
+      border: 1px solid var(--bd);
+      border-radius: 9999px;
+      padding: .2rem .8rem;
+      font-size: .75rem;
+      color: var(--gw);
+      margin-bottom: .9rem
+    }
+
+    ol {
+      padding-left: 1.1rem;
+      font-size: .85rem;
+      color: var(--sage)
+    }
+
+    ol li {
+      margin: .25rem 0
+    }
+
+    .vid {
+      background: rgba(7, 23, 15, .85);
+      min-height: 240px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(199, 201, 185, .5);
+      font-size: .78rem;
+      letter-spacing: .1em;
+      text-align: center;
+      padding: 1rem
+    }
+
+    .vid video,
+    .vid iframe {
+      width: 100%;
+      height: 100%;
+      min-height: 240px;
+      border: 0;
+      object-fit: cover
+    }
+
+    .again {
+      margin-top: .6rem
+    }
+
+    footer {
+      border-top: 1px solid rgba(200, 164, 93, .22);
+      background: rgba(7, 23, 15, .95);
+      padding: 40px 24px;
+      text-align: center
+    }
+
+    footer p {
+      font-size: 11.5px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--sage)
+    }
+
+    footer .disc {
+      margin-top: .6rem;
+      font-size: .75rem;
+      letter-spacing: .04em;
+      text-transform: none
+    }
+
+    @media(max-width:600px) {
+      .nav-container {
+        padding: 12px 16px
+      }
+
+      .brand-name {
+        font-size: 20px;
+        letter-spacing: 3px
+      }
+
+      h1 {
+        letter-spacing: 4px
+      }
+    }
+
+    @media(prefers-reduced-motion:reduce) {
+
+      *,
+      *::before,
+      *::after {
+        animation: none !important;
+        transition: none !important
+      }
+    }
   </style>
 </head>
+
 <body>
-  <main>
-    <div class="ornament" aria-hidden="true">✦</div>
-    <h1>Yoga</h1>
-    <p>Working in Progress</p>
-    <a href="../index.html">← Back to Swastha</a>
+  <div class="cinematic-bg" aria-hidden="true"></div>
+  <div class="dust-mote dust-1" aria-hidden="true"></div>
+  <div class="dust-mote dust-2" aria-hidden="true"></div>
+  <div class="dust-mote dust-3" aria-hidden="true"></div>
+  <svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg"
+    aria-hidden="true">
+    <path d="M10 290 Q 80 200 150 150 Q 200 110 260 20" stroke-width="1.5" />
+    <path d="M30 280 Q 60 200 90 160" stroke-width="1" />
+    <ellipse cx="150" cy="150" rx="28" ry="16" transform="rotate(-40 150 150)" />
+    <ellipse cx="200" cy="105" rx="22" ry="13" transform="rotate(-55 200 105)" />
+    <ellipse cx="100" cy="200" rx="20" ry="11" transform="rotate(-20 100 200)" />
+    <ellipse cx="250" cy="55" rx="18" ry="10" transform="rotate(-65 250 55)" />
+  </svg>
+  <svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg"
+    aria-hidden="true">
+    <path d="M10 290 Q 80 200 150 150 Q 200 110 260 20" stroke-width="1.5" />
+    <ellipse cx="150" cy="150" rx="28" ry="16" transform="rotate(-40 150 150)" />
+    <ellipse cx="200" cy="105" rx="22" ry="13" transform="rotate(-55 200 105)" />
+    <ellipse cx="250" cy="55" rx="18" ry="10" transform="rotate(-65 250 55)" />
+  </svg>
+  <header class="site-nav">
+    <div class="nav-container">
+      <a href="../index.html" class="brand-group">
+        <svg class="brand-logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 2C12 2 15 6 15 9C15 11 13.5 12.5 12 13C10.5 12.5 9 11 9 9C9 6 12 2 12 2Z" />
+          <path d="M12 13C13.5 13.5 17 15 17 18C17 20 15 21 12 21C9 21 7 20 7 18C7 15 10.5 13.5 12 13Z" />
+          <path d="M15 9C17 7 21 8 22 11C22.5 13 21 15.5 17 16" />
+          <path d="M9 9C7 7 3 8 2 11C1.5 13 3 15.5 7 16" />
+        </svg>
+        <span class="brand-name">SWASTHA</span>
+      </a>
+      <a href="../index.html" class="nav-btn">← Home</a>
+    </div>
+  </header>
+  <section class="hero">
+    <div class="hero-eyebrow">AYUSH · Yoga</div>
+    <h1>YOGA</h1>
+    <p class="hero-subtitle">Union of Self</p>
+    <p class="hero-shloka">योग</p>
+    <p class="intro">Tell us how you feel, by tapping or typing. We'll build a short practice of asanas suited to your
+      mind, body and day.</p>
+  </section>
+  <div class="section-divider"><i></i><b>❧</b><i></i></div>
+
+  <main class="wrap">
+    <div class="tabs">
+      <button type="button" class="tab on" id="tab-q">Personalised practice</button>
+      <button type="button" class="tab" id="tab-all">Browse all asanas</button>
+    </div>
+    <div id="personal">
+      <form id="form" novalidate>
+        <fieldset>
+          <legend>In your own words</legend>
+          <p class="hint">Before tapping Speak, mention how your mind and body feel, any pain, injuries or health
+            conditions, and what you hope to get from your practice. For example: "I'm stressed, my lower back hurts,
+            and I want a gentle practice." You can also type how you feel. We'll tick the matching options below. Typed
+            text is processed in your browser. If you use the microphone, your browser's speech service may send the
+            audio to its provider.</p>
+          <textarea id="free" aria-label="Describe how you feel"></textarea>
+          <button type="button" class="read" id="read">Read my text</button><button type="button" class="read"
+            id="mic">🎤 Speak</button>
+          <p class="parsed" id="parsed" aria-live="polite"></p>
+        </fieldset>
+        <fieldset>
+          <legend>How is your mind today?</legend>
+          <p class="hint">Pick any that apply.</p>
+          <div class="chips" data-g="mental" data-multi="1"></div>
+        </fieldset>
+        <fieldset>
+          <legend>How does your body feel?</legend>
+          <p class="hint">Pick any that apply.</p>
+          <div class="chips" data-g="phys" data-multi="1"></div>
+        </fieldset>
+        <fieldset>
+          <legend>Safety check</legend>
+          <p class="hint">Unsuitable poses will be left out.</p>
+          <div class="chips" data-g="safe" data-multi="1"></div>
+        </fieldset>
+        <fieldset>
+          <legend>Your age group</legend>
+          <div class="chips" data-g="age"></div>
+        </fieldset>
+        <fieldset>
+          <legend>What do you want from today's practice?</legend>
+          <div class="chips" data-g="today"></div>
+        </fieldset>
+        <fieldset>
+          <legend>When will you practise?</legend>
+          <div class="chips" data-g="tod"></div>
+        </fieldset>
+        <fieldset>
+          <legend>Do you sit for most of the day?</legend>
+          <div class="chips" data-g="sit"></div>
+        </fieldset>
+        <fieldset>
+          <legend>How flexible do you feel?</legend>
+          <div class="chips" data-g="flex"></div>
+        </fieldset>
+        <fieldset>
+          <legend>Can you get down to the floor and up again easily?</legend>
+          <div class="chips" data-g="floor"></div>
+        </fieldset>
+        <fieldset>
+          <legend>Your yoga experience</legend>
+          <div class="chips" data-g="level"></div>
+        </fieldset>
+        <fieldset>
+          <legend>Time available</legend>
+          <div class="chips" data-g="time"></div>
+        </fieldset>
+        <button type="submit" class="go">Create my practice</button><span class="err" id="err" role="alert"></span>
+      </form>
+      <section id="result" aria-live="polite"></section>
+    </div>
+    <section id="library" hidden>
+      <fieldset>
+        <legend>All asanas</legend>
+        <p class="hint">Browse or search every asana and practise directly. This list is not adjusted to your health
+          answers, so check that an asana suits you, or use the personalised practice.</p>
+        <input type="search" id="q" class="search" placeholder="Search by name or need, e.g. tree, back, sleep"
+          aria-label="Search asanas">
+        <p class="parsed" id="count"></p>
+      </fieldset>
+      <div id="all"></div>
+    </section>
   </main>
+  <footer>
+    <p>Rooted in tradition &nbsp;·&nbsp; Guided by nature &nbsp;·&nbsp; Healing within</p>
+    <p class="disc">General wellness guidance, not medical advice.</p>
+  </footer>
+
+  <script>
+    const $ = s => document.querySelector(s);
+    const OPTS = {
+      mental: [['stress', 'Stress or anxiety'], ['mood', 'Low mood or low energy'], ['sleep', 'Poor sleep'], ['focus', 'Trouble focusing']],
+      phys: [['back', 'Back pain'], ['neck', 'Neck or shoulder stiffness'], ['knee', 'Knee or joint issues'], ['wrist', 'Wrist or hand pain'], ['weight', 'Weight gain'], ['stamina', 'Low stamina'], ['digest', 'Digestive issues']],
+      safe: [['p', 'Pregnancy'], ['b', 'High blood pressure or heart condition'], ['i', 'Recent surgery or injury'], ['v', 'Dizziness or vertigo']],
+      age: [['y', 'Under 50'], ['m', '51–65'], ['o', 'Over 65']],
+      today: [['energise', 'Energise'], ['relax', 'Relax'], ['strength', 'Get stronger'], ['flexibility', 'Be more flexible'], ['balance', 'Balance and focus']],
+      tod: [['m', 'Morning'], ['d', 'Daytime'], ['e', 'Evening or before bed']],
+      sit: [['yes', 'Yes, mostly sitting'], ['no', 'No, I move around']],
+      flex: [['stiff', 'Stiff'], ['avg', 'Average'], ['good', 'Quite flexible']],
+      floor: [['yes', 'Yes'], ['no', 'No, I need a chair']],
+      level: [['1', 'Beginner'], ['2', 'Intermediate'], ['3', 'Advanced']],
+      time: [['10', '10 minutes'], ['20', '20 minutes'], ['30', '30 minutes']]
+    };
+    const NAME = { stress: 'stress', mood: 'low mood', sleep: 'sleep', focus: 'focus', back: 'back pain', neck: 'neck and shoulders', weight: 'weight', stamina: 'stamina', digest: 'digestion', flex: 'flexibility', balance: 'balance', strength: 'strength' };
+    const LBL = {}; for (const g in OPTS) OPTS[g].forEach(([v, t]) => LBL[g + v] = t);
+    const TODAY = { energise: ['stamina', 'mood'], relax: ['stress', 'sleep'], strength: ['strength'], flexibility: ['flex'], balance: ['balance', 'focus'] };
+
+    /* Paste your Google Flow videos here: id -> 'videos/tadasana.mp4' (or a YouTube embed URL) */
+    const VIDEOS = {};
+
+    /* id, name, sanskrit, english, level, role(W/M/C), helps, avoid (p=pregnancy b=BP/heart i=injury v=vertigo k=knee s=back pain w=wrist f=floor work), hold, benefit, steps */
+    const A = [
+      ['tadasana', 'Tadasana', 'ताडासन', 'Mountain Pose', 1, 'W', 'focus balance stamina', '', '5 slow breaths', 'Builds posture awareness and steadies the mind.', ['Stand with feet together, weight even.', 'Lift your kneecaps and lengthen the spine.', 'Let arms hang, shoulders relaxed.', 'Breathe slowly, gaze straight ahead.']],
+      ['cat', 'Marjaryasana–Bitilasana', 'मार्जर्यासन', 'Cat-Cow', 1, 'W', 'back neck stress flex', 'w f', '8 slow rounds', 'Warms the spine and eases back and neck tension.', ['Come to hands and knees, wrists under shoulders.', 'Inhale: drop the belly, lift the chest.', 'Exhale: round the back, tuck the chin.', 'Move with your breath.']],
+      ['vrikshasana', 'Vrikshasana', 'वृक्षासन', 'Tree Pose', 1, 'M', 'focus balance strength', '', '5 breaths each side', 'Improves balance and concentration.', ['Stand tall and shift weight to one foot.', 'Place the other foot on the inner calf or thigh, never the knee.', 'Palms together at the chest.', 'Fix your gaze on one still point.']],
+      ['uttanasana', 'Uttanasana', 'उत्तानासन', 'Standing Forward Fold', 1, 'M', 'stress sleep neck flex', 'b s v', '5 breaths', 'Calms the nervous system and releases neck tension.', ['Stand with feet hip-width apart.', 'Hinge forward from the hips with soft knees.', 'Let head and arms hang heavy.', 'Rise slowly with a long spine.']],
+      ['bhujangasana', 'Bhujangasana', 'भुजङ्गासन', 'Cobra Pose', 1, 'M', 'back mood stamina strength', 'p w f', '5 breaths', 'Strengthens the back and lifts the chest and mood.', ['Lie on your belly, palms under shoulders.', 'Press gently and lift the chest.', 'Keep elbows bent and shoulders down.', 'Lower slowly on an exhale.']],
+      ['setu', 'Setu Bandhasana', 'सेतु बन्धासन', 'Bridge Pose', 2, 'M', 'back stress sleep mood strength', 'p b f', '5 breaths', 'Strengthens back and legs, relieves stress.', ['Lie on your back, knees bent, feet hip-width.', 'Press feet down and lift the hips.', 'Keep thighs parallel, chest open.', 'Lower slowly, one vertebra at a time.']],
+      ['downdog', 'Adho Mukha Svanasana', 'अधोमुख श्वानासन', 'Downward Dog', 2, 'M', 'stamina neck mood weight strength flex', 'b v w f', '5 breaths', 'Stretches the whole body and builds shoulder strength.', ['Start on hands and knees.', 'Tuck toes and lift hips up and back.', 'Press hands down, spine long.', 'Bend knees if hamstrings are tight.']],
+      ['virabhadra2', 'Virabhadrasana II', 'वीरभद्रासन II', 'Warrior II', 2, 'M', 'stamina weight focus strength balance', 'k', '5 breaths each side', 'Builds leg strength, stamina and focus.', ['Step feet wide, turn the front foot out.', 'Bend the front knee over the ankle.', 'Extend arms at shoulder height.', 'Gaze over the front hand.']],
+      ['trikonasana', 'Trikonasana', 'त्रिकोणासन', 'Triangle Pose', 2, 'M', 'back weight stamina flex', '', '5 breaths each side', 'Stretches the sides of the body and strengthens the legs.', ['Stand with feet wide, front foot turned out.', 'Reach forward, then tilt the torso sideways.', 'Lower hand to shin, other arm to the sky.', 'Keep chest open, look up if comfortable.']],
+      ['utkatasana', 'Utkatasana', 'उत्कटासन', 'Chair Pose', 2, 'M', 'weight stamina strength', 'k b', '5 breaths', 'Burns energy and strengthens thighs and core.', ['Stand with feet together.', 'Bend knees and sit back as if on a chair.', 'Raise arms alongside the ears.', 'Keep the chest lifted.']],
+      ['paschimottanasana', 'Paschimottanasana', 'पश्चिमोत्तानासन', 'Seated Forward Fold', 2, 'M', 'stress sleep flex digest', 's p f', '1 minute', 'Soothes the mind and stretches the back of the body.', ['Sit with legs extended.', 'Inhale and lengthen the spine.', 'Fold forward from the hips.', 'Hold your shins or feet, keep the back long.']],
+      ['ardha', 'Ardha Matsyendrasana', 'अर्ध मत्स्येन्द्रासन', 'Seated Twist', 2, 'M', 'back focus weight flex digest', 'p f', '5 breaths each side', 'Improves spinal mobility and digestion.', ['Sit tall with legs extended.', 'Cross one foot over the opposite knee.', 'Twist toward the bent knee, hand behind you.', 'Lengthen the spine on each inhale.']],
+      ['malasana', 'Malasana', 'मालासन', 'Garland Pose', 2, 'M', 'weight stamina flex digest', 'k f', '1 minute', 'Opens the hips and strengthens the legs.', ['Stand with feet slightly wider than hips.', 'Lower into a deep squat.', 'Palms together at the heart.', 'Lift the chest and keep the back long.']],
+      ['navasana', 'Navasana', 'नावासन', 'Boat Pose', 3, 'M', 'weight stamina strength balance digest', 'p s b f', '3 rounds of 5 breaths', 'Strengthens the core and hip flexors.', ['Sit with knees bent, feet on the floor.', 'Lean back slightly, lift the feet.', 'Straighten legs if you can.', 'Reach arms forward, keep the chest lifted.']],
+      ['sukhasana', 'Sukhasana', 'सुखासन', 'Easy Seat', 1, 'C', 'stress focus sleep mood', 'k f', '2 minutes', 'Calms the breath and settles the mind.', ['Sit cross-legged, hips on a cushion if needed.', 'Lengthen the spine, relax shoulders.', 'Rest hands on knees.', 'Close your eyes and breathe slowly.']],
+      ['vajrasana', 'Vajrasana', 'वज्रासन', 'Thunderbolt Pose', 1, 'C', 'focus stress weight digest', 'k f', '2 minutes', 'Aids digestion and steadies the mind.', ['Kneel and sit back on your heels.', 'Keep the spine upright, hands on thighs.', 'Relax your shoulders and face.', 'Breathe slowly through the nose.']],
+      ['balasana', 'Balasana', 'बालासन', 'Child\'s Pose', 1, 'C', 'stress back sleep mood', 'k f', '1 minute', 'Releases the back and quiets the mind.', ['Kneel and sit back on your heels.', 'Fold forward, forehead to the floor.', 'Arms forward or alongside the body.', 'Breathe into the back.']],
+      ['viparita', 'Viparita Karani', 'विपरीत करणी', 'Legs-Up-the-Wall', 1, 'C', 'sleep stress mood', 'p b v f', '3 minutes', 'Relaxes the legs and prepares the body for rest.', ['Sit sideways next to a wall.', 'Swing your legs up the wall as you lie back.', 'Arms relaxed at your sides.', 'Breathe slowly and let go.']],
+      ['anulom', 'Anulom Vilom', 'अनुलोम विलोम', 'Alternate Nostril Breathing', 1, 'C', 'stress focus sleep mood', '', '3 minutes', 'Balances the breath and calms the nervous system. Can be done on a chair.', ['Sit tall, left hand on the knee.', 'Close the right nostril, inhale left.', 'Close the left, exhale right.', 'Inhale right, switch, exhale left. Keep it gentle, no breath holding.']],
+      ['shavasana', 'Shavasana', 'शवासन', 'Corpse Pose', 1, 'C', 'stress sleep mood focus', 'f', '3–5 minutes', 'Deep rest that lets the body absorb the practice.', ['Lie on your back, feet falling apart.', 'Arms by your sides, palms up.', 'Close your eyes and release all effort.', 'If pregnant, lie on your left side instead.']]
+    ];
+
+    /* Chips */
+    const sel = { mental: new Set(), phys: new Set(), safe: new Set() };
+    document.querySelectorAll('.chips').forEach(box => {
+      const g = box.dataset.g, multi = box.dataset.multi;
+      box.innerHTML = OPTS[g].map(([v, t]) => `<button type="button" class="chip" data-v="${v}" aria-pressed="false">${t}</button>`).join('');
+      box.addEventListener('click', e => {
+        const b = e.target.closest('.chip'); if (!b) return; const v = b.dataset.v;
+        if (multi) { const on = !sel[g].has(v); on ? sel[g].add(v) : sel[g].delete(v); b.setAttribute('aria-pressed', on) }
+        else { sel[g] = v; box.querySelectorAll('.chip').forEach(c => c.setAttribute('aria-pressed', c === b)) }
+      });
+    });
+
+    /* Typed text -> options (keyword matching, runs in the browser) */
+    const KW = [
+      ['mental', 'stress', /stress|anxi|tense|worr|nervous|overwhelm|panic/], ['mental', 'mood', /low mood|sad|depress|tired|fatigue|low energy|drained|unmotivat/],
+      ['mental', 'sleep', /sleep|insomnia/], ['mental', 'focus', /focus|concentrat|distract|brain fog/],
+      ['phys', 'back', /back (pain|ache|hurt)|backache|lower back|sciatica|spine/], ['phys', 'neck', /neck|shoulder/], ['phys', 'knee', /knee|joint|arthritis/],
+      ['phys', 'wrist', /wrist|carpal/], ['phys', 'weight', /overweight|obes|belly fat|lose weight|weight gain|weight loss/], ['phys', 'stamina', /stamina|weak|endurance|breathless/],
+      ['phys', 'digest', /digest|constipat|bloat|acidity/],
+      ['safe', 'p', /pregnan|expecting/], ['safe', 'b', /blood pressure|hypertens|\bbp\b|heart/], ['safe', 'i', /surgery|operat|injur|fractur|sprain/], ['safe', 'v', /dizz|vertigo|glaucoma|giddy/],
+      ['sit', 'yes', /desk|sit all|sitting all|sit most|computer|work from home/], ['floor', 'no', /(can'?t|cannot|unable|difficult).{0,25}floor|use a chair/]
+    ];
+    function readText() {
+      const t = $('#free').value.toLowerCase(), found = [];
+      KW.forEach(([g, v, re]) => {
+        const m = t.match(re);
+        if (!m || /\b(no|not|without|never)\s+(\w+\s+){0,2}$/.test(t.slice(Math.max(0, m.index - 20), m.index))) return;
+        const btn = document.querySelector(`.chips[data-g="${g}"] [data-v="${v}"]`);
+        if (btn && btn.getAttribute('aria-pressed') !== 'true') btn.click();
+        if (btn) found.push(LBL[g + v]);
+      });
+      $('#parsed').textContent = found.length ? 'We picked: ' + found.join(', ') + '. Adjust below if needed.' : (t.trim() ? 'We could not match anything. Try words like stress, back pain or sleep, or use the options below.' : '');
+    }
+    $('#read').addEventListener('click', readText);
+
+    /* Recommendation */
+    function build() {
+      const keys = new Set(sel.safe);
+      if (sel.phys.has('back')) keys.add('s');
+      if (sel.phys.has('knee')) keys.add('k');
+      if (sel.phys.has('wrist')) keys.add('w');
+      if (sel.floor === 'no') keys.add('f');
+      const maxLvl = Math.min(+sel.level, keys.has('i') ? 1 : 3, sel.age === 'o' ? 1 : sel.age === 'm' ? 2 : 3);
+      const goals = [...new Set([...sel.mental, ...sel.phys, ...(TODAY[sel.today] || []),
+      ...(sel.tod === 'm' ? ['stamina', 'mood'] : sel.tod === 'e' ? ['sleep', 'stress'] : []),
+      ...(sel.sit === 'yes' ? ['back', 'neck'] : []), ...(sel.flex === 'stiff' ? ['flex'] : [])])];
+      const pool = A.filter(a => a[4] <= maxLvl && !a[7].split(' ').some(k => k && keys.has(k)))
+        .map(a => ({ a, hit: goals.filter(g => a[6].split(' ').includes(g)) }));
+      const rank = (role, n, skip) => pool.filter(x => x.a[5] === role && x.a[0] !== skip)
+        .sort((x, y) => y.hit.length - x.hit.length || x.a[4] - y.a[4]).slice(0, n);
+      const [w, m, c] = { 10: [1, 2, 2], 20: [2, 4, 2], 30: [2, 6, 2] }[sel.time];
+      const sav = pool.find(x => x.a[0] === 'shavasana');
+      const close = rank('C', c - 1, 'shavasana').concat(sav ? [sav] : []);
+      return { plan: [...rank('W', w).map(x => [x, 'Warm-up']), ...rank('M', m).map(x => [x, 'Main practice']), ...close.map(x => [x, 'Closing'])], goals, maxLvl };
+    }
+    function media(id) {
+      const u = VIDEOS[id];
+      if (!u) return 'Video coming soon';
+      return /youtube\.com|youtu\.be/.test(u) ? `<iframe src="${u}" title="${id}" allowfullscreen></iframe>` : `<video src="${u}" loop muted playsinline controls></video>`;
+    }
+    function show({ plan, goals, maxLvl }) {
+      const lv = ['', 'Beginner', 'Intermediate', 'Advanced'][maxLvl];
+      const feel = goals.map(g => NAME[g]).slice(0, 6).join(', ') || 'general balance';
+      const flags = [...sel.safe].map(k => ({ p: 'pregnancy', b: 'high blood pressure or a heart condition', i: 'recent surgery or injury', v: 'dizziness or vertigo' })[k]);
+      $('#result').innerHTML =
+        `<div class="sum"><b>Your practice</b> · ${lv} level · ${sel.time} minutes · focus: ${feel}</div>` +
+        (flags.length ? `<div class="note">Poses unsuitable for ${flags.join(', ')} were left out. Please check with your doctor before practising.</div>` : '') +
+        (sel.floor === 'no' ? `<div class="note">Floor poses were left out. Anulom Vilom can be done sitting on a chair.</div>` : '') +
+        plan.map(([x, phase], i) => {
+          const a = x.a; return `<article class="card">
+      <div class="info"><div class="phase">${i + 1} · ${phase}</div><h2>${a[1]}</h2><div class="sk">${a[2]} · ${a[3]}</div>
+      <p class="why">${x.hit.length ? 'Picked for: ' + x.hit.map(g => NAME[g]).join(', ') : 'Chosen for overall balance'}</p>
+      <p class="ben">${a[9]}</p><span class="hold">Hold: ${a[8]}</span><button type="button" class="listen" data-id="${a[0]}">🔊 Read aloud</button>
+      <ol>${a[10].map(s => `<li>${s}</li>`).join('')}</ol></div>
+      <div class="vid">${media(a[0])}</div></article>`
+        }).join('') +
+        `<button class="again" id="again">Start over</button>`;
+      $('#form').style.display = 'none'; $('#result').style.display = 'block';
+      scrollTo({ top: 0, behavior: matchMedia('(prefers-reduced-motion:reduce)').matches ? 'auto' : 'smooth' });
+      $('#again').onclick = () => { $('#result').style.display = 'none'; $('#form').style.display = 'block'; scrollTo(0, 0) };
+    }
+    $('#form').addEventListener('submit', e => {
+      e.preventDefault();
+      if ($('#free').value.trim()) readText();
+      if (!sel.age || !sel.level || !sel.time) { $('#err').textContent = 'Please choose your age group, experience level and time.'; return }
+      $('#err').textContent = ''; show(build());
+    });
+
+    /* Library: browse + search every asana */
+    const ROLE = { W: 'Warm-up', M: 'Main practice', C: 'Closing' }, LV = ['', 'Beginner', 'Intermediate', 'Advanced'];
+    function cardHTML(a, phase) {
+      return `<article class="card"><div class="info"><div class="phase">${phase}</div><h2>${a[1]}</h2><div class="sk">${a[2]} · ${a[3]}</div>
+  <p class="ben">${a[9]}</p><span class="hold">Hold: ${a[8]}</span><button type="button" class="listen" data-id="${a[0]}">🔊 Read aloud</button>
+  <ol>${a[10].map(s => `<li>${s}</li>`).join('')}</ol></div><div class="vid">${media(a[0])}</div></article>`
+    }
+    function renderLib() {
+      const words = $('#q').value.toLowerCase().split(/\s+/).filter(Boolean);
+      const score = a => { const t = [a[1], a[2], a[3], a[6], a[9]].join(' ').toLowerCase(); return words.filter(w => t.includes(w)).length };
+      const list = (words.length ? A.filter(a => score(a) > 0).sort((x, y) => score(y) - score(x)) : A);
+      $('#count').textContent = list.length + ' of ' + A.length + ' asanas';
+      $('#all').innerHTML = list.map(a => cardHTML(a, ROLE[a[5]] + ' · ' + LV[a[4]])).join('') || '<p class="hint">No asana found. Try another word.</p>';
+    }
+    $('#q').addEventListener('input', renderLib);
+    function tab(lib) {
+      if ('speechSynthesis' in window) speechSynthesis.cancel();
+      $('#library').hidden = !lib; $('#personal').hidden = lib;
+      $('#tab-q').classList.toggle('on', !lib); $('#tab-all').classList.toggle('on', lib);
+      scrollTo(0, 0);
+    }
+    $('#tab-q').onclick = () => tab(false);
+    $('#tab-all').onclick = () => tab(true);
+    renderLib();
+
+    /* Voice input (speech to text) */
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) $('#mic').hidden = true;
+    else {
+      let rec = null, on = false;
+      $('#mic').onclick = () => {
+        if (on) { rec.stop(); return }
+        rec = new SR(); rec.lang = 'en-IN'; rec.interimResults = false;
+        rec.onstart = () => { on = true; $('#mic').textContent = '⏹ Stop listening'; $('#parsed').textContent = 'Listening… speak now.' };
+        rec.onresult = e => { const t = [...e.results].map(r => r[0].transcript).join(' '); $('#free').value = ($('#free').value + ' ' + t).trim(); readText() };
+        rec.onerror = e => { $('#parsed').textContent = e.error === 'not-allowed' ? 'Microphone access was blocked. Allow it in your browser settings.' : 'Could not hear you. Please try again.' };
+        rec.onend = () => { on = false; $('#mic').textContent = '🎤 Speak' };
+        rec.start();
+      };
+    }
+
+    /* Read aloud (text to speech) */
+    document.addEventListener('click', e => {
+      const b = e.target.closest('.listen');
+      if (!b || !('speechSynthesis' in window)) return;
+      const was = b.dataset.on;
+      speechSynthesis.cancel();
+      document.querySelectorAll('.listen').forEach(x => { x.dataset.on = ''; x.textContent = '🔊 Read aloud' });
+      if (was) return;
+      const a = A.find(x => x[0] === b.dataset.id);
+      const u = new SpeechSynthesisUtterance(`${a[1]}, ${a[3]}. Hold for ${a[8]}. ` + a[10].map((s, i) => `Step ${i + 1}. ${s}`).join(' '));
+      u.rate = .85; u.lang = 'en-IN';
+      u.onend = () => { b.dataset.on = ''; b.textContent = '🔊 Read aloud' };
+      b.dataset.on = '1'; b.textContent = '⏹ Stop'; speechSynthesis.speak(u);
+    });
+  </script>
 </body>
+
 </html>
