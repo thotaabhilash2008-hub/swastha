@@ -1,79 +1,186 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Homeopathy — Swastha</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Jost:wght@300;400&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      color-scheme: dark;
-      --bg-primary: #07170F;
-      --bg-secondary: #103B28;
-      --botanical: #47734C;
-      --gold: #C8A45D;
-      --gold-warm: #E5C783;
-      --ivory: #F5F0E4;
-      --sage: #C7C9B9;
-    }
-
-    * { box-sizing: border-box; }
-    body {
-      min-height: 100vh;
-      margin: 0;
-      display: grid;
-      place-items: center;
-      padding: 24px;
-      color: var(--ivory);
-      background: radial-gradient(ellipse at top right, rgba(16, 59, 40, 0.6) 0%, transparent 60%), #07170F;
-      font-family: 'Jost', sans-serif;
-      text-align: center;
-    }
-    main {
-      max-width: 620px;
-      background: rgba(16, 59, 40, 0.45);
-      border: 1px solid rgba(200, 164, 93, 0.25);
-      border-radius: 6px;
-      padding: 60px 40px;
-      backdrop-filter: blur(12px);
-      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
-    }
-    .ornament { color: var(--gold-warm); font-size: 24px; margin-bottom: 8px; }
-    h1 {
-      margin: 12px 0;
-      color: var(--ivory);
-      font: 300 clamp(42px, 8vw, 72px)/1.1 'Cormorant Garamond', serif;
-      letter-spacing: 4px;
-      text-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-    }
-    p {
-      margin: 0;
-      color: var(--gold-warm);
-      font: 300 clamp(20px, 3.5vw, 26px) 'Cormorant Garamond', serif;
-      font-style: italic;
-      letter-spacing: 1px;
-    }
-    a {
-      display: inline-block;
-      margin-top: 36px;
-      color: var(--sage);
-      text-decoration: none;
-      border-bottom: 1px solid var(--gold);
-      padding-bottom: 5px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      font-size: 11px;
-      transition: all 0.3s;
-    }
-    a:hover, a:focus-visible { color: var(--gold-warm); border-color: var(--gold-warm); }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kalium Phosphoricum · Swastha Homeopathy</title>
+<link href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400;7..72,600&family=Hanken+Grotesk:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#eef0f7;--card:#fff;--ink:#1d2350;--mute:#5b6088;--line:#d5d9ec;--acc:#e8962a;--agg:#c4455f;--ame:#2f8f68;--fig:#dfe3f5;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14172e;--card:#1c2040;--ink:#e9eaf6;--mute:#a1a6cf;--line:#323863;--fig:#2a3060;--agg:#ef7b92;--ame:#5fc79a}}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 "Hanken Grotesk",system-ui,sans-serif}
+header,main{max-width:1040px;margin:0 auto;padding:20px 18px}
+h1,h2,h3{font-family:Literata,Georgia,serif;margin:0;line-height:1.2}
+h1{font-size:clamp(2rem,6vw,3.2rem);font-weight:600}
+.sub{color:var(--mute);margin:.3rem 0 1rem;font-family:Literata,serif;font-style:italic}
+.id{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}
+.id div{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px}
+.id b{display:block;font-size:.8rem;color:var(--mute);font-weight:600}
+.lab{display:grid;grid-template-columns:minmax(260px,1fr) minmax(280px,1fr);gap:18px;margin-top:22px}
+@media(max-width:760px){.lab{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
+svg{width:100%;height:auto;display:block}
+.sex{display:flex;gap:6px;justify-content:center;margin-bottom:10px}
+.body{position:relative;max-width:340px;margin:0 auto}
+.body img{width:100%;display:block;border-radius:8px;background:#fff}
+.mark{position:absolute;border-radius:50%;transform:translate(-50%,-50%);pointer-events:none;opacity:.8;mix-blend-mode:multiply;transition:opacity .2s}
+.mark.dim{opacity:.35}
+.emo{position:absolute;transform:translate(8px,-34px);font-size:22px;pointer-events:none;line-height:1}
+.nrm{color:var(--mute);margin:.5rem 0 0}.pth{margin:.4rem 0 0;padding:8px 10px;border-radius:8px;border-left:5px solid var(--agg);background:color-mix(in srgb,var(--agg) 12%,transparent)}
+.hot{position:absolute;width:28px;height:28px;padding:0;border-radius:50%;border:2.5px solid var(--acc);background:#fff;color:#1d2350;font:600 12px "Hanken Grotesk",sans-serif;transform:translate(-50%,-50%);cursor:pointer}
+.hot.on,.hot:hover{background:var(--acc)}
+.hot:focus-visible{outline:2px solid #1d2350;outline-offset:2px}
+#det h3{font-size:1.25rem;margin-bottom:.3rem}
+#det .n{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--acc);color:#1d2350;font-weight:600;margin-right:8px}
+#det p{margin:.4rem 0 0}
+.list{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.list button,.tabs button,.sex button{font:inherit;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:5px 12px;cursor:pointer}
+.list button[aria-pressed=true],.sex button[aria-pressed=true],.tabs button[aria-selected=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+button:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:26px 0 12px}
+.pane{display:none}.pane.on{display:block}
+ul{margin:.4rem 0;padding-left:1.2rem}li{margin:.25rem 0}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:600px){.two{grid-template-columns:1fr}}
+.agg{border-left:5px solid var(--agg)}.ame{border-left:5px solid var(--ame)}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:420px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+.mm text{font:600 13px "Hanken Grotesk",sans-serif;fill:var(--ink);text-anchor:middle}
+.mm .leaf{font-weight:400;font-size:11.5px;fill:var(--mute)}
+small.src{color:var(--mute);display:block;margin-top:14px}
+</style>
 </head>
 <body>
-  <main>
-    <div class="ornament" aria-hidden="true">✦</div>
-    <h1>Homeopathy</h1>
-    <p>Working in Progress</p>
-    <a href="../index.html">← Back to Swastha</a>
-  </main>
+<header>
+<h1>Kalium Phosphoricum</h1>
+<p class="sub">Kali-p · Homeopathy materia medica, Swastha</p>
+<div class="id">
+<div><b>Common name</b>Phosphate of Potash, Dipotassium phosphate</div>
+<div><b>Chemical formula</b>K₂HPO₄</div>
+<div><b>Family</b>Minerals</div>
+<div><b>Introduced by</b>Dr. W.H. Schussler (tissue salt)</div>
+</div>
+</header>
+<main>
+<p style="margin:0">One of the great nerve remedies. Coloured glows on the body mark the pathology (what goes wrong in Kali-p). Tap a number to compare normal vs diseased.</p>
+<section class="lab">
+<div class="card">
+<div class="sex" role="group" aria-label="Body model"><button data-s="f" aria-pressed="true">Female</button><button data-s="m" aria-pressed="false">Male</button></div>
+<div class="body"><img id="bimg" src="assets/body-female.jpg" alt="Anatomy figure, half skin and half internal organs"><div id="spots"></div></div>
+</div>
+<div>
+<div class="card" id="det" aria-live="polite"></div>
+<div class="list" id="list"></div>
+</div>
+</section>
+
+<div class="tabs" role="tablist" id="tabs"></div>
+
+<div class="pane on" id="p-mental">
+<div class="card two">
+<div><h3>Mentals</h3><ul>
+<li>Nervous temperament: anxiety, nervousness, mental fatigue</li>
+<li>Cowardly, cannot narrate complaints without weeping</li>
+<li>Clings to people and wants to be held; aversion to husband</li>
+<li>Fear of being alone; frightful delusions and images</li>
+<li>Weak memory and forgetfulness; dullness of the senses</li>
+<li>Quarrelsome; startles from touch or noise</li>
+<li>Sleeplessness from cares, worries, mental labour</li></ul></div>
+<div><h3>Thought cells</h3><ul><li>Despondency, homesickness</li><li>Agarophobia, fearfulness, suspiciousness</li><li>Diminished neuron activity gives forgetfulness</li></ul></div>
+</div></div>
+
+<div class="pane" id="p-phys">
+<div class="card two">
+<div><h3>Physicals</h3><ul>
+<li>Anaemic, chlorotic (green sickness), delicate persons worn out by long suffering</li>
+<li>Obese, easily exhausted people with lax fibre and offensive body odour</li>
+<li>Thermal: worse from cold</li>
+<li>Diathesis: nervous, cancerous</li>
+<li>Regional: nerves, brain, excretions</li></ul></div>
+<div><h3>Action on nerves</h3><ul>
+<li>Vasomotor: small, frequent pulse first, then retarded</li>
+<li>Sensory: pain, with a sensation of paralysis</li>
+<li>Motor: weakness of muscles up to paralysis</li>
+<li>Trophic: retarded nutrition, softening; treats depression</li>
+<li>Mucous membrane discharges: blackish, non-coagulating</li></ul></div>
+</div></div>
+
+<div class="pane" id="p-mod">
+<div class="two">
+<div class="card agg"><h3>Aggravation: worse from</h3><ul><li>Excitement</li><li>Worry</li><li>Physical fatigue</li><li>Dry air</li><li>Coition</li><li>Puberty</li><li>Cold</li></ul></div>
+<div class="card ame"><h3>Amelioration: better from</h3><ul><li>Eating</li><li>Sleep</li><li>Leaning against a support</li></ul></div>
+</div></div>
+
+<div class="pane" id="p-cmp">
+<div class="card scroll"><h3>Comparing pains</h3>
+<table><tr><th>Remedy</th><th>Character of the pain</th></tr>
+<tr><td><b>Kali-p</b></td><td>Stinging, sharp and quick like a bee sting; burning, better by cold</td></tr>
+<tr><td>Ars Alb</td><td>Burning, better by heat</td></tr>
+<tr><td>Sulphur</td><td>Burning all over the body with intense itching</td></tr>
+<tr><td>Agaricus</td><td>Itching pains like chilblains</td></tr></table>
+<p><b>Compare:</b> Sil, Stram, Hyos, Arg-n, Ars, Podo, Tub, Caust, Anac, Ign. Study Kali-p and Calc-p if Phosphorus fails.<br><b>Compatible:</b> Ferr-p, Calc-f, Mag-p, Cycl.</p></div></div>
+
+<div class="pane" id="p-map">
+<div class="card"><svg class="mm" viewBox="0 0 700 460" role="img" aria-label="Mind map of Kali-p">
+<g id="mm"></g></svg></div></div>
+
+<small class="src">Study aid compiled from NM Chowdary’s illustrated materia medica (pp. 247–251). Verify against Boericke and Allen’s Keynotes before clinical use.</small>
+</main>
+<script>
+var K=[
+[1,"Vocal cords","Paralysis of the vocal cords, giving aphonia.",200,120],
+[2,"Mouth and tongue","Mouth very dry, as if the tongue would stick to the roof. Creeping paralysis of the tongue makes speech inarticulate.",163,88],
+[3,"Brain fag","Slightest labour feels like a heavy task. Vertigo worse looking up, on standing from sitting, and facing the sun.",200,36],
+[4,"Paralytic lameness","Back (must lean on a chair), finger tips numb, limbs weak, hands and feet prickling, feet feel frost bitten, skin inactive, ear deafness, rectum and tongue paralysis.",92,250],
+[5,"Weak labour pains","Feeble, ineffectual labour pains from weak uterine contractions.",160,318],
+[6,"Female discharges","Late and scanty, almost black menses with offensive odour. Yellowish acrid, scalding leucorrhoea. Copious orange fluid from vagina and rectum periodically.",242,318],
+[7,"Stool","Golden yellow, putrid stools followed by weakness. Dysentery with rice-water stools (cholera) or pure blood.",200,355],
+[8,"Urine","Saffron yellow or milky urine. Nocturnal enuresis in obstinate, nervous children and old people.",200,298],
+[9,"Sleep-walking","Walks during sleep (somnambulism).",172,500],
+[10,"Tongue and nose","Tongue coated mustard yellow, like liquid mustard with a greasy palate. Violent sneezing at 2 AM with fresh-cold symptoms (hay fever).",238,88],
+[11,"Intestines","Inflammation of small and large intestines (entero-colitis).",168,236],
+[12,"Abdominal pain","Cutting pains in the abdomen.",232,236],
+[13,"Rectum after piles","Paralytic condition of rectum and colon following piles removal.",200,388],
+[14,"Hunger","Hungry again soon after eating.",200,190],
+[15,"Night terrors","Very frightening dreams, such as a tiger knocking at her door at night when alone.",250,36]];
+var X={1:["#6f86c9","🔇","Clear voice, mobile vocal cords"],2:["#9aa0a8","","Moist mouth, free tongue, clear speech"],3:["#8a5fd1","","Mind copes with effort; steady balance"],4:["#8a8f98","","Normal strength and sensation in limbs"],5:["#e68aa8","","Strong, effective uterine contractions"],6:["#2a1a1a","","Regular menses, clear mucus"],7:["#e6b422","","Formed brown stool"],8:["#f0a30a","","Pale-yellow clear urine; dry nights"],9:["#9aa0a8","👣","Stays in bed through sleep"],10:["#d4a20a","","Pink clean tongue"],11:["#e03a3a","","Healthy bowel lining"],12:["#e03a3a","⚡","Painless digestion"],13:["#8a8f98","","Rectal muscle tone recovers after surgery"],14:["#e6b422","🍽️","Satisfied for hours after a meal"],15:["#d08a2a","🐯","Calm, restful dreams"]};
+var cur=0,sex="f";
+var P={f:[[612,205],[572,140],[630,40],[330,660],[618,599],[650,607],[690,545],[605,628],[520,1230],[632,140],[625,510],[520,500],[640,665],[635,435],[541,47]],
+m:[[625,215],[575,140],[640,45],[330,655],[619,607],[690,625],[690,530],[650,629],[520,1235],[632,140],[640,520],[540,480],[629,663],[640,420],[553,47]]},D={f:1299,m:1285};
+var spots=document.getElementById("spots"),list=document.getElementById("list");
+function place(){K.forEach(function(k,i){var p=P[sex][i];k.g.style.left=((p[0]-270)/660*100)+"%";k.g.style.top=(p[1]/D[sex]*100)+"%";[k.m,k.e].forEach(function(o){if(o){o.style.left=k.g.style.left;o.style.top=k.g.style.top}})})}
+K.forEach(function(k){
+var g=document.createElement("button");g.className="hot";g.textContent=k[0];g.setAttribute("aria-label","Keynote "+k[0]+": "+k[1]);
+g.onclick=function(){sel(k[0])};var x=X[k[0]],sz=k[0]==4?70:54,m=document.createElement("div");m.className="mark";m.style.cssText="width:"+sz+"px;height:"+sz+"px;background:radial-gradient(circle,"+x[0]+" 0%,"+x[0]+" 35%,transparent 70%)";spots.appendChild(m);k.m=m;
+if(x[1]){var e=document.createElement("span");e.className="emo";e.textContent=x[1];spots.appendChild(e);k.e=e}
+spots.appendChild(g);k.g=g;
+var b=document.createElement("button");b.textContent=k[0]+" · "+k[1];b.setAttribute("aria-pressed","false");b.onclick=function(){sel(k[0])};list.appendChild(b);k.b=b});
+document.querySelectorAll(".sex button").forEach(function(b){b.onclick=function(){sex=b.dataset.s;document.getElementById("bimg").src=sex=="f"?"assets/body-female.jpg":"assets/body-male.jpg";document.querySelectorAll(".sex button").forEach(function(o){o.setAttribute("aria-pressed",o==b)});place()}});
+place();
+function sel(n){cur=n;K.forEach(function(k){var on=k[0]==n;k.g.classList.toggle("on",on);k.m.classList.toggle("dim",!on&&n>0&&false);k.b.setAttribute("aria-pressed",on)});
+var k=K[n-1];document.getElementById("det").innerHTML='<h3><span class="n">'+n+'</span>'+k[1]+'</h3><p class="nrm"><b>Normal:</b> '+X[n][2]+'</p><p class="pth"><b>In Kali-p:</b> '+k[2]+'</p>'}
+sel(1);
+var T=[["p-mental","Mentals"],["p-phys","Physicals"],["p-mod","Modalities"],["p-cmp","Compare"],["p-map","Mind map"]],tabs=document.getElementById("tabs");
+T.forEach(function(t,i){var b=document.createElement("button");b.textContent=t[1];b.setAttribute("role","tab");b.setAttribute("aria-selected",i==0);
+b.onclick=function(){T.forEach(function(u,j){document.getElementById(u[0]).classList.toggle("on",i==j);tabs.children[j].setAttribute("aria-selected",i==j)})};tabs.appendChild(b)});
+var M=[["Mind",["Anxiety, fear of being alone","Brain fag, forgetfulness","Night terrors"],"#e8962a"],
+["Nerves",["Weakness to paralysis","Vocal cords, tongue","Rectum, limbs"],"#7b6fd6"],
+["Discharges",["Menses black, scanty","Stool golden yellow","Urine saffron"],"#c4455f"],
+["Worse",["Excitement, worry","Fatigue, dry air","Cold, coition, puberty"],"#d0603f"],
+["Better",["Eating","Sleep","Leaning on support"],"#2f8f68"],
+["Compare",["Ars Alb: burning, heat better","Sulphur: itching burning","Agaricus: chilblain itch"],"#3d8fc4"]];
+var h='';M.forEach(function(m,i){var a=(i/6)*Math.PI*2-Math.PI/2,x=350+Math.cos(a)*135,y=230+Math.sin(a)*110;
+h+='<line x1="350" y1="230" x2="'+x+'" y2="'+y+'" stroke="'+m[2]+'" stroke-width="3"/>';
+h+='<rect x="'+(x-46)+'" y="'+(y-15)+'" width="92" height="30" rx="15" fill="'+m[2]+'"/><text x="'+x+'" y="'+(y+5)+'" style="fill:#fff">'+m[0]+'</text>';
+var dx=Math.cos(a)>0.3?1:Math.cos(a)<-0.3?-1:0;
+m[1].forEach(function(l,j){var lx=x+dx*(dx?58:0),ly=y+(dx?(j-1)*15:(Math.sin(a)<0?-24-(2-j)*14:30+j*14));
+h+='<text class="leaf" x="'+lx+'" y="'+ly+'" style="text-anchor:'+(dx>0?"start":dx<0?"end":"middle")+'">'+l+'</text>'})});
+h+='<circle cx="350" cy="230" r="46" fill="#1d2350"/><text x="350" y="228" style="fill:#fff">Kali-p</text><text x="350" y="244" class="leaf" style="fill:#c9ccf0">K₂HPO₄</text>';
+document.getElementById("mm").innerHTML=h;
+</script>
 </body>
 </html>
