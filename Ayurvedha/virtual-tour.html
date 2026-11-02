@@ -1,5 +1,5 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
-<title>Virtual Tour — 3D Herbal Garden Walk | SWASTHA</title>
+<title>Herbal Garden Walk</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&family=Hanken+Grotesk:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Serif+Devanagari:wght@400;600&display=swap">
 <style>
@@ -81,18 +81,13 @@ body.touch.go #joy{display:block}
 <div id="stage"><canvas id="c" aria-label="Walkable 3D herbal garden with eight medicinal plants"></canvas><div class="vignette"></div></div>
 
 <header class="hud tl plac">
-  <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px;">
-    <h1>Herbal Garden Walk</h1>
-    <a href="index.html" class="nav-back-link" style="font:600 .72rem var(--mono);text-decoration:none;color:var(--brass-hi);padding:3px 10px;border:1px solid var(--line);background:rgba(200,162,85,.14);border-radius:4px;letter-spacing:.06em;display:inline-flex;align-items:center;gap:4px;">← Back to Garden</a>
-  </div>
+  <h1>Herbal Garden Walk</h1>
   <p class="count"><b id="n">0</b> / 24 uses found</p>
   <div class="bar"><i id="bar"></i></div>
 </header>
 <div class="hud tr">
-  <div style="display:flex;gap:8px;">
-    <a href="../index.html" class="btn" style="text-decoration:none;font-size:.72rem;padding:.5rem .75rem;display:inline-flex;align-items:center;">Swastha Home</a>
-    <button class="btn" id="jbtn" type="button">Journal</button>
-  </div>
+  <button class="btn" id="sndBtn" type="button" title="Toggle peaceful garden nature sounds" style="display:inline-flex;align-items:center;gap:5px;">🔊 Sound: ON</button>
+  <button class="btn" id="jbtn" type="button">Journal</button>
   <canvas id="map" width="220" height="242" aria-hidden="true"></canvas>
 </div>
 
@@ -109,10 +104,7 @@ body.touch.go #joy{display:block}
     <li><b>Drag</b>look around</li>
     <li><b>E or tap a glint</b>collect a jar</li>
   </ul>
-  <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
-    <button class="btn solid" id="go" type="button">Walk in</button>
-    <a href="index.html" class="btn" style="text-decoration:none;display:inline-flex;align-items:center;">← Back to Garden</a>
-  </div>
+  <button class="btn solid" id="go" type="button">Walk in</button>
 </section>
 
 <aside id="journal" hidden aria-label="Garden journal"></aside>
@@ -263,7 +255,269 @@ const sunGlow=(()=>{const c=mk(128,128),g=c.getContext('2d'),r=g.createRadialGra
   scene.environment=pm.fromScene(es,.02).texture;pm.dispose()})();
 const sun=new THREE.DirectionalLight(0xffe0b0,2.6);sun.position.copy(SUNDIR).multiplyScalar(45);sun.target.position.set(0,0,0);scene.add(sun,sun.target);
 sun.castShadow=true;sun.shadow.mapSize.set(coarse?1024:2048,coarse?1024:2048);Object.assign(sun.shadow.camera,{left:-34,right:34,top:34,bottom:-34,near:5,far:100});sun.shadow.bias=-.0005;sun.shadow.normalBias=.04;
-scene.add(new THREE.HemisphereLight(0xcfe3ff,0x6b7a45,.72));
+scene.add(new THREE.HemisphereLight(0xd5e8ff,0x4f642f,.85));
+
+/* ==================== REAL-LIFE CINEMATIC GARDEN ENGINE ==================== */
+
+// 1. Volumetric Morning God Rays (Golden Sunlight Shafts)
+const godRaysGroup = new THREE.Group();
+const rayGeo = new THREE.CylinderGeometry(0.3, 4.2, 42, 16, 1, true);
+const rayMat = new THREE.MeshBasicMaterial({
+  color: 0xffe6a3,
+  transparent: true,
+  opacity: 0.09,
+  blending: THREE.AdditiveBlending,
+  side: THREE.DoubleSide,
+  depthWrite: false,
+  fog: false
+});
+for(let i=0; i<9; i++){
+  const rMesh = new THREE.Mesh(rayGeo, rayMat);
+  const ang = (i / 9) * Math.PI * 2;
+  const dist = 5 + (i % 3) * 6;
+  rMesh.position.set(Math.cos(ang)*dist - 7, 18, Math.sin(ang)*dist - 5);
+  rMesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), SUNDIR.clone().negate());
+  rMesh.scale.set(0.7 + (i%2)*0.6, 1, 0.7 + (i%2)*0.6);
+  godRaysGroup.add(rMesh);
+}
+scene.add(godRaysGroup);
+
+// 2. Atmospheric Golden Pollen & Dust Motes Particle System
+const DUST_COUNT = 340;
+const dustGeo = new THREE.BufferGeometry();
+const dustPos = new Float32Array(DUST_COUNT * 3);
+const dustVel = new Float32Array(DUST_COUNT * 3);
+for(let i=0; i<DUST_COUNT; i++){
+  dustPos[i*3] = (Math.random() - 0.5) * 44;
+  dustPos[i*3+1] = 0.15 + Math.random() * 8.5;
+  dustPos[i*3+2] = (Math.random() - 0.5) * 48;
+  dustVel[i*3] = (Math.random() - 0.5) * 0.05;
+  dustVel[i*3+1] = 0.03 + Math.random() * 0.09;
+  dustVel[i*3+2] = (Math.random() - 0.5) * 0.05;
+}
+dustGeo.setAttribute('position', new THREE.BufferAttribute(dustPos, 3));
+const dustCanvas = mk(64, 64);
+const dustCtx = dustCanvas.getContext('2d');
+const dustGrad = dustCtx.createRadialGradient(32, 32, 0, 32, 32, 32);
+dustGrad.addColorStop(0, 'rgba(255, 245, 195, 1)');
+dustGrad.addColorStop(0.25, 'rgba(240, 210, 130, 0.7)');
+dustGrad.addColorStop(0.65, 'rgba(200, 164, 93, 0.2)');
+dustGrad.addColorStop(1, 'rgba(200, 164, 93, 0)');
+dustCtx.fillStyle = dustGrad;
+dustCtx.fillRect(0, 0, 64, 64);
+const dustTex = new THREE.CanvasTexture(dustCanvas);
+const dustMat = new THREE.PointsMaterial({
+  size: 0.32,
+  map: dustTex,
+  transparent: true,
+  blending: THREE.AdditiveBlending,
+  depthWrite: false,
+  opacity: 0.7
+});
+const dustPoints = new THREE.Points(dustGeo, dustMat);
+scene.add(dustPoints);
+
+// 3. Falling Botanical Leaves drifting from Neem & Amla Canopies
+const LEAF_COUNT = 48;
+const fallLeaves = [];
+const leafGeom = new THREE.PlaneGeometry(0.13, 0.065);
+const leafMats = [
+  new THREE.MeshStandardMaterial({color: 0x4d7c2a, side: THREE.DoubleSide, roughness: 0.65}),
+  new THREE.MeshStandardMaterial({color: 0xcca038, side: THREE.DoubleSide, roughness: 0.65}),
+  new THREE.MeshStandardMaterial({color: 0x76a33f, side: THREE.DoubleSide, roughness: 0.65})
+];
+for(let i=0; i<LEAF_COUNT; i++){
+  const lm = new THREE.Mesh(leafGeom, leafMats[i % leafMats.length]);
+  lm.position.set((Math.random() - 0.5)*38, 1 + Math.random()*9, (Math.random() - 0.5)*38);
+  lm.rotation.set(Math.random()*6, Math.random()*6, Math.random()*6);
+  scene.add(lm);
+  fallLeaves.push({
+    mesh: lm,
+    vy: 0.22 + Math.random()*0.32,
+    rotSpeed: (Math.random() - 0.5)*2.2,
+    swaySpeed: 0.9 + Math.random()*1.8,
+    phase: Math.random()*6.28
+  });
+}
+
+// 4. Fluttering Golden Garden Butterflies (Swallowtails)
+const butterflies = [];
+const bFlyWingGeo = new THREE.PlaneGeometry(0.09, 0.08);
+const bFlyMat = new THREE.MeshBasicMaterial({color: 0xffca28, side: THREE.DoubleSide});
+for(let b=0; b<6; b++){
+  const bfGroup = new THREE.Group();
+  const wLeft = new THREE.Mesh(bFlyWingGeo, bFlyMat);
+  wLeft.position.x = -0.045;
+  const wRight = new THREE.Mesh(bFlyWingGeo, bFlyMat);
+  wRight.position.x = 0.045;
+  bfGroup.add(wLeft, wRight);
+  const ang = (b / 6) * Math.PI * 2;
+  bfGroup.position.set(Math.cos(ang)*10, 0.75 + Math.random()*0.8, Math.sin(ang)*11);
+  scene.add(bfGroup);
+  butterflies.push({
+    group: bfGroup,
+    wLeft,
+    wRight,
+    baseX: bfGroup.position.x,
+    baseZ: bfGroup.position.z,
+    speed: 0.7 + Math.random()*0.5,
+    phase: Math.random()*6.28
+  });
+}
+
+// 5. Traditional Carved Brass Urli Vessel with Floating Petals
+function buildUrli(x, z, r = 0.52){
+  const urliGroup = new THREE.Group();
+  const bowlMat = new THREE.MeshStandardMaterial({color: 0xc8963e, roughness: 0.32, metalness: 0.75});
+  const bowl = new THREE.Mesh(new THREE.CylinderGeometry(r, r*0.65, 0.22, 28), bowlMat);
+  bowl.position.y = 0.11;
+  bowl.castShadow = true;
+  urliGroup.add(bowl);
+  
+  // Water in Urli
+  const wMat = new THREE.MeshStandardMaterial({color: 0x1f4e42, roughness: 0.08, metalness: 0.2, transparent: true, opacity: 0.88});
+  const w = new THREE.Mesh(new THREE.CircleGeometry(r*0.95, 24), wMat);
+  w.rotation.x = -Math.PI / 2;
+  w.position.y = 0.21;
+  urliGroup.add(w);
+
+  // Floating rose & marigold petals
+  const petMat1 = new THREE.MeshStandardMaterial({color: 0xd32f2f, roughness: 0.55}); // rose
+  const petMat2 = new THREE.MeshStandardMaterial({color: 0xffb300, roughness: 0.55}); // marigold
+  for(let i=0; i<16; i++){
+    const ang = Math.random() * 6.28;
+    const rad = Math.random() * r * 0.78;
+    const pet = new THREE.Mesh(new THREE.CircleGeometry(0.04, 8), i % 2 === 0 ? petMat1 : petMat2);
+    pet.rotation.x = -Math.PI / 2;
+    pet.position.set(Math.cos(ang)*rad, 0.215, Math.sin(ang)*rad);
+    urliGroup.add(pet);
+  }
+  urliGroup.position.set(x, 0, z);
+  scene.add(urliGroup);
+}
+// Place Urlis by garden entrance and central courtyard
+buildUrli(-2.2, 24, 0.48);
+buildUrli(2.2, 24, 0.48);
+buildUrli(-1.8, 1.2, 0.52);
+
+// 6. Blooming Sacred Indian Lotus (Kamala) for Pond
+function addLotusBlossom(x, z, scale = 1){
+  const lotusGroup = new THREE.Group();
+  // Broad Floating Leaf (Padma Patra)
+  const padGeo = new THREE.CircleGeometry(0.46 * scale, 24);
+  const padMat = new THREE.MeshStandardMaterial({color: 0x276632, roughness: 0.4, metalness: 0.05, side: THREE.DoubleSide});
+  const pad = new THREE.Mesh(padGeo, padMat);
+  pad.rotation.x = -Math.PI / 2;
+  pad.position.set(0, 0.005, 0);
+  pad.receiveShadow = true;
+  lotusGroup.add(pad);
+
+  // Layered Delicate Pink Petals
+  const petalGeo = new THREE.ConeGeometry(0.065 * scale, 0.25 * scale, 5);
+  const petalMat = new THREE.MeshStandardMaterial({color: 0xfce4ec, roughness: 0.45, side: THREE.DoubleSide});
+  for(let p=0; p<12; p++){
+    const ang = (p / 12) * Math.PI * 2;
+    const pet = new THREE.Mesh(petalGeo, petalMat);
+    pet.position.set(Math.cos(ang) * 0.13 * scale, 0.09 * scale, Math.sin(ang) * 0.13 * scale);
+    pet.rotation.set(0.42, ang, 0.18);
+    lotusGroup.add(pet);
+  }
+  // Golden Center Seed Pod (Karnika)
+  const coreMat = new THREE.MeshStandardMaterial({color: 0xffd54f, roughness: 0.35});
+  const core = new THREE.Mesh(new THREE.CylinderGeometry(0.045*scale, 0.03*scale, 0.055*scale, 12), coreMat);
+  core.position.set(0, 0.065 * scale, 0);
+  lotusGroup.add(core);
+
+  lotusGroup.position.set(x, 0.105, z);
+  scene.add(lotusGroup);
+}
+
+// 7. Procedural Peaceful Nature Audio Engine (Birdsong, Gentle Breeze, Rippling Water)
+class GardenAudioEngine {
+  constructor() {
+    this.ctx = null;
+    this.isPlaying = false;
+    this.gain = null;
+    this.birdTimer = null;
+  }
+  init() {
+    if (this.ctx) return;
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext) return;
+    this.ctx = new AudioContext();
+    this.gain = this.ctx.createGain();
+    this.gain.gain.value = 0.32;
+    this.gain.connect(this.ctx.destination);
+    
+    // Soothing natural breeze (pink noise generator)
+    const bufSize = this.ctx.sampleRate * 2;
+    const noiseBuffer = this.ctx.createBuffer(1, bufSize, this.ctx.sampleRate);
+    const output = noiseBuffer.getChannelData(0);
+    let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+    for (let i = 0; i < bufSize; i++) {
+      const white = Math.random() * 2 - 1;
+      b0 = 0.99886 * b0 + white * 0.0555179;
+      b1 = 0.99332 * b1 + white * 0.0750759;
+      b2 = 0.96900 * b2 + white * 0.1538520;
+      b3 = 0.86650 * b3 + white * 0.3104856;
+      b4 = 0.55000 * b4 + white * 0.5329522;
+      b5 = -0.7616 * b5 - white * 0.0168980;
+      output[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362) * 0.035;
+      b6 = white * 0.115926;
+    }
+    const noise = this.ctx.createBufferSource();
+    noise.buffer = noiseBuffer;
+    noise.loop = true;
+    const filter = this.ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.value = 420;
+    noise.connect(filter);
+    filter.connect(this.gain);
+    noise.start();
+
+    this.scheduleBirdChirp();
+  }
+  scheduleBirdChirp() {
+    if (!this.isPlaying) return;
+    const nextIn = 2200 + Math.random() * 4200;
+    this.birdTimer = setTimeout(() => {
+      this.playBirdChirp();
+      this.scheduleBirdChirp();
+    }, nextIn);
+  }
+  playBirdChirp() {
+    if (!this.ctx || !this.isPlaying) return;
+    const t = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const g = this.ctx.createGain();
+    osc.type = 'sine';
+    const baseFreq = 2100 + Math.random() * 850;
+    osc.frequency.setValueAtTime(baseFreq, t);
+    osc.frequency.exponentialRampToValueAtTime(baseFreq * 1.4, t + 0.06);
+    osc.frequency.exponentialRampToValueAtTime(baseFreq * 0.88, t + 0.14);
+    osc.frequency.exponentialRampToValueAtTime(baseFreq * 1.25, t + 0.22);
+    g.gain.setValueAtTime(0.001, t);
+    g.gain.linearRampToValueAtTime(0.10, t + 0.04);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.26);
+    osc.connect(g);
+    g.connect(this.gain);
+    osc.start(t);
+    osc.stop(t + 0.28);
+  }
+  toggle() {
+    if (!this.ctx) this.init();
+    if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
+    this.isPlaying = !this.isPlaying;
+    if (this.gain) {
+      this.gain.gain.setTargetAtTime(this.isPlaying ? 0.32 : 0.0001, this.ctx.currentTime, 0.15);
+    }
+    if (this.isPlaying) this.scheduleBirdChirp();
+    else clearTimeout(this.birdTimer);
+    return this.isPlaying;
+  }
+}
+const gardenAudio = new GardenAudioEngine();
+
 
 /* ---------- Materials and helpers ---------- */
 const M=(color,o={})=>new THREE.MeshStandardMaterial(Object.assign({color:C(color),roughness:.8,metalness:0,envMapIntensity:.35},o));
@@ -589,8 +843,7 @@ function renderJournal(){
   PLANTS.map(p=>{const rows=p.uses.map((u,i)=>found.has(p.id+'-'+i)
       ?`<div class="row"><img alt="" src="${iconURL(u[1],'#ecd08f')}"><span>${u[0]}</span></div>`
       :`<div class="row no"><img alt="" src="${iconURL('leaf','#a6a393')}"><span class="h">Hidden · ${hintFor(p,i)}</span></div>`).join('');
-    const pLinks = { tul: 'Tulsi.html', nee: 'neem.html', ama: 'amla.html', bhr: 'bhringraj.html', ash: 'ashwagandha.html', alo: 'Aloe Vera.html', hal: 'Turmeric _ Haldi.html', bra: 'brahmi.html' };
-    return `<section class="rem"><h3>${p.name} <span lang="hi" style="font-weight:400;color:var(--ink-dim);font-size:1rem">${p.hindi}</span></h3><p class="lat">${p.sans} · ${p.eng}</p>${rows}${pLinks[p.id] ? `<a href="${pLinks[p.id]}" target="_blank" style="display:inline-block;margin-top:.5rem;font:500 .74rem var(--mono);color:var(--brass-hi);text-decoration:none;border-bottom:1px dotted var(--brass);">View Botanical Monograph & 3D Model →</a>` : ''}</section>`}).join('')+
+    return `<section class="rem"><h3>${p.name} <span lang="hi" style="font-weight:400;color:var(--ink-dim);font-size:1rem">${p.hindi}</span></h3><p class="lat">${p.sans} · ${p.eng}</p>${rows}</section>`}).join('')+
   `<p class="note">Uses are described as traditionally reported in Ayurvedic practice and everyday home care, gathered here for learning. They are not medical advice. Plants can interact with medicines and some are unsafe in pregnancy or for children, so talk to a qualified practitioner or doctor before taking any herb.</p><button class="btn" id="jreset" type="button">Reset progress</button>`;
   $('jx').onclick=()=>toggleJournal(false);
   $('jreset').onclick=()=>{found=new Set();save();location.reload()}}
@@ -652,6 +905,54 @@ function step(dt,t){
     camera.position.set(pos.x,pos.y+(reduce?0:Math.sin(bob)*.022*Math.min(1,sp/3.2)),pos.z);camera.rotation.set(pitch,yaw,0)}
   else{camera.position.set(Math.sin(t*.1)*.6,1.7+Math.sin(t*.4)*.02,26.2-(t*.05%1.4));camera.rotation.set(-.02,Math.sin(t*.1)*.06,0)}
   sky.position.copy(camera.position);sunGlow.position.copy(camera.position).addScaledVector(SUNDIR,110);
+  // Animate volumetric god rays subtle shimmer
+  if (godRaysGroup) {
+    godRaysGroup.children.forEach((ray, idx) => {
+      ray.material.opacity = 0.07 + Math.sin(t * 0.7 + idx) * 0.025;
+    });
+  }
+  // Animate golden pollen and dust particles
+  if (dustGeo) {
+    const posAttr = dustGeo.attributes.position;
+    const pArr = posAttr.array;
+    for(let i=0; i<DUST_COUNT; i++){
+      pArr[i*3] += Math.sin(t * 0.5 + i) * 0.012;
+      pArr[i*3+1] += dustVel[i*3+1] * dt * 3.5;
+      pArr[i*3+2] += Math.cos(t * 0.5 + i) * 0.012;
+      if (pArr[i*3+1] > 8.5) pArr[i*3+1] = 0.2;
+    }
+    posAttr.needsUpdate = true;
+  }
+  // Animate fluttering falling leaves
+  if (fallLeaves && fallLeaves.length) {
+    for(let i=0; i<fallLeaves.length; i++){
+      const l = fallLeaves[i];
+      l.mesh.position.y -= l.vy * dt;
+      l.mesh.position.x += Math.sin(t * l.swaySpeed + l.phase) * 0.014;
+      l.mesh.position.z += Math.cos(t * l.swaySpeed + l.phase) * 0.014;
+      l.mesh.rotation.x += l.rotSpeed * dt;
+      l.mesh.rotation.y += l.rotSpeed * 0.8 * dt;
+      if (l.mesh.position.y < 0.05) {
+        l.mesh.position.y = 7.5 + Math.random() * 3.5;
+        l.mesh.position.x = (Math.random() - 0.5) * 36;
+        l.mesh.position.z = (Math.random() - 0.5) * 36;
+      }
+    }
+  }
+  // Animate golden swallowtail butterflies
+  if (butterflies && butterflies.length) {
+    for(let b=0; b<butterflies.length; b++){
+      const bf = butterflies[b];
+      const flap = Math.sin(t * 18 + bf.phase) * 0.85;
+      bf.wLeft.rotation.y = flap;
+      bf.wRight.rotation.y = -flap;
+      const bTime = t * bf.speed + bf.phase;
+      bf.group.position.x = bf.baseX + Math.sin(bTime) * 2.8;
+      bf.group.position.z = bf.baseZ + Math.cos(bTime * 0.7) * 2.8;
+      bf.group.position.y = 0.85 + Math.sin(bTime * 2.2) * 0.35;
+      bf.group.rotation.y = -bTime + Math.PI / 2;
+    }
+  }
   // plants lean in the breeze
   for(const s of sway){s.g.rotation.z=Math.sin(t*1.1+s.ph)*s.a;s.g.rotation.x=Math.cos(t*.9+s.ph)*s.a*.7;
     if(!s.local){pv.set(s.ox,0,s.oz);pq.setFromEuler(s.g.rotation);pv.applyQuaternion(pq);s.g.position.set(s.ox-pv.x,-pv.y,s.oz-pv.z)}}
