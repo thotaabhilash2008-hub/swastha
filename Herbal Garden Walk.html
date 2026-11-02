@@ -109,6 +109,7 @@ body.touch.go #joy{display:block}
 
 <aside id="journal" hidden aria-label="Garden journal"></aside>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 <script>
 /* ---------- Data: eight plants, three traditional uses each ---------- */
 const HINTS=['on a stone rim','on a clay pot','on a wooden post'];
@@ -974,6 +975,48 @@ function frame(){const dt=Math.min(clock.getDelta(),.05),t=clock.elapsedTime;ste
 stations.forEach(st=>{st.done=done(st)});
 vials.filter(v=>found.has(v.id)).forEach(v=>{v.found=true;v.grp.visible=false;const i=hitMeshes.indexOf(v.hit);if(i>=0)hitMeshes.splice(i,1)});
 allAnnounced=found.size===TOTAL;refreshWorld(false);frame();
+
+/* ==================== REAL 3D BOTANICAL SPECIMEN LOADER ==================== */
+if (typeof THREE.GLTFLoader !== 'undefined') {
+  const gltfLoader = new THREE.GLTFLoader();
+  const models = [
+    { id: 'tul', file: 'tulsi3d.glb', scale: 0.88, yOffset: 0.49 },
+    { id: 'nee', file: 'neem3d.glb', scale: 1.4, yOffset: 0.48 },
+    { id: 'ama', file: 'amla3d.glb', scale: 1.3, yOffset: 0.48 },
+    { id: 'bhr', file: 'bhringraj3d.glb', scale: 1.1, yOffset: 0.42 },
+    { id: 'ash', file: 'ashwagandha3d.glb', scale: 1.15, yOffset: 0.42 },
+    { id: 'bra', file: 'brahmi3d.glb', scale: 0.95, yOffset: 0.12 }
+  ];
+  
+  // Resolve path whether running from root or Ayurvedha/ subfolder
+  const isAyurvedhaFolder = location.pathname.includes('/Ayurvedha') || location.pathname.includes('/Ayurvedha/');
+  const basePath = isAyurvedhaFolder ? '' : 'Ayurvedha/';
+
+  models.forEach(m => {
+    const st = stations.find(s => s.plant.id === m.id);
+    if (!st) return;
+    const modelUrl = basePath + m.file;
+    gltfLoader.load(modelUrl, (gltf) => {
+      const model = gltf.scene;
+      model.scale.setScalar(m.scale);
+      model.position.set(st.plant.x, m.yOffset, st.plant.z);
+      model.traverse(node => {
+        if (node.isMesh) {
+          node.castShadow = true;
+          node.receiveShadow = true;
+          if (node.material) {
+            node.material.envMapIntensity = 0.85;
+            node.material.roughness = Math.min(node.material.roughness || 0.5, 0.42);
+          }
+        }
+      });
+      scene.add(model);
+      sway.push({ g: model, ph: Math.random() * 6, a: 0.007, ox: st.plant.x, oz: st.plant.z });
+    }, undefined, (err) => {
+      // Procedural fallback active
+    });
+  });
+}
 window.__garden={scene,camera,vials,collect,pos,look(y,p){yaw=y;pitch=p},stations,get found(){return found},grassN:()=>window.__grassN};
 </script>
 
