@@ -154,7 +154,6 @@
       transform: rotate(180deg)
     }
 
-    .site-nav,
     .hero,
     .section-divider,
     .wrap,
@@ -622,14 +621,12 @@
       font-size: .78rem;
       letter-spacing: .1em;
       text-align: center;
-      padding: 0;
       overflow: hidden;
-      position: relative;
+      position: relative
     }
 
-    .vid:empty,
-    .vid:not(:has(video)):not(:has(iframe)) {
-      padding: 1rem;
+    .vid-placeholder {
+      padding: 1rem
     }
 
     .vid video,
@@ -643,6 +640,96 @@
 
     .again {
       margin-top: .6rem
+    }
+
+    .tiles {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 1rem
+    }
+
+    .tiles .hint {
+      grid-column: 1/-1
+    }
+
+    .tile {
+      display: flex;
+      flex-direction: column;
+      text-align: left;
+      gap: .25rem;
+      padding: 1.2rem 1.2rem 1.1rem;
+      background: var(--glass);
+      border: 1px solid var(--bd);
+      border-radius: 14px;
+      color: var(--ivory);
+      cursor: pointer;
+      backdrop-filter: blur(14px);
+      transition: .3s;
+      font: inherit
+    }
+
+    .tile:hover {
+      border-color: var(--bdh);
+      transform: translateY(-4px);
+      box-shadow: 0 14px 30px rgba(0, 0, 0, .55), 0 0 18px rgba(200, 164, 93, .2)
+    }
+
+    .tw {
+      font-size: .84rem;
+      color: rgba(245, 240, 228, .85);
+      margin-top: .35rem
+    }
+
+    .tb {
+      font-size: .76rem;
+      color: var(--sage)
+    }
+
+    .tb b,
+    .body b {
+      color: var(--gw);
+      font-weight: 500
+    }
+
+    .body {
+      font-size: .82rem;
+      color: var(--sage);
+      margin-bottom: .45rem
+    }
+
+    .tn {
+      font: 400 1.35rem/1.15 'Cormorant Garamond', serif;
+      color: var(--ivory)
+    }
+
+    .tile .sk {
+      font-size: .9rem;
+      margin: 0
+    }
+
+    .tv {
+      margin-top: .5rem;
+      font-size: .72rem;
+      letter-spacing: .1em;
+      color: var(--gw)
+    }
+
+    .back-btn {
+      margin-bottom: 1rem;
+      padding: .55rem 1.3rem;
+      background: rgba(16, 59, 40, .45);
+      border: 1px solid rgba(200, 164, 93, .45);
+      border-radius: 9999px;
+      color: var(--ivory);
+      font: 400 .8rem 'Jost', sans-serif;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: .25s
+    }
+
+    .back-btn:hover {
+      border-color: var(--gw);
+      color: var(--gw)
     }
 
     footer {
@@ -810,7 +897,7 @@
       <section id="result" aria-live="polite"></section>
     </div>
     <section id="library" hidden>
-      <fieldset>
+      <fieldset id="libhead">
         <legend>All asanas</legend>
         <p class="hint">Browse or search every asana and practise directly. This list is not adjusted to your health
           answers, so check that an asana suits you, or use the personalised practice.</p>
@@ -818,7 +905,8 @@
           aria-label="Search asanas">
         <p class="parsed" id="count"></p>
       </fieldset>
-      <div id="all"></div>
+      <div id="all" class="tiles"></div>
+      <div id="detail" hidden></div>
     </section>
   </main>
   <footer>
@@ -845,7 +933,7 @@
     const LBL = {}; for (const g in OPTS) OPTS[g].forEach(([v, t]) => LBL[g + v] = t);
     const TODAY = { energise: ['stamina', 'mood'], relax: ['stress', 'sleep'], strength: ['strength'], flexibility: ['flex'], balance: ['balance', 'focus'] };
 
-    /* Paste your Google Flow videos here: id -> 'videos/tadasana.mp4' (or a YouTube embed URL) */
+    /* Add a line per asana as you generate each video: id -> 'videos/<file>.mp4' (or a YouTube embed URL) */
     const VIDEOS = {
       tadasana: 'videos/tadasana.mp4',
       cat: 'videos/cat.mp4',
@@ -880,6 +968,11 @@
       ['anulom', 'Anulom Vilom', 'अनुलोम विलोम', 'Alternate Nostril Breathing', 1, 'C', 'stress focus sleep mood', '', '3 minutes', 'Balances the breath and calms the nervous system. Can be done on a chair.', ['Sit tall, left hand on the knee.', 'Close the right nostril, inhale left.', 'Close the left, exhale right.', 'Inhale right, switch, exhale left. Keep it gentle, no breath holding.']],
       ['shavasana', 'Shavasana', 'शवासन', 'Corpse Pose', 1, 'C', 'stress sleep mood focus', 'f', '3–5 minutes', 'Deep rest that lets the body absorb the practice.', ['Lie on your back, feet falling apart.', 'Arms by your sides, palms up.', 'Close your eyes and release all effort.', 'If pregnant, lie on your left side instead.']]
     ];
+
+    /* Body parts each asana works on */
+    const BODY = { tadasana: 'Whole body · posture · legs', cat: 'Spine · neck · shoulders', vrikshasana: 'Legs · ankles · core', uttanasana: 'Hamstrings · spine · neck', bhujangasana: 'Spine · chest · shoulders', setu: 'Back · glutes · legs', downdog: 'Shoulders · arms · hamstrings · calves', virabhadra2: 'Legs · hips · shoulders', trikonasana: 'Hips · hamstrings · waist', utkatasana: 'Thighs · glutes · core', paschimottanasana: 'Hamstrings · lower back', ardha: 'Spine · abdomen · hips', malasana: 'Hips · ankles · groin', navasana: 'Core · hip flexors · spine', sukhasana: 'Hips · knees · lower back', vajrasana: 'Thighs · ankles · digestion', balasana: 'Lower back · hips · shoulders', viparita: 'Legs · lower back · nervous system', anulom: 'Lungs · nervous system', shavasana: 'Whole body · nervous system' };
+    const goodFor = a => a[6].split(' ').map(g => NAME[g]).join(', ');
+    const bodyHTML = a => `<p class="body"><b>Works on:</b> ${BODY[a[0]] || ''}</p><p class="body"><b>Good for:</b> ${goodFor(a)}</p>`;
 
     /* Chips */
     const sel = { mental: new Set(), phys: new Set(), safe: new Set() };
@@ -936,58 +1029,36 @@
       const close = rank('C', c - 1, 'shavasana').concat(sav ? [sav] : []);
       return { plan: [...rank('W', w).map(x => [x, 'Warm-up']), ...rank('M', m).map(x => [x, 'Main practice']), ...close.map(x => [x, 'Closing'])], goals, maxLvl };
     }
+
+    /* Videos */
     function resolveVideoUrl(path) {
       if (!path || /^(https?:|\/\/)/.test(path)) return path;
       const clean = path.replace(/^\.?\/?/, '');
-      // If hosted on clean URLs without trailing slash like /Yoga, relative paths resolve to root domain
-      if (location.pathname === '/Yoga' || location.pathname.startsWith('/Yoga/')) {
-        return '/Yoga/' + clean.replace(/^Yoga\//, '');
-      }
+      // On clean URLs like /Yoga (no trailing slash) relative paths would resolve to the site root
+      if (location.pathname === '/Yoga' || location.pathname.startsWith('/Yoga/')) return '/Yoga/' + clean.replace(/^Yoga\//, '');
       return clean;
     }
-
     let videoObserver = null;
+    // No autoplay: just pause a video when it scrolls out of view.
     if ('IntersectionObserver' in window) {
-      videoObserver = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          const v = entry.target;
-          if (entry.isIntersecting) {
-            v.muted = true;
-            const p = v.play();
-            if (p) p.catch(() => {});
-          } else {
-            v.pause();
-          }
-        });
-      }, { threshold: 0.15 });
+      videoObserver = new IntersectionObserver(entries => {
+        entries.forEach(en => { if (!en.isIntersecting) en.target.pause() });
+      }, { threshold: .15 });
     }
-
     function initVideos(container) {
-      const scope = container || document;
-      const vids = scope.querySelectorAll('.vid video');
-      vids.forEach(v => {
-        v.muted = true;
-        v.defaultMuted = true;
-        if (videoObserver) {
-          videoObserver.observe(v);
-        } else {
-          v.play().catch(() => {});
-        }
+      (container || document).querySelectorAll('.vid video').forEach(v => {
+        v.muted = true; v.defaultMuted = true;
+        if (videoObserver) videoObserver.observe(v);
       });
     }
-
     function media(id) {
       const raw = VIDEOS[id];
       if (!raw) return '<span class="vid-placeholder">Video coming soon</span>';
-      if (/youtube\.com|youtu\.be/.test(raw)) {
-        return `<iframe src="${raw}" title="${id}" allowfullscreen></iframe>`;
-      }
-      const u = resolveVideoUrl(raw);
-      return `<video loop muted playsinline controls preload="auto">
-        <source src="${u}" type="video/mp4">
-        Your browser does not support HTML5 video.
-      </video>`;
+      if (/youtube\.com|youtu\.be/.test(raw)) return `<iframe src="${raw}" title="${id}" allowfullscreen></iframe>`;
+      return `<video loop muted playsinline controls preload="metadata"><source src="${resolveVideoUrl(raw)}" type="video/mp4">Your browser does not support HTML5 video.</video>`;
     }
+
+    /* Results */
     function show({ plan, goals, maxLvl }) {
       const lv = ['', 'Beginner', 'Intermediate', 'Advanced'][maxLvl];
       const feel = goals.map(g => NAME[g]).slice(0, 6).join(', ') || 'general balance';
@@ -1000,7 +1071,7 @@
           const a = x.a; return `<article class="card">
       <div class="info"><div class="phase">${i + 1} · ${phase}</div><h2>${a[1]}</h2><div class="sk">${a[2]} · ${a[3]}</div>
       <p class="why">${x.hit.length ? 'Picked for: ' + x.hit.map(g => NAME[g]).join(', ') : 'Chosen for overall balance'}</p>
-      <p class="ben">${a[9]}</p><span class="hold">Hold: ${a[8]}</span><button type="button" class="listen" data-id="${a[0]}">🔊 Read aloud</button>
+      <p class="ben">${a[9]}</p>${bodyHTML(a)}<span class="hold">Hold: ${a[8]}</span><button type="button" class="listen" data-id="${a[0]}">🔊 Read aloud</button>
       <ol>${a[10].map(s => `<li>${s}</li>`).join('')}</ol></div>
       <div class="vid">${media(a[0])}</div></article>`
         }).join('') +
@@ -1021,23 +1092,40 @@
     const ROLE = { W: 'Warm-up', M: 'Main practice', C: 'Closing' }, LV = ['', 'Beginner', 'Intermediate', 'Advanced'];
     function cardHTML(a, phase) {
       return `<article class="card"><div class="info"><div class="phase">${phase}</div><h2>${a[1]}</h2><div class="sk">${a[2]} · ${a[3]}</div>
-  <p class="ben">${a[9]}</p><span class="hold">Hold: ${a[8]}</span><button type="button" class="listen" data-id="${a[0]}">🔊 Read aloud</button>
+  <p class="ben">${a[9]}</p>${bodyHTML(a)}<span class="hold">Hold: ${a[8]}</span><button type="button" class="listen" data-id="${a[0]}">🔊 Read aloud</button>
   <ol>${a[10].map(s => `<li>${s}</li>`).join('')}</ol></div><div class="vid">${media(a[0])}</div></article>`
     }
     function renderLib() {
       const words = $('#q').value.toLowerCase().split(/\s+/).filter(Boolean);
       const score = a => { const t = [a[1], a[2], a[3], a[6], a[9]].join(' ').toLowerCase(); return words.filter(w => t.includes(w)).length };
-      const list = (words.length ? A.filter(a => score(a) > 0).sort((x, y) => score(y) - score(x)) : A);
+      const list = words.length ? A.filter(a => score(a) > 0).sort((x, y) => score(y) - score(x)) : A;
       $('#count').textContent = list.length + ' of ' + A.length + ' asanas';
-      $('#all').innerHTML = list.map(a => cardHTML(a, ROLE[a[5]] + ' · ' + LV[a[4]])).join('') || '<p class="hint">No asana found. Try another word.</p>';
+      $('#all').innerHTML = list.map(a => `<button type="button" class="tile" data-id="${a[0]}"><span class="phase">${ROLE[a[5]]} · ${LV[a[4]]}</span><span class="tn">${a[1]}</span><span class="sk">${a[2]} · ${a[3]}</span><span class="tw">${a[9]}</span><span class="tb"><b>Works on:</b> ${BODY[a[0]] || ''}</span><span class="tb"><b>Good for:</b> ${goodFor(a)}</span>${VIDEOS[a[0]] ? '<span class="tv">▶ Video</span>' : ''}</button>`).join('') || '<p class="hint">No asana found. Try another word.</p>';
     }
-    initVideos($('#all'));
     $('#q').addEventListener('input', renderLib);
+
+    /* Open one asana: description, steps and video (plays automatically) */
+    function openAsana(id) {
+      const a = A.find(x => x[0] === id); if (!a) return;
+      if ('speechSynthesis' in window) speechSynthesis.cancel();
+      $('#detail').innerHTML = `<button type="button" class="back-btn" id="back-all">← All asanas</button>` + cardHTML(a, ROLE[a[5]] + ' · ' + LV[a[4]]);
+      $('#libhead').hidden = true; $('#all').hidden = true; $('#detail').hidden = false;
+      initVideos($('#detail'));
+      const v = $('#detail video'); if (v) v.play().catch(() => { });
+      $('#back-all').onclick = closeAsana;
+      scrollTo(0, 0);
+    }
+    function closeAsana() {
+      if ('speechSynthesis' in window) speechSynthesis.cancel();
+      $('#detail').innerHTML = ''; $('#detail').hidden = true; $('#libhead').hidden = false; $('#all').hidden = false;
+      scrollTo(0, 0);
+    }
+    $('#all').addEventListener('click', e => { const t = e.target.closest('.tile'); if (t) openAsana(t.dataset.id) });
     function tab(lib) {
       if ('speechSynthesis' in window) speechSynthesis.cancel();
+      closeAsana();
       $('#library').hidden = !lib; $('#personal').hidden = lib;
       $('#tab-q').classList.toggle('on', !lib); $('#tab-all').classList.toggle('on', lib);
-      if (lib) setTimeout(() => initVideos($('#all')), 50);
       scrollTo(0, 0);
     }
     $('#tab-q').onclick = () => tab(false);
