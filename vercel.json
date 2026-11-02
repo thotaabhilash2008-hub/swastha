@@ -20,6 +20,22 @@
       "destination": "/Ayurvedha/bookmarks.html"
     },
     {
+      "source": "/virtual-tour",
+      "destination": "/Ayurvedha/virtual-tour.html"
+    },
+    {
+      "source": "/tour",
+      "destination": "/Ayurvedha/virtual-tour.html"
+    },
+    {
+      "source": "/Ayurvedha/tour",
+      "destination": "/Ayurvedha/virtual-tour.html"
+    },
+    {
+      "source": "/Ayurvedha/virtual-tour",
+      "destination": "/Ayurvedha/virtual-tour.html"
+    },
+    {
       "source": "/Ayurvedha",
       "destination": "/Ayurvedha/index.html"
     },
