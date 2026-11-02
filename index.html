@@ -2077,6 +2077,30 @@ footer {
 </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+
+<script>
+  (function() {
+    try {
+      var seen = sessionStorage.getItem('swastha_intro_seen');
+      var hasHash = window.location.hash && window.location.hash.length > 1;
+      var noIntro = window.location.search && (window.location.search.indexOf('nointro') !== -1 || window.location.search.indexOf('skipintro') !== -1);
+      if (seen === '1' || hasHash || noIntro) {
+        document.documentElement.classList.add('intro-skipped');
+      }
+    } catch(e) {}
+  })();
+</script>
+
+<style>
+html.intro-skipped #intro-overlay,
+html.intro-skipped .intro-overlay {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+</style>
+
 </head>
 <body>
 
@@ -2144,7 +2168,7 @@ footer {
 <!-- TOP NAVIGATION BAR -->
 <header class="site-nav">
   <div class="nav-container">
-    <a href="#" class="brand-group">
+    <a href="#home" class="brand-group">
       <!-- Lotus SVG Icon -->
       <svg class="brand-logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
         <path d="M12 2C12 2 15 6 15 9C15 11 13.5 12.5 12 13C10.5 12.5 9 11 9 9C9 6 12 2 12 2Z"/>
@@ -2156,7 +2180,7 @@ footer {
     </a>
 
     <ul class="nav-links" id="nav-links">
-      <li><a href="#" class="nav-link">Home</a></li>
+      <li><a href="#home" class="nav-link">Home</a></li>
       <li><a href="#explore" class="nav-link">Explore</a></li>
       <li><a href="#modules" class="nav-link">Modules</a></li>
       <li><a href="#3d-lab" class="nav-link">3D Lab</a></li>
@@ -2618,7 +2642,7 @@ footer {
         <h4 class="footer-col-title">Portal</h4>
         <ul class="footer-links">
           <li><a href="Ayurvedha/login.html">Sign In / Register</a></li>
-          <li><a href="javascript:void(0);" onclick="window.startIntroVideoExperience();">Replay Intro Video</a></li>
+          <li><a href="javascript:void(0);" onclick="window.startIntroVideoExperience(true);">Replay Intro Video</a></li>
           <li><a href="#about">Heritage & Manuscripts</a></li>
         </ul>
       </div>
@@ -2792,15 +2816,40 @@ footer {
   function finishIntro() {
     if (isFinished) return;
     isFinished = true;
+    try {
+      sessionStorage.setItem('swastha_intro_seen', '1');
+    } catch(e) {}
     clearTimeout(introTimeout);
-    introOverlay.classList.add('intro-exit');
+    if (introOverlay) {
+      introOverlay.classList.add('intro-exit');
+    }
     setTimeout(() => {
-      introOverlay.style.display = 'none';
+      if (introOverlay) {
+        introOverlay.style.display = 'none';
+      }
+      document.documentElement.classList.add('intro-skipped');
       if (introVideo) {
         introVideo.pause();
       }
       unlockScroll();
     }, 850);
+  }
+
+  function finishIntroImmediately() {
+    isFinished = true;
+    try {
+      sessionStorage.setItem('swastha_intro_seen', '1');
+    } catch(e) {}
+    clearTimeout(introTimeout);
+    if (introOverlay) {
+      introOverlay.classList.add('intro-exit');
+      introOverlay.style.display = 'none';
+    }
+    document.documentElement.classList.add('intro-skipped');
+    if (introVideo) {
+      introVideo.pause();
+    }
+    unlockScroll();
   }
 
   function scheduleSafetyTimeout() {
@@ -2875,10 +2924,25 @@ footer {
     }
   }
 
-  function startIntro() {
+  function startIntro(force = false) {
+    if (!force) {
+      try {
+        const seen = sessionStorage.getItem('swastha_intro_seen');
+        const hasHash = window.location.hash && window.location.hash.length > 1;
+        const noIntro = window.location.search && (window.location.search.indexOf('nointro') !== -1 || window.location.search.indexOf('skipintro') !== -1);
+        if (seen === '1' || hasHash || noIntro) {
+          finishIntroImmediately();
+          return;
+        }
+      } catch(e) {}
+    }
+
     isFinished = false;
-    introOverlay.style.display = 'flex';
-    introOverlay.classList.remove('intro-exit');
+    document.documentElement.classList.remove('intro-skipped');
+    if (introOverlay) {
+      introOverlay.style.display = 'flex';
+      introOverlay.classList.remove('intro-exit');
+    }
     lockScroll();
     resolveVideoSource();
     alignSoundButtonWithWatermark();
@@ -2920,7 +2984,7 @@ footer {
   window.startIntroVideoExperience = startIntro;
 
   if (heroWatchIntroBtn) {
-    heroWatchIntroBtn.addEventListener('click', startIntro);
+    heroWatchIntroBtn.addEventListener('click', () => startIntro(true));
   }
 
   if (skipButton) {
@@ -3496,12 +3560,34 @@ footer {
     initHero3DBackground();
     initHero3DScrollInteractions();
   }
+  // Launch initial startup only if first visit and not navigating to a section or page
+  try {
+    const seen = sessionStorage.getItem('swastha_intro_seen');
+    const hasHash = window.location.hash && window.location.hash.length > 1;
+    const noIntro = window.location.search && (window.location.search.indexOf('nointro') !== -1 || window.location.search.indexOf('skipintro') !== -1);
+    if (seen === '1' || hasHash || noIntro) {
+      finishIntroImmediately();
+    } else {
+      lockScroll();
+      startIntro(false);
+    }
+  } catch(e) {
+    finishIntroImmediately();
+  }
 
-
-  
-  // Launch initial startup
-  lockScroll();
-  startIntro();
+  // Smooth scroll for nav anchor links so clicking them never reloads or breaks view
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', function(e) {
+      const href = this.getAttribute('href');
+      if (href && href !== '#' && href.length > 1) {
+        const el = document.querySelector(href);
+        if (el) {
+          e.preventDefault();
+          el.scrollIntoView({ behavior: 'smooth' });
+        }
+      }
+    });
+  });
 })();
 </script>
 
