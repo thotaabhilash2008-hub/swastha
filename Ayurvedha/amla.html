@@ -186,6 +186,7 @@ body {
       pointer-events: none;
     }
     .model-loading-overlay.is-hidden {
+      display: none !important;
       opacity: 0;
       visibility: hidden;
     }
@@ -1461,6 +1462,7 @@ body {
         onModelLoaded();
       } else {
         viewer.addEventListener('load', onModelLoaded);
+        setTimeout(onModelLoaded, 2500);
         viewer.addEventListener('progress', function(evt) {
           if (evt.detail && evt.detail.totalProgress !== undefined) {
             var pct = Math.round(evt.detail.totalProgress * 100);
