@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Apamarg | Swastha</title>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400&family=Hanken+Grotesk:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400;500;600&display=swap" rel="stylesheet">
-  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
   <style>
     :root {
     --bg-primary: #07170F;
@@ -152,60 +151,6 @@
   </style>
 </head>
 <body>
-
-<button id="open3D">View in 3D</button>
-<div id="viewerModal">
-  <div id="modal-topbar">
-    <span>3D Model — Apamarg / Prickly Chaff</span>
-    <button id="close3D">✕</button>
-  </div>
-  <model-viewer src="apamarg3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
-</div>
-
-<div class="bg-circle bg-circle-1"></div>
-<div class="bg-circle bg-circle-2"></div>
-
-<!-- Botanical spike/chaff-inspired SVG ornaments -->
-<svg class="botanical-svg botanical-tl" viewBox="0 0 300 320" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <path d="M30 300 L150 30" stroke="#4e6b28" stroke-width="1.5" fill="none"/>
-  <!-- spine pairs along the stem, like Achyranthes aspera -->
-  <line x1="150" y1="30"  x2="130" y2="48"  stroke="#4e6b28" stroke-width="1"/>
-  <line x1="150" y1="30"  x2="170" y2="48"  stroke="#4e6b28" stroke-width="1"/>
-  <line x1="138" y1="60"  x2="118" y2="76"  stroke="#4e6b28" stroke-width="1"/>
-  <line x1="138" y1="60"  x2="158" y2="76"  stroke="#4e6b28" stroke-width="1"/>
-  <line x1="126" y1="90"  x2="106" y2="104" stroke="#4e6b28" stroke-width="1"/>
-  <line x1="126" y1="90"  x2="146" y2="104" stroke="#4e6b28" stroke-width="1"/>
-  <line x1="114" y1="120" x2="94"  y2="133" stroke="#4e6b28" stroke-width="1"/>
-  <line x1="114" y1="120" x2="134" y2="133" stroke="#4e6b28" stroke-width="1"/>
-  <line x1="102" y1="150" x2="82"  y2="162" stroke="#4e6b28" stroke-width="1"/>
-  <line x1="102" y1="150" x2="122" y2="162" stroke="#4e6b28" stroke-width="1"/>
-  <line x1="90"  y1="180" x2="70"  y2="191" stroke="#7a9e45" stroke-width="1"/>
-  <line x1="90"  y1="180" x2="110" y2="191" stroke="#7a9e45" stroke-width="1"/>
-  <line x1="78"  y1="210" x2="58"  y2="220" stroke="#7a9e45" stroke-width="1"/>
-  <line x1="78"  y1="210" x2="98"  y2="220" stroke="#7a9e45" stroke-width="1"/>
-  <!-- leaf blades -->
-  <ellipse cx="80" cy="185" rx="22" ry="11" fill="#4e6b28" transform="rotate(-30 80 185)" opacity=".5"/>
-  <ellipse cx="108" cy="155" rx="20" ry="10" fill="#7a9e45" transform="rotate(-35 108 155)" opacity=".5"/>
-  <ellipse cx="120" cy="125" rx="18" ry="9"  fill="#4e6b28" transform="rotate(-38 120 125)" opacity=".5"/>
-</svg>
-<svg class="botanical-svg botanical-br" viewBox="0 0 300 320" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <path d="M30 300 L150 30" stroke="#4e6b28" stroke-width="1.5" fill="none"/>
-  <line x1="150" y1="30"  x2="130" y2="48"  stroke="#4e6b28" stroke-width="1"/>
-  <line x1="150" y1="30"  x2="170" y2="48"  stroke="#4e6b28" stroke-width="1"/>
-  <line x1="138" y1="60"  x2="118" y2="76"  stroke="#4e6b28" stroke-width="1"/>
-  <line x1="138" y1="60"  x2="158" y2="76"  stroke="#4e6b28" stroke-width="1"/>
-  <line x1="126" y1="90"  x2="106" y2="104" stroke="#4e6b28" stroke-width="1"/>
-  <line x1="126" y1="90"  x2="146" y2="104" stroke="#4e6b28" stroke-width="1"/>
-  <ellipse cx="108" cy="155" rx="20" ry="10" fill="#7a9e45" transform="rotate(-35 108 155)" opacity=".5"/>
-</svg>
-
-<div class="hero">
-  <a href="index.html" class="back-link">← Back to Herbal Garden</a>
-  <div class="logo-rule"><span></span><div class="logo-ornament">✦</div><span></span></div>
-  <div class="hero-title">Apamarg</div>
-  <div class="hero-subtitle">Prickly Chaff Flower — The Sacred Broom Herb</div>
-  <div class="hero-sci">Achyranthes aspera L. &nbsp;·&nbsp; Family: Amaranthaceae</div>
-</div>
 
 <div class="hero-photos">
   <img src="https://upload.wikimedia.org/wikipedia/commons/3/33/Achyranthes_aspera1.jpg" alt="Apamarg plant showing erect spike of reflexed prickly flowers" onerror="this.src='';this.style.minHeight='380px';this.style.background='var(--parchment)';">

@@ -8,7 +8,6 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400&family=Hanken+Grotesk:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400;500;600&display=swap"
     rel="stylesheet">
-  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
   <style>
     :root {
     --bg-primary: #07170F;
@@ -288,55 +287,6 @@
 </head>
 
 <body>
-
-<button id="open3D">View in 3D</button>
-<div id="viewerModal">
-  <div id="modal-topbar">
-    <span>3D Model — Ujwala</span>
-    <button id="close3D">✕</button>
-  </div>
-  <model-viewer src="ujwala3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
-</div>
-
-<div class="bg-circle bg-circle-1"></div>
-<div class="bg-circle bg-circle-2"></div>
-
-<!-- Botanical SVG: poppy-inspired spiny stems and petals -->
-<svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Main stem -->
-  <path d="M20 280 Q 60 220 100 170 Q 150 110 230 40" stroke="#b85c00" stroke-width="1.5" fill="none"/>
-  <!-- Spines along stem -->
-  <line x1="45" y1="248" x2="35" y2="238" stroke="#e8a020" stroke-width="1"/>
-  <line x1="70" y1="222" x2="58" y2="215" stroke="#e8a020" stroke-width="1"/>
-  <line x1="98" y1="193" x2="86" y2="188" stroke="#e8a020" stroke-width="1"/>
-  <line x1="130" y1="158" x2="118" y2="152" stroke="#e8a020" stroke-width="1"/>
-  <line x1="165" y1="122" x2="153" y2="115" stroke="#e8a020" stroke-width="1"/>
-  <!-- Poppy-like flower at top -->
-  <ellipse cx="230" cy="48" rx="16" ry="10" fill="#e8a020" opacity="0.55" transform="rotate(-20 230 48)"/>
-  <ellipse cx="244" cy="42" rx="14" ry="9" fill="#c8922a" opacity="0.45" transform="rotate(30 244 42)"/>
-  <ellipse cx="222" cy="36" rx="13" ry="8" fill="#e8a020" opacity="0.4" transform="rotate(-50 222 36)"/>
-  <circle cx="232" cy="44" r="5" fill="#3a1a00" opacity="0.5"/>
-  <!-- Lobed leaves -->
-  <path d="M100 170 Q 80 150 70 130 Q 90 140 100 170Z" fill="#b85c00" opacity="0.4"/>
-  <path d="M150 120 Q 128 105 122 82 Q 142 98 150 120Z" fill="#b85c00" opacity="0.35"/>
-</svg>
-<svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <path d="M20 280 Q 60 220 100 170 Q 150 110 230 40" stroke="#b85c00" stroke-width="1.5" fill="none"/>
-  <line x1="45" y1="248" x2="35" y2="238" stroke="#e8a020" stroke-width="1"/>
-  <line x1="70" y1="222" x2="58" y2="215" stroke="#e8a020" stroke-width="1"/>
-  <line x1="98" y1="193" x2="86" y2="188" stroke="#e8a020" stroke-width="1"/>
-  <ellipse cx="230" cy="48" rx="16" ry="10" fill="#e8a020" opacity="0.5" transform="rotate(-20 230 48)"/>
-  <circle cx="232" cy="44" r="5" fill="#3a1a00" opacity="0.45"/>
-  <path d="M100 170 Q 80 150 70 130 Q 90 140 100 170Z" fill="#b85c00" opacity="0.35"/>
-</svg>
-
-<div class="hero">
-  <a href="index.html" class="back-link">← Back to Herbal Garden</a>
-  <div class="logo-rule"><span></span><div class="logo-ornament">✦</div><span></span></div>
-  <div class="hero-title">Ujwala</div>
-  <div class="hero-subtitle">Mexican Poppy — The Blazing Thistle</div>
-  <div class="hero-sci">Argemone mexicana L. &nbsp;·&nbsp; Papaveraceae</div>
-</div>
 
 <div class="hero-photos">
   <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/5/57/Argemone_mexicana_flower_2.jpg/1280px-Argemone_mexicana_flower_2.jpg" alt="Ujwala bright yellow flowers of Argemone mexicana with spiny calyx"

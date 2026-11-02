@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tanduliyaka | Swastha</title>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400&family=Hanken+Grotesk:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400;500;600&display=swap" rel="stylesheet">
-  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
   <style>
     :root {
     --bg-primary: #07170F;
@@ -140,56 +139,6 @@
   </style>
 </head>
 <body>
-
-<button id="open3D">View in 3D</button>
-<div id="viewerModal">
-  <div id="modal-topbar"><span>3D Model — Tanduliyaka</span><button id="close3D">✕</button></div>
-  <model-viewer src="tanduliyaka3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
-</div>
-
-<div class="bg-circle bg-circle-1"></div>
-<div class="bg-circle bg-circle-2"></div>
-
-<!-- Amaranth plume SVG -->
-<svg class="botanical-svg botanical-tl" viewBox="0 0 250 400" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- main stem -->
-  <path d="M80 395 Q 82 300 85 220 Q 88 140 100 40" stroke="#5c2040" stroke-width="3" stroke-linecap="round" fill="none"/>
-  <!-- large drooping plume at top -->
-  <path d="M100 40 Q 130 60 155 100 Q 170 130 160 160 Q 148 185 130 175 Q 108 162 100 140 Q 90 115 100 40Z" fill="#8c3a5a" opacity=".7"/>
-  <path d="M100 40 Q 72 58 50 95 Q 36 122 48 150 Q 60 174 80 165 Q 100 154 104 130 Q 110 105 100 40Z" fill="#a06070" opacity=".6"/>
-  <!-- side plumes -->
-  <path d="M88 140 Q 55 148 35 170 Q 20 188 30 205 Q 42 220 60 210 Q 78 198 84 178 Q 90 158 88 140Z" fill="#8c3a5a" opacity=".55"/>
-  <path d="M90 155 Q 120 158 142 175 Q 158 190 152 208 Q 144 224 126 218 Q 108 210 100 192 Q 92 172 90 155Z" fill="#a06070" opacity=".5"/>
-  <!-- lower side branches -->
-  <path d="M84 210 Q 52 215 34 234 Q 20 250 28 264 Q 38 277 56 270 Q 72 262 78 246 Q 84 228 84 210Z" fill="#8c3a5a" opacity=".45"/>
-  <path d="M86 225 Q 115 228 134 244 Q 148 258 142 272 Q 134 285 116 279 Q 100 271 93 255 Q 86 238 86 225Z" fill="#a06070" opacity=".4"/>
-  <!-- tiny seed dots on plumes -->
-  <circle cx="130" cy="110" r="2" fill="#c47a3a" opacity=".6"/>
-  <circle cx="118" cy="128" r="2" fill="#c47a3a" opacity=".6"/>
-  <circle cx="140" cy="140" r="1.5" fill="#c47a3a" opacity=".5"/>
-  <circle cx="65" cy="120" r="2" fill="#c47a3a" opacity=".6"/>
-  <circle cx="54" cy="142" r="1.5" fill="#c47a3a" opacity=".5"/>
-  <!-- leaves along stem -->
-  <ellipse cx="83" cy="270" rx="28" ry="10" fill="#5c2040" transform="rotate(-18 83 270)" opacity=".55"/>
-  <ellipse cx="87" cy="315" rx="24" ry="9" fill="#8c3a5a" transform="rotate(15 87 315)" opacity=".5"/>
-  <ellipse cx="82" cy="358" rx="20" ry="8" fill="#5c2040" transform="rotate(-10 82 358)" opacity=".45"/>
-</svg>
-<svg class="botanical-svg botanical-br" viewBox="0 0 250 400" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <path d="M80 395 Q 82 300 85 220 Q 88 140 100 40" stroke="#5c2040" stroke-width="3" stroke-linecap="round" fill="none"/>
-  <path d="M100 40 Q 130 60 155 100 Q 170 130 160 160 Q 148 185 130 175 Q 108 162 100 140 Q 90 115 100 40Z" fill="#8c3a5a" opacity=".7"/>
-  <path d="M100 40 Q 72 58 50 95 Q 36 122 48 150 Q 60 174 80 165 Q 100 154 104 130 Q 110 105 100 40Z" fill="#a06070" opacity=".6"/>
-  <path d="M88 140 Q 55 148 35 170 Q 20 188 30 205 Q 42 220 60 210 Q 78 198 84 178 Q 90 158 88 140Z" fill="#8c3a5a" opacity=".55"/>
-  <ellipse cx="83" cy="270" rx="28" ry="10" fill="#5c2040" transform="rotate(-18 83 270)" opacity=".55"/>
-  <ellipse cx="87" cy="315" rx="24" ry="9" fill="#8c3a5a" transform="rotate(15 87 315)" opacity=".5"/>
-</svg>
-
-<div class="hero">
-  <a href="index.html" class="back-link">← Back to Herbal Garden</a>
-  <div class="logo-rule"><span></span><div class="logo-ornament">✦</div><span></span></div>
-  <div class="hero-title">Tanduliyaka</div>
-  <div class="hero-subtitle">Amaranth — The Grain That Never Fades</div>
-  <div class="hero-sci">Amaranthus spinosus L. &nbsp;·&nbsp; Amaranthus tricolor L. &nbsp;·&nbsp; Amaranthaceae</div>
-</div>
 
 <div class="hero-photos">
   <img src="https://upload.wikimedia.org/wikipedia/commons/b/b9/Amaranthus.spinosus1web.jpg" alt="Amaranthus spinosus — the spiny amaranth with crimson-flushed stems used medicinally"

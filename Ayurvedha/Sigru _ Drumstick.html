@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sigru | Swastha</title>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400&family=Hanken+Grotesk:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400;500;600&display=swap" rel="stylesheet">
-  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
   <style>
     :root {
     --bg-primary: #07170F;
@@ -152,62 +151,6 @@
   </style>
 </head>
 <body>
-
-<button id="open3D">View in 3D</button>
-<div id="viewerModal">
-  <div id="modal-topbar">
-    <span>3D Model — Sigru</span>
-    <button id="close3D">✕</button>
-  </div>
-  <model-viewer src="sigru3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
-</div>
-
-<div class="bg-circle bg-circle-1"></div>
-<div class="bg-circle bg-circle-2"></div>
-
-<!-- Drumstick / feathery leaf botanical ornaments -->
-<svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <path d="M15 285 Q 60 210 100 160 Q 150 100 245 35" stroke="#2e5016" stroke-width="1.5" fill="none"/>
-  <!-- compound leaf sprays -->
-  <g opacity=".85">
-    <ellipse cx="72" cy="218" rx="9" ry="4" fill="#4a6c2f" transform="rotate(-40 72 218)"/>
-    <ellipse cx="84" cy="208" rx="9" ry="4" fill="#7aab4e" transform="rotate(-55 84 208)"/>
-    <ellipse cx="60" cy="228" rx="9" ry="4" fill="#4a6c2f" transform="rotate(-25 60 228)"/>
-  </g>
-  <g opacity=".8">
-    <ellipse cx="112" cy="172" rx="9" ry="4" fill="#7aab4e" transform="rotate(-55 112 172)"/>
-    <ellipse cx="124" cy="162" rx="9" ry="4" fill="#4a6c2f" transform="rotate(-70 124 162)"/>
-    <ellipse cx="100" cy="182" rx="9" ry="4" fill="#7aab4e" transform="rotate(-40 100 182)"/>
-  </g>
-  <g opacity=".75">
-    <ellipse cx="158" cy="122" rx="8" ry="4" fill="#4a6c2f" transform="rotate(-65 158 122)"/>
-    <ellipse cx="170" cy="112" rx="8" ry="4" fill="#7aab4e" transform="rotate(-80 170 112)"/>
-    <ellipse cx="147" cy="132" rx="8" ry="4" fill="#4a6c2f" transform="rotate(-50 147 132)"/>
-  </g>
-  <!-- drumstick pods -->
-  <rect x="58" y="240" width="4" height="22" rx="2" fill="#4a6c2f" transform="rotate(-30 58 240)" opacity=".6"/>
-  <rect x="138" y="150" width="4" height="20" rx="2" fill="#7aab4e" transform="rotate(-60 138 150)" opacity=".55"/>
-</svg>
-<svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <path d="M15 285 Q 60 210 100 160 Q 150 100 245 35" stroke="#2e5016" stroke-width="1.5" fill="none"/>
-  <g opacity=".85">
-    <ellipse cx="72" cy="218" rx="9" ry="4" fill="#4a6c2f" transform="rotate(-40 72 218)"/>
-    <ellipse cx="84" cy="208" rx="9" ry="4" fill="#7aab4e" transform="rotate(-55 84 208)"/>
-    <ellipse cx="60" cy="228" rx="9" ry="4" fill="#4a6c2f" transform="rotate(-25 60 228)"/>
-  </g>
-  <g opacity=".8">
-    <ellipse cx="112" cy="172" rx="9" ry="4" fill="#7aab4e" transform="rotate(-55 112 172)"/>
-    <ellipse cx="124" cy="162" rx="9" ry="4" fill="#4a6c2f" transform="rotate(-70 124 162)"/>
-  </g>
-</svg>
-
-<div class="hero">
-  <a href="index.html" class="back-link">← Back to Herbal Garden</a>
-  <div class="logo-rule"><span></span><div class="logo-ornament">✦</div><span></span></div>
-  <div class="hero-title">Sigru</div>
-  <div class="hero-subtitle">Drumstick Tree — The Miracle Tree</div>
-  <div class="hero-sci">Moringa oleifera Lam. &nbsp;·&nbsp; Moringaceae</div>
-</div>
 
 <div class="hero-photos">
   <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a5/Moringa_oleifera_Moringa_olejodajna_2024-02-29_Graz_02.jpg/1280px-Moringa_oleifera_Moringa_olejodajna_2024-02-29_Graz_02.jpg" alt="Moringa drumstick pods hanging from a tree"

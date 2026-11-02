@@ -6,7 +6,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Urad | Swastha</title>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400&family=Hanken+Grotesk:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400;500;600&display=swap" rel="stylesheet">
-  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
   <style>
     :root {
     --bg-primary: #07170F;
@@ -288,59 +287,6 @@
 </head>
 
 <body>
-
-<button id="open3D">View in 3D</button>
-<div id="viewerModal">
-  <div id="modal-topbar">
-    <span>3D Model — Urad</span>
-    <button id="close3D">✕</button>
-  </div>
-  <model-viewer src="urad3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
-</div>
-
-<div class="bg-circle bg-circle-1"></div>
-<div class="bg-circle bg-circle-2"></div>
-
-<!-- Botanical SVG: trailing bean vine with trifoliate leaves and small pods -->
-<svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Main vine -->
-  <path d="M15 285 Q 55 230 90 185 Q 135 130 200 65" stroke="#2e4a1e" stroke-width="1.5" fill="none"/>
-  <!-- Tendrils -->
-  <path d="M90 185 Q 110 168 105 148" stroke="#6b8c52" stroke-width="1" fill="none"/>
-  <path d="M140 140 Q 160 122 158 100" stroke="#6b8c52" stroke-width="1" fill="none"/>
-  <!-- Trifoliate leaves -->
-  <ellipse cx="72" cy="210" rx="14" ry="8" fill="#2e4a1e" opacity="0.5" transform="rotate(-40 72 210)"/>
-  <ellipse cx="82" cy="204" rx="13" ry="7" fill="#6b8c52" opacity="0.4" transform="rotate(-10 82 204)"/>
-  <ellipse cx="65" cy="200" rx="12" ry="7" fill="#2e4a1e" opacity="0.45" transform="rotate(-65 65 200)"/>
-  <ellipse cx="118" cy="162" rx="14" ry="8" fill="#2e4a1e" opacity="0.5" transform="rotate(-35 118 162)"/>
-  <ellipse cx="128" cy="156" rx="13" ry="7" fill="#6b8c52" opacity="0.4" transform="rotate(-5 128 156)"/>
-  <ellipse cx="110" cy="153" rx="12" ry="7" fill="#2e4a1e" opacity="0.45" transform="rotate(-62 110 153)"/>
-  <!-- Bean pods -->
-  <path d="M160 115 Q 175 108 190 112 Q 188 122 173 125 Q 160 122 160 115Z" fill="#4a3728" opacity="0.4"/>
-  <path d="M185 80 Q 200 72 215 77 Q 213 87 198 90 Q 185 87 185 80Z" fill="#4a3728" opacity="0.35"/>
-  <!-- Small black seeds suggestion -->
-  <circle cx="169" cy="118" r="2" fill="#18140c" opacity="0.4"/>
-  <circle cx="176" cy="119" r="2" fill="#18140c" opacity="0.4"/>
-  <circle cx="183" cy="118" r="2" fill="#18140c" opacity="0.35"/>
-</svg>
-<svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <path d="M15 285 Q 55 230 90 185 Q 135 130 200 65" stroke="#2e4a1e" stroke-width="1.5" fill="none"/>
-  <path d="M90 185 Q 110 168 105 148" stroke="#6b8c52" stroke-width="1" fill="none"/>
-  <ellipse cx="72" cy="210" rx="14" ry="8" fill="#2e4a1e" opacity="0.5" transform="rotate(-40 72 210)"/>
-  <ellipse cx="82" cy="204" rx="13" ry="7" fill="#6b8c52" opacity="0.4" transform="rotate(-10 82 204)"/>
-  <ellipse cx="65" cy="200" rx="12" ry="7" fill="#2e4a1e" opacity="0.45" transform="rotate(-65 65 200)"/>
-  <path d="M160 115 Q 175 108 190 112 Q 188 122 173 125 Q 160 122 160 115Z" fill="#4a3728" opacity="0.35"/>
-  <circle cx="169" cy="118" r="2" fill="#18140c" opacity="0.35"/>
-  <circle cx="176" cy="119" r="2" fill="#18140c" opacity="0.35"/>
-</svg>
-
-<div class="hero">
-  <a href="index.html" class="back-link">← Back to Herbal Garden</a>
-  <div class="logo-rule"><span></span><div class="logo-ornament">✦</div><span></span></div>
-  <div class="hero-title">Urad</div>
-  <div class="hero-subtitle">Black Gram — The King of Pulses</div>
-  <div class="hero-sci">Vigna mungo (L.) Hepper &nbsp;·&nbsp; Fabaceae</div>
-</div>
 
 <div class="hero-photos">
   <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/2/2a/Vigna_mungo_var._mungo_%284663940080%29.jpg/1280px-Vigna_mungo_var._mungo_%284663940080%29.jpg" alt="Urad black gram whole seeds and split white dal in wooden bowls"

@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ajmoda | Swastha</title>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400&family=Hanken+Grotesk:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400;500;600&display=swap" rel="stylesheet">
-  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
   <style>
     :root {
     --bg-primary: #07170F;
@@ -168,66 +167,6 @@
   </style>
 </head>
 <body>
-
-<button id="open3D">View in 3D</button>
-<div id="viewerModal">
-  <div id="modal-topbar">
-    <span>3D Model — Ajmoda / Celery</span>
-    <button id="close3D">✕</button>
-  </div>
-  <model-viewer src="ajmoda3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
-</div>
-
-<div class="bg-circle bg-circle-1"></div>
-<div class="bg-circle bg-circle-2"></div>
-
-<!-- Botanical SVG — Apium umbel + compound leaf -->
-<svg class="botanical-svg botanical-tl" viewBox="0 0 280 300" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Main stem -->
-  <path d="M60 295 Q 70 220 90 160 Q 108 100 130 40" stroke="#4a6b28" stroke-width="1.8" fill="none"/>
-  <!-- Side branches for compound leaf -->
-  <path d="M90 160 Q 70 145 52 138" stroke="#4a6b28" stroke-width="1.2" fill="none"/>
-  <path d="M100 130 Q 78 118 62 112" stroke="#4a6b28" stroke-width="1.1" fill="none"/>
-  <path d="M112 100 Q 94 88 80 82" stroke="#4a6b28" stroke-width="1" fill="none"/>
-  <!-- Leaflets -->
-  <ellipse cx="48" cy="137" rx="14" ry="7" fill="#90a84e" transform="rotate(-20 48 137)" opacity=".9"/>
-  <ellipse cx="58" cy="111" rx="13" ry="6" fill="#4a6b28" transform="rotate(-25 58 111)"/>
-  <ellipse cx="76" cy="81" rx="12" ry="5.5" fill="#90a84e" transform="rotate(-30 76 81)" opacity=".8"/>
-  <!-- Umbel at top -->
-  <circle cx="130" cy="40" r="3" fill="#c4a030"/>
-  <line x1="130" y1="40" x2="115" y2="24" stroke="#4a6b28" stroke-width=".9"/>
-  <line x1="130" y1="40" x2="122" y2="20" stroke="#4a6b28" stroke-width=".9"/>
-  <line x1="130" y1="40" x2="130" y2="18" stroke="#4a6b28" stroke-width=".9"/>
-  <line x1="130" y1="40" x2="138" y2="20" stroke="#4a6b28" stroke-width=".9"/>
-  <line x1="130" y1="40" x2="145" y2="24" stroke="#4a6b28" stroke-width=".9"/>
-  <circle cx="115" cy="23" r="2.5" fill="#c4a030" opacity=".8"/>
-  <circle cx="122" cy="19" r="2.5" fill="#c4a030" opacity=".9"/>
-  <circle cx="130" cy="17" r="2.5" fill="#c4a030"/>
-  <circle cx="138" cy="19" r="2.5" fill="#c4a030" opacity=".9"/>
-  <circle cx="145" cy="23" r="2.5" fill="#c4a030" opacity=".8"/>
-</svg>
-<svg class="botanical-svg botanical-br" viewBox="0 0 280 300" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <path d="M60 295 Q 70 220 90 160 Q 108 100 130 40" stroke="#4a6b28" stroke-width="1.8" fill="none"/>
-  <path d="M90 160 Q 70 145 52 138" stroke="#4a6b28" stroke-width="1.2" fill="none"/>
-  <path d="M100 130 Q 78 118 62 112" stroke="#4a6b28" stroke-width="1.1" fill="none"/>
-  <ellipse cx="48" cy="137" rx="14" ry="7" fill="#90a84e" transform="rotate(-20 48 137)" opacity=".9"/>
-  <ellipse cx="58" cy="111" rx="13" ry="6" fill="#4a6b28" transform="rotate(-25 58 111)"/>
-  <circle cx="130" cy="40" r="3" fill="#c4a030"/>
-  <line x1="130" y1="40" x2="122" y2="20" stroke="#4a6b28" stroke-width=".9"/>
-  <line x1="130" y1="40" x2="130" y2="18" stroke="#4a6b28" stroke-width=".9"/>
-  <line x1="130" y1="40" x2="138" y2="20" stroke="#4a6b28" stroke-width=".9"/>
-  <circle cx="122" cy="19" r="2.5" fill="#c4a030" opacity=".9"/>
-  <circle cx="130" cy="17" r="2.5" fill="#c4a030"/>
-  <circle cx="138" cy="19" r="2.5" fill="#c4a030" opacity=".9"/>
-</svg>
-
-<div class="hero">
-  <a href="index.html" class="back-link">← Back to Herbal Garden</a>
-  <div class="logo-rule"><span></span><div class="logo-ornament">✦</div><span></span></div>
-  <div class="hero-title">Ajmoda</div>
-  <div class="hero-subtitle">Celery — The Aromatic Digestive Jewel</div>
-  <div class="hero-sci">Apium graveolens L. &nbsp;·&nbsp; Fam. Apiaceae</div>
-</div>
 
 <div class="hero-photos">
   <img src="https://upload.wikimedia.org/wikipedia/commons/3/3e/%D0%A1%D0%B5%D0%B2%D0%B5%D1%80%D0%BD%D1%8B%D0%B9_%D0%B6%D0%B5%D0%BB%D0%B5%D0%B7%D0%BD%D0%BE%D0%B4%D0%BE%D1%80%D0%BE%D0%B6%D0%BD%D1%8B%D0%B9_%D0%B2%D0%BE%D0%BA%D0%B7%D0%B0%D0%BB.jpg" alt="Ajmoda celery plant with compound leaves and white umbel flowers"

@@ -276,10 +276,8 @@
       .content { padding: 0 18px 60px }
     }
   </style>
-  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
 </head>
 <body>
-  <button type="button" id="open3D">View in 3D</button>
 
 
 <div class="bg-circle bg-circle-1"></div>
@@ -519,42 +517,6 @@
 <footer>
   <p>Swastha Herbal Garden &nbsp;·&nbsp; All information is for educational purposes only &nbsp;·&nbsp; Consult a qualified practitioner before therapeutic use</p>
 </footer>
-
-
-  <div id="viewerModal">
-    <div id="modal-topbar">
-      <span>3D Model — Haldi</span>
-      <button type="button" id="close3D">✕</button>
-    </div>
-    <model-viewer src="haldi3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
-  </div>
-  <script>
-    (function() {
-      var open3D = document.getElementById('open3D');
-      var close3D = document.getElementById('close3D');
-      var modal = document.getElementById('viewerModal');
-      if (!open3D || !close3D || !modal) return;
-      function openModal() {
-        
-        modal.style.display = 'flex';
-        document.body.style.overflow = 'hidden';
-      }
-      function closeModal() {
-        
-        modal.style.display = 'none';
-        document.body.style.overflow = '';
-      }
-      open3D.addEventListener('click', function (e) {
-        e.preventDefault(); e.stopPropagation(); openModal();
-      });
-      close3D.addEventListener('click', function (e) {
-        e.preventDefault(); e.stopPropagation(); closeModal();
-      });
-      document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
-      });
-    })();
-  </script>
 
 </body>
 </html>

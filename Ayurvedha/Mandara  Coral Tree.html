@@ -8,7 +8,6 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400&family=Hanken+Grotesk:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400;500;600&display=swap"
     rel="stylesheet">
-  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
   <style>
     :root {
     --bg-primary: #07170F;
@@ -295,46 +294,6 @@
 </head>
 
 <body>
-
-  <button id="open3D">View in 3D</button>
-
-  <div id="viewerModal">
-    <div id="modal-topbar">
-      <span>3D Model — Mandara / Coral Tree</span>
-      <button id="close3D">✕</button>
-    </div>
-    <model-viewer src="mandara3d.glb" auto-rotate camera-controls shadow-intensity="1" exposure="1"></model-viewer>
-  </div>
-
-  <div class="bg-circle bg-circle-1"></div>
-  <div class="bg-circle bg-circle-2"></div>
-
-  <!-- Flame-shaped botanical SVG accent -->
-  <svg class="botanical-svg botanical-tl" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M20 280 Q 90 200 140 140 Q 190 80 260 20" stroke="#c0392b" stroke-width="1.5" fill="none"/>
-    <ellipse cx="105" cy="205" rx="22" ry="9" fill="#c0392b" transform="rotate(-40 105 205)" opacity="0.7"/>
-    <ellipse cx="148" cy="162" rx="19" ry="8" fill="#e07055" transform="rotate(-52 148 162)" opacity="0.6"/>
-    <ellipse cx="190" cy="118" rx="17" ry="7" fill="#c0392b" transform="rotate(-65 190 118)" opacity="0.8"/>
-    <circle cx="108" cy="198" r="6" fill="#c9813c" opacity="0.6"/>
-    <circle cx="152" cy="155" r="5" fill="#c9813c" opacity="0.5"/>
-    <circle cx="195" cy="110" r="7" fill="#c0392b" opacity="0.5"/>
-  </svg>
-  <svg class="botanical-svg botanical-br" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M20 280 Q 90 200 140 140 Q 190 80 260 20" stroke="#c0392b" stroke-width="1.5" fill="none"/>
-    <ellipse cx="105" cy="205" rx="22" ry="9" fill="#c0392b" transform="rotate(-40 105 205)" opacity="0.7"/>
-    <ellipse cx="148" cy="162" rx="19" ry="8" fill="#e07055" transform="rotate(-52 148 162)" opacity="0.6"/>
-    <circle cx="108" cy="198" r="6" fill="#c9813c" opacity="0.6"/>
-  </svg>
-
-  <div class="hero">
-    <a href="index.html" class="back-link">← Back to Herbal Garden</a>
-    <div class="logo-rule"><span></span>
-      <div class="logo-ornament">✦</div><span></span>
-    </div>
-    <div class="hero-title">Mandara</div>
-    <div class="hero-subtitle">Coral Tree — The Sacred Flame of the Forest</div>
-    <div class="hero-sci">Erythrina indica &nbsp;·&nbsp; Erythrina variegata</div>
-  </div>
 
   <div class="hero-photos">
     <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ed/Kinmen_Erythrina_variegata.jpg/1280px-Kinmen_Erythrina_variegata.jpg" alt="Mandara coral tree vivid scarlet flowers on bare branches"
