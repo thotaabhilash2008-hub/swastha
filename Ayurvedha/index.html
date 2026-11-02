@@ -297,6 +297,20 @@ body {
   color: var(--gold-warm);
 }
 
+/* Virtual Tour pill — highlighted gold outline */
+a.pill-tab[href="virtual-tour.html"] {
+  background: rgba(200, 164, 93, 0.15);
+  border: 1px solid rgba(200, 164, 93, 0.65);
+  color: var(--gold-warm);
+  font-weight: 500;
+  box-shadow: 0 0 12px rgba(200, 164, 93, 0.2);
+}
+a.pill-tab[href="virtual-tour.html"]:hover {
+  background: rgba(200, 164, 93, 0.28);
+  border-color: var(--gold-warm);
+  box-shadow: 0 0 22px rgba(200, 164, 93, 0.45);
+}
+
 /* Glowing Leaf Art with Concentric Acoustic Ripple Rings */
 .hero-leaf-container {
   position: relative;
@@ -1440,7 +1454,7 @@ body {
 
       <div class="garden-nav-pills">
         <a href="#" class="pill-tab active">Home</a>
-        <a href="#" class="pill-tab inactive">Virtual Tour</a>
+        <a href="virtual-tour.html" class="pill-tab inactive">Virtual Tour</a>
         <a href="../index.html#about" class="pill-tab inactive">About</a>
       </div>
     </div>
