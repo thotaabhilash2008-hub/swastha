@@ -752,11 +752,11 @@ footer p { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; colo
 
 <!-- JS: synchronized modal logic -->
 <script>
-  (function() {
+  document.addEventListener('DOMContentLoaded', function() {
     var open3D    = document.getElementById('open3D');
     var close3D   = document.getElementById('close3D');
     var modal     = document.getElementById('viewerModal');
-    var viewer    = document.getElementById('plantModelViewer');
+    var viewer    = document.getElementById('tulsiModelViewer');
     var badge     = document.getElementById('modelLoadingBadge');
     var pBar      = document.getElementById('modelProgressBar');
     var audioBtn  = document.getElementById('toggleAudioBtn');
@@ -883,7 +883,7 @@ footer p { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; colo
         closeModal();
       }
     });
-  })();
+  });
 </script>
 
 <!-- MODAL -->
