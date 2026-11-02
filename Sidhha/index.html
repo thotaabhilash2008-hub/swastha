@@ -1,79 +1,151 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Siddha — Swastha</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Jost:wght@300;400&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      color-scheme: dark;
-      --bg-primary: #07170F;
-      --bg-secondary: #103B28;
-      --botanical: #47734C;
-      --gold: #C8A45D;
-      --gold-warm: #E5C783;
-      --ivory: #F5F0E4;
-      --sage: #C7C9B9;
-    }
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Siddha — Swastha</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#07170F;--tu:#E5C783;--lf:#C8A45D;--tx:#F5F0E4}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--tx);font:17px/1.7 'Mukta Malar',system-ui,sans-serif}
+main,header,footer{max-width:960px;margin:auto;padding:0 20px}a{color:var(--tu)}
+.ta{font-family:'Marcellus',serif;font-weight:400}
+header{padding-top:28px;display:grid;grid-template-columns:1fr 150px;gap:20px;align-items:center}
+h1{font-size:clamp(46px,9vw,92px);margin:10px 0;line-height:1.15;color:var(--tu)}h2{font:400 28px 'Marcellus',serif;margin:70px 0 6px;color:var(--lf)}
+.sub{opacity:.8;max-width:62ch;margin:0 0 20px}
+.k path{fill:none;stroke:var(--tu);stroke-width:2;stroke-dasharray:420;animation:d 4s ease forwards}.k circle{fill:var(--lf)}@keyframes d{from{stroke-dashoffset:420}to{stroke-dashoffset:0}}
+.season{display:inline-block;margin-top:8px;padding:6px 16px;border:1px solid var(--lf);border-radius:30px;color:var(--lf)}
+.pan{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:0;border-radius:6px}
+.pan section{flex:0 0 min(86%,520px);height:340px;scroll-snap-align:start;position:relative;overflow:hidden;padding:18px 22px;color:#fff;display:flex;flex-direction:column;justify-content:flex-end}
+.pan section:before,.pan section:after{content:"";position:absolute;left:-10%;right:-10%;bottom:0}
+.pan section:before{height:55%;background:var(--h1);clip-path:polygon(0 100%,0 55%,25% 20%,45% 60%,70% 10%,100% 50%,100% 100%)}
+.pan section:after{height:32%;background:var(--h2);clip-path:polygon(0 100%,0 40%,35% 10%,65% 50%,100% 20%,100% 100%)}
+.pan section>*{position:relative;z-index:2;text-shadow:0 1px 6px #0008}.pan h3{margin:0;font:400 38px 'Marcellus',serif}.pan p{margin:2px 0 0;font-size:15px}
+.pet{display:grid;grid-template-columns:minmax(260px,1fr) 1fr;gap:26px;align-items:center}
+.box{background:#5b3a1e;border:6px solid #8a5a2b;border-radius:50% / 40%;padding:24px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px;justify-items:center;box-shadow:inset 0 0 30px #0008}
+.box button{all:unset;cursor:pointer;width:78px;height:78px;border-radius:50%;background:radial-gradient(circle at 35% 30%,var(--c),#0006);display:grid;place-items:center;font-size:13px;text-align:center;color:#111;font-weight:600;transition:transform .25s}
+.box button:hover,.box button.on{transform:scale(1.12)}.box button:focus-visible,.med button:focus-visible,.mk button:focus-visible{outline:2px solid var(--tu);outline-offset:3px}
+.card{padding:18px 22px;border-left:3px solid var(--tu);background:#ffffff0d;min-height:150px}.card h3{margin:0;font-size:26px;font-family:'Marcellus',serif}
+canvas{width:100%;max-width:520px;aspect-ratio:1;display:block;margin:auto}
+.med,.mk{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}.med button,.mk button{all:unset;cursor:pointer;padding:5px 16px;border:1px solid var(--lf);border-radius:30px}.med button.on,.mk button.on{background:var(--lf);color:var(--bg)}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:2px}.split div{padding:16px 20px;background:#ffffff0d}.split b{color:var(--tu)}
+.sid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}.sid div{padding:12px 16px;border-top:2px solid var(--tu);background:#ffffff0d}
+.card img{width:100%;max-height:220px;object-fit:cover;border-radius:6px;display:block}.pan section>img.th{position:absolute;top:14px;right:14px;width:130px;height:96px;object-fit:cover;border-radius:8px;border:2px solid #fff8;z-index:2}.av{float:left;width:52px;height:52px;border-radius:50%;object-fit:cover;margin:0 10px 0 0}.split img{width:100%;max-height:180px;object-fit:cover;border-radius:6px;margin-top:8px;display:block}img[data-w]:not([src]){display:none}.note{font-size:14px;opacity:.65}footer{padding:50px 20px 70px}
+@media(max-width:700px){.pet,.split,header{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){.k path{animation:none}}
 
-    * { box-sizing: border-box; }
-    body {
-      min-height: 100vh;
-      margin: 0;
-      display: grid;
-      place-items: center;
-      padding: 24px;
-      color: var(--ivory);
-      background: radial-gradient(ellipse at top right, rgba(16, 59, 40, 0.6) 0%, transparent 60%), #07170F;
-      font-family: 'Jost', sans-serif;
-      text-align: center;
-    }
-    main {
-      max-width: 620px;
-      background: rgba(16, 59, 40, 0.45);
-      border: 1px solid rgba(200, 164, 93, 0.25);
-      border-radius: 6px;
-      padding: 60px 40px;
-      backdrop-filter: blur(12px);
-      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
-    }
-    .ornament { color: var(--gold-warm); font-size: 24px; margin-bottom: 8px; }
-    h1 {
-      margin: 12px 0;
-      color: var(--ivory);
-      font: 300 clamp(42px, 8vw, 72px)/1.1 'Cormorant Garamond', serif;
-      letter-spacing: 4px;
-      text-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-    }
-    p {
-      margin: 0;
-      color: var(--gold-warm);
-      font: 300 clamp(20px, 3.5vw, 26px) 'Cormorant Garamond', serif;
-      font-style: italic;
-      letter-spacing: 1px;
-    }
-    a {
-      display: inline-block;
-      margin-top: 36px;
-      color: var(--sage);
-      text-decoration: none;
-      border-bottom: 1px solid var(--gold);
-      padding-bottom: 5px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      font-size: 11px;
-      transition: all 0.3s;
-    }
-    a:hover, a:focus-visible { color: var(--gold-warm); border-color: var(--gold-warm); }
-  </style>
-</head>
-<body>
-  <main>
-    <div class="ornament" aria-hidden="true">✦</div>
-    <h1>Siddha</h1>
-    <p>Working in Progress</p>
-    <a href="../index.html">← Back to Swastha</a>
-  </main>
-</body>
-</html>
+
+/* ===== SWASTHA THEME ===== */
+:root{--gold:#C8A45D;--gold-warm:#E5C783;--ivory:#F5F0E4;--sage:#C7C9B9;--bd:rgba(200,164,93,.32);--tm:#E5C783}
+html,body{overflow-x:hidden}
+body{font:16px/1.7 'Jost',system-ui,sans-serif;color:var(--ivory);background:#07170F}
+a{color:var(--gold-warm)}
+.sw-bg{position:fixed;inset:0;z-index:-2;background:radial-gradient(ellipse at 50% -12%,rgba(229,199,131,.28),rgba(16,59,40,.48) 35%,transparent 75%),radial-gradient(ellipse at 85% 15%,rgba(71,115,76,.3),transparent 60%),radial-gradient(ellipse at 15% 45%,rgba(16,59,40,.5),transparent 65%),linear-gradient(180deg,#07170F,#0B2418 35%,#081B12 70%,#07170F)}
+.sw-mote{position:fixed;width:4px;height:4px;border-radius:50%;background:radial-gradient(circle,#E5C783,transparent 70%);opacity:.35;pointer-events:none;z-index:-1;animation:swf 12s ease-in-out infinite alternate}
+@keyframes swf{to{transform:translate(20px,-35px);opacity:.15}}
+.sw-bot{position:fixed;top:60px;left:-20px;width:300px;opacity:.18;z-index:-1;pointer-events:none}
+.sw-nav{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:flex-start;gap:16px;padding:14px 28px;background:rgba(7,23,15,.78);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid rgba(200,164,93,.22)}
+.sw-brand{display:flex;align-items:center;gap:10px;color:var(--ivory);text-decoration:none;font:500 22px 'Cormorant Garamond',serif;letter-spacing:5px}
+.sw-brand svg{width:26px;height:26px;color:var(--gold-warm);filter:drop-shadow(0 0 8px rgba(229,199,131,.45))}
+.sw-links{display:flex;gap:26px}.sw-links a{color:var(--ivory);text-decoration:none;font-size:13px;letter-spacing:1.2px;padding:4px 0;border-bottom:1.5px solid transparent;transition:.25s}
+.sw-links a:hover,.sw-links a.on{color:var(--gold-warm);border-color:var(--gold-warm)}
+.sw-home{border:1px solid rgba(200,164,93,.65);border-radius:999px;padding:6px 18px;font-size:13px;letter-spacing:1px;color:var(--ivory);text-decoration:none;background:rgba(16,59,40,.6);transition:.25s}
+.sw-home:hover{border-color:var(--gold-warm);color:#fff;box-shadow:0 0 16px rgba(200,164,93,.25)}
+.eyebrow{margin:30px 0 0;font-size:11px;letter-spacing:4px;text-transform:uppercase;color:var(--gold-warm)}
+h1{font-family:'Cormorant Garamond',serif;font-weight:300;letter-spacing:6px;color:var(--ivory);text-shadow:0 4px 28px rgba(0,0,0,.7);font-size:clamp(52px,10vw,100px);line-height:1.05}
+h2,h3,.card h3,.q,.grid b{font-family:'Cormorant Garamond',serif}
+h2{font-weight:400;font-size:clamp(28px,3.4vw,38px);letter-spacing:3px;color:var(--gold-warm)}
+h2:after{content:"";display:block;width:64px;height:1px;margin-top:8px;background:linear-gradient(90deg,var(--gold),transparent)}
+.sub{color:var(--sage);opacity:1}
+.card,.panel,.split div,.sid>div,.grid>div{background:linear-gradient(180deg,rgba(16,59,40,.48),rgba(7,23,15,.72));border:1px solid var(--bd);border-radius:10px;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 10px 28px rgba(0,0,0,.4),inset 0 1px 0 rgba(229,199,131,.18)}
+.card{border-left:3px solid var(--gold-warm)}.panel{border-left:3px solid var(--tm)}
+.sid>div,.grid>div{border-top:2px solid var(--gold)}
+.sid>div:hover,.grid>div:hover,.split div:hover{border-color:var(--gold-warm)}
+.med button,.mk button,.pb,.dr,.ch,.season{border-color:var(--gold);color:var(--ivory);background:rgba(16,59,40,.45)}
+.med button:hover,.mk button:hover,.pb:hover,.dr:hover,.ch:hover{border-color:var(--gold-warm);color:var(--gold-warm)}
+.med button.on,.mk button.on,.pb.on,.dr.on,.ch.on{background:linear-gradient(135deg,#E5C783,#C8A45D);color:#07170F;border-color:#E5C783;font-weight:500}
+.season{color:var(--gold-warm)}
+.q{border-color:var(--bd);background:rgba(16,59,40,.4)}.q:hover{border-color:var(--gold-warm)}
+.q.on{background:var(--tm);color:#07170F}
+canvas{border-color:var(--bd);border-radius:12px}
+body:before{opacity:.06}
+.note{color:var(--sage)}
+footer{border-top:1px solid rgba(200,164,93,.22)}
+.rv{opacity:0;transform:translateY(26px);transition:opacity .8s cubic-bezier(.16,1,.3,1),transform .8s cubic-bezier(.16,1,.3,1)}.rv.in{opacity:1;transform:none}
+@media(max-width:820px){.sw-links{display:none}.sw-brand{font-size:18px;letter-spacing:3px}.sw-nav{padding:10px 16px}}
+@media(prefers-reduced-motion:reduce){.sw-mote{animation:none}.rv{opacity:1;transform:none;transition:none}}
+</style></head><body><div class="sw-bg"></div><i class="sw-mote" style="top:18%;left:14%;animation-delay:0s"></i><i class="sw-mote" style="top:32%;left:72%;animation-delay:2s"></i><i class="sw-mote" style="top:58%;left:32%;animation-delay:4s"></i><i class="sw-mote" style="top:75%;left:82%;animation-delay:1s"></i><i class="sw-mote" style="top:25%;left:52%;animation-delay:3s"></i><svg class="sw-bot" viewBox="0 0 300 300" aria-hidden="true"><path d="M10 290Q80 200 150 150Q200 110 260 20" fill="none" stroke="#47734C" stroke-width="1.5"/><ellipse cx="150" cy="150" rx="28" ry="16" fill="#47734C" transform="rotate(-40 150 150)"/><ellipse cx="200" cy="105" rx="22" ry="13" fill="#47734C" transform="rotate(-55 200 105)"/><circle cx="260" cy="20" r="5" fill="#C8A45D"/></svg><nav class="sw-nav"><a class="sw-home" href="../index.html">← Home</a></nav>
+<header><div><div class="eyebrow">AYUSH · Traditional Systems of Medicine</div>
+<h1 class="ta">Siddha</h1><div style="font-size:24px">The medicine of the Siddhars, from Tamil Nadu</div>
+<div class="season" id="season"></div></div>
+<svg class="k" viewBox="0 0 100 100" aria-hidden="true"><path d="M50 8 L92 50 L50 92 L8 50 Z M50 24 L76 50 L50 76 L24 50 Z"/><circle cx="50" cy="50" r="3"/><circle cx="50" cy="8" r="2.5"/><circle cx="92" cy="50" r="2.5"/><circle cx="50" cy="92" r="2.5"/><circle cx="8" cy="50" r="2.5"/></svg></header>
+<main>
+<h2>Aintinai: the five landscapes</h2>
+<p class="sub">Tamil tradition divides the land into five landscapes. Scroll sideways through them. Siddha lore ties each landscape to its people's tendencies and the herbs that grow there.</p>
+<div class="pan" tabindex="0" aria-label="Five landscapes">
+<section data-w="Strobilanthes_kunthiana" style="--h1:#5c3b7a;--h2:#2f5d3a;background:linear-gradient(#e9b3d4,#8a6bb5)"><h3>Kurinji</h3><p>Mountains and misty hills.</p></section>
+<section data-w="Mudumalai_National_Park" style="--h1:#2f6b3b;--h2:#1c4a2b;background:linear-gradient(#f3e29a,#a9c765)"><h3>Mullai</h3><p>Forest and pasture.</p></section>
+<section data-w="Paddy_field" style="--h1:#7aa83c;--h2:#4e7f2a;background:linear-gradient(#cfeaf5,#8fcf6a)"><h3>Marutham</h3><p>Fertile farmland and rivers.</p></section>
+<section data-w="Marina_Beach" style="--h1:#2d6f8f;--h2:#17506e;background:linear-gradient(#ffd9a0,#5db6d4)"><h3>Neithal</h3><p>Seashore and salt air.</p></section>
+<section data-w="Thar_Desert" style="--h1:#b8742e;--h2:#8a4f1f;background:linear-gradient(#ffcf8a,#e08a3c)"><h3>Paalai</h3><p>Dry, arid land.</p></section></div>
+<p class="note">Add your textbook's health notes for each landscape here.</p>
+
+<h2>Anjarai Petti: the Tamil spice box</h2>
+<div class="pet"><div class="box" id="box"></div><div class="card" id="sp"></div></div>
+
+<h2>Mukkutram: the three humours</h2>
+<p class="sub">Siddha explains health as a balance of three humours. Pick one.</p>
+<div class="mk" id="mk"></div><div class="card" id="mkp"></div>
+<p class="note">Texts differ on details such as seats and life stages. Match these to your syllabus book.</p>
+
+<h2>Arusuvai: the six tastes</h2>
+<p class="sub">Every food and herb is described by its taste, and a balanced meal includes all six.</p>
+<div class="sid" id="as"></div>
+
+<h2>Ezhu Udal Thathukkal: seven body tissues</h2>
+<div class="sid" id="ez"></div>
+
+<h2>The 96 Thathuvam</h2>
+<p class="sub">Siddha describes the human being through 96 principles. Each dot is one. Hover or tap to count.</p>
+<canvas id="cv" width="520" height="520" aria-label="96 dots in four rings"></canvas><p class="note" id="cnt" style="text-align:center">96 principles in four rings.</p>
+
+<h2>Forms of medicine</h2>
+<div class="med" id="med"></div><div class="card" id="mp"></div>
+
+<h2>Tradition meets lab</h2>
+<div class="split"><div><b>Tradition</b><br>Nilavembu Kudineer, a herbal decoction, has long been used in fevers and was widely distributed in Tamil Nadu during dengue outbreaks. Kabasura Kudineer was promoted during COVID-19.</div>
+<div><b>Lab</b><br>Nilavembu is <i>Andrographis paniculata</i>. Research focuses on andrographolide. Evidence for specific disease claims remains limited.<img data-w="Andrographis_paniculata"></div></div>
+
+<h2>The Siddhars</h2>
+<p class="sub">Eighteen Siddhars are traditionally named, though lists vary by source. A few, with the sites linked to them by tradition:</p>
+<div class="sid"><div><img class="av" data-w="Agastya"><b>Agastyar</b><br>Sage of Tamil medicine and grammar</div><div><img class="av" data-w="Tirumular"><b>Thirumoolar</b><br>Author of the <i>Thirumanthiram</i>, linked to Chidambaram</div><div><img class="av" data-w="Bogar"><b>Bogar</b><br>Alchemist, linked to Palani</div><div><img class="av" data-w="Konganar"><b>Konganar</b><br>Linked to Tirupati</div><div><img class="av" data-w="Pambatti_Siddhar"><b>Pambatti Siddhar</b><br>Linked to Marudhamalai</div></div>
+<h2>Glossary</h2>
+<input id="gq" placeholder="Search a term…" aria-label="Search glossary" style="width:100%;max-width:340px;padding:8px 14px;margin-bottom:12px;border-radius:30px;border:1px solid var(--lf);background:transparent;color:var(--tx);font:inherit">
+<div class="sid" id="gl"></div>
+</main><footer class="note">Images load live from Wikipedia and Wikimedia Commons. Educational content only, not medical advice. Verify classical details against your source texts.<div style="margin-top:14px;font-size:11px;letter-spacing:2px;text-transform:uppercase">Rooted in tradition · Guided by nature · Healing within · © 2026 SWASTHA</div></footer>
+<script>
+const mo=new Date(),M=mo.getMonth()+1,D=mo.getDate(),x=M*100+D;
+const S=x>=815&&x<1015?['mid-Aug to mid-Oct','Kaar']:x>=1015&&x<1215?['mid-Oct to mid-Dec','Koothir']:(x>=1215||x<215)?['mid-Dec to mid-Feb','Munpani']:x<415?['mid-Feb to mid-Apr','Pinpani']:x<615?['mid-Apr to mid-Jun','Ilavenil']:['mid-Jun to mid-Aug','Mudhuvenil'];
+season.innerHTML=`Now: ${S[1]} (${S[0]}), one of the six Tamil seasons`;
+const WC={};function wi(t,cb){(WC[t]=WC[t]||fetch('https://en.wikipedia.org/api/rest_v1/page/summary/'+t).then(r=>r.ok?r.json():null).catch(()=>null)).then(j=>{const u=j&&j.thumbnail&&j.thumbnail.source;if(u)cb(u,j.content_urls.desktop.page)})}
+const WT={Mustard:'Mustard_seed',Cumin:'Cumin',Fenugreek:'Fenugreek',Pepper:'Black_pepper'};
+const IMG={Turmeric:['Curcuma_longa_roots.jpg','Photo: Simon A. Eugster, CC BY-SA 3.0, via Wikimedia Commons']};
+const SP=[['Mustard','Kadugu · Mustard','#d9b44a','Pungent and warming. Seeds are tempered in oil to start many dishes.'],['Cumin','Jeeragam · Cumin','#c99a5b','Traditionally used to aid digestion.'],['Fenugreek','Venthayam · Fenugreek','#e0b830','Traditionally used as a cooling food and digestive.'],['Pepper','Milagu · Pepper','#6b5a4a','A Siddha staple, used for digestion and in cold-season remedies.'],['Turmeric','Manjal · Turmeric','#f0a800','Valued as an antiseptic and for skin care.']];
+SP.forEach((s,i)=>{const b=document.createElement('button');b.style.setProperty('--c',s[2]);b.textContent=s[0];b.onclick=()=>{document.querySelectorAll('.box button').forEach(y=>y.classList.toggle('on',y==b));const im=IMG[s[0]];sp.innerHTML=`<h3>${s[1]}</h3>${im?`<figure style="margin:8px 0"><img src="https://commons.wikimedia.org/wiki/Special:FilePath/${im[0]}?width=600" alt="${s[0]}" loading="lazy" onerror="this.parentNode.remove()"><figcaption class="note">${im[1]}</figcaption></figure>`:''}<p>${s[3]}</p>`;sp.dataset.k=s[0];if(!im&&WT[s[0]])wi(WT[s[0]],u=>{if(sp.dataset.k==s[0])sp.querySelector('h3').insertAdjacentHTML('afterend',`<figure style="margin:8px 0"><img src="${u}" alt="${s[0]}"><figcaption class="note">Image via Wikipedia</figcaption></figure>`)})};box.appendChild(b)});box.firstChild.click();
+const MD={'Kudineer':'Decoction. Herbs are boiled in water and reduced, then taken warm.','Chooranam':'Fine powder of dried herbs, taken with honey or water.','Legiyam':'Herbal paste cooked with jaggery or honey.','Thailam':'Medicated oil, often for external use.','Parpam':'Mineral or metal preparation made by calcination, to be taken only under a practitioner.','Chenduram':'Red mineral preparation made by heating, again for practitioners.'};
+Object.keys(MD).forEach(k=>{const b=document.createElement('button');b.textContent=k;b.onclick=()=>{document.querySelectorAll('.med button').forEach(y=>y.classList.toggle('on',y==b));mp.innerHTML=`<h3>${k}</h3><p>${MD[k]}</p>`};med.appendChild(b)});med.firstChild.click();
+const cv=document.getElementById('cv'),c=cv.getContext('2d'),R=[12,20,28,36],P=[];let a=0,hv=-1;
+R.forEach((n,r)=>{for(let i=0;i<n;i++)P.push([r,i,n])});
+function draw(){c.clearRect(0,0,520,520);P.forEach((p,j)=>{const rad=60+p[0]*55,th=p[1]/p[2]*6.283+a*(p[0]%2?1:-1);const X=260+rad*Math.cos(th),Y=260+rad*Math.sin(th);p.x=X;p.y=Y;c.fillStyle=j==hv?'#F4DE9C':'#C8A45D';c.beginPath();c.arc(X,Y,j==hv?7:4,0,7);c.fill()});c.fillStyle='#E5C783';c.font='400 30px Cormorant Garamond';c.textAlign='center';c.fillText('96',260,270)}
+function loop(){a+=.002;draw();requestAnimationFrame(loop)}
+function mv(e){const r=cv.getBoundingClientRect(),t=e.touches?e.touches[0]:e,X=(t.clientX-r.left)*520/r.width,Y=(t.clientY-r.top)*520/r.height;hv=P.findIndex(p=>Math.hypot(p.x-X,p.y-Y)<10);cnt.textContent=hv>=0?`Principle ${hv+1} of 96`:'96 principles in four rings.'}
+cv.onmousemove=mv;cv.ontouchstart=mv;
+if(matchMedia('(prefers-reduced-motion:reduce)').matches)draw();else loop();
+
+const MK={'Vaatham':['Air and space','Movement, breathing, nerve impulses, elimination','Dry, light, cold, mobile','Traditionally below the navel'],'Pitham':['Fire','Digestion, body heat, vision, complexion','Hot, sharp, oily, liquid','Traditionally between navel and chest'],'Kapham':['Water and earth','Stability, lubrication, strength, immunity','Cool, heavy, soft, slow','Traditionally in the chest and head']};
+Object.keys(MK).forEach(k=>{const b=document.createElement('button');b.textContent=k;b.onclick=()=>{document.querySelectorAll('.mk button').forEach(y=>y.classList.toggle('on',y==b));const v=MK[k];mkp.innerHTML=`<h3>${k}</h3><p><b>Elements:</b> ${v[0]}<br><b>Role:</b> ${v[1]}<br><b>Qualities:</b> ${v[2]}<br><b>Seat:</b> ${v[3]}</p>`};mk.appendChild(b)});mk.firstChild.click();
+[['Inippu','Sweet','rice, jaggery, ripe banana'],['Pulippu','Sour','tamarind, lemon'],['Uppu','Salt','rock salt, sea salt'],['Kaippu','Bitter','neem, bitter gourd, fenugreek'],['Kaarppu','Pungent','pepper, ginger, chilli'],['Thuvarppu','Astringent','raw banana, turmeric, pomegranate']].forEach(t=>as.insertAdjacentHTML('beforeend',`<div><b>${t[0]}</b> · ${t[1]}<br>${t[2]}</div>`));
+[['Saaram','Plasma, the nutrient fluid'],['Senneer','Blood'],['Oon','Muscle'],['Kozhuppu','Fat'],['Enbu','Bone'],['Moolai','Marrow and nerve tissue'],['Sukkilam / Suronitham','Reproductive tissue']].forEach((t,i)=>ez.insertAdjacentHTML('beforeend',`<div><b>${i+1}. ${t[0]}</b><br>${t[1]}</div>`));
+const GL=[['Thathuvam','A principle or fundamental category of existence.'],['Mukkutram','The three humours: Vaatham, Pitham, Kapham.'],['Aintinai','The five landscapes of Tamil tradition.'],['Arusuvai','The six tastes.'],['Nadi','The pulse. Reading it is central to Siddha diagnosis.'],['Varmam','Vital points on the body, used in therapy and martial art.'],['Kudineer','Herbal decoction.'],['Chooranam','Herbal powder.'],['Legiyam','Herbal paste cooked with jaggery or honey.'],['Thailam','Medicated oil.'],['Parpam','Calcined mineral or metal preparation. Practitioner use only.'],['Chenduram','Red mineral preparation. Practitioner use only.'],['Siddhar','An adept or sage of the tradition.']];
+function fg(){const q=gq.value.toLowerCase();gl.innerHTML=GL.filter(g=>(g[0]+g[1]).toLowerCase().includes(q)).map(g=>`<div><b>${g[0]}</b><br>${g[1]}</div>`).join('')||'<p class="note">No match.</p>'}
+gq.oninput=fg;fg();
+document.querySelectorAll('[data-w]').forEach(e=>wi(e.dataset.w,(u,p)=>{if(e.tagName=='IMG'){e.src=u;e.alt=e.dataset.w.replace(/_/g,' ');e.title='Image via Wikipedia: '+p}else{const i=document.createElement('img');i.src=u;i.alt='';i.className='th';e.appendChild(i)}}));
+(()=>{if(!('IntersectionObserver'in window)||matchMedia('(prefers-reduced-motion:reduce)').matches)return;const o=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');o.unobserve(e.target)}}),{threshold:.1});document.querySelectorAll('h2,.sub,.card,.panel,.split>div,.sid>div,.grid>div,.tl p,.pan,.pet,canvas,.quad,.med,.mk').forEach(e=>{e.classList.add('rv');o.observe(e)})})();
+</script></body></html>
