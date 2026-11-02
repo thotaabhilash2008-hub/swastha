@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <base href="/Ayurvedha/">
 <title>My Bookmarks — Swastha Herbal Garden</title>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400&family=Hanken+Grotesk:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root {
@@ -30,7 +30,7 @@
 html { scroll-behavior: smooth; }
 
 body {
-  font-family: 'Jost', sans-serif;
+  font-family: 'Hanken Grotesk', 'Jost', sans-serif;
   background-color: var(--bg-primary);
   color: var(--ivory);
   min-height: 100vh;
@@ -89,7 +89,7 @@ header {
 }
 .btn-signout {
   background: rgba(16, 59, 40, 0.35); border: 1px solid rgba(200, 164, 93, 0.35);
-  color: var(--gold-warm); font-family: 'Jost', sans-serif;
+  color: var(--gold-warm); font-family: 'Hanken Grotesk', 'Jost', sans-serif;
   font-size: 9px; letter-spacing: 3px; text-transform: uppercase;
   font-weight: 300; padding: 7px 16px; cursor: pointer; border-radius: 2px;
   transition: all 0.3s;
@@ -100,9 +100,9 @@ header {
 .logo-rule span { display: block; height: 1px; width: 70px; background: linear-gradient(to right, transparent, var(--gold)); }
 .logo-rule span:last-child { background: linear-gradient(to left, transparent, var(--gold)); }
 .logo-ornament { font-size: 13px; color: var(--gold-warm); }
-h1 { font-family: 'Cormorant Garamond', serif; font-size: clamp(36px, 6vw, 64px); font-weight: 300; letter-spacing: 6px; color: var(--ivory); line-height: 1; text-shadow: 0 4px 24px rgba(0,0,0,0.5); }
+h1 { font-family: 'Fraunces', 'Cormorant Garamond', serif; font-size: clamp(36px, 6vw, 64px); font-weight: 300; letter-spacing: 6px; color: var(--ivory); line-height: 1; text-shadow: 0 4px 24px rgba(0,0,0,0.5); }
 h1 span { color: var(--gold-warm); }
-.tagline { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-style: italic; font-weight: 300; color: var(--gold-warm); letter-spacing: 2px; margin-top: 10px; }
+.tagline { font-family: 'Fraunces', 'Cormorant Garamond', serif; font-size: 16px; font-style: italic; font-weight: 300; color: var(--gold-warm); letter-spacing: 2px; margin-top: 10px; }
 
 /* ── DIVIDER ── */
 .divider { display: flex; align-items: center; justify-content: center; gap: 16px; margin: 48px auto 44px; }
@@ -143,7 +143,7 @@ main {
 .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
 .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
 .loading-text {
-  font-family: 'Cormorant Garamond', serif; font-size: 18px;
+  font-family: 'Fraunces', 'Cormorant Garamond', serif; font-size: 18px;
   font-style: italic; color: var(--gold-warm); font-weight: 300;
 }
 
@@ -154,7 +154,7 @@ main {
 .empty-state.visible { display: block; }
 .empty-icon { font-size: 32px; color: var(--gold-warm); margin-bottom: 16px; opacity: 0.6; }
 .empty-title {
-  font-family: 'Cormorant Garamond', serif; font-size: 28px;
+  font-family: 'Fraunces', 'Cormorant Garamond', serif; font-size: 28px;
   font-style: italic; font-weight: 300; color: var(--ivory); margin-bottom: 8px;
 }
 .empty-sub { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--sage); margin-bottom: 28px; }
@@ -162,7 +162,7 @@ main {
   display: inline-flex; align-items: center; gap: 10px;
   background: var(--gold); color: #07170F;
   border: 1px solid var(--gold); border-radius: 2px;
-  text-decoration: none; font-family: 'Jost', sans-serif;
+  text-decoration: none; font-family: 'Hanken Grotesk', 'Jost', sans-serif;
   font-size: 10px; letter-spacing: 3px; text-transform: uppercase;
   font-weight: 400; padding: 14px 28px; transition: all 0.3s;
   box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
@@ -203,17 +203,17 @@ main {
 }
 
 .bm-number {
-  font-family: 'Cormorant Garamond', serif; font-size: 11px;
+  font-family: 'Fraunces', 'Cormorant Garamond', serif; font-size: 11px;
   letter-spacing: 4px; color: var(--gold-warm); margin-bottom: 16px; display: block;
 }
 .bm-name {
-  font-family: 'Cormorant Garamond', serif; font-size: 24px;
+  font-family: 'Fraunces', 'Cormorant Garamond', serif; font-size: 24px;
   font-weight: 400; color: var(--ivory); letter-spacing: 0.5px; margin-bottom: 4px;
   transition: color 0.3s;
 }
 .bm-card:hover .bm-name { color: var(--gold-warm); }
 .bm-sci {
-  font-family: 'Cormorant Garamond', serif; font-size: 13px;
+  font-family: 'Fraunces', 'Cormorant Garamond', serif; font-size: 13px;
   font-style: italic; font-weight: 300; color: var(--sage); margin-bottom: 18px;
 }
 .bm-sep { width: 32px; height: 1px; background: var(--gold); margin-bottom: 16px; transition: width 0.4s, background 0.4s; }
@@ -245,14 +245,14 @@ main {
   display: inline-flex; align-items: center; gap: 6px;
   text-decoration: none; background: var(--gold);
   border: 1px solid var(--gold); color: #07170F;
-  font-family: 'Jost', sans-serif; font-size: 9px;
+  font-family: 'Hanken Grotesk', 'Jost', sans-serif; font-size: 9px;
   letter-spacing: 3px; text-transform: uppercase; font-weight: 400;
   padding: 9px 18px; cursor: pointer; border-radius: 2px; transition: all 0.3s;
 }
 .btn-view:hover { background: var(--gold-warm); color: #07170F; border-color: var(--gold-warm); }
 .btn-remove {
   background: none; border: 1px solid rgba(224, 108, 108, 0.35);
-  color: rgba(224, 108, 108, 0.85); font-family: 'Jost', sans-serif;
+  color: rgba(224, 108, 108, 0.85); font-family: 'Hanken Grotesk', 'Jost', sans-serif;
   font-size: 9px; letter-spacing: 2px; text-transform: uppercase;
   font-weight: 300; padding: 9px 16px; cursor: pointer; border-radius: 2px; transition: all 0.3s;
 }

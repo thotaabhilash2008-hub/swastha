@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ativisha | Swastha</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400&family=Hanken+Grotesk:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400;500;600&display=swap" rel="stylesheet">
   <style>
     #open3D {
       position: fixed;
@@ -44,7 +44,7 @@
       z-index: 99999;
     }
     #modal-topbar span {
-      font-family: 'Jost', sans-serif;
+      font-family: 'Hanken Grotesk', 'Jost', sans-serif;
       font-size: 11px;
       font-weight: 300;
       letter-spacing: 4.5px;
@@ -102,7 +102,7 @@
 }
     *{margin:0;padding:0;box-sizing:border-box}
     html{scroll-behavior:smooth}
-    body{font-family:'Jost',sans-serif;background:var(--cream);color:var(--ink);min-height:100vh;overflow-x:hidden;position:relative}
+    body{font-family: 'Hanken Grotesk', 'Jost', sans-serif;background:var(--cream);color:var(--ink);min-height:100vh;overflow-x:hidden;position:relative}
     body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");opacity:.03;pointer-events:none;z-index:100}
 
     .bg-circle{position:fixed;border-radius:50%;pointer-events:none;z-index:0}
@@ -123,9 +123,9 @@
     .logo-rule span{display:block;height:1px;width:70px;background:linear-gradient(to right,transparent,var(--amber))}
     .logo-rule span:last-child{background:linear-gradient(to left,transparent,var(--amber))}
     .logo-ornament{font-size:13px;color:var(--amber)}
-    .hero-title{font-family:'Cormorant Garamond',serif;font-size:clamp(58px,11vw,105px);font-weight:300;letter-spacing:8px;line-height:1;color:var(--deep)}
-    .hero-title-alt{font-family:'Cormorant Garamond',serif;font-size:clamp(22px,4vw,38px);font-weight:300;letter-spacing:5px;color:var(--slate);margin-top:6px}
-    .hero-subtitle{font-family:'Cormorant Garamond',serif;font-size:18px;font-style:italic;font-weight:300;color:var(--slate);letter-spacing:2px;margin-top:8px}
+    .hero-title{font-family: 'Fraunces', 'Cormorant Garamond', serif;font-size:clamp(58px,11vw,105px);font-weight:300;letter-spacing:8px;line-height:1;color:var(--deep)}
+    .hero-title-alt{font-family: 'Fraunces', 'Cormorant Garamond', serif;font-size:clamp(22px,4vw,38px);font-weight:300;letter-spacing:5px;color:var(--slate);margin-top:6px}
+    .hero-subtitle{font-family: 'Fraunces', 'Cormorant Garamond', serif;font-size:18px;font-style:italic;font-weight:300;color:var(--slate);letter-spacing:2px;margin-top:8px}
     .hero-sci{font-size:11px;font-weight:200;letter-spacing:5px;color:var(--glacier);margin-top:6px}
 
     .altitude-badge{display:inline-flex;align-items:center;gap:10px;margin-top:18px;padding:7px 18px;border:1px solid rgba(91,127,166,.35);background:rgba(91,127,166,.07);font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--glacier);font-weight:300}
@@ -140,9 +140,9 @@
     .hero-photos{position:relative;z-index:10;display:grid;grid-template-columns:1fr 1fr;gap:2px;max-width:900px;margin:36px auto 0;opacity:0;animation:fadeUp .9s ease .35s forwards}
     .hero-photos img{width:100%;height:380px;object-fit:cover;object-position:center;display:block;background:var(--parchment)}
     .photo-placeholder{width:100%;height:380px;background:var(--parchment);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px}
-    .photo-placeholder span{font-family:'Cormorant Garamond',serif;font-size:13px;font-style:italic;color:var(--slate);letter-spacing:1px;opacity:.4}
+    .photo-placeholder span{font-family: 'Fraunces', 'Cormorant Garamond', serif;font-size:13px;font-style:italic;color:var(--slate);letter-spacing:1px;opacity:.4}
 
-    .photo-caption{text-align:center;font-family:'Cormorant Garamond',serif;font-size:12px;font-style:italic;color:var(--glacier);letter-spacing:1px;padding:10px 0 0;max-width:900px;margin:0 auto;position:relative;z-index:10;opacity:0;animation:fadeUp .9s ease .5s forwards}
+    .photo-caption{text-align:center;font-family: 'Fraunces', 'Cormorant Garamond', serif;font-size:12px;font-style:italic;color:var(--glacier);letter-spacing:1px;padding:10px 0 0;max-width:900px;margin:0 auto;position:relative;z-index:10;opacity:0;animation:fadeUp .9s ease .5s forwards}
 
     .divider{display:flex;align-items:center;justify-content:center;gap:16px;margin:50px auto;max-width:600px;opacity:0;animation:fadeUp .9s ease .55s forwards;position:relative;z-index:10}
     .divider-line{height:1px;width:120px;background:linear-gradient(to right,transparent,var(--glacier))}
@@ -151,7 +151,7 @@
 
     .content{position:relative;z-index:10;max-width:860px;margin:0 auto;padding:0 30px 80px}
 
-    .intro-text{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:300;line-height:1.75;color:var(--ink);text-align:center;max-width:700px;margin:0 auto 60px;opacity:0;animation:fadeUp .9s ease .6s forwards}
+    .intro-text{font-family: 'Fraunces', 'Cormorant Garamond', serif;font-size:20px;font-weight:300;line-height:1.75;color:var(--ink);text-align:center;max-width:700px;margin:0 auto 60px;opacity:0;animation:fadeUp .9s ease .6s forwards}
     .intro-text em{color:var(--violet);font-style:italic}
 
     .section{margin-bottom:60px;opacity:0;animation:fadeUp .9s ease forwards}
@@ -161,20 +161,20 @@
     .section:nth-child(7){animation-delay:1.25s}
 
     .section-header{display:flex;align-items:center;gap:14px;margin-bottom:20px}
-    .section-num{font-family:'Cormorant Garamond',serif;font-size:11px;letter-spacing:4px;color:var(--amber)}
-    .section-title{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:400;color:var(--deep);letter-spacing:1px}
+    .section-num{font-family: 'Fraunces', 'Cormorant Garamond', serif;font-size:11px;letter-spacing:4px;color:var(--amber)}
+    .section-title{font-family: 'Fraunces', 'Cormorant Garamond', serif;font-size:28px;font-weight:400;color:var(--deep);letter-spacing:1px}
     .section-rule{height:1px;flex:1;background:linear-gradient(to right,var(--amber),transparent)}
     .section-body{font-size:13px;font-weight:300;line-height:1.9;color:var(--ink);margin-bottom:24px}
 
     /* distinction callout */
     .distinction-box{border-left:2px solid var(--violet);padding:16px 22px;margin:20px 0 24px;background:rgba(123,94,167,.06)}
-    .distinction-box p{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:300;line-height:1.7;color:var(--deep)}
+    .distinction-box p{font-family: 'Fraunces', 'Cormorant Garamond', serif;font-size:16px;font-weight:300;line-height:1.7;color:var(--deep)}
     .distinction-box strong{color:var(--violet);font-weight:600}
     .distinction-box cite{display:block;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--glacier);margin-top:8px;font-style:normal}
 
     /* shloka */
     .shloka{border-left:2px solid var(--amber);padding:16px 22px;margin:20px 0 24px;background:rgba(176,125,42,.05)}
-    .shloka p{font-family:'Cormorant Garamond',serif;font-size:15px;font-style:italic;font-weight:300;line-height:1.7;color:var(--slate)}
+    .shloka p{font-family: 'Fraunces', 'Cormorant Garamond', serif;font-size:15px;font-style:italic;font-weight:300;line-height:1.7;color:var(--slate)}
     .shloka cite{display:block;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--glacier);margin-top:8px;font-style:normal}
 
     .data-table{width:100%;border-collapse:collapse;margin:16px 0 8px;font-size:12px}
@@ -208,7 +208,7 @@
     .benefit-card:hover{background:#d8dfe8}
     .benefit-card::before{content:'';position:absolute;bottom:0;left:0;width:0;height:2px;background:var(--amber);transition:width .4s}
     .benefit-card:hover::before{width:100%}
-    .benefit-title{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:600;color:var(--glacier);margin-bottom:8px}
+    .benefit-title{font-family: 'Fraunces', 'Cormorant Garamond', serif;font-size:16px;font-weight:600;color:var(--glacier);margin-bottom:8px}
     .benefit-desc{font-size:11.5px;font-weight:300;line-height:1.75;color:var(--ink);opacity:.85}
     .benefit-card.primary .benefit-title::after{content:' ✦';font-size:10px;color:var(--amber);vertical-align:top}
 
@@ -220,7 +220,7 @@
     .nutrition-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(61,80,104,.12);border:1px solid rgba(61,80,104,.12);margin:20px 0}
     .nutrition-cell{background:var(--snow);padding:22px 16px;text-align:center;transition:background .3s}
     .nutrition-cell:hover{background:var(--parchment)}
-    .nutrition-num{font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:300;color:var(--glacier);line-height:1;margin-bottom:4px}
+    .nutrition-num{font-family: 'Fraunces', 'Cormorant Garamond', serif;font-size:36px;font-weight:300;color:var(--glacier);line-height:1;margin-bottom:4px}
     .nutrition-unit{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--amber);font-weight:300}
     .nutrition-label{font-size:11px;font-weight:300;color:var(--ink);margin-top:5px}
 
@@ -229,7 +229,7 @@
     .compare-cell{padding:20px 22px}
     .compare-cell.safe{background:rgba(45,74,56,.06)}
     .compare-cell.toxic{background:rgba(123,94,167,.05)}
-    .compare-head{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:600;margin-bottom:5px}
+    .compare-head{font-family: 'Fraunces', 'Cormorant Garamond', serif;font-size:16px;font-weight:600;margin-bottom:5px}
     .compare-head.green{color:var(--pine)}
     .compare-head.purple{color:var(--violet)}
     .compare-sub{font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px}
@@ -240,7 +240,7 @@
     .sources{border-top:1px solid rgba(61,80,104,.15);padding-top:24px;margin-top:20px}
     .sources-title{font-size:10px;letter-spacing:4px;text-transform:uppercase;color:var(--glacier);margin-bottom:12px;font-weight:300}
     .sources ul{list-style:none}
-    .sources ul li{font-family:'Cormorant Garamond',serif;font-size:13px;font-style:italic;color:var(--slate);padding:5px 0;border-bottom:1px solid rgba(61,80,104,.06)}
+    .sources ul li{font-family: 'Fraunces', 'Cormorant Garamond', serif;font-size:13px;font-style:italic;color:var(--slate);padding:5px 0;border-bottom:1px solid rgba(61,80,104,.06)}
     .sources ul li::before{content:'· ';color:var(--glacier)}
 
     footer{position:relative;z-index:10;text-align:center;padding:24px 20px 44px;border-top:1px solid rgba(61,80,104,.12);max-width:860px;margin:0 auto}

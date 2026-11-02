@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Lakucha | Swastha</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400&family=Hanken+Grotesk:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400;500;600&display=swap" rel="stylesheet">
   <style>
     #open3D {
       position: fixed;
@@ -44,7 +44,7 @@
       z-index: 99999;
     }
     #modal-topbar span {
-      font-family: 'Jost', sans-serif;
+      font-family: 'Hanken Grotesk', 'Jost', sans-serif;
       font-size: 11px;
       font-weight: 300;
       letter-spacing: 4.5px;
@@ -103,7 +103,7 @@
     * { margin: 0; padding: 0; box-sizing: border-box }
     html { scroll-behavior: smooth }
     body {
-      font-family: 'Jost', sans-serif;
+      font-family: 'Hanken Grotesk', 'Jost', sans-serif;
       background: var(--cream);
       color: var(--ink);
       min-height: 100vh;
@@ -143,12 +143,12 @@
     .logo-rule span:last-child { background: linear-gradient(to left, transparent, var(--gold)) }
     .logo-ornament { font-size: 13px; color: var(--gold) }
     .hero-title {
-      font-family: 'Cormorant Garamond', serif;
+      font-family: 'Fraunces', 'Cormorant Garamond', serif;
       font-size: clamp(64px, 12vw, 110px);
       font-weight: 300; letter-spacing: 8px; line-height: 1; color: var(--deep);
     }
     .hero-subtitle {
-      font-family: 'Cormorant Garamond', serif;
+      font-family: 'Fraunces', 'Cormorant Garamond', serif;
       font-size: 18px; font-style: italic; font-weight: 300;
       color: var(--earth); letter-spacing: 2px; margin-top: 8px;
     }
@@ -165,7 +165,7 @@
       display: block; background: var(--parchment);
     }
     .photo-caption {
-      text-align: center; font-family: 'Cormorant Garamond', serif;
+      text-align: center; font-family: 'Fraunces', 'Cormorant Garamond', serif;
       font-size: 12px; font-style: italic; color: var(--sage);
       letter-spacing: 1px; padding: 10px 0 0; max-width: 900px;
       margin: 0 auto; position: relative; z-index: 10;
@@ -183,7 +183,7 @@
 
     .content { position: relative; z-index: 10; max-width: 860px; margin: 0 auto; padding: 0 30px 80px }
     .intro-text {
-      font-family: 'Cormorant Garamond', serif;
+      font-family: 'Fraunces', 'Cormorant Garamond', serif;
       font-size: 20px; font-weight: 300; line-height: 1.75;
       color: var(--ink); text-align: center;
       max-width: 700px; margin: 0 auto 60px;
@@ -201,8 +201,8 @@
     .section:nth-child(7) { animation-delay: 1.25s }
 
     .section-header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px }
-    .section-num { font-family: 'Cormorant Garamond', serif; font-size: 11px; letter-spacing: 4px; color: var(--gold) }
-    .section-title { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 400; color: var(--deep); letter-spacing: 1px }
+    .section-num { font-family: 'Fraunces', 'Cormorant Garamond', serif; font-size: 11px; letter-spacing: 4px; color: var(--gold) }
+    .section-title { font-family: 'Fraunces', 'Cormorant Garamond', serif; font-size: 28px; font-weight: 400; color: var(--deep); letter-spacing: 1px }
     .section-rule { height: 1px; flex: 1; background: linear-gradient(to right, var(--gold), transparent) }
     .section-body { font-size: 13px; font-weight: 300; line-height: 1.9; color: var(--ink); margin-bottom: 24px }
 
@@ -238,7 +238,7 @@
     .benefit-card:hover { background: #ece3c6 }
     .benefit-card::before { content: ''; position: absolute; bottom: 0; left: 0; width: 0; height: 2px; background: var(--gold); transition: width .4s }
     .benefit-card:hover::before { width: 100% }
-    .benefit-title { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 600; color: var(--forest); margin-bottom: 8px }
+    .benefit-title { font-family: 'Fraunces', 'Cormorant Garamond', serif; font-size: 16px; font-weight: 600; color: var(--forest); margin-bottom: 8px }
     .benefit-desc { font-size: 11.5px; font-weight: 300; line-height: 1.75; color: var(--ink); opacity: .85 }
 
     .precaution-list { list-style: none; margin: 8px 0 }
@@ -249,14 +249,14 @@
     .nutrition-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: rgba(122,75,30,.12); border: 1px solid rgba(122,75,30,.12); margin: 20px 0 }
     .nutrition-cell { background: var(--cream); padding: 22px 16px; text-align: center; transition: background .3s }
     .nutrition-cell:hover { background: var(--parchment) }
-    .nutrition-num { font-family: 'Cormorant Garamond', serif; font-size: 36px; font-weight: 300; color: var(--forest); line-height: 1; margin-bottom: 4px }
+    .nutrition-num { font-family: 'Fraunces', 'Cormorant Garamond', serif; font-size: 36px; font-weight: 300; color: var(--forest); line-height: 1; margin-bottom: 4px }
     .nutrition-unit { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); font-weight: 300 }
     .nutrition-label { font-size: 11px; font-weight: 300; color: var(--ink); margin-top: 5px }
 
     .sources { border-top: 1px solid rgba(122,75,30,.15); padding-top: 24px; margin-top: 20px }
     .sources-title { font-size: 10px; letter-spacing: 4px; text-transform: uppercase; color: var(--sage); margin-bottom: 12px; font-weight: 300 }
     .sources ul { list-style: none }
-    .sources ul li { font-family: 'Cormorant Garamond', serif; font-size: 13px; font-style: italic; color: var(--earth); padding: 5px 0; border-bottom: 1px solid rgba(122,75,30,.06) }
+    .sources ul li { font-family: 'Fraunces', 'Cormorant Garamond', serif; font-size: 13px; font-style: italic; color: var(--earth); padding: 5px 0; border-bottom: 1px solid rgba(122,75,30,.06) }
     .sources ul li::before { content: '· '; color: var(--sage) }
 
     footer { position: relative; z-index: 10; text-align: center; padding: 24px 20px 44px; border-top: 1px solid rgba(122,75,30,.12); max-width: 860px; margin: 0 auto }

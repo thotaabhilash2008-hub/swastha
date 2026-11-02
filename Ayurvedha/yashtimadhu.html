@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Yashtimadhu (Glycyrrhiza glabra) | Swastha Herbal Garden</title>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400&family=Hanken+Grotesk:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400;500;600&display=swap" rel="stylesheet">
 <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
 <style>
 :root {
@@ -24,15 +24,15 @@
     --ink: #F5F0E4;
 }
 *{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}
-body{font-family:'Jost',sans-serif;background:var(--cream);color:var(--ink);min-height:100vh;overflow-x:hidden;position:relative}
+body{font-family: 'Hanken Grotesk', 'Jost', sans-serif;background:var(--cream);color:var(--ink);min-height:100vh;overflow-x:hidden;position:relative}
 body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");opacity:.035;pointer-events:none;z-index:100}
 
-#open3D{position:fixed;top:25px;right:30px;padding:10px 18px;font-size:11px;letter-spacing:2px;text-transform:uppercase;font-family:'Jost',sans-serif;font-weight:300;background:var(--forest);color:#fff;border:none;cursor:pointer;z-index:1000;transition:.3s}
+#open3D{position:fixed;top:25px;right:30px;padding:10px 18px;font-size:11px;letter-spacing:2px;text-transform:uppercase;font-family: 'Hanken Grotesk', 'Jost', sans-serif;font-weight:300;background:var(--forest);color:#fff;border:none;cursor:pointer;z-index:1000;transition:.3s}
 #open3D:hover{background:var(--gold);color:var(--deep)}
 
 #viewerModal{position:fixed;inset:0;z-index:2000;display:none;flex-direction:column;}
 #modal-topbar{flex-shrink:0;height:58px;background:#111111;display:flex;align-items:center;justify-content:space-between;padding:0 28px 0 32px;border-bottom:1px solid rgba(255,255,255,0.07);z-index:99999;}
-#modal-topbar span{font-family:'Jost',sans-serif;font-size:11px;font-weight:300;letter-spacing:4.5px;text-transform:uppercase;color:rgba(255,255,255,0.72);user-select:none;}
+#modal-topbar span{font-family: 'Hanken Grotesk', 'Jost', sans-serif;font-size:11px;font-weight:300;letter-spacing:4.5px;text-transform:uppercase;color:rgba(255,255,255,0.72);user-select:none;}
 #close3D{width:38px;height:38px;font-size:15px;font-weight:300;background:transparent;color:#ffffff;border:1.5px solid rgba(255,255,255,0.7);border-radius:50%;cursor:pointer;z-index:99999;display:flex;align-items:center;justify-content:center;line-height:1;transition:background .2s,color .2s,transform .22s;outline:none;flex-shrink:0;}
 #close3D:hover{background:#ffffff;color:#111111;border-color:#ffffff;transform:rotate(90deg)}
 #viewerModal model-viewer{flex:1;width:100%;display:block;background:#ffffff;}
@@ -50,25 +50,25 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .logo-rule span{display:block;height:1px;width:70px;background:linear-gradient(to right,transparent,var(--gold))}
 .logo-rule span:last-child{background:linear-gradient(to left,transparent,var(--gold))}
 .logo-ornament{font-size:13px;color:var(--gold)}
-.hero-title{font-family:'Cormorant Garamond',serif;font-size:clamp(64px,12vw,110px);font-weight:300;letter-spacing:8px;line-height:1;color:var(--deep)}
-.hero-subtitle{font-family:'Cormorant Garamond',serif;font-size:18px;font-style:italic;font-weight:300;color:var(--earth);letter-spacing:2px;margin-top:8px}
+.hero-title{font-family: 'Fraunces', 'Cormorant Garamond', serif;font-size:clamp(64px,12vw,110px);font-weight:300;letter-spacing:8px;line-height:1;color:var(--deep)}
+.hero-subtitle{font-family: 'Fraunces', 'Cormorant Garamond', serif;font-size:18px;font-style:italic;font-weight:300;color:var(--earth);letter-spacing:2px;margin-top:8px}
 .hero-sci{font-size:11px;font-weight:200;letter-spacing:5px;color:var(--sage);margin-top:6px}
 .hero-photos{position:relative;z-index:10;display:grid;grid-template-columns:1fr 1fr;gap:2px;max-width:900px;margin:40px auto 0;opacity:0;animation:fadeUp .9s ease .35s forwards}
 .hero-photos img{width:100%;height:380px;object-fit:cover;object-position:center;display:block;background:var(--parchment);}
 .hero-photos img:first-child{object-position:center 40%}
-.photo-caption{text-align:center;font-family:'Cormorant Garamond',serif;font-size:12px;font-style:italic;color:var(--sage);letter-spacing:1px;padding:10px 0 0;max-width:900px;margin:0 auto;position:relative;z-index:10;opacity:0;animation:fadeUp .9s ease .5s forwards}
+.photo-caption{text-align:center;font-family: 'Fraunces', 'Cormorant Garamond', serif;font-size:12px;font-style:italic;color:var(--sage);letter-spacing:1px;padding:10px 0 0;max-width:900px;margin:0 auto;position:relative;z-index:10;opacity:0;animation:fadeUp .9s ease .5s forwards}
 .divider{display:flex;align-items:center;justify-content:center;gap:16px;margin:50px auto;max-width:600px;opacity:0;animation:fadeUp .9s ease .55s forwards;position:relative;z-index:10}
 .divider-line{height:1px;width:120px;background:linear-gradient(to right,transparent,var(--sage))}
 .divider-line:last-child{background:linear-gradient(to left,transparent,var(--sage))}
 .divider-leaf{color:var(--forest);font-size:18px}
 .content{position:relative;z-index:10;max-width:860px;margin:0 auto;padding:0 30px 80px}
-.intro-text{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:300;line-height:1.75;color:var(--ink);text-align:center;max-width:700px;margin:0 auto 60px;opacity:0;animation:fadeUp .9s ease .6s forwards}
+.intro-text{font-family: 'Fraunces', 'Cormorant Garamond', serif;font-size:20px;font-weight:300;line-height:1.75;color:var(--ink);text-align:center;max-width:700px;margin:0 auto 60px;opacity:0;animation:fadeUp .9s ease .6s forwards}
 .intro-text em{color:var(--forest);font-style:italic}
 .section{margin-bottom:60px;opacity:0;animation:fadeUp .9s ease forwards}
 .section:nth-child(1){animation-delay:.65s}.section:nth-child(2){animation-delay:.75s}.section:nth-child(3){animation-delay:.85s}.section:nth-child(4){animation-delay:.95s}.section:nth-child(5){animation-delay:1.05s}.section:nth-child(6){animation-delay:1.15s}.section:nth-child(7){animation-delay:1.25s}
 .section-header{display:flex;align-items:center;gap:14px;margin-bottom:20px}
-.section-num{font-family:'Cormorant Garamond',serif;font-size:11px;letter-spacing:4px;color:var(--gold)}
-.section-title{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:400;color:var(--deep);letter-spacing:1px}
+.section-num{font-family: 'Fraunces', 'Cormorant Garamond', serif;font-size:11px;letter-spacing:4px;color:var(--gold)}
+.section-title{font-family: 'Fraunces', 'Cormorant Garamond', serif;font-size:28px;font-weight:400;color:var(--deep);letter-spacing:1px}
 .section-rule{height:1px;flex:1;background:linear-gradient(to right,var(--gold),transparent)}
 .section-body{font-size:13px;font-weight:300;line-height:1.9;color:var(--ink);margin-bottom:24px}
 .data-table{width:100%;border-collapse:collapse;margin:16px 0 8px;font-size:12px}
@@ -96,7 +96,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .benefit-card:hover{background:#ede4ce}
 .benefit-card::before{content:'';position:absolute;bottom:0;left:0;width:0;height:2px;background:var(--gold);transition:width .4s}
 .benefit-card:hover::before{width:100%}
-.benefit-title{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:600;color:var(--forest);margin-bottom:8px}
+.benefit-title{font-family: 'Fraunces', 'Cormorant Garamond', serif;font-size:16px;font-weight:600;color:var(--forest);margin-bottom:8px}
 .benefit-desc{font-size:11.5px;font-weight:300;line-height:1.75;color:var(--ink);opacity:.85}
 .precaution-list{list-style:none;margin:8px 0}
 .precaution-list li{display:flex;gap:12px;align-items:flex-start;padding:10px 14px;font-size:12px;font-weight:300;line-height:1.7;color:var(--ink);border-bottom:1px solid rgba(107,79,45,.08)}
@@ -105,12 +105,12 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .sources{border-top:1px solid rgba(107,79,45,.15);padding-top:24px;margin-top:20px}
 .sources-title{font-size:10px;letter-spacing:4px;text-transform:uppercase;color:var(--sage);margin-bottom:12px;font-weight:300}
 .sources ul{list-style:none}
-.sources ul li{font-family:'Cormorant Garamond',serif;font-size:13px;font-style:italic;color:var(--earth);padding:5px 0;border-bottom:1px solid rgba(107,79,45,.06)}
+.sources ul li{font-family: 'Fraunces', 'Cormorant Garamond', serif;font-size:13px;font-style:italic;color:var(--earth);padding:5px 0;border-bottom:1px solid rgba(107,79,45,.06)}
 .sources ul li::before{content:'· ';color:var(--sage)}
 .nutrition-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(107,79,45,.12);border:1px solid rgba(107,79,45,.12);margin:20px 0}
 .nutrition-cell{background:var(--cream);padding:22px 16px;text-align:center;transition:background .3s}
 .nutrition-cell:hover{background:var(--parchment)}
-.nutrition-num{font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:300;color:var(--forest);line-height:1;margin-bottom:4px}
+.nutrition-num{font-family: 'Fraunces', 'Cormorant Garamond', serif;font-size:36px;font-weight:300;color:var(--forest);line-height:1;margin-bottom:4px}
 .nutrition-unit{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);font-weight:300}
 .nutrition-label{font-size:11px;font-weight:300;color:var(--ink);margin-top:5px}
 footer{position:relative;z-index:10;text-align:center;padding:24px 20px 44px;border-top:1px solid rgba(107,79,45,.12);max-width:860px;margin:0 auto}
