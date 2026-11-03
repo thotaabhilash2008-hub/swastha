@@ -109,7 +109,7 @@ footer{position:relative;z-index:10;margin-top:60px;border-top:1px solid rgba(20
 <section class="lab">
 <div class="glass card">
 <div class="sex" role="group" aria-label="Body model"><button data-s="f" aria-pressed="true">Female</button><button data-s="m" aria-pressed="false">Male</button></div>
-<div class="body"><img id="bimg" src="/Homeopathy/assets/body-female.jpg" alt="Anatomy figure, half skin and half internal organs"><div id="spots"></div></div>
+<div class="body"><img id="bimg" src="/Homeopathy/assets/body-female.jpeg" alt="Anatomy figure, half skin and half internal organs"><div id="spots"></div></div>
 </div>
 <div>
 <div class="glass card" id="det" aria-live="polite"></div>
@@ -195,7 +195,7 @@ K.forEach(function(k){
 var x=X[k[0]],sz=k[0]==4?70:54,m=document.createElement("div");m.className="mark";m.style.cssText="width:"+sz+"px;height:"+sz+"px;background:radial-gradient(circle,"+x[0]+" 0%,"+x[0]+" 35%,transparent 70%)";spots.appendChild(m);k.m=m;
 if(x[1]){var e=document.createElement("span");e.className="emo";e.textContent=x[1];spots.appendChild(e);k.e=e}
 var b=document.createElement("button");b.className="pill";b.textContent=k[0]+" · "+k[1];b.setAttribute("aria-pressed","false");b.onclick=function(){sel(k[0])};list.appendChild(b);k.b=b});
-document.querySelectorAll(".sex button").forEach(function(b){b.onclick=function(){sex=b.dataset.s;document.getElementById("bimg").src=sex=="f"?"/Homeopathy/assets/body-female.jpg":"/Homeopathy/assets/body-male.jpg";document.querySelectorAll(".sex button").forEach(function(o){o.setAttribute("aria-pressed",o==b)});place()}});
+document.querySelectorAll(".sex button").forEach(function(b){b.onclick=function(){sex=b.dataset.s;document.getElementById("bimg").src=sex=="f"?"/Homeopathy/assets/body-female.jpeg":"/Homeopathy/assets/body-male.jpeg";document.querySelectorAll(".sex button").forEach(function(o){o.setAttribute("aria-pressed",o==b)});place()}});
 place();
 function sel(n){cur=n;K.forEach(function(k){var on=k[0]==n;k.b.setAttribute("aria-pressed",on)});
 var k=K[n-1];document.getElementById("det").innerHTML='<h3><span class="n">'+n+'</span>'+k[1]+'</h3><p class="nrm"><b>Normal:</b> '+X[n][2]+'</p><p class="pth"><b>In Kali-p:</b> '+k[2]+'</p>'}
