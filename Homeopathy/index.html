@@ -57,9 +57,6 @@ button:focus-visible{outline:2px solid var(--gold-warm);outline-offset:2px}
 .body img{width:100%;display:block;border-radius:11px;background:#fff}
 .mark{position:absolute;border-radius:50%;transform:translate(-50%,-50%);pointer-events:none;opacity:.8;mix-blend-mode:multiply}
 .emo{position:absolute;transform:translate(8px,-34px);font-size:22px;pointer-events:none;line-height:1}
-.hot{position:absolute;width:28px;height:28px;padding:0;border-radius:50%;border:2px solid var(--gold);background:#07170F;color:var(--gold-bright);font:600 12px 'Jost',sans-serif;transform:translate(-50%,-50%);cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.5);transition:all .2s}
-.hot:hover,.hot.on{background:var(--gold-warm);color:#07170F;transform:translate(-50%,-50%) scale(1.15)}
-.hot:focus-visible{outline:2px solid #fff;outline-offset:2px}
 #det h3{font-size:26px;color:var(--gold-warm);display:flex;align-items:center;gap:10px}
 #det .n{display:inline-grid;place-items:center;width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--gold-warm),var(--gold));color:#07170F;font:600 14px 'Jost',sans-serif;letter-spacing:0}
 .nrm{color:var(--sage);margin:.7rem 0 0}.pth{margin:.6rem 0 0;padding:10px 14px;border-radius:10px;border-left:4px solid var(--agg);background:rgba(239,123,146,.12)}
@@ -108,7 +105,7 @@ footer{position:relative;z-index:10;margin-top:60px;border-top:1px solid rgba(20
 
 <div class="divider"><i></i><span>❧</span><i></i></div>
 
-<p class="intro">Coloured glows on the body mark the pathology, what goes wrong in Kali-p. Tap a number to compare normal vs diseased.</p>
+<p class="intro">Coloured glows on the body mark the pathology, what goes wrong in Kali-p. Select a keynote below to compare normal vs diseased.</p>
 <section class="lab">
 <div class="glass card">
 <div class="sex" role="group" aria-label="Body model"><button data-s="f" aria-pressed="true">Female</button><button data-s="m" aria-pressed="false">Male</button></div>
@@ -193,17 +190,14 @@ var cur=0,sex="f";
 var P={f:[[612,205],[572,140],[630,40],[330,660],[618,599],[650,607],[690,545],[605,628],[520,1230],[632,140],[625,510],[520,500],[640,665],[635,435],[541,47]],
 m:[[625,215],[575,140],[640,45],[330,655],[619,607],[690,625],[690,530],[650,629],[520,1235],[632,140],[640,520],[540,480],[629,663],[640,420],[553,47]]},D={f:1299,m:1285};
 var spots=document.getElementById("spots"),list=document.getElementById("list");
-function place(){K.forEach(function(k,i){var p=P[sex][i];k.g.style.left=((p[0]-270)/660*100)+"%";k.g.style.top=(p[1]/D[sex]*100)+"%";[k.m,k.e].forEach(function(o){if(o){o.style.left=k.g.style.left;o.style.top=k.g.style.top}})})}
+function place(){K.forEach(function(k,i){var p=P[sex][i],left=((p[0]-270)/660*100)+"%",top=(p[1]/D[sex]*100)+"%";[k.m,k.e].forEach(function(o){if(o){o.style.left=left;o.style.top=top}})})}
 K.forEach(function(k){
-var g=document.createElement("button");g.className="hot";g.textContent=k[0];g.setAttribute("aria-label","Keynote "+k[0]+": "+k[1]);
-g.onclick=function(){sel(k[0])};
 var x=X[k[0]],sz=k[0]==4?70:54,m=document.createElement("div");m.className="mark";m.style.cssText="width:"+sz+"px;height:"+sz+"px;background:radial-gradient(circle,"+x[0]+" 0%,"+x[0]+" 35%,transparent 70%)";spots.appendChild(m);k.m=m;
 if(x[1]){var e=document.createElement("span");e.className="emo";e.textContent=x[1];spots.appendChild(e);k.e=e}
-spots.appendChild(g);k.g=g;
 var b=document.createElement("button");b.className="pill";b.textContent=k[0]+" · "+k[1];b.setAttribute("aria-pressed","false");b.onclick=function(){sel(k[0])};list.appendChild(b);k.b=b});
 document.querySelectorAll(".sex button").forEach(function(b){b.onclick=function(){sex=b.dataset.s;document.getElementById("bimg").src=sex=="f"?"/Homeopathy/assets/body-female.jpg":"/Homeopathy/assets/body-male.jpg";document.querySelectorAll(".sex button").forEach(function(o){o.setAttribute("aria-pressed",o==b)});place()}});
 place();
-function sel(n){cur=n;K.forEach(function(k){var on=k[0]==n;k.g.classList.toggle("on",on);k.b.setAttribute("aria-pressed",on)});
+function sel(n){cur=n;K.forEach(function(k){var on=k[0]==n;k.b.setAttribute("aria-pressed",on)});
 var k=K[n-1];document.getElementById("det").innerHTML='<h3><span class="n">'+n+'</span>'+k[1]+'</h3><p class="nrm"><b>Normal:</b> '+X[n][2]+'</p><p class="pth"><b>In Kali-p:</b> '+k[2]+'</p>'}
 sel(1);
 var T=[["p-mental","Mentals"],["p-phys","Physicals"],["p-mod","Modalities"],["p-cmp","Compare"],["p-map","Mind map"]],tabs=document.getElementById("tabs");
